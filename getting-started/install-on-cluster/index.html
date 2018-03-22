@@ -47,7 +47,7 @@
 
 <meta itemprop="datePublished" content="2016-11-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2016-11-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="25">
+<meta itemprop="wordCount" content="226">
 
 
 
@@ -170,7 +170,18 @@
 <aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
 	
 		<p class="b">What's on this Page</p>
-  	
+  	<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#enabling-insecure-registries-on-kops">Enabling insecure registries on kops</a></li>
+<li><a href="#installing-jenkins-x">Installing Jenkins X</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
 	
 
 	<div date-pref>
@@ -227,9 +238,56 @@
 
 <div class="prose" id="prose">
 
-<p>To install Jenkins X on an existing kubernetes cluster it must first have RBAC enabled, you can then use the <a href="/commands/jx_install">jx install</a> command:</p>
+
+
+<p>Jenkins X can be installed on 1.8 or later of Kubernetes. The requirements are:</p>
+
+<ul>
+<li>RBAC is enabled</li>
+<li>insecure docker registries are enabled. This is so that pipelines can use a docker registry running inside the kubernetes cluster (which typically is not public so no https support). You can modify your pipelines to use other registries later.</li>
+</ul>
+
+<h3 id="enabling-insecure-registries-on-kops">Enabling insecure registries on kops</h3>
+
+<p>Note that if you are on AWS you may want to use the <a href="/getting-started/create-cluster/">jx create aws</a> command which automates all of this for you!</p>
+
+<p>If you created the kubernetes cluster via <a href="https://github.com/kubernetes/kops">kops</a> then you can do the following:</p>
+
+<pre><code>kops edit cluster 
+</code></pre>
+
+<p>Then make sure the YAML has this <code>docker</code> entry:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">...<span class="w">
+</span><span class="w"></span>spec<span class="p">:</span><span class="w">
+</span><span class="w">  </span>docker<span class="p">:</span><span class="w">
+</span><span class="w">    </span>insecureRegistry<span class="p">:</span><span class="w"> </span><span class="m">100.64</span>.<span class="m">0.0</span>/<span class="m">10</span></code></pre></div>
+<p>That IP range, <code>100.64.0.0/10</code>, works on AWS but you may need to change it on other kubernetes clusters; it depends on the IP range of kubernetes services.</p>
+
+<p>Then save the changes. You can verify your changes via:</p>
+
+<pre><code>kops get cluster -oyaml
+</code></pre>
+
+<p>and looking for the <code>insecureRegistry</code> section.</p>
+
+<p>Now to make this change active on your cluster type:</p>
+
+<pre><code>kops update cluster --yes
+kops rolling-update cluster --yes
+</code></pre>
+
+<p>You should now be good to go!</p>
+
+<h3 id="installing-jenkins-x">Installing Jenkins X</h3>
+
+<p>To install Jenkins X on an existing kubernetes cluster you can then use the <a href="/commands/jx_install">jx install</a> command:</p>
 
 <pre><code>jx install
+</code></pre>
+
+<p>If you know the provider you can specify that if you prefer on the command line. e.g.</p>
+
+<pre><code>jx install --provider=aws
 </code></pre>
 
 </div>
