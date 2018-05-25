@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-03-16T13:25:59&#43;00:00"/>
+<meta property="article:modified_time" content="2018-05-25T09:28:45&#43;01:00"/>
 
 
 
@@ -54,7 +54,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="285">
+<meta itemprop="wordCount" content="510">
 
 
 
@@ -200,6 +200,8 @@
 <li><a href="#importing-via-url">Importing via URL</a></li>
 <li><a href="#importing-github-projects">Importing GitHub projects</a></li>
 </ul></li>
+<li><a href="#branch-patterns">Branch patterns</a></li>
+<li><a href="#configuring-your-teams-branch-patterns">Configuring your teams branch patterns</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -283,17 +285,37 @@ $ jx import</code></pre></div>
 <h3 id="importing-via-url">Importing via URL</h3>
 
 <p>If you wish to import a project which is already in a remote git repository then you can use the <code>--url</code>  argument:</p>
-<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">    jx import --url https://github.com/jenkins-x/spring-boot-web-example.git</code></pre></div>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --url https://github.com/jenkins-x/spring-boot-web-example.git</code></pre></div>
 <h3 id="importing-github-projects">Importing GitHub projects</h3>
 
 <p>If you wish to import projects from a github organisation you can use:</p>
-<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">    jx import --github --org myname</code></pre></div>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --github --org myname</code></pre></div>
 <p>You will be prompted for the repositories you wish to import. Use the cursor keys and space bar to select/deselect the repositories to import.</p>
 
 <p>If you wish to default all repositories to be imported (then deselect any you don&rsquo;t want add <code>--all</code>:</p>
-<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">    jx import --github --org myname --all</code></pre></div>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --github --org myname --all</code></pre></div>
 <p>To filter the list you can add a <code>--filter</code></p>
-<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">    jx import --github --org myname --all --filter foo</code></pre></div>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --github --org myname --all --filter foo</code></pre></div>
+<h2 id="branch-patterns">Branch patterns</h2>
+
+<p>When importing projects into Jenkins X we use git branch patterns to determine which branch names are automatically setup for CI/CD.</p>
+
+<p>Typically that may default to something like <code>master|PR-.*|feature.*</code>. That means that the <code>master</code> branch, any branch starting with <code>PR-</code> or <code>feature</code> will be scanned to look for a <code>Jenkinsfile</code> to setup the CI/CD pipelines.</p>
+
+<p>If you use another branch name than <code>master</code> such as <code>develop</code> or whatever you can change this pattern to be whatever you you like via the <code>--branches</code> argument whenever you run <a href="https://jenkins-x.io/commands/jx_import">jx import</a>, <a href="https://jenkins-x.io/commands/jx_create_spring">jx create spring</a> or <a href="https://jenkins-x.io/commands/jx_create_quickstart">jx create quickstart</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --branches <span class="s2">&#34;develop|PR-.*|feature.*&#34;</span></code></pre></div>
+<p>You may wish to set this to just <code>.*</code> to work with all branches,.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx import --branches <span class="s2">&#34;.*&#34;</span></code></pre></div>
+<h2 id="configuring-your-teams-branch-patterns">Configuring your teams branch patterns</h2>
+
+<p>Usually a team uses the same naming conventions for branches so you may wish to configure the branch patterns at a team level so that they will be used by default if anyone in your team runs <a href="https://jenkins-x.io/commands/jx_import">jx import</a>, <a href="https://jenkins-x.io/commands/jx_create_spring">jx create spring</a> or <a href="https://jenkins-x.io/commands/jx_create_quickstart">jx create quickstart</a>.</p>
+
+<p>These settings are stored in the <a href="https://jenkins-x.io/architecture/custom-resources/">Environment Custom Resource</a> in Kubernetes.</p>
+
+<p>To set the branch patterns for your team  <a href="https://jenkins-x.io/commands/jx_create_branchpattern/">jx create branchpattern</a> command.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx create branchpattern  <span class="s2">&#34;develop|PR-.*|feature.*&#34;</span></code></pre></div>
+<p>You can then view the current branch patterns for your team via the <a href="https://jenkins-x.io/commands/jx_get_branchpattern/">jx get branchpattern</a> command:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ jx get branchpattern</code></pre></div>
 </div>
 
           
@@ -651,7 +673,7 @@ $ jx import</code></pre></div>
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Import”
-  </a> was last updated: March 16, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/aabf61c1a521a3fd1a3a6fa406e4e79bff084c3a">lets move import below create spring / quickstart (aabf61c)</a>
+  </a> was last updated: May 25, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/267c1fe88d33a1b031b80d0aa6d32de3a7941bbc">lets add docs around team settings (267c1fe)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/developing/import.md" class="
