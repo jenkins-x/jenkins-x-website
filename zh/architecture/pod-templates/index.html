@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>给 Jenkins X 项目做贡献 | Jenkins X</title>
+    <title>Pod 模板 | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -20,7 +20,6 @@
         <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
       
 
-    <link rel="alternate" type="application/rss" href="https://jenkins-x.io/zh/contribute/index.xml">
     <link href='https://jenkins-x.io/dist/main.css' rel='stylesheet' type="text/css" /><script src="https://jenkins-x.io/js/chart.js"></script>
 <style>
   img.avatar {
@@ -28,32 +27,43 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="给 Jenkins X 项目做贡献" />
-<meta property="og:description" content="给 Jenkins X 项目做研发和文档贡献。" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://jenkins-x.io/zh/contribute/" />
+<meta property="og:title" content="Pod 模板" />
+<meta property="og:description" content="用于实现 Jenkins 流水线的 Pods" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jenkins-x.io/zh/architecture/pod-templates/" />
 
 
 
-<meta property="og:updated_time" content="2017-02-01T00:00:00&#43;00:00"/>
+<meta property="article:published_time" content="2018-05-27T00:00:00&#43;00:00"/>
 
-
-
-
-
-
+<meta property="article:modified_time" content="2018-06-03T11:09:49&#43;08:00"/>
 
 
 
 
-<meta itemprop="name" content="给 Jenkins X 项目做贡献">
-<meta itemprop="description" content="给 Jenkins X 项目做研发和文档贡献。">
 
+
+
+
+
+
+
+<meta itemprop="name" content="Pod 模板">
+<meta itemprop="description" content="用于实现 Jenkins 流水线的 Pods">
+
+
+<meta itemprop="datePublished" content="2018-05-27T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-05-27T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="842">
+
+
+
+<meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="给 Jenkins X 项目做贡献"/>
-<meta name="twitter:description" content="给 Jenkins X 项目做研发和文档贡献。"/>
+<meta name="twitter:title" content="Pod 模板"/>
+<meta name="twitter:description" content="用于实现 Jenkins 流水线的 Pods"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
 
@@ -173,12 +183,165 @@
     
     <main role="main" class="content-with-sidebar min-vh-100 pb7 pb0-ns">
       
-  
-  
-  <div class="w-100 ph4 pb5 pb6-ns pt1 mt4 pt3-ns">
+  <article class="w-100 ph4 pb5 pb6-ns pt1 pt5-ns">
+    <div class="flex-l">
 
-  <div class="flex">
-    <div class="dn db-l w-20">
+      <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky">
+<aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
+	
+		<p class="b">此页面上的内容</p>
+  	<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#referring-to-pod-templates">Referring to Pod Templates</a></li>
+<li><a href="#submitting-new-pod-templates">Submitting new Pod Templates</a>
+<ul>
+<li><a href="#build-containers">Build containers</a></li>
+</ul></li>
+<li><a href="#adding-your-own-pod-templates">Adding your own Pod Templates</a></li>
+</ul></li>
+</ul>
+</nav>
+	
+
+	<div date-pref>
+		
+			<a href="https://jenkins-x.io/zh/architecture/build-packs/" class="dib f6 pl1 hover-bg-light-gray br-100" title="构建打包 ">
+				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+
+		
+	</div>
+
+</aside>
+</div>
+
+      <div class="order-1 w-60-l mw7 ph0 ph5-ns mid-gray nested-copy-line-height no-underline nested-links nested-img nested-copy-seperator nested-blockquote mt0-ns" style="flex-grow:1;">
+        <div class="documentation-copy center measure-wide-l">
+          <div id="readout" class="fixed right-0 bottom-0">
+          </div>
+          <header class="flex-none w-100">
+  
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Pod 模板</h1>
+</header>
+
+<aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
+  
+    <div class="f4 fw4 lh-copy">
+      用于实现 Jenkins 流水线的 Pods
+    </div>
+  
+
+  
+</aside>
+
+
+
+<div class="prose" id="prose">
+
+
+
+<p>We implement CI/CD pipelines using declarative Jenkins pipelines using a <code>Jenkinsfile</code> in the source of each application or environment git repository.</p>
+
+<p>We use the <a href="https://github.com/jenkinsci/kubernetes-plugin">kubernetes plugin</a> for Jenkins to be able to spin up new pods on kubernetes for each build - giving us an elastic pool of agents to run pipelines thanks to kubernetes.</p>
+
+<p>The Kubernetes plugin uses <em>pod templates</em> to define the pod used to run a CI/CD pipeline which consists of:</p>
+
+<ul>
+<li>one or more build containers for running commands inside (e.g. your build tools like <code>mvn</code> or <code>npm</code> along with tools we use for other parts of the pipeline like <code>git, jx, helm, kubectl</code> etc)</li>
+<li>volumes for persistence</li>
+<li>environment variables</li>
+<li>secrets so the pipeline can write to git repositories, docker registries, maven/npm/helm repositories and so forth</li>
+</ul>
+
+<h2 id="referring-to-pod-templates">Referring to Pod Templates</h2>
+
+<p>Jenkins X comes with a default set of pod templates for supported languages and runtimes in our <a href="https://jenkins-x.io/architecture/build-packs">build packs</a> and are named something like: <code>jenkins-$PACKNAME</code>.</p>
+
+<p>For example the <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/">maven build pack</a> uses the pod template <code>jenkins-maven</code>.</p>
+
+<p>We can then <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/Jenkinsfile#L1-L4">refer to the pod template name in the Jenkinsfile</a> using the <code>agent { label &quot;jenkins-$PACKNAME }</code> syntax in the declarative pipeline. e.g.</p>
+<div class="highlight"><pre class="chroma"><code class="language-groovy" data-lang="groovy"><span class="c1">// my declarative Jenkinsfile
+</span><span class="c1"></span>
+<span class="n">pipeline</span> <span class="o">{</span>
+    <span class="n">agent</span> <span class="o">{</span>
+      <span class="n">label</span> <span class="s2">&#34;jenkins-maven&#34;</span>
+    <span class="o">}</span>
+    <span class="n">environment</span> <span class="o">{</span>
+      <span class="o">...</span>
+    <span class="o">}</span>
+    <span class="n">stages</span> <span class="o">{</span>
+      <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;CI Build and push snapshot&#39;</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">steps</span> <span class="o">{</span>
+          <span class="n">container</span><span class="o">(</span><span class="s1">&#39;maven&#39;</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sh</span> <span class="s2">&#34;mvn deploy&#34;</span>
+          <span class="o">}</span>
+          <span class="o">...</span></code></pre></div>
+<h2 id="submitting-new-pod-templates">Submitting new Pod Templates</h2>
+
+<p>If you are working on a new <a href="https://jenkins-x.io/architecture/build-packs">build pack</a> then we&rsquo;d love you to <a href="https://jenkins-x.io/contribute/">submit</a> a new pod template and we can include it in the Jenkins X distribution!</p>
+
+<p>There now follows instructions on how to do this - please if anything is not clear come <a href="https://jenkins-x.io/community/">join the community and just ask</a> we are happy to help!</p>
+
+<p>To submit a new build pack:</p>
+
+<ul>
+<li>fork the <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> repository</li>
+<li>add your build pack to the <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">values.yaml file in the jenkins-x-platform repository</a> in the <code>jenkins.Agent.PodTemplates</code> section of the YAML</li>
+<li>you may want to start by copy/pasting the most similar existing pod template (e.g. copy <code>Maven</code> if you are working on a Java based build pod) and just configuring the name, label and <code>Image</code> etc.</li>
+<li>now submit a Pull Request on the <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> repository for your pod template</li>
+</ul>
+
+<h3 id="build-containers">Build containers</h3>
+
+<p>When using pod templates and Jenkins pipelines you could use lots of different containers for each tool. e.g. one container for <code>maven</code> and another for <code>git</code> etc.</p>
+
+<p>We&rsquo;ve found its much simpler to just have a single builder container with all the common tools inside. This also means you can use <code>kubectl exec</code> or <a href="https://jenkins-x.io/commands/jx_rsh">jx rsh</a> to open a shell inside the build pod and have all the tools you need available for use when debugging/diagnosing problem pipelines.</p>
+
+<p>So we have a <a href="https://github.com/jenkins-x/builder-base">builder-base</a> docker image which <a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile#L21-L70">contains all the different tools</a> we tend to use in CI/CD pipelines like <code>jx, skaffold, helm, git, updatebot</code>.</p>
+
+<p>If you want to use a single builder image for your new pod template then you could use builder base as the base and then add your custom tools on top.</p>
+
+<p>e.g. <a href="https://github.com/jenkins-x/builder-maven">builder-maven</a> uses a <a href="https://github.com/jenkins-x/builder-maven/blob/master/Dockerfile#L1">Dockerfile</a> to reference the builder base.</p>
+
+<p>So the simplest thing could be to copy a similar builder - like <a href="https://github.com/jenkins-x/builder-maven">builder-maven</a> and then edit the <code>Dockerfile</code> to add whatever build tools you need.</p>
+
+<p>We love Pull Requests and <a href="https://jenkins-x.io/contribute/">contributions</a> so please submit Pull Requests for new build containers and Pod Templates and we&rsquo;re more than happy to <a href="https://jenkins-x.io/contribute/">help</a>!</p>
+
+<h2 id="adding-your-own-pod-templates">Adding your own Pod Templates</h2>
+
+<p>To keep things DRY and simple we tend to define pod templates in the Jenkins configuration then refer to the by name in the <code>Jenkinsfile</code>.</p>
+
+<p>There are attempts to make it easy to inline pod template definitions inside your <code>Jenkinsfile</code> if you need it; though a pod template tends to have lots of developer environment specific stuff inside it, like secrets, so we&rsquo;d prefer to keep most of the pod templates inside the source code of your development environment rather than copy/pasting them into each app.</p>
+
+<p>Today the easiest way to add new Pod Templates is via the Jenkins console. e.g.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">jx console</code></pre></div>
+<p>That will open the Jenkins console. Then navigate to <code>Manage Jenkins</code> (on the left hand menu) then <code>Configure System</code>.</p>
+
+<p>You will now be faced with a large page of configuration options ;) The pod templates are usually towards the bottom; you should see all the current pod templates for things like maven, nodejs etc.</p>
+
+<p>You can edit/add/remove pod templates in that page and hit Save.</p>
+
+<p>Note though that longer term we are hoping to <a href="https://github.com/jenkins-x/jx/issues/604">maintain your development environment via GitOps like we do for Staging &amp; Production</a> - which means changes made via the Jenkins UI will be lots when <a href="https://jenkins-x.io/commands/jx_upgrade_platform">upgrading your development environment</a>.</p>
+
+<p>So longer term we&rsquo;re hoping to add the Pod Templates into your <code>values.yaml</code> file in your developer environment git repository like we do for the <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">jenkins-x-platform chart</a>.</p>
+
+<p>If you are creating pod templates using open source build tools then it may be simpler for you to just <a href="#submitting-new-pod-templates">submit your pod template in a Pull Request</a> and we can bake that pod template into future releases of Jenkins X?</p>
+
+</div>
+
+          
+
+
+        </div>
+      </div>
+      <div class="order-0 w-20 dn db-l">
         
 <nav role="navigation">
   <ul class="list pa0 nl2">
@@ -373,10 +536,10 @@
     
       
       <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
-        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".architecture">架构</a>
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".architecture">架构</a>
 
           
-            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray db">
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/zh/architecture/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
@@ -403,7 +566,7 @@
                 </li>
               
                 <li  class="f6 fw4">
-                  <a href="https://jenkins-x.io/zh/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                  <a href="https://jenkins-x.io/zh/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
                     Pod 模板
                   </a>
                 </li>
@@ -450,13 +613,13 @@
     
       
       <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
-        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".contribute">贡献</a>
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".contribute">贡献</a>
 
           
-            <ul class="contribute desktopmenu animated fadeIn list pl0 bg-light-gray db">
+            <ul class="contribute desktopmenu animated fadeIn list pl0 bg-light-gray dn">
               
                 <li  class="f6 fw4">
-                  <a href="https://jenkins-x.io/zh/contribute/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
+                  <a href="https://jenkins-x.io/zh/contribute/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
                     给 Jenkins X 项目做贡献
                   </a>
                 </li>
@@ -486,124 +649,30 @@
   </ul>
 </nav>
 
-    </div>
-
-    <div class="w-100 w-80-l ph0 ph4-l">
-      <article class="w-100 nested-copy-line-height nested-links nested-img">
-        <h1 class="primary-color-dark f2">
-          给 Jenkins X 项目做贡献
-        </h1>
-        <div class=" mid-gray f5 f4-l">
-          <p>Jenkins X relies heavily on the enthusiasm and participation of the open-source community. We need your help so please dive in! There are many ways to help:</p>
-
-<ul>
-<li><a href="https://jenkins-x.io/community/">Give us feedback</a>. What could we improve? Anything you don&rsquo;t like or you think is missing?</li>
-<li>Help <a href="https://jenkins-x.io/contribute/documentation/">improve the documentation</a> so its more clear how to get started and use Jenkins X</li>
-<li><a href="https://jenkins-x.io/developing/create-quickstart/#adding-your-own-quickstarts">Add your own quickstarts</a> so the Jenkins X community can easily bootstrap new projects using your quickstart. If you work on an open source project is there a good quickstart we could add to Jenkins X?</li>
-<li>Create an <a href="https://jenkins-x.io/about/features/#applications">Addon</a>. To add your own addon just create a Helm chart for some useful way to extend Jenkins X and then submit a Pull Request on <a href="https://github.com/jenkins-x/jx/blob/master/pkg/kube/constants.go#L32-L50">the pkg/kube/constants.go file</a> to add your chart into the <code>AddonCharts</code> with its name matching a chart name</li>
-<li>If you&rsquo;d like to <a href="https://jenkins-x.io/contribute/development/">contribute to the code</a> then try browse the <a href="https://github.com/jenkins-x/jx/issues">current issues</a>.
-
-<ul>
-<li>we have marked issues <a href="https://github.com/jenkins-x/jx/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22">help wanted</a> or <a href="https://github.com/jenkins-x/jx/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22">good first issue</a> to save you hunting around too much</li>
-<li>in particular we would love help on getting <a href="Jenkins X https://github.com/jenkins-x/jx/issues?q=is%3Aopen+is%3Aissue+label%3Awindows">working well on windows</a> or the <a href="https://github.com/jenkins-x/jx/issues?q=is%3Aissue+is%3Aopen+label%3Aintegrations">integrations with cloud services, git providers and issues trackers</a></li>
-<li>for more long term goals we&rsquo;ve the <a href="https://jenkins-x.io/contribute/roadmap">long term roadmap</a></li>
-<li>we could always use more test cases and to improve test coverage!</li>
-</ul></li>
-</ul>
-
-        </div>
-      </article>
-
-      
-
-      <div class="flex flex-wrap">
-        
-        <section class="flex-ns flex-wrap justify-between w-100">
-          
-            <div class="relative flex-auto w-100 w-40-l mr3 mb3 bg-white ba b--moon-gray nested-copy-line-height weight-10">
-
-  <div class="bg-white mb2 pa3 pa4-l gray">
-    
-
-    <h1 class="near-black f3">
-      <a href="https://jenkins-x.io/zh/contribute/development/" class="link primary-color dim">贡献代码</a>
-    </h1>
-
-    <div class="lh-copy links">
-      
-          如何为 Jenkins X 的发展做贡献
-        
-
-        <a href="https://jenkins-x.io/zh/contribute/development/" class="f6 mt2 db link primary-color dim">
-          查看更多 &raquo;
-        </a>
-
-    </div>
-
-
-  </div>
-</div>
-
-          
-            <div class="relative flex-auto w-100 w-40-l mr3 mb3 bg-white ba b--moon-gray nested-copy-line-height weight-20">
-
-  <div class="bg-white mb2 pa3 pa4-l gray">
-    
-
-    <h1 class="near-black f3">
-      <a href="https://jenkins-x.io/zh/contribute/roadmap/" class="link primary-color dim">路线图</a>
-    </h1>
-
-    <div class="lh-copy links">
-      
-          长期开发路线图
-        
-
-        <a href="https://jenkins-x.io/zh/contribute/roadmap/" class="f6 mt2 db link primary-color dim">
-          查看更多 &raquo;
-        </a>
-
-    </div>
-
-
-  </div>
-</div>
-
-          
-            <div class="relative flex-auto w-100 w-40-l mr3 mb3 bg-white ba b--moon-gray nested-copy-line-height weight-20">
-
-  <div class="bg-white mb2 pa3 pa4-l gray">
-    
-
-    <h1 class="near-black f3">
-      <a href="https://jenkins-x.io/zh/contribute/documentation/" class="link primary-color dim">文档贡献</a>
-    </h1>
-
-    <div class="lh-copy links">
-      
-          如何完善 Jenkins X 文档
-        
-
-        <a href="https://jenkins-x.io/zh/contribute/documentation/" class="f6 mt2 db link primary-color dim">
-          查看更多 &raquo;
-        </a>
-
-    </div>
-
-
-  </div>
-</div>
-
-          
-        </section>
       </div>
 
     </div>
+  </article>
 
+  <div class="w-100 bg-light-gray">
+    <div class="mw7 pa4 center nested-lh-copy lh-copy">
+      <h6 class="f4 dark-gray mb2">
+  <a href="https://jenkins-x.io/zh/architecture/pod-templates/" class="hide-child link primary-color">
+  <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+</span>
+    “Pod 模板”
+  </a> 上次更新： June 3, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/ac1e84cccf5b13c2d5015dbc2d16e96d012443fa">Add translation for architecture (ac1e84c)</a>
+</h6>
+
+      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/architecture/pod-templates.zh.md" class="
+f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
+">改善此页面</a>
+
+      
+
+
+    </div>
   </div>
-
-</div>
-
 
     </main>
 
