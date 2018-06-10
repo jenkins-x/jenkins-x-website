@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2018-05-27T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-06-03T11:09:49&#43;08:00"/>
+<meta property="article:modified_time" content="2018-06-10T18:13:48&#43;08:00"/>
 
 
 
@@ -54,7 +54,7 @@
 
 <meta itemprop="datePublished" content="2018-05-27T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-05-27T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="842">
+<meta itemprop="wordCount" content="285">
 
 
 
@@ -194,12 +194,12 @@
 <ul>
 <li>
 <ul>
-<li><a href="#referring-to-pod-templates">Referring to Pod Templates</a></li>
-<li><a href="#submitting-new-pod-templates">Submitting new Pod Templates</a>
+<li><a href="#参考-pod-templates">参考 Pod Templates</a></li>
+<li><a href="#提交新的-pod-模板">提交新的 Pod 模板</a>
 <ul>
-<li><a href="#build-containers">Build containers</a></li>
+<li><a href="#构建容器">构建容器</a></li>
 </ul></li>
-<li><a href="#adding-your-own-pod-templates">Adding your own Pod Templates</a></li>
+<li><a href="#增加你自己的-pod-模板">增加你自己的 Pod 模板</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -247,26 +247,26 @@
 
 
 
-<p>We implement CI/CD pipelines using declarative Jenkins pipelines using a <code>Jenkinsfile</code> in the source of each application or environment git repository.</p>
+<p>我们使用申明式（declarative）Jenkins 流水线实现 CI/CD ，每个应用或者环境的 git 库源码中有 <code>Jenkinsfile</code>。</p>
 
-<p>We use the <a href="https://github.com/jenkinsci/kubernetes-plugin">kubernetes plugin</a> for Jenkins to be able to spin up new pods on kubernetes for each build - giving us an elastic pool of agents to run pipelines thanks to kubernetes.</p>
+<p>我们使用 Jenkins 的 <a href="https://github.com/jenkinsci/kubernetes-plugin">kubernetes 插件</a>，使得在 Kubernetes 中为每次构建启动一个新的 pod —— 感谢 Kubernetes 给了我们一个用于运行流水线的伸缩的代理池。</p>
 
-<p>The Kubernetes plugin uses <em>pod templates</em> to define the pod used to run a CI/CD pipeline which consists of:</p>
+<p>Kubernetes 插件使用 <em>pod templates</em> 定义用于运行 CI/CD 流水线的 pod，包括：</p>
 
 <ul>
-<li>one or more build containers for running commands inside (e.g. your build tools like <code>mvn</code> or <code>npm</code> along with tools we use for other parts of the pipeline like <code>git, jx, helm, kubectl</code> etc)</li>
-<li>volumes for persistence</li>
-<li>environment variables</li>
-<li>secrets so the pipeline can write to git repositories, docker registries, maven/npm/helm repositories and so forth</li>
+<li>一个或多个构建容器，用于运行命令（例如：你的构建工具，像 <code>mvn</code> 或 <code>npm</code> ，还有流水线的其它部分的工具，像 <code>git, jx, helm, kubectl</code> 等等</li>
+<li>永久存储卷</li>
+<li>环境变量</li>
+<li>可以写到 git 仓库、docker 注册表、maven/npm/helm 仓库等等的 secret</li>
 </ul>
 
-<h2 id="referring-to-pod-templates">Referring to Pod Templates</h2>
+<h2 id="参考-pod-templates">参考 Pod Templates</h2>
 
-<p>Jenkins X comes with a default set of pod templates for supported languages and runtimes in our <a href="https://jenkins-x.io/architecture/build-packs">build packs</a> and are named something like: <code>jenkins-$PACKNAME</code>.</p>
+<p>Jenkins X 带有一套给支持的语言和运行时的默认 pod 模板，在你的 <a href="https://jenkins-x.io/zh/architecture/build-packs">build packs</a>中，命名类似于：<code>jenkins-$PACKNAME</code>。</p>
 
-<p>For example the <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/">maven build pack</a> uses the pod template <code>jenkins-maven</code>.</p>
+<p>例如 <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/">maven build pack</a> 使用的 pod 模板时是 <code>jenkins-maven</code>。</p>
 
-<p>We can then <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/Jenkinsfile#L1-L4">refer to the pod template name in the Jenkinsfile</a> using the <code>agent { label &quot;jenkins-$PACKNAME }</code> syntax in the declarative pipeline. e.g.</p>
+<p>然后，我们就可以 <a href="https://github.com/jenkins-x/draft-packs/blob/master/packs/maven/Jenkinsfile#L1-L4">在 Jenkinsfile 中引用 pod 模板名称</a>，在申明式流水线中使用这样的语法 <code>agent { label &quot;jenkins-$PACKNAME }</code> ，例如：</p>
 <div class="highlight"><pre class="chroma"><code class="language-groovy" data-lang="groovy"><span class="c1">// my declarative Jenkinsfile
 </span><span class="c1"></span>
 <span class="n">pipeline</span> <span class="o">{</span>
@@ -283,56 +283,56 @@
             <span class="n">sh</span> <span class="s2">&#34;mvn deploy&#34;</span>
           <span class="o">}</span>
           <span class="o">...</span></code></pre></div>
-<h2 id="submitting-new-pod-templates">Submitting new Pod Templates</h2>
+<h2 id="提交新的-pod-模板">提交新的 Pod 模板</h2>
 
-<p>If you are working on a new <a href="https://jenkins-x.io/architecture/build-packs">build pack</a> then we&rsquo;d love you to <a href="https://jenkins-x.io/contribute/">submit</a> a new pod template and we can include it in the Jenkins X distribution!</p>
+<p>如果你正在使用一个新的 <a href="https://jenkins-x.io/zh/architecture/build-packs">build pack</a>，那么，我们欢迎你 <a href="https://jenkins-x.io/zh/contribute/">提交</a> 一个新的 pod 模板，而且我们可以把它包含在 Jenkins X 的发行版中！</p>
 
-<p>There now follows instructions on how to do this - please if anything is not clear come <a href="https://jenkins-x.io/community/">join the community and just ask</a> we are happy to help!</p>
+<p>现在遵循如何这个的指示 —— 如果有任何不清楚的话请<a href="https://jenkins-x.io/zh/community/">加入社区并提问</a>，我们很高兴帮助你！</p>
 
-<p>To submit a new build pack:</p>
+<p>为了提交一个新的 build pack：</p>
 
 <ul>
-<li>fork the <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> repository</li>
-<li>add your build pack to the <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">values.yaml file in the jenkins-x-platform repository</a> in the <code>jenkins.Agent.PodTemplates</code> section of the YAML</li>
-<li>you may want to start by copy/pasting the most similar existing pod template (e.g. copy <code>Maven</code> if you are working on a Java based build pod) and just configuring the name, label and <code>Image</code> etc.</li>
-<li>now submit a Pull Request on the <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> repository for your pod template</li>
+<li>派生 <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> 库</li>
+<li>增加你的 build pack 到 <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">jenkins-x-platform 库中的 values.yaml 文件里</a> 在 YAML 文件的 <code>jenkins.Agent.PodTemplates</code> 这个区域</li>
+<li>你啃根想要从复制、粘贴开始大多数相似已经存在 pod 模板（例如：拷贝 <code>Maven</code>，如果你使用基于 Java 的构建pod），并且，只是配置名称、标签和 <code>Image</code> 等等。</li>
+<li>现在到 <a href="https://github.com/jenkins-x/jenkins-x-platform/">jenkins-x-platform</a> 库为你的 pod 模板提交一个 Pull Request</li>
 </ul>
 
-<h3 id="build-containers">Build containers</h3>
+<h3 id="构建容器">构建容器</h3>
 
-<p>When using pod templates and Jenkins pipelines you could use lots of different containers for each tool. e.g. one container for <code>maven</code> and another for <code>git</code> etc.</p>
+<p>当使用 pod 模板和 Jenkins 流水线时，每个工具你可以用很多不同的容器。例如： <code>maven</code> 容器和 <code>git</code> 等。</p>
 
-<p>We&rsquo;ve found its much simpler to just have a single builder container with all the common tools inside. This also means you can use <code>kubectl exec</code> or <a href="https://jenkins-x.io/commands/jx_rsh">jx rsh</a> to open a shell inside the build pod and have all the tools you need available for use when debugging/diagnosing problem pipelines.</p>
+<p>我们发现，在一个构建容器里有所有通用的工具会比较简单。这也意味着你可以使用 <code>kubectl exec</code> 或 <a href="https://jenkins-x.io/commands/jx_rsh">jx rsh</a> 打开一个构建 pod 的 shell，当你调试、诊断有问题的流水线时里面有所有需要的工具。</p>
 
-<p>So we have a <a href="https://github.com/jenkins-x/builder-base">builder-base</a> docker image which <a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile#L21-L70">contains all the different tools</a> we tend to use in CI/CD pipelines like <code>jx, skaffold, helm, git, updatebot</code>.</p>
+<p>因此，我们有一个 <a href="https://github.com/jenkins-x/builder-base">builder-base</a> 的 docker 镜像，<a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile#L21-L70">包含所有不同的工具</a> ，我们倾向于在 CI/CD 流水线中使用像 <code>jx, skaffold, helm, git, updatebot</code> 的工具。</p>
 
-<p>If you want to use a single builder image for your new pod template then you could use builder base as the base and then add your custom tools on top.</p>
+<p>如果想要在你新的 pod 模板中使用单一的构建惊喜那个，那么，你可以使用 builder base 作为基础增加你自定义的工具。</p>
 
-<p>e.g. <a href="https://github.com/jenkins-x/builder-maven">builder-maven</a> uses a <a href="https://github.com/jenkins-x/builder-maven/blob/master/Dockerfile#L1">Dockerfile</a> to reference the builder base.</p>
+<p>例如：<a href="https://github.com/jenkins-x/builder-maven">builder-maven</a> 使用一个 <a href="https://github.com/jenkins-x/builder-maven/blob/master/Dockerfile#L1">Dockerfile</a> 引用基础构建。</p>
 
-<p>So the simplest thing could be to copy a similar builder - like <a href="https://github.com/jenkins-x/builder-maven">builder-maven</a> and then edit the <code>Dockerfile</code> to add whatever build tools you need.</p>
+<p>因此，最简单的就是拷贝一个简单的 builder —— 像 <a href="https://github.com/jenkins-x/builder-maven">builder-maven</a>，然后编辑 <code>Dockerfile</code> 增加你需要的构建工具。</p>
 
-<p>We love Pull Requests and <a href="https://jenkins-x.io/contribute/">contributions</a> so please submit Pull Requests for new build containers and Pod Templates and we&rsquo;re more than happy to <a href="https://jenkins-x.io/contribute/">help</a>!</p>
+<p>我们欢迎 Pull Requests 和<a href="https://jenkins-x.io/zh/contribute/">贡献</a>，因此，请把你新的构建容器和 Pod 模板提交，我们很乐意<a href="https://jenkins-x.io/zh/contribute/">帮助</a>！</p>
 
-<h2 id="adding-your-own-pod-templates">Adding your own Pod Templates</h2>
+<h2 id="增加你自己的-pod-模板">增加你自己的 Pod 模板</h2>
 
-<p>To keep things DRY and simple we tend to define pod templates in the Jenkins configuration then refer to the by name in the <code>Jenkinsfile</code>.</p>
+<p>为了保持简单，我们倾向于在 Jenkins 配置中定义 pod 模板，然后在 <code>Jenkinsfile</code> 中通过名称来引用。</p>
 
-<p>There are attempts to make it easy to inline pod template definitions inside your <code>Jenkinsfile</code> if you need it; though a pod template tends to have lots of developer environment specific stuff inside it, like secrets, so we&rsquo;d prefer to keep most of the pod templates inside the source code of your development environment rather than copy/pasting them into each app.</p>
+<p>尽管一个 pod 模板倾向于有很多开发环境定义在里面，像 secrets；如果需要的话，你可以尝试在 <code>Jenkinsfile</code> 中用内联的形式定义 pod 模板，使变得简单。但我们更喜欢把大多数 pod 模板保留在你的开发环境源码中，而不是在每个应用中拷贝、粘贴。</p>
 
-<p>Today the easiest way to add new Pod Templates is via the Jenkins console. e.g.</p>
+<p>现在，添加新的 Pod 模板最简单的方式就是通过 Jenkins 控制台。例如：</p>
 <div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">jx console</code></pre></div>
-<p>That will open the Jenkins console. Then navigate to <code>Manage Jenkins</code> (on the left hand menu) then <code>Configure System</code>.</p>
+<p>这样就会打开 Jenkins 控制台。然后，导航到<code>管理 Jenkins</code>（在左侧菜单），然后<code>系统配置</code>。</p>
 
-<p>You will now be faced with a large page of configuration options ;) The pod templates are usually towards the bottom; you should see all the current pod templates for things like maven, nodejs etc.</p>
+<p>你将会面临大量的页面配置选项，Pod 模板通常在底部；你应该看到了当前所有的 pod 模板，像 maven、nodejs 等等。</p>
 
-<p>You can edit/add/remove pod templates in that page and hit Save.</p>
+<p>你可以在那个页面编辑、增加、移除 pod 模板并点击保存。</p>
 
-<p>Note though that longer term we are hoping to <a href="https://github.com/jenkins-x/jx/issues/604">maintain your development environment via GitOps like we do for Staging &amp; Production</a> - which means changes made via the Jenkins UI will be lots when <a href="https://jenkins-x.io/commands/jx_upgrade_platform">upgrading your development environment</a>.</p>
+<p>注意，长期来说，尽管我们希望<a href="https://github.com/jenkins-x/jx/issues/604">通过 GitOps 维护你的开发环境，就像是我们做的 Staging 和 Production</a> —— 也就意味着当你<a href="https://jenkins-x.io/commands/jx_upgrade_platform">升级你的开发环境</a>通过 Jenkins 界面做的修改可能会丢失。</p>
 
-<p>So longer term we&rsquo;re hoping to add the Pod Templates into your <code>values.yaml</code> file in your developer environment git repository like we do for the <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">jenkins-x-platform chart</a>.</p>
+<p>因此，我们希望把 Pod 模板添加到你的开发环境 git 库的 <code>values.yaml</code> 文件中，就像我们在 <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431">jenkins-x-platform chart</a> 做的一样。</p>
 
-<p>If you are creating pod templates using open source build tools then it may be simpler for you to just <a href="#submitting-new-pod-templates">submit your pod template in a Pull Request</a> and we can bake that pod template into future releases of Jenkins X?</p>
+<p>如果你正在使用开源工具创建 pod 模板，那么<a href="#submitting-new-pod-templates">在 Pull Request 中提交你的 pod 模板</a>会比较简单，我们可以把它添加到 Jenkins X 未来的发行版中？</p>
 
 </div>
 
@@ -661,7 +661,7 @@
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Pod 模板”
-  </a> 上次更新： June 3, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/ac1e84cccf5b13c2d5015dbc2d16e96d012443fa">Add translation for architecture (ac1e84c)</a>
+  </a> 上次更新： June 10, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/a3e627001ca7c2b43eaf1526a090d0f642b8ceca">translation for pod-templates.md (a3e6270)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/architecture/pod-templates.zh.md" class="
