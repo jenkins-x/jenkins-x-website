@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-06-29T11:27:53&#43;01:00"/>
+<meta property="article:modified_time" content="2018-07-11T09:50:17&#43;01:00"/>
 
 
 
@@ -54,7 +54,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="753">
+<meta itemprop="wordCount" content="292">
 
 
 
@@ -199,11 +199,6 @@
 <li><a href="#is-jenkins-x-open-source">Is Jenkins X Open Source?</a></li>
 <li><a href="#is-jenkins-x-a-fork-of-jenkins">Is Jenkins X a fork of Jenkins?</a></li>
 <li><a href="#why-create-a-sub-project">Why create a sub project?</a></li>
-<li><a href="#what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</a></li>
-<li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
-<li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
-<li><a href="#cannot-access-services-on-minikube">Cannot access services on minikube</a></li>
-<li><a href="#other-issues">Other issues</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -286,83 +281,6 @@ case and let the core Jenkins project focus on the classic java approach.</p>
 <p>One of Jenkins big strengths has always been its flexibility and huge ecosystem of different
 plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
 improving both the Cloud Native and the classic distributions of Jenkins in parallel.</p>
-
-<h3 id="what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</h3>
-
-<p>Authenticated core services of Jenkins X include Jenkins, Nexus, Chartmuseum.  The username is <code>admin</code> and the password by default is generated and printed out in the terminal after <code>jx create cluster</code> or <code>jx install</code>.  If you would like to set the default password yourself then you can set the flag <code>--default-admin-password=foo</code> to the two comamnds above.</p>
-
-<p>If you don&rsquo;t have the terminal console output anymore you can look in the local file <code>~/.jx/jenkinsAuth.yaml</code> and find the password that matches your Jenkins server URL for the desired cluster.</p>
-
-<h3 id="cannot-create-cluster-minikube">Cannot create cluster minikube</h3>
-
-<p>If you are using a Mac then <code>hyperkit</code> is the best VM driver to use - but does require you to install a recent <a href="https://docs.docker.com/docker-for-mac/install/">Docker for Mac</a> first. Maybe try that then retry <code>jx create cluster minikube</code>?</p>
-
-<p>If your minikube is failing to startup then you could try:</p>
-
-<pre><code>minikube delete
-rm -rf ~/.minikube
-</code></pre>
-
-<p>If the <code>rm</code> fails you may need to do:</p>
-
-<pre><code>sudo rm -rf ~/.minikube
-</code></pre>
-
-<p>Now try <code>jx create cluster minikube</code> again - did that help? Sometimes there are stale certs or files hanging around from old installations of minikube that can break things.</p>
-
-<p>Sometimes a reboot can help in cases where virtualisation goes wrong ;)</p>
-
-<p>Otherwise you could try follow the minikube instructions</p>
-
-<ul>
-<li><a href="https://github.com/kubernetes/minikube#installation">install minikube</a></li>
-<li><a href="https://github.com/kubernetes/minikube#quickstart">run minikube start</a></li>
-</ul>
-
-<h3 id="minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</h3>
-
-<p>If you are using minikube on a mac with hyperkit and find minikube fails to start with a log like:</p>
-
-<pre><code>Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-</code></pre>
-
-<p>It could be you have hit <a href="https://github.com/kubernetes/minikube/issues/1926#issuecomment-356378525">this issue in minikube and hyperkit</a>.</p>
-
-<p>The work around is to try the following:</p>
-
-<pre><code>rm ~/.minikube/machines/minikube/hyperkit.pid
-</code></pre>
-
-<p>Then try again. Hopefully this time it will work!</p>
-
-<h3 id="cannot-access-services-on-minikube">Cannot access services on minikube</h3>
-
-<p>When running minikube locally <code>jx</code> defaults to using <a href="http://nip.io/">nip.io</a> as a way of using nice-isn DNS names for services and working around the fact that most laptops can&rsquo;t do wildcard DNS. However sometimes <a href="http://nip.io/">nip.io</a> has issues and does not work.</p>
-
-<p>To avoid using <a href="http://nip.io/">nip.io</a> you can do the following:</p>
-
-<p>Edit the file <code>~/.jx/cloud-environments/env-minikube/myvalues.yaml</code> and add the following content:</p>
-<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">expose<span class="p">:</span><span class="w">
-</span><span class="w">  </span>Args<span class="p">:</span><span class="w">
-</span><span class="w">    </span>-<span class="w"> </span>--exposer<span class="w">
-</span><span class="w">    </span>-<span class="w"> </span>NodePort<span class="w">
-</span><span class="w">    </span>-<span class="w"> </span>--http<span class="w">
-</span><span class="w">    </span>-<span class="w"> </span><span class="s2">&#34;true&#34;</span></code></pre></div>
-<p>Then re-run <code>jx install</code> and this will switch the services to be exposed on <code>node ports</code> instead of using ingress and DNS.</p>
-
-<p>So if you type:</p>
-
-<pre><code>jx open
-</code></pre>
-
-<p>You&rsquo;ll see all the URs of the form <code>http://$(minikube ip):somePortNumber</code> which then avoids going through <a href="http://nip.io/">nip.io</a> - it just means the URLs are a little more cryptic using magic port numbers rather than simple host names.</p>
-
-<h3 id="other-issues">Other issues</h3>
-
-<p>Please <a href="https://github.com/jenkins-x/jx/issues/new">let us know</a> and see if we can help? Good luck!</p>
 
 </div>
 
@@ -772,7 +690,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “General Questions”
-  </a> was last updated: June 29, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/d8efa8da62df80180a6e920cb751a1321f46581c">Update faq.md (d8efa8d)</a>
+  </a> was last updated: July 11, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/7de314dd2976a23dcef7a90d5e1398451c6f944f">add new FAQ on docker registry issues (7de314d)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/faq.md" class="

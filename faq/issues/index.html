@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-06-29T11:13:54&#43;01:00"/>
+<meta property="article:modified_time" content="2018-07-11T09:50:17&#43;01:00"/>
 
 
 
@@ -54,7 +54,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="757">
+<meta itemprop="wordCount" content="722">
 
 
 
@@ -194,11 +194,8 @@
 <ul>
 <li>
 <ul>
-<li>
+<li><a href="#http-server-gave-http-response-to-https-client">http: server gave HTTP response to HTTPS client</a>
 <ul>
-<li><a href="#is-jenkins-x-open-source">Is Jenkins X Open Source?</a></li>
-<li><a href="#is-jenkins-x-a-fork-of-jenkins">Is Jenkins X a fork of Jenkins?</a></li>
-<li><a href="#why-create-a-sub-project">Why create a sub project?</a></li>
 <li><a href="#what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</a></li>
 <li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
 <li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
@@ -260,32 +257,23 @@
 
 <p>We have tried to collate common issues here with work arounds. If your issue isn&rsquo;t listed here please <a href="https://github.com/jenkins-x/jx/issues/new">let us know</a>.</p>
 
-<h3 id="is-jenkins-x-open-source">Is Jenkins X Open Source?</h3>
+<h2 id="http-server-gave-http-response-to-https-client">http: server gave HTTP response to HTTPS client</h2>
 
-<p>Yes! All of Jenkins X source code and artifacts are open source; either Apache or MIT and will always remain so!</p>
+<p>If your pipeline fails with something like this:</p>
 
-<h3 id="is-jenkins-x-a-fork-of-jenkins">Is Jenkins X a fork of Jenkins?</h3>
+<pre><code>The push refers to a repository [100.71.203.90:5000/lgil3/jx-test-app]
+time=&quot;2018-07-09T21:18:31Z&quot; level=fatal msg=&quot;build step: pushing [100.71.203.90:5000/lgil3/jx-test-app:0.0.2]: Get https://100.71.203.90:5000/v1/_ping: http: server gave HTTP response to HTTPS client&quot;
+</code></pre>
 
-<p>No! Jenkins X will always reuse whatever is in Jenkins Core and configure it to be as kubernetes native as possible.</p>
+<p>Then this means that you are using the internal docker registry inside Jenkins X for your images but your kubernetes cluster&rsquo;s docker daemons has not been configured for <code>insecure-registries</code> so that you can use <code>http</code> to talk to the docker registry service <code>jenkins-x-docker-registry</code> in your cluster.</p>
 
-<p>Initially Jenkins X is a distribution of the core Jenkins with a custom kubernetes configuration with some additional built in plugins (e.g. the kubernetes plugin and jx pipelines plugin) packaged as a Helm chart.</p>
+<p>By default docker wants all docker registries to be exposed over <code>https</code> and to use TLS and certificates. This should be done for all public docker registries. However when using Jenkins X with an internal local docker registry this is hard since its not available at a public DNS name and doesn&rsquo;t have HTTPS or certificates; so we default to requiring <code>insecure-registry</code> be configured on all the docker daemons for your kubernetes worker nodes.</p>
 
-<p>Over time we hope the Jenkins X project can drive some changes in the Jenkins Core to help make Jenkins more Cloud Native. e.g. using a database or Kubernetes resources to store Jobs, Runs and Credentials so its easier to support things like multi-master or one shot masters. Though those changes will happen first through Jenkins Core then get reused by Jenkins X</p>
+<p>We try to automate this setting when using <code>jx create cluster</code>  e.g. on AWS we default this value to the IP range `` to match most kubernetes service IP addresses.</p>
 
-<h3 id="why-create-a-sub-project">Why create a sub project?</h3>
+<p>On <a href="https://jenkins-x.io/commands/jx_create_cluster_eks/">EKS</a> we default to using ECR to avoid this issue. Simialarly we will soon default to GCR and ACR on GKE and AKS respectively.</p>
 
-<p>We are huge fans of <a href="https://kubernetes.io/">Kubernetes</a> &amp; the cloud and think its
-the long term future approach for running software for many folks.</p>
-
-<p>However lots of folks will still want to run Jenkins in the regular jenkins way via: <code>java
--jar jenkins.war</code></p>
-
-<p>So the idea of the Jenkins X sub project is to focus 100% on the Kubernetes and Cloud Native use
-case and let the core Jenkins project focus on the classic java approach.</p>
-
-<p>One of Jenkins big strengths has always been its flexibility and huge ecosystem of different
-plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
-improving both the Cloud Native and the classic distributions of Jenkins in parallel.</p>
+<p>So a workaround is to use a real <a href="https://jenkins-x.io/architecture/docker-registry/">external docker registry</a> or enable <code>insecure-registry</code> on your docker daemons on your compute nodes on your Kubernetes cluster.</p>
 
 <h3 id="what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</h3>
 
@@ -371,9 +359,9 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 <h2>See Also</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
-	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
+	
+	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
 	
 </ul>
 
@@ -772,7 +760,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Common Problems”
-  </a> was last updated: June 29, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/f86f2b78bc428459c1ed997122c138a99bd97bd8">lets add a much better FAQ section so we can answer more stuff (f86f2b7)</a>
+  </a> was last updated: July 11, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/7de314dd2976a23dcef7a90d5e1398451c6f944f">add new FAQ on docker registry issues (7de314d)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/issues.md" class="
