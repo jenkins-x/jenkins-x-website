@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>Preview | Jenkins X</title>
+    <title>Preview Environments | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -27,7 +27,7 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="Preview" />
+<meta property="og:title" content="Preview Environments" />
 <meta property="og:description" content="Preview pull requests before changes merge to master" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/developing/preview/" />
@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-03-16T11:39:45&#43;00:00"/>
+<meta property="article:modified_time" content="2018-07-20T14:36:26&#43;10:00"/>
 
 
 
@@ -48,13 +48,13 @@
 
 
 
-<meta itemprop="name" content="Preview">
+<meta itemprop="name" content="Preview Environments">
 <meta itemprop="description" content="Preview pull requests before changes merge to master">
 
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="167">
+<meta itemprop="wordCount" content="401">
 
 
 
@@ -62,7 +62,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="Preview"/>
+<meta name="twitter:title" content="Preview Environments"/>
 <meta name="twitter:description" content="Preview pull requests before changes merge to master"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
@@ -195,6 +195,7 @@
 <li>
 <ul>
 <li><a href="#what-happens-when-a-preview-environment-is-created">What happens when a Preview environment is created</a></li>
+<li><a href="#post-preview-jobs">Post preview jobs</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -232,7 +233,7 @@
           </div>
           <header class="flex-none w-100">
   
-  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Preview</h1>
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Preview Environments</h1>
 </header>
 
 <aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
@@ -266,6 +267,35 @@
 </ul>
 
 <p><img src="https://jenkins-x.io/images/pr-comment.png" class="img-thumbnail"></p>
+
+<h3 id="post-preview-jobs">Post preview jobs</h3>
+
+<p>One of the extension points of Jenkins X lets you put a hook in after a preview job has been deployed. This hook applies to all apps in a team even existing ones, for all new pull requests/changes. (You don&rsquo;t have to add it to each pipeline by hand - it can be used to enforce best practices).</p>
+
+<p>This means you can run a container Job against the preview app, validating it, before the CI pipeline completes. Should this Job fail, the pull request will be marked as a failure.</p>
+
+<p>Here is an example:</p>
+
+<pre><code>jx create post preview job --name owasp --image owasp/zap2docker-weekly:latest -c &quot;zap-baseline.py&quot; -c &quot;-I&quot; -c &quot;-t&quot; -c &quot;\$(JX_PREVIEW_URL)&quot;
+</code></pre>
+
+<p>This creates a post preview job which runs the <code>zap-baseline.py</code> command inside the specified docker image (it will pull the image and run it, and then shut it down) which scans the running preview app for any problems.</p>
+
+<p>The <code>$JX_PREVIEW_URL</code> environment variable is made available in case the job needs to access the running preview app. Use <code>-c</code> to pass commands to the container.</p>
+
+<p>This job runs after the preview has been deployed. If it returns non zero, the PR will be marked as a failure.</p>
+
+<p>You can also run:</p>
+
+<pre><code>jx get post preview
+</code></pre>
+
+<p>to list any configured post preview jobs, and:</p>
+
+<pre><code>jx delete post preview job --name=NAME_HERE
+</code></pre>
+
+<p>And it will remove that post preview job (for the whole team).</p>
 
 </div>
 
@@ -348,6 +378,12 @@
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/getting-started/create-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
                     Create new Cluster
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create custom Builder
                   </a>
                 </li>
               
@@ -442,7 +478,7 @@
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/developing/preview/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
-                    Preview
+                    Preview Environments
                   </a>
                 </li>
               
@@ -467,6 +503,12 @@
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/developing/devpods/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
                     Dev Pods
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/security-features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Security Features
                   </a>
                 </li>
               
@@ -683,8 +725,8 @@
   <a href="https://jenkins-x.io/developing/preview/" class="hide-child link primary-color">
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
-    “Preview”
-  </a> was last updated: March 16, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/6922dd77129e495b032854aef9a2e5cada1ba279">add images of the comments for preview/promote (6922dd7)</a>
+    “Preview Environments”
+  </a> was last updated: July 20, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/d28288bf9c72b8ba756d268ff35632b67fc34da8">added security feature docs (d28288b)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/developing/preview.md" class="
