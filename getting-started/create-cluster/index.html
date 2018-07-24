@@ -36,7 +36,7 @@
 
 <meta property="article:published_time" content="2013-07-01T00:00:00&#43;00:00"/>
 
-<meta property="article:modified_time" content="2018-07-06T10:06:49&#43;08:00"/>
+<meta property="article:modified_time" content="2018-07-24T15:35:47&#43;01:00"/>
 
 
 
@@ -54,7 +54,7 @@
 
 <meta itemprop="datePublished" content="2013-07-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2013-07-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="720">
+<meta itemprop="wordCount" content="1008">
 
 
 
@@ -198,7 +198,15 @@
 <li><a href="#connecting-to-the-cluster-from-your-laptop">Connecting to the cluster from your laptop</a></li>
 </ul></li>
 <li><a href="#using-google-cloud-from-your-laptop">Using Google Cloud from your laptop</a></li>
-<li><a href="#using-amazon-aws">Using Amazon (AWS)</a></li>
+<li><a href="#using-amazon-aws">Using Amazon (AWS)</a>
+<ul>
+<li><a href="#ingress-options">Ingress options</a>
+<ul>
+<li><a href="#avoiding-dns">Avoiding DNS</a></li>
+</ul></li>
+<li><a href="#eks">EKS</a></li>
+<li><a href="#kops">Kops</a></li>
+</ul></li>
 <li><a href="#using-azure-aks">Using Azure (AKS)</a></li>
 <li><a href="#using-oracle-oke">Using Oracle (OKE)</a></li>
 <li><a href="#using-minikube-local">Using Minikube (local)</a></li>
@@ -326,6 +334,35 @@ Now <strong><a href="https://jenkins-x.io/getting-started/next/">develop apps fa
 
 <h2 id="using-amazon-aws">Using Amazon (AWS)</h2>
 
+<p>You can either use <code>kops</code> or <code>eks</code> to create your Kubernetes cluster.</p>
+
+<h3 id="ingress-options">Ingress options</h3>
+
+<p>On AWS the ideal setup is to use a Route 53 DNS wildcard CNAME to point <code>*.somedomain</code> at your ELB or NLB host name; then when prompted by <code>jx</code> you install <code>somedomain</code> (where <code>somedomain</code> is an actual DNS domain/subdomain you own).</p>
+
+<p>Then all the <code>Ingress</code> resources for any exposed service in any namespace will appear as <code>mysvc.myns.somedomain</code> - whether for things like Jenkins or Nexus or for your own microservices or Preview Environments.</p>
+
+<p>Using wildcard DNS pointing to your ELB/NLB also means you&rsquo;ll be able to use all the availability zones on AWS.</p>
+
+<h4 id="avoiding-dns">Avoiding DNS</h4>
+
+<p>If you want to kick the tyres of Jenkins X without going to the trouble of getting a DNS domain name to use and setting up wildcard DNS you can instead use an NLP and use one of the IP addresses of one of the availability zones as your domain via <code>$IP.ip</code>.</p>
+
+<p>This is not really intended for real production installations; but can be a quick way to get started trying out Jenkins X.</p>
+
+<p>When using <code>jx create cluster aws</code>, <code>jx create cluster eks</code> or <code>jx install --provider=(aws|eks)</code> you are prompted if you want to use DNS and optionally setup a wildcard DNS CNAME record on Route 53; if not we are assuming you&rsquo;re gonna avoid DNS to kick the tyres on a single availability zone IP address by resolving the NLB host name to one of the availability zone IP addresses.</p>
+
+<h3 id="eks">EKS</h3>
+
+<p>Use the <a href="https://jenkins-x.io/commands/jx_create_cluster_eks">jx create cluster eks</a> command:</p>
+
+<pre><code>jx create cluster eks
+</code></pre>
+
+<p>Under the covers this will download and use the <a href="https://eksctl.io/">eksctl</a> tool to create a new EKS cluster, then it&rsquo;ll install Jenkins X on top.</p>
+
+<h3 id="kops">Kops</h3>
+
 <p>Use the <a href="https://jenkins-x.io/commands/jx_create_cluster_aws">jx create cluster aws</a> command:</p>
 
 <pre><code>jx create cluster aws
@@ -409,7 +446,7 @@ jx create cluster aws</code></pre></div>
 	
 	<li><a href="https://jenkins-x.io/getting-started/install/">Get jx</a></li>
 	
-	<li><a href="https://jenkins-x.io/getting-started/install-on-cluster/">Install on Kubernetes</a></li>
+	<li><a href="https://jenkins-x.io/getting-started/next/">What&#39;s next?</a></li>
 	
 	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
 	
@@ -846,7 +883,7 @@ jx create cluster aws</code></pre></div>
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Create new Cluster”
-  </a> was last updated: July 6, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/8cf96cee94a3668c24cd3e55953ee34d91484beb">update oce to oke (8cf96ce)</a>
+  </a> was last updated: July 24, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/9baac8b452b53c0542401dd84df649cbc1e8399e">added better docs on AWS / EKS / Kops (9baac8b)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/create-cluster.md" class="
