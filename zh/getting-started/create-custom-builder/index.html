@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>技术性问题 | Jenkins X</title>
+    <title>创建自定义 Builder | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -27,19 +27,19 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="技术性问题" />
-<meta property="og:description" content="Kubernetes 以及关联的开源项目的技术问题" />
+<meta property="og:title" content="创建自定义 Builder" />
+<meta property="og:description" content="如何为 Jenkins X 创建一个自定义 Builder" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://jenkins-x.io/zh/faq/technology/" /><meta property="article:published_time" content="2018-07-02T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-07-10T22:12:13&#43;08:00"/>
+<meta property="og:url" content="https://jenkins-x.io/zh/getting-started/create-custom-builder/" /><meta property="article:published_time" content="2018-09-22T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2018-09-22T09:21:42&#43;08:00"/>
 
-<meta itemprop="name" content="技术性问题">
-<meta itemprop="description" content="Kubernetes 以及关联的开源项目的技术问题">
+<meta itemprop="name" content="创建自定义 Builder">
+<meta itemprop="description" content="如何为 Jenkins X 创建一个自定义 Builder">
 
 
-<meta itemprop="datePublished" content="2018-07-02T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2018-07-02T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="175">
+<meta itemprop="datePublished" content="2018-09-22T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-09-22T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="177">
 
 
 
@@ -47,8 +47,8 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="技术性问题"/>
-<meta name="twitter:description" content="Kubernetes 以及关联的开源项目的技术问题"/>
+<meta name="twitter:title" content="创建自定义 Builder"/>
+<meta name="twitter:description" content="如何为 Jenkins X 创建一个自定义 Builder"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
      <link href='https://jenkins-x.io/css/build_status.css' rel='stylesheet' type="text/css" />
@@ -177,10 +177,13 @@
 <ul>
 <li>
 <ul>
-<li><a href="#什么是-helm">什么是 Helm?</a></li>
-<li><a href="#什么是-skaffold">什么是 Skaffold?</a></li>
-<li><a href="#helm-和-skaffold-比较">Helm 和 Skaffold 比较？</a></li>
-<li><a href="#什么是-exposecontroller">什么是 exposecontroller?</a></li>
+<li><a href="#从零创建一个自定义-builder">从零创建一个自定义 Builder</a>
+<ul>
+<li><a href="#builder-镜像">Builder 镜像</a></li>
+<li><a href="#安装-builder">安装 Builder</a></li>
+<li><a href="#使用-builder">使用 Builder</a></li>
+</ul></li>
+<li><a href="#覆盖已有的-builder">覆盖已有的 Builder</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -188,7 +191,7 @@
 
 	<div date-pref>
 		
-			<a href="https://jenkins-x.io/zh/faq/jenkins/" class="dib f6 pl1 hover-bg-light-gray br-100" title="Jenkins 相关问题 ">
+			<a href="https://jenkins-x.io/zh/getting-started/create-cluster/" class="dib f6 pl1 hover-bg-light-gray br-100" title="创建新集群 ">
 				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
     <path d="M0 0h24v24H0z" fill="none"/>
@@ -197,6 +200,14 @@
 			</a>
 		
 
+		
+			<a href="https://jenkins-x.io/zh/getting-started/install-on-cluster/" class="dib f6 pr1 hover-bg-light-gray br-100" title="在 Kubernetes 上安装">
+			<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
 		
 	</div>
 
@@ -210,18 +221,18 @@
           <header class="flex-none w-100">
   
     
-      <a href="https://jenkins-x.io/zh/categories/faq" class="f6 fw8 mb0 link mid-gray dim mr3">
-        FAQ
+      <a href="https://jenkins-x.io/zh/categories/getting-started" class="f6 fw8 mb0 link mid-gray dim mr3">
+        GETTING STARTED
       </a>
     
   
-  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">技术性问题</h1>
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">创建自定义 Builder</h1>
 </header>
 
 <aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
   
     <div class="f4 fw4 lh-copy">
-      Kubernetes 以及关联的开源项目的技术问题
+      如何为 Jenkins X 创建一个自定义 Builder
     </div>
   
 
@@ -234,57 +245,128 @@
 
 
 
-<h2 id="什么是-helm">什么是 Helm?</h2>
+<p>在 Jenkins X 中，可以创建字段自定义的 Builder （也就是 <a href="https://github.com/jenkinsci/kubernetes-plugin">POD templates</a>）或覆盖已有的。你只需要基于 <a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common">builder-base</a> 或它的 <a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.slim">slim</a> 版本的镜像。</p>
 
-<p><a href="https://www.helm.sh/">helm</a> 是 Kubernetes 的开源包管理器。</p>
+<h2 id="从零创建一个自定义-builder">从零创建一个自定义 Builder</h2>
 
-<p>它和其他的包管理工具（brew, yum, npm等）类似，有一个或者更多的包仓库可以安装（在 helm 中叫做 <code>charts</code> 和 kubernetes 的主题保持一致），可以搜索、安装和升级。</p>
+<h3 id="builder-镜像">Builder 镜像</h3>
 
-<p>一个 <a href="https://docs.helm.sh/developing_charts/#charts">helm chart 基本上是带版本的 kubernetes yaml 压缩包</a> ，可以轻松地安装在任何 kubnernetes 集群上。</p>
+<p>首先，您需要为 Builder 创建一个 docker 镜像。从 <code>Dockerfile</code> 开始的一个实例可能类似于：</p>
 
-<p>Helm 通过文件 <code>requirements.yaml</code> 支持组合（一个 chart 可以包含其他 charts）。</p>
+<pre><code>FROM jenkinsxio/builder-base:latest
 
-<h2 id="什么是-skaffold">什么是 Skaffold?</h2>
+# Install your tools and libraries
+RUN yum install -y gcc openssl-devel
 
-<p><a href="https://github.com/GoogleContainerTools/skaffold">skaffold</a> 是一个开源的工具，用于在 Kubernetes 集群中构建 docker 镜像，并通过 <code>kubectl</code> 或 <code>helm</code> 部署、升级。</p>
+CMD[&quot;gcc&quot;]
+</code></pre>
 
-<p>在 kubernetes 集群中构建 docker 镜像的挑战有几种方法来实现：</p>
+<p>现在，您可以构建并发布这个镜像到您的 registry：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nb">export</span> <span class="nv">BUILDER_IMAGE</span><span class="o">=</span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_BUILDER_IMAGE&gt;:&lt;VERSION&gt; 
+docker build -t <span class="si">${</span><span class="nv">BUILDER_IMAGE</span><span class="si">}</span> .
+docker push <span class="si">${</span><span class="nv">BUILDER_IMAGE</span><span class="si">}</span> </code></pre></div>
+<p>别担心，当新的镜像需要构建时，您无需每次手动执行这些步骤。Jenkins X 可以为您管理这些。您只需要把 <code>Dockerfile</code> 推送到类似于<a href="https://github.com/jenkins-x/builder-go">这个</a>代码仓库中。然后，根据您的组织名称来调整 <code>Jenkinsfile</code> ，并使用下面的命令导入 Jenkins X 平台：</p>
 
-<ul>
-<li>使用本地 docker daemon 和 kubernetes 集群的 socket</li>
-<li>使用一个云服务，例如：Google Cloud Builder</li>
-<li>使用无 docker-daemon，例如：<a href="https://github.com/GoogleContainerTools/kaniko">kaniko</a> 不需要访问权限</li>
-</ul>
+<pre><code>jx import --url &lt;REPOSITORY_URL&gt;
+</code></pre>
 
-<p>Skaffold 的好处是把你的代码或 CLI 从细节中抽象出来；你可以在文件 <code>skaffold.yaml</code> 中配置构建 docker 镜像的策略，切换 docker daemon、GCB 或 kaniko等。</p>
+<p>之后，您每次推送一个变更，Jenkins X 将会自动地构建和发布镜像。</p>
 
-<p>Skaffold 在 <a href="https://jenkins-x.io/developing/devpods/">DevPods</a> 中也很有用，当你改变代码后可以执行快速增量构建。</p>
+<h3 id="安装-builder">安装 Builder</h3>
 
-<h2 id="helm-和-skaffold-比较">Helm 和 Skaffold 比较？</h2>
+<p>当您安装或者升级 Jenkins X 时就可以安装您的 Builder 了。</p>
 
-<p><code>helm</code> 允许你安装、升级叫做 charts 的包，使用一个或者多个在一些 docker registry 中的 docker 镜像以及一些 kubernetes YAML 文件来安装、升级 kubernetes 集群中的应用。</p>
+<p>在您的 <code>~/.jx/</code> 目录下创建文件  <code>myvalues.yaml</code> 并写入下面内容：</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">jenkins<span class="p">:</span><span class="w">
+</span><span class="w">  </span>Agent<span class="p">:</span><span class="w">
+</span><span class="w">    </span>PodTemplates<span class="p">:</span><span class="w">
+</span><span class="w">      </span>MyBuilder<span class="p">:</span><span class="w">
+</span><span class="w">        </span>Name<span class="p">:</span><span class="w"> </span>mybuilder<span class="w">
+</span><span class="w">        </span>Label<span class="p">:</span><span class="w"> </span>jenkins-mybuilder<span class="w">
+</span><span class="w">        </span>volumes<span class="p">:</span><span class="w">
+</span><span class="w">        </span>-<span class="w"> </span>type<span class="p">:</span><span class="w"> </span>Secret<span class="w">
+</span><span class="w">          </span>secretName<span class="p">:</span><span class="w"> </span>jenkins-docker-cfg<span class="w">
+</span><span class="w">          </span>mountPath<span class="p">:</span><span class="w"> </span>/home/jenkins/.docker<span class="w">
+</span><span class="w">        </span>EnvVars<span class="p">:</span><span class="w">
+</span><span class="w">          </span>JENKINS_URL<span class="p">:</span><span class="w"> </span>http<span class="p">:</span>//jenkins<span class="p">:</span><span class="m">8080</span><span class="w">
+</span><span class="w">          </span>GIT_COMMITTER_EMAIL<span class="p">:</span><span class="w"> </span>jenkins-x@googlegroups.com<span class="w">
+</span><span class="w">          </span>GIT_AUTHOR_EMAIL<span class="p">:</span><span class="w"> </span>jenkins-x@googlegroups.com<span class="w">
+</span><span class="w">          </span>GIT_AUTHOR_NAME<span class="p">:</span><span class="w"> </span>jenkins-x-bot<span class="w">
+</span><span class="w">          </span>GIT_COMMITTER_NAME<span class="p">:</span><span class="w"> </span>jenkins-x-bot<span class="w">
+</span><span class="w">          </span>XDG_CONFIG_HOME<span class="p">:</span><span class="w"> </span>/home/jenkins<span class="w">
+</span><span class="w">          </span>DOCKER_CONFIG<span class="p">:</span><span class="w"> </span>/home/jenkins/.docker/<span class="w">
+</span><span class="w">        </span>ServiceAccount<span class="p">:</span><span class="w"> </span>jenkins<span class="w">
+</span><span class="w">        </span>Containers<span class="p">:</span><span class="w">
+</span><span class="w">          </span>Jnlp<span class="p">:</span><span class="w">
+</span><span class="w">            </span>Image<span class="p">:</span><span class="w"> </span>jenkinsci/jnlp-slave<span class="p">:</span><span class="m">3.14</span>-<span class="m">1</span><span class="w">
+</span><span class="w">            </span>RequestCpu<span class="p">:</span><span class="w"> </span><span class="s2">&#34;100m&#34;</span><span class="w">
+</span><span class="w">            </span>RequestMemory<span class="p">:</span><span class="w"> </span><span class="s2">&#34;128Mi&#34;</span><span class="w">
+</span><span class="w">            </span>Args<span class="p">:</span><span class="w"> </span><span class="s1">&#39;${computer.jnlpmac} ${computer.name}&#39;</span><span class="w">
+</span><span class="w">          </span>Dlang<span class="p">:</span><span class="w">
+</span><span class="w">            </span>Image<span class="p">:</span><span class="w"> </span>&lt;YOUR_BUILDER_IMAGE<span class="sd">&gt; 
+</span><span class="sd">            Privileged: true</span><span class="w">
+</span><span class="w">            </span>RequestCpu<span class="p">:</span><span class="w"> </span><span class="s2">&#34;400m&#34;</span><span class="w">
+</span><span class="w">            </span>RequestMemory<span class="p">:</span><span class="w"> </span><span class="s2">&#34;512Mi&#34;</span><span class="w">
+</span><span class="w">            </span>LimitCpu<span class="p">:</span><span class="w"> </span><span class="s2">&#34;1&#34;</span><span class="w">
+</span><span class="w">            </span>LimitMemory<span class="p">:</span><span class="w"> </span><span class="s2">&#34;1024Mi&#34;</span><span class="w">
+</span><span class="w">            </span>Command<span class="p">:</span><span class="w"> </span><span class="s2">&#34;/bin/sh -c&#34;</span><span class="w">
+</span><span class="w">            </span>Args<span class="p">:</span><span class="w"> </span><span class="s2">&#34;cat&#34;</span><span class="w">
+</span><span class="w">            </span>Tty<span class="p">:</span><span class="w"> </span><span class="kc">true</span></code></pre></div>
+<p>根据需要替换 Builder 名称和镜像。</p>
 
-<p><code>skaffold</code> 是一个用于执行 docker 构建的工具，也可以通过 <code>kubectl</code> 或 <code>helm</code> 重启部署应用——或者在一个 CI/CD 流水线中以及本地开发中使用。</p>
+<p>您可以继续安装 Jenkins X ，然后 Builder 将会自动添加到平台。</p>
 
-<p>Jenkins X 使用在它的 CI/CD 流水线中使用 <code>skaffold</code> 创建 docker 镜像。我们在每次合并到 master 时发布版本化的 docker 镜像和 helm charts。然后，我们通过 <code>helm</code> 升级环境。</p>
+<h3 id="使用-builder">使用 Builder</h3>
 
-<h2 id="什么是-exposecontroller">什么是 exposecontroller?</h2>
+<p>现在，您的 Builder 已经在 Jenkins 中安装了，您可以在 <code>Jenkinsfile</code> 中轻松地引用：</p>
+<div class="highlight"><pre class="chroma"><code class="language-Groovy" data-lang="Groovy"><span class="n">pipeline</span> <span class="o">{</span>
+    <span class="n">agent</span> <span class="o">{</span>
+        <span class="n">label</span> <span class="s2">&#34;jenkins-mybuilder&#34;</span>
+    <span class="o">}</span>
+    <span class="n">stages</span> <span class="o">{</span>
+      <span class="n">stage</span><span class="o">(</span><span class="s1">&#39;Build&#39;</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">when</span> <span class="o">{</span>
+          <span class="n">branch</span> <span class="s1">&#39;master&#39;</span>
+        <span class="o">}</span>
+        <span class="n">steps</span> <span class="o">{</span>
+          <span class="n">container</span><span class="o">(</span><span class="s1">&#39;mybuilder&#39;</span><span class="o">)</span> <span class="o">{</span>
+              <span class="c1">// your steps
+</span><span class="c1"></span>          <span class="o">}</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">post</span> <span class="o">{</span>
+        <span class="n">always</span> <span class="o">{</span>
+            <span class="n">cleanWs</span><span class="o">()</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div>
+<h2 id="覆盖已有的-builder">覆盖已有的 Builder</h2>
 
-<p>事实证明，在 Kubernetes 集群中暴露服务比较复杂。例如：</p>
+<p>Jenkins X 自带了很多<a href="https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/values.yaml">预安装的 Builder</a>，在安装或升级过程中可以根据需要覆盖。</p>
 
-<ul>
-<li>使用什么域名？</li>
-<li>你是否应该使用 TLS 和生成的证书，并把它们关联到域名上？</li>
-<li>你是否在使用 OpenShift，如果是的话，可能使用 <code>Route</code> 会比 <code>Ingress</code> 更好？</li>
-</ul>
+<p>您只需要基于<a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common">基础 Builder</a> 镜像或者<a href="https://hub.docker.com/u/jenkinsxio/">Builder 镜像</a> 自定义。在上面查看细节。</p>
 
-<p>因此，我们在 Jenkins X 中通过把微服务代理到一个叫做 <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> 的服务上实现简化，它的职责就是处理上面的事情——把所有带有表明希望暴露到当前集群的 <code>Service</code> 资源暴露，类似域名的命名空间的暴露规则，是否使用 TLS 以及 <code>Route</code> 或 <code>Ingress</code>等。</p>
+<p>然后，您可以在目录 <code>~/.jx/</code> 中创建文件 <code>myvalues.yaml</code> ，并写入一下内容：</p>
 
-<p>如果你看一下你的环境 git 仓库，可能会注意到两个 <code>exposecontroller</code> <a href="https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml">默认是 charts</a></p>
+<pre><code>jenkins:
+  Agent:
+    PodTemplates:
+      Maven:
+        Containers:
+          Maven:
+            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_MAVEN_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
+      Nodejs:
+        Containers:
+          Nodejs:
+            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_NODEJS_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
+      Go:
+        Containers:
+          Go:
+            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_GO_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
+</code></pre>
 
-<p>默认有两个任务用来自动化生成或者清理 <code>Ingress</code> 资源，以实现暴露标记了你希望从集群外部访问的 <code>Services</code> 资源。例如：web 应用或者 rest 接口。</p>
-
-<p>你也可以不使用 exposecontroller —— 只要不在你的服务中使用 exposecontroller 标签即可。你也可以从环境中移除 exposecontroller 任务 —— 这么做的话，我们所有的快速开始（QuickStarts）都无法从集群外部访问！</p>
+<p>您可以继续安装 Jenkins X，这些 Builder 将会自动地添加到平台。</p>
 
 </div>
 
@@ -293,9 +375,15 @@
 <h2>参照</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/zh/faq/issues/">常见问题解答</a></li>
+	<li><a href="https://jenkins-x.io/zh/getting-started/config/">配置</a></li>
 	
-	<li><a href="https://jenkins-x.io/zh/faq/faq/">常见问题解答</a></li>
+	<li><a href="https://jenkins-x.io/zh/getting-started/create-cluster/">创建新集群</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/install-on-cluster/">在 Kubernetes 上安装</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/install/">获取 jx</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/next/">下一步？</a></li>
 	
 </ul>
 
@@ -350,10 +438,10 @@
     
       
       <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
-        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".getting-started">入门</a>
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".getting-started">入门</a>
 
           
-            <ul class="getting-started desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+            <ul class="getting-started desktopmenu animated fadeIn list pl0 bg-light-gray db">
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/zh/getting-started/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
@@ -374,7 +462,7 @@
                 </li>
               
                 <li  class="f6 fw4">
-                  <a href="https://jenkins-x.io/zh/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                  <a href="https://jenkins-x.io/zh/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
                     创建自定义 Builder
                   </a>
                 </li>
@@ -569,10 +657,10 @@
     
       
       <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
-        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".faq">常见问题</a>
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".faq">常见问题</a>
 
           
-            <ul class="faq desktopmenu animated fadeIn list pl0 bg-light-gray db">
+            <ul class="faq desktopmenu animated fadeIn list pl0 bg-light-gray dn">
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/zh/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
@@ -599,7 +687,7 @@
                 </li>
               
                 <li  class="f6 fw4">
-                  <a href="https://jenkins-x.io/zh/faq/technology/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
+                  <a href="https://jenkins-x.io/zh/faq/technology/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
                     技术
                   </a>
                 </li>
@@ -654,14 +742,14 @@
   <div class="w-100 bg-light-gray">
     <div class="mw7 pa4 center nested-lh-copy lh-copy">
       <h6 class="f4 dark-gray mb2">
-  <a href="https://jenkins-x.io/zh/faq/technology/" class="hide-child link primary-color">
+  <a href="https://jenkins-x.io/zh/getting-started/create-custom-builder/" class="hide-child link primary-color">
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
-    “技术性问题”
-  </a> 上次更新： July 10, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/ee0316615d57120552ba26d9f0021872e281fb02">localization for faq technology (ee03166)</a>
+    “创建自定义 Builder”
+  </a> 上次更新： September 22, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/5c81df46c0bc9b4458928883b59daedc7fdc37b8">Add translation for &#39;create-custom-builder&#39; (#560) (5c81df4)</a>
 </h6>
 
-      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/technology.zh.md" class="
+      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/create-custom-builder.zh.md" class="
 f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
 ">改善此页面</a>
 
