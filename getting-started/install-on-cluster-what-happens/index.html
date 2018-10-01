@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>Install on Kubernetes - what happens | Jenkins X</title>
+    <title>What happens during installation | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -27,19 +27,19 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="Install on Kubernetes - what happens" />
+<meta property="og:title" content="What happens during installation" />
 <meta property="og:description" content="What does install Jenkins X actually do" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/" /><meta property="article:published_time" content="2018-07-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-09-23T21:58:29&#43;02:00"/>
+<meta property="article:modified_time" content="2018-09-30T08:26:43&#43;02:00"/>
 
-<meta itemprop="name" content="Install on Kubernetes - what happens">
+<meta itemprop="name" content="What happens during installation">
 <meta itemprop="description" content="What does install Jenkins X actually do">
 
 
 <meta itemprop="datePublished" content="2018-07-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-07-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="428">
+<meta itemprop="wordCount" content="685">
 
 
 
@@ -47,7 +47,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="Install on Kubernetes - what happens"/>
+<meta name="twitter:title" content="What happens during installation"/>
 <meta name="twitter:description" content="What does install Jenkins X actually do"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
@@ -177,19 +177,25 @@
 <ul>
 <li>
 <ul>
-<li>
+<li><a href="#install-client-binaries-to-manage-your-cluster">Install client binaries to manage your cluster</a>
 <ul>
+<li><a href="#install-kubectl">Install kubectl</a></li>
 <li><a href="#install-helm">Install Helm</a></li>
-<li><a href="#install-client-binary-for-your-cluster">Install client binary for your cluster</a></li>
-<li><a href="#create-the-jenkins-x-platform-namespace">Create the Jenkins X platform namespace</a></li>
+<li><a href="#install-cloud-provider-cli">Install cloud provider CLI</a></li>
+</ul></li>
+<li><a href="#create-the-kubernetes-cluster">Create the Kubernetes cluster</a></li>
+<li><a href="#setup-the-jenkins-x-platform">Setup the Jenkins X platform</a>
+<ul>
+<li><a href="#create-the-jenkins-x-namespace">Create the Jenkins X namespace</a></li>
+<li><a href="#install-tiller-optional-only-for-helm-2">Install Tiller (optional, only for Helm 2)</a></li>
 <li><a href="#setup-the-ingress-controller">Setup the Ingress controller</a></li>
-<li><a href="#create-admin-secrets">Create Admin secrets</a></li>
-<li><a href="#configure-jenkins">Configure Jenkins</a>
+<li><a href="#configure-git-source-repository">Configure git source repository</a></li>
+</ul></li>
+<li><a href="#create-admin-secrets">Create Admin secrets</a>
 <ul>
 <li><a href="#clone-the-cloud-environments-repo">Clone the cloud environments repo</a></li>
 </ul></li>
 <li><a href="#install-the-jenkins-x-platform">Install the Jenkins X platform</a></li>
-</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -232,7 +238,7 @@
       </a>
     
   
-  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Install on Kubernetes - what happens</h1>
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">What happens during installation</h1>
 </header>
 
 <aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
@@ -253,39 +259,107 @@
 
 <p>The Jenkins X CLI will do the following when installing the Jenkins X platform:</p>
 
+<h2 id="install-client-binaries-to-manage-your-cluster">Install client binaries to manage your cluster</h2>
+
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>If you are running on Mac OS X, Jenkins X is using <code>Homebrew</code> to install the various CLI. It will install it if not present.</p>
+</div>
+</aside>
+
+
+<h3 id="install-kubectl">Install kubectl</h3>
+
+<p><a href="https://kubernetes.io/docs/reference/kubectl/kubectl/">kubectl</a> is the CLI of Kubernetes. It allows you to interact with your Kubernetes cluster via the API server.</p>
+
 <h3 id="install-helm">Install Helm</h3>
 
 <p>Jenkins X will install the <a href="https://github.com/kubernetes/helm">helm</a> client - (either  helm <em>2.x</em> or helm <em>3</em>), if it does not already exist in your command shell path. Helm is used for packaging applications/resources (called charts) on Kubernetes, and is rapidly becoming the defacto standard for doing so.</p>
 
-<p>Helm 2.x normally requires a cluster-side component - called tiller, that Jenkins X CLI will install on your kubernetes cluster for you, if it is not already present. Tiller is responsible for managing the deployment of your applications. In Helm 3, Tiller is no longer required.</p>
-
-<h3 id="install-client-binary-for-your-cluster">Install client binary for your cluster</h3>
+<h3 id="install-cloud-provider-cli">Install cloud provider CLI</h3>
 
 <p>If you are using a public cloud, there will be an associated CLI for interacting with it. When install is called via the <a href="https://jenkins-x.io/getting-started/create-cluster/">jx create cluster</a> command, the associated binary to your cloud provider will also be installed, if not present on your command shell path.</p>
 
-<h3 id="create-the-jenkins-x-platform-namespace">Create the Jenkins X platform namespace</h3>
+<ul>
+<li><code>az</code> for AKS cluster (Azure)</li>
+<li><code>gcloud</code> for GKE cluster (Google Cloud)</li>
+<li><code>kops</code> for AWS cluster (Amazon Web Services)</li>
+<li><code>eksctl</code> for <a href="https://aws.amazon.com/eks/">AWS EKS</a> cluster</li>
+<li><code>oci</code> for OKS cluster (Oracle Cloud)</li>
+</ul>
 
-<p>The Jenkins X install will create a namespace for the Jenkins X platform where all the Jenkins X infrastructure components will reside. The default is <em>jx</em></p>
+<p>If you want to run Jenkins X locally via minikube ou minishift, the following binaries are added:</p>
+
+<ul>
+<li><code>oc</code> (OpenShift CLI) and <code>minishift</code> for a local minishift cluster (OpenShift)</li>
+<li><code>minikube</code> for a local minikube cluster</li>
+</ul>
+
+<p>Last but not least, Jenkins X will install the VM driver when required, typically <code>xhyve</code> for Mac OS X or <code>hyperv</code> for Windows. Other drivers (VirtualBox, VMWare&hellip;) must be installed manually.</p>
+
+<h2 id="create-the-kubernetes-cluster">Create the Kubernetes cluster</h2>
+
+<p>The cluster is then created using the cloud provider CLI (for example <code>az aks create</code> command  for Azure).</p>
+
+<h2 id="setup-the-jenkins-x-platform">Setup the Jenkins X platform</h2>
+
+<h3 id="create-the-jenkins-x-namespace">Create the Jenkins X namespace</h3>
+
+<p>Then Jenkins X install will create a namespace for the Jenkins X platform where all the Jenkins X infrastructure components will reside. The default is <em>jx</em></p>
+
+<h3 id="install-tiller-optional-only-for-helm-2">Install Tiller (optional, only for Helm 2)</h3>
+
+<p>Tiller, the server part of Helm, is then deployed on the <em>kube-system</em> namespace. <a href="https://www.helm.sh/">Helm</a> is THE package manager of Kubernetes and is used subsequently to deploy all other components of Jenkins X.</p>
 
 <h3 id="setup-the-ingress-controller">Setup the Ingress controller</h3>
 
-<p>In a Kubernetes cluster, services and pods have IPs that are only routable from by the cluster network. In order for traffic to flow into the cluster, an Ingress must be created. An ingress is a collection of rules for routing traffic to your services inside Kubernetes. The ingress rules are configured in an ingress resource held on the Kubernetes API server, and an ingress controller has to be created to fulfil those ingress rules. Jenkins X does all this for you - so you don&rsquo;t need to worry - phew!</p>
+<p>In a Kubernetes cluster, services and pods have IPs that are only routable from by the cluster network. In order for traffic to flow into the cluster, an Ingress must be created. An ingress is a collection of rules for routing traffic to your services inside Kubernetes. The ingress rules are configured in an ingress resource held on the Kubernetes API server, and an ingress controller has to be created to fulfil those ingress rules. Jenkins X does all this for you by setting up an ingress controller and associated backend plus ingress rules for the following services (once deployed):</p>
 
-<h3 id="create-admin-secrets">Create Admin secrets</h3>
+<ul>
+<li>chartmuseum</li>
+<li>docker-registry</li>
+<li>jenkins</li>
+<li>monocular</li>
+<li>nexus</li>
+</ul>
 
-<p>Jenkins X generates an administration password for Monocular/Nexus/Jenkins, retrieves git secrets for the helm install (so they can be used in the pipelines).</p>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>By default, Jenkins X will expose the ingress via the <em>nip.io</em> domain and generate self-signed certificates. You can easily adapt them by using our own custom domain and certificate after the installation with <code>jx upgrade ingress --cluster</code></p>
+</div>
+</aside>
 
-<h3 id="configure-jenkins">Configure Jenkins</h3>
 
-<p>Update Jenkins with the git server being used and the authorization for it</p>
+<h3 id="configure-git-source-repository">Configure git source repository</h3>
 
-<h4 id="clone-the-cloud-environments-repo">Clone the cloud environments repo</h4>
+<p>Jenkins X requires a git repository provider to be able to create the environment repositories. It defaults to GitHub if you did not provide a <em>git-provider-url</em> parameter. You need to provide a username and a token that would be used to interact with the git, especially Jenkins.</p>
+
+<h2 id="create-admin-secrets">Create Admin secrets</h2>
+
+<p>Jenkins X generates an administration password for Monocular/Nexus/Jenkins and save it in secrets. It then retrieves git secrets for the helm install (so they can be used in the pipelines).</p>
+
+<h3 id="clone-the-cloud-environments-repo">Clone the cloud environments repo</h3>
 
 <p>The <a href="https://github.com/jenkins-x/cloud-environments">cloud environment repository</a> holds all the specific configuration and encrypted secrets that will be applied to the Jenkins Platform on your Kubernetes cluster. The secrets are encrypted and unencrypted by the Helm package manager.</p>
 
-<h3 id="install-the-jenkins-x-platform">Install the Jenkins X platform</h3>
+<h2 id="install-the-jenkins-x-platform">Install the Jenkins X platform</h2>
 
-<p>The <a href="https://github.com/jenkins-x/jenkins-x-platform">Jenkins X Platform</a> holds the Helm charts for installing the components that provide the Jenkins X true CD solution. These include <a href="https://github.com/jenkinsci/jenkins">Jenkins</a> a CI/CD pipeline solution, <a href="https://www.sonatype.com/nexus-repository-oss">Nexus</a> - an artifact repository,  <a href="https://github.com/kubernetes-helm/chartmuseum">Chartmuseum</a> - a Helm Chart repository,and <a href="https://github.com/kubernetes-helm/monocular">Monocular</a> which provides a Web UI for searching and discovering charts deployed into your cluster via Jenkins X.</p>
+<p>The <a href="https://github.com/jenkins-x/jenkins-x-platform">Jenkins X Platform</a> holds the Helm charts for installing the components that provide the Jenkins X true CD solution. These include</p>
+
+<ul>
+<li><a href="https://github.com/jenkinsci/jenkins">Jenkins</a> a CI/CD pipeline solution</li>
+<li><a href="https://www.sonatype.com/nexus-repository-oss">Nexus</a> an artifact repository</li>
+<li><a href="https://github.com/kubernetes-helm/chartmuseum">Chartmuseum</a> - a Helm Chart repository</li>
+<li><a href="https://github.com/kubernetes-helm/monocular">Monocular</a> which provides a Web UI for searching and discovering charts deployed into your cluster via Jenkins X.</li>
+</ul>
 
 </div>
 
@@ -294,11 +368,11 @@
 <h2>See Also</h2>
 <ul>
 	
+	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
+	
 	<li><a href="https://jenkins-x.io/getting-started/install-on-cluster/">Install on Kubernetes</a></li>
 	
 	<li><a href="https://jenkins-x.io/getting-started/next/">What&#39;s next?</a></li>
-	
-	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
 	
 	<li><a href="https://jenkins-x.io/getting-started/install/">Get jx</a></li>
 	
@@ -400,7 +474,7 @@
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
-                    Install on Kubernetes what happens
+                    What happens during installation
                   </a>
                 </li>
               
@@ -777,8 +851,8 @@
   <a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/" class="hide-child link primary-color">
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
-    “Install on Kubernetes - what happens”
-  </a> was last updated: September 23, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/069e292193bf9506d640af7f3589ed13de0c41fc">Correct weight of page to ensure proper navigation order and adapt command to cluster instead of aws (069e292)</a>
+    “What happens during installation”
+  </a> was last updated: September 30, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/e6cd668eaf9ce032f312b0670d3cbfbf94007368">Fix #566 - Add details to what happens during installation (e6cd668)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/install-on-cluster-what-happens.md" class="
