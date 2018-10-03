@@ -17,6 +17,112 @@
     
     
     <item>
+      <title>News: Helm 2.x without Tiller</title>
+      <link>https://jenkins-x.io/news/helm-without-tiller/</link>
+      <pubDate>Wed, 03 Oct 2018 07:36:00 +0200</pubDate>
+      
+      <guid>https://jenkins-x.io/news/helm-without-tiller/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;how-to-avoid-tiller&#34;&gt;How to avoid Tiller&lt;/h2&gt;
+
+&lt;p&gt;Helm 2.x uses a server side component called &lt;em&gt;tiller&lt;/em&gt;. Typically Tiller is installed in a global namespace; or you can install a Tiller in each namespace and configure your &lt;code&gt;helm&lt;/code&gt; CLI to talk to the right tiller in the right namespace.&lt;/p&gt;
+
+&lt;p&gt;However Tiller has a number of issues&amp;hellip;&lt;/p&gt;
+
+&lt;h3 id=&#34;the-problem-with-tiller&#34;&gt;The problem with Tiller&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;complicates RBAC since its not using the RBAC of the user or pod running the helm commands to read/write kubernetes resources - helm is talking to the remote tiller pod to do the work. If you are using a global tiller then thats often got something like the &lt;code&gt;cluster-admin&lt;/code&gt; role which means anyone running helm commands effectively side steps RBAC completely! :).&lt;/li&gt;
+&lt;li&gt;helm forces all releases to have a unique name within a tiller. This means if you have one global tiller then each release name must be globally unique across all namespaces. This leads to very long release names since they must typically append the namespace too. This means often service names are very different between environments as the release name is often included in the service name in many charts which &lt;a href=&#34;https://kubernetes.io/docs/concepts/services-networking/service/#discovering-services&#34;&gt;breaks lots of the promise of using canonical service discovery in kubernetes&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;We prefer to use same service names in every environment (development, testing, staging, production) - to minimise the amount of per-environment configuration that is required which avoids manual effort and reduces errors. e.g. refer to &lt;a href=&#34;http://my-service/&#34;&gt;http://my-service/&lt;/a&gt; in your app and it should just work in every namespace/environment your app is deployed in without wiring up special configuration.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;can cause lots of version conflicts between helm clients + tiller versions. We&amp;rsquo;ve seen this a lot in Jenkins X this year. e.g. a user has, say, helm 2.9 installed locally and installs Jenkins X. Then a build pod with helm 2.10 runs and barfs as the tiller and helm versions don&amp;rsquo;t match.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;helm-3-will-be-tiller-less&#34;&gt;Helm 3 will be tiller-less&lt;/h3&gt;
+
+&lt;p&gt;Whenever Helm 3 shows up Tiller will be a thing of the past - which is awesome - all of the above issues will be fixed! The only downside is no-one outside of Microsoft has any clue when Helm 3 will be a thing. Very little is &lt;a href=&#34;github&#34;&gt;happening on the public helm 3 branch&lt;/a&gt;, no &lt;a href=&#34;https://github.com/helm/helm/issues/4255&#34;&gt;issues&lt;/a&gt; or &lt;a href=&#34;https://github.com/helm/helm/pull/4257&#34;&gt;pull requests&lt;/a&gt; are being accepted yet. I&amp;rsquo;m hoping there&amp;rsquo;s loads of activity on a private branch somewhere - but its probably a while away from being public and GA.&lt;/p&gt;
+
+&lt;h3 id=&#34;going-tiller-less-on-helm-2-x&#34;&gt;Going tiller-less on Helm 2.x&lt;/h3&gt;
+
+&lt;p&gt;Until Helm 3 the Jenkins X community needed a nice workaround for tiller on helm 2.x.&lt;/p&gt;
+
+&lt;p&gt;So now if you want to use Jenkins X without tiller there&amp;rsquo;s a new magic command line argument &lt;code&gt;--no-tiller&lt;/code&gt; you can use when &lt;a href=&#34;https://jenkins-x.io/getting-started/create-cluster/&#34;&gt;creating a cluster&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; jx create cluster gke --no-tiller 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or if you are &lt;a href=&#34;https://jenkins-x.io/getting-started/install-on-cluster/&#34;&gt;installing on an existing kubernetes cluster&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; jx create install --no-tiller 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;how-does-it-work&#34;&gt;How does it work?&lt;/h3&gt;
+
+&lt;p&gt;To be able to change the helm behaviour via feature flags we abstracted away the low level calls to the helm CLI behind some &lt;a href=&#34;https://jenkins-x.io/commands/jx_step_helm/&#34;&gt;jx step helm&lt;/a&gt; commands. e.g. to apply a helm chart in an environment pipeline we use&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step helm apply
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This lets us use feature flags to use different helm behaviours.&lt;/p&gt;
+
+&lt;p&gt;What &lt;code&gt;--no-tiller&lt;/code&gt;  means is to switch helm to use &lt;code&gt;template mode&lt;/code&gt; which means we no longer internally use &lt;code&gt;helm install mychart&lt;/code&gt; to install a chart, we actually use &lt;code&gt;helm template mychart&lt;/code&gt; instead which generates the YAML using the same helm charts and the standard helm confiugration management via &lt;code&gt;--set&lt;/code&gt; and &lt;code&gt;values.yaml&lt;/code&gt; files.&lt;/p&gt;
+
+&lt;p&gt;Then we use &lt;code&gt;kubectl apply&lt;/code&gt; to apply the YAML.&lt;/p&gt;
+
+&lt;p&gt;Since we are using &lt;a href=&#34;https://jenkins-x.io/about/features/#promotion&#34;&gt;GitOps&lt;/a&gt; in Jenkins X it turns out we don&amp;rsquo;t really need to rely on Helm&amp;rsquo;s use of kubernetes resources to store environment specific configuration values; since everything is already in git!&lt;/p&gt;
+
+&lt;p&gt;One added complication though is, with Helm you can add and remove resources inside a chart and as you upgrade to newer versions of the chart the old resources get automatically removed. Also with helm there&amp;rsquo;s a way to remove a release by name and all the resources are removed.&lt;/p&gt;
+
+&lt;p&gt;So to preserve the helm semantics of removing old resources from a chart in newer versions (e.g. removing a microservice from the Staging environment) or removing an entire release we do the following:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;the YAML generated by&lt;code&gt;helm template&lt;/code&gt; is post processed to add 2 labels:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;metadata&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;mything&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;labels&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;jenkins.io/chart-release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;my-release&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;jenkins.io/version&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1.2&lt;/span&gt;.&lt;span class=&#34;m&#34;&gt;3&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;after an upgrade we remove any resources for the same helm release name but different version (to remove any old resources) via the selector &lt;code&gt;jenkins.io/chart-release=my-release,jenkins.io/version!=1.2.3&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;to remove a release completely we just delete all resources with the label selector: &lt;code&gt;jenkins.io/chart-release=my-release&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;kustomize&#34;&gt;Kustomize?&lt;/h3&gt;
+
+&lt;p&gt;One nice benefit of using &lt;code&gt;helm template&lt;/code&gt; to generate the YAML then using &lt;code&gt;kubectl apply&lt;/code&gt; means that we can look at optionally using tools like &lt;a href=&#34;--remote-tiller=&#34;&gt;kustomize&lt;/a&gt; post process the output of &lt;code&gt;helm template&lt;/code&gt; to allow resources to be overridden or enriched in times that the chart author did not think of.&lt;/p&gt;
+
+&lt;h3 id=&#34;other-helm-feature-flags&#34;&gt;Other helm feature flags&lt;/h3&gt;
+
+&lt;p&gt;Our first experiment to remove tiller involved running the tiller process locally. We still have the feature flag &lt;code&gt;--remote-tiller=false&lt;/code&gt; which means that Jenkins X will ensure there&amp;rsquo;s a local &lt;code&gt;tiller&lt;/code&gt; process running and that the &lt;code&gt;helm&lt;/code&gt; CLI is pointed to the localhost port. This at least helps avoid the RBAC issues with tiller since the &lt;code&gt;tiller&lt;/code&gt; will be reusing the same RBAC rules as the caller of &lt;code&gt;helm&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;It turns out this kinda works; though we found some issues around multi-team support so we ended up moving to the template mode described above which works much more reliably.&lt;/p&gt;
+
+&lt;p&gt;Another feature flag we added was allowing different helm binaries to be used; so that we could switch between, say, &lt;code&gt;helm&lt;/code&gt; for helm 2.x and &lt;code&gt;helm3&lt;/code&gt; for the 3.x version so that folks could experiment with alphas of helm 3.&lt;/p&gt;
+
+&lt;p&gt;Though its looking like helm 3 is still some way off so its not recommended any time soon but as helm 3 gets near to RC stage we&amp;rsquo;ll be able to reuse the helm 3 feature flag again to let folks experiment with helm 3 until its GA and we make it the default in Jenkins X.&lt;/p&gt;
+
+&lt;h3 id=&#34;summary&#34;&gt;Summary&lt;/h3&gt;
+
+&lt;p&gt;If you use helm then we highly recommend you avoid tiller!&lt;/p&gt;
+
+&lt;p&gt;If you are using Jenkins X then please consider using the &lt;code&gt;--no-tiller&lt;/code&gt;  option when you &lt;a href=&#34;https://jenkins-x.io/getting-started/create-cluster/&#34;&gt;creating a cluster&lt;/a&gt; or [install Jenkins X on an existing cluster(/getting-started/install-on-cluster/).&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;re working  on Jenkins X 2.0 - most of its features are already available hidden behind feature flags. So in Jenkins X 2.0 we will default disable tiller by default along with enabling other things like Prow integration and using &lt;em&gt;serverless&lt;/em&gt; Jenkins by default (more on those in a separate blog!).&lt;/p&gt;
+
+&lt;p&gt;We are also really looking forward to helm 3! :). Helm rocks, but tiller does not!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>News: Jenkins X at Jenkins World</title>
       <link>https://jenkins-x.io/news/jenkins-x-at-jenkinsworld/</link>
       <pubDate>Thu, 06 Sep 2018 08:36:00 +0200</pubDate>
