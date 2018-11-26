@@ -31,7 +31,7 @@
 <meta property="og:description" content="Turning source code into applications on kubernetes" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/architecture/build-packs/" /><meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-04-18T09:02:15&#43;01:00"/>
+<meta property="article:modified_time" content="2018-11-26T09:26:16&#43;00:00"/>
 
 <meta itemprop="name" content="Build Packs">
 <meta itemprop="description" content="Turning source code into applications on kubernetes">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="537">
+<meta itemprop="wordCount" content="895">
 
 
 
@@ -177,6 +177,13 @@
 <ul>
 <li>
 <ul>
+<li><a href="#pipeline-extension-model">Pipeline extension model</a>
+<ul>
+<li><a href="#pipelines">Pipelines</a></li>
+<li><a href="#lifecycles">Lifecycles</a></li>
+<li><a href="#extending">Extending</a></li>
+</ul></li>
+<li><a href="#example-pipeline">Example Pipeline</a></li>
 <li><a href="#creating-new-build-packs">Creating new build packs</a></li>
 </ul></li>
 </ul>
@@ -195,7 +202,7 @@
 		
 
 		
-			<a href="https://jenkins-x.io/architecture/pod-templates/" class="dib f6 pr1 hover-bg-light-gray br-100" title="Pod Templates">
+			<a href="https://jenkins-x.io/architecture/cloud-native-jenkins/" class="dib f6 pr1 hover-bg-light-gray br-100" title="Cloud Native Jenkins">
 			<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
     <path d="M0 0h24v24H0z" fill="none"/>
@@ -244,9 +251,64 @@
 <li>a <em>preview chart</em> in the <code>charts/preview</code> folder to define any dependencies for deploying a <a href="https://jenkins-x.io/about/features/#preview-environments">preview environment</a> on a Pull Request<br /></li>
 </ul>
 
-<p>The default build packs are at <a href="https://github.com/jenkins-x/draft-packs">https://github.com/jenkins-x/draft-packs</a> with a folder for each language or build tool.</p>
+<p>The default build packs are at <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes">https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes</a> with a folder for each language or build tool.</p>
 
 <p>The <code>jx</code> command line clones the build packs to your <code>.~/.jx/draft/packs/</code> folder and updates them via a <code>git pull</code> each time you try create or import a project.</p>
+
+<h2 id="pipeline-extension-model">Pipeline extension model</h2>
+
+<p>As part of the move to <a href="https://jenkins-x.io/architecture/cloud-native-jenkins/">cloud native jenkins</a> we&rsquo;ve refactored our <a href="https://github.com/jenkins-x-buildpacks/">build packs</a> so that they are more modular and easier to compose and reuse across workloads.</p>
+
+<p>For example the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes">jenkins-x-kubernetes</a> build pack inherits from the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic">jenkins-x-classic</a> build pack, reusing the CI and release pipelines but then adding the kubernetes specific workloads (e.g. building docker images, creating helm charts, <a href="https://jenkins-x.io/about/features/#preview-environments">Preview Environments</a> and <a href="https://jenkins-x.io/about/features/#promotion">Promotion via GitOps</a>)</p>
+
+<p>To do this we&rsquo;ve introduced a simple new YAML file format for defining pipelines.</p>
+
+<h3 id="pipelines">Pipelines</h3>
+
+<p>Each Pipeline YA?ML file has a number of separate logical pipelines:</p>
+
+<ul>
+<li><code>release</code> for processing merges to the <code>master</code> branch which typically creates a new version and release then triggers promotion</li>
+<li><code>pullRequest</code> for processing Pull Requests</li>
+<li><code>feature</code> for processing merges to a feature branch. Though note that the <a href="https://jenkins-x.io/about/accelerate/">accelerate book</a> recommends against long term feature branches. Instead consider using trunk based development which is a practice of high performing teams.</li>
+</ul>
+
+<h3 id="lifecycles">Lifecycles</h3>
+
+<p>Then each pipeline has a number of distinct lifecycle phases - rather like maven has <code>clean</code>, <code>compile</code>, <code>compile-test</code>, <code>package</code> etc.</p>
+
+<p>The lifecycle phases in Jenkins X Pipeline YAML are:</p>
+
+<ul>
+<li><code>setup</code></li>
+<li><code>preBuild</code></li>
+<li><code>build</code></li>
+<li><code>postBuild</code></li>
+<li><code>promote</code></li>
+</ul>
+
+<h3 id="extending">Extending</h3>
+
+<p>Rather like classes in languages like Java you can extend a Pipeline YAML from a base Pipeline YAML. This lets you reuse the steps in a base pipeline&rsquo;s lifecycle then add your own additional steps.</p>
+
+<p>By default any steps you define are added after the base pipeline YAML steps like in <a href="https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence/pipeline.yaml#L7">this example</a>.</p>
+
+<p>You can add steps before the base pipeline steps using the <code>preSteps:</code> property like <a href="https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L6">this example</a></p>
+
+<p>If you want to completely replace all the steps from a base pipeline for a particular lifecycle you can use <code>replace: true</code> like in <a href="https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L11-L14">this example</a></p>
+
+<h2 id="example-pipeline">Example Pipeline</h2>
+
+<p>For example for <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml">maven libraries we use this pipeilne.yaml file</a> which:</p>
+
+<ul>
+<li><a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml#L1-L2">extends</a> the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/pipeline.yaml">common pipeline</a> that sets up git and defines common post build steps</li>
+<li><a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml#L3-L5">configures the agent</a> in terms of <a href="https://jenkins-x.io/architecture/pod-templates/">pod template</a> and container name</li>
+<li>defines the steps for the <code>pull request</code> pipeline <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml#L7-L11">build steps</a><br /></li>
+<li>defines the <code>release</code> pipeline <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml#L13-L18">set version steps</a> and <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/master/packs/maven/pipeline.yaml#L19-L21">build steps</a></li>
+</ul>
+
+<p>Then the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/pipeline.yaml">maven kubernetes pipeline.yaml</a> then <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/pipeline.yaml#L2-L3">extends</a> from the classic pipepeline to add the kubernetes steps</p>
 
 <h2 id="creating-new-build-packs">Creating new build packs</h2>
 
@@ -256,7 +318,7 @@
 
 <p>The best place to start with is a <em>quickstart</em> application. A sample project that you can use as a test. So create/find a suitable example project and then <a href="https://jenkins-x.io/developing/import">import it</a>.</p>
 
-<p>Then manually add a <code>Dockerfile</code> and <code>Jenkinsfile</code> if one is not already added for you. You could start with files from the <a href="https://github.com/jenkins-x/draft-packs/tree/master/packs">current build pack folders</a> - using the most similar language/framework to yours.</p>
+<p>Then manually add a <code>Dockerfile</code> and <code>Jenkinsfile</code> if one is not already added for you. You could start with files from the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs">current build pack folders</a> - using the most similar language/framework to yours.</p>
 
 <p>If your build pack is using build tools which are not yet available in one of the existing <a href="https://jenkins-x.io/architecture/pod-templates">pod templates</a> then you will need to <a href="https://jenkins-x.io/architecture/pod-templates/#submitting-new-pod-templates">submit a new pod template</a> probably using a new build container image too.</p>
 
@@ -276,7 +338,7 @@
           <span class="n">container</span><span class="o">(</span><span class="s1">&#39;foo&#39;</span><span class="o">)</span> <span class="o">{</span>
             <span class="n">sh</span> <span class="s2">&#34;foo deploy&#34;</span>
           <span class="o">}</span></code></pre></div>
-<p>Once your <code>Jenkinsfile</code> is capable of doing CI/CD for your language/runtime on your sample project then we should be able to take the <code>Dockerfile</code>, <code>Jenkinsfile</code> and charts folder and copy them into a folder in your fork of the <a href="https://github.com/jenkins-x/draft-packs">jenkins-x/draft-packs repository</a>.</p>
+<p>Once your <code>Jenkinsfile</code> is capable of doing CI/CD for your language/runtime on your sample project then we should be able to take the <code>Dockerfile</code>, <code>Jenkinsfile</code> and charts folder and copy them into a folder in your fork of the <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes">jenkins-x/draft-packs repository</a>.</p>
 
 <p>You can try that out locally by adding these files to your local clone of the build packs repository at <code>~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs</code></p>
 
@@ -619,6 +681,12 @@ cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/pa
                 </li>
               
                 <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/cloud-native-jenkins/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Cloud Native Jenkins
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
                     Pod Templates
                   </a>
@@ -773,7 +841,7 @@ cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/pa
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Build Packs”
-  </a> was last updated: April 18, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/c241c0112714b708ef8ed7975fd16a047939977b">add first spike of docs on adding build packs and pod templates (c241c0112)</a>
+  </a> was last updated: November 26, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/820c4d4abaedeb2307074c2c7c2b569b8601c8c9">add blog post and docs on cloud native jenkins (820c4d4ab)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/architecture/build-packs.md" class="
