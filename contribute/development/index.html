@@ -31,7 +31,7 @@
 <meta property="og:description" content="How to contribute to Jenkins X development." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/contribute/development/" /><meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-12-03T12:16:11&#43;00:00"/>
+<meta property="article:modified_time" content="2018-12-06T08:08:48&#43;00:00"/>
 
 <meta itemprop="name" content="Contribute to the code">
 <meta itemprop="description" content="How to contribute to Jenkins X development.">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3091">
+<meta itemprop="wordCount" content="3335">
 
 
 
@@ -227,6 +227,7 @@
 <li><a href="#debugging-a-unit-test">Debugging a unit test</a></li>
 <li><a href="#using-a-helper-script">Using a helper script</a></li>
 </ul></li>
+<li><a href="#try-a-new-version-of-jx-inside-a-pipeline">Try a new version of jx inside a pipeline</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -668,6 +669,27 @@ make debugtest1</code></pre></div>
 </span><span class="cp"></span><span class="nb">echo</span> <span class="s2">&#34;Debugging jx&#34;</span>
 dlv --listen<span class="o">=</span>:2345 --headless<span class="o">=</span><span class="nb">true</span> --api-version<span class="o">=</span><span class="m">2</span> <span class="nb">exec</span> <span class="sb">`</span>which jx<span class="sb">`</span> -- <span class="nv">$*</span></code></pre></div>
 <p>Then you can change your <code>jx someArgs</code> CLI to <code>jxDebug someArgs</code> then debug it!</p>
+
+<h2 id="try-a-new-version-of-jx-inside-a-pipeline">Try a new version of jx inside a pipeline</h2>
+
+<p>You can usually just run <code>jx</code> locally on your laptop and can simulate being in a pipeline using environment variables and run it inside a git clone of a sample project etc. However there are times you really want to test inside an actual running pipeline - here&rsquo;s how:</p>
+
+<p>When you create a Pull Request and its approved for test we generate preview docker images you can use inside your jenkins server pipelines for maven/go/nodejs builders.</p>
+
+<p>e.g. see the <code>SNAPSHOT-JX_PR-$ID-$BUILD_NUMBER</code> images for the <a href="https://hub.docker.com/r/jenkinsxio/builder-maven/tags/">jenkinsxio/builder-maven</a> image</p>
+
+<p>Once you have a preview docker image you can then edit the jenkins pod template for maven/go/nodejs to use your PR’s docker image to try out your changes to jx in a jenkins pipeline. To do this</p>
+
+<ul>
+<li><code>jx console</code> to open the Jenkins console</li>
+<li>Manage Jenkins -&gt; Configure System</li>
+<li>search for builder-(maven|go|nodejs) and use the new docker image version you just built (that ends in your <code>PR number-buildnumber</code>)</li>
+<li>now retrigger a pipeline</li>
+</ul>
+
+<p>We don&rsquo;t yet do the same for serverless jenkins images am afraid - for that you&rsquo;ll have to make your own Docker image replacing the <code>jx</code> binary then edit the Prow configuration (<code>kubectl edit cm config</code>).</p>
+
+<p>Another approach is you can make your own docker image, then pause a pipeline and <code>kubectl cp</code> your linux build of <code>jx</code> into the docker image and <code>kubectl exec</code> or <code>jx rsh</code> into the build pod and run the <code>jx</code> command there.</p>
 
 </div>
 
@@ -1164,7 +1186,7 @@ dlv --listen<span class="o">=</span>:2345 --headless<span class="o">=</span><spa
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Contribute to the code”
-  </a> was last updated: December 3, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/07bdd666f7ae901663ec84e3ed4fb746c797d005">feat: add `DEBUG=on` flag for debugging (07bdd666f)</a>
+  </a> was last updated: December 6, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/53590d4f9d14560d5033f0045879b14f5fe0290b">added more dev help (53590d4f9)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/contribute/development.md" class="
