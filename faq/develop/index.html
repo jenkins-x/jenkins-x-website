@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/develop/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-12-01T11:38:09&#43;00:00"/>
+<meta property="article:modified_time" content="2019-01-04T07:56:44&#43;00:00"/>
 
 <meta itemprop="name" content="Development Questions">
 <meta itemprop="description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1086">
+<meta itemprop="wordCount" content="1207">
 
 
 
@@ -207,6 +207,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#can-i-use-my-existing-release-pipeline">Can I use my existing release pipeline?</a></li>
 <li><a href="#how-does-promotion-actually-work">How does promotion actually work?</a></li>
 <li><a href="#what-if-my-team-does-not-want-to-use-helm">What if my team does not want to use helm?</a></li>
+<li><a href="#can-i-reuse-exposecontroller-for-my-apps">Can I reuse exposecontroller for my apps?</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -328,6 +329,21 @@ var trackOutboundLink = function(id, url) {
 
 <p>Then if you wish to use another configuration management tool you can add it in - e.g. <a href="https://github.com/jenkins-x/jx/issues/2302">kustomise support</a>.</p>
 
+<h2 id="can-i-reuse-exposecontroller-for-my-apps">Can I reuse exposecontroller for my apps?</h2>
+
+<p>You should be able to use <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> directly in any app you deploy in any environment (e.g. Staging or Production) as we already trigger exposecontroller on each new release.</p>
+
+<p>We use <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> for Jenkins X to handle the generation of <code>Ingress</code> resources so that we can support wildcard DNS on a domain or automate the setup of HTTPS/TLS along with injecting external endpoints into applications in ConfigMaps via <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources">annotations</a>.</p>
+
+<p>To get <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> to generate the <code>Ingress</code> for a <code>Service</code> just <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#label">add the label to your Service</a>. e.g. add this to your <code>charts/myapp/templates/service.yaml</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">apiVersion<span class="p">:</span><span class="w"> </span>v1<span class="w">
+</span><span class="w"></span>kind<span class="p">:</span><span class="w"> </span>Service<span class="w">
+</span><span class="w"></span>metadata<span class="p">:</span><span class="w">
+</span><span class="w">  </span>name<span class="p">:</span><span class="w"> </span>myapp<span class="w">
+</span><span class="w">  </span>annotations<span class="p">:</span><span class="w">
+</span><span class="w">    </span>fabric8.io/expose<span class="p">:</span><span class="w"> </span><span class="s2">&#34;true&#34;</span><span class="w">  </span></code></pre></div>
+<p>If you want to inject the URL or host name of the external URL or your ingress just <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources">use these annotations</a>.</p>
+
 </div>
 
           
@@ -335,11 +351,11 @@ var trackOutboundLink = function(id, url) {
 <h2>See Also</h2>
 <ul>
 	
+	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
+	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
-	
-	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/issues/">Common Problems</a></li>
 	
@@ -835,7 +851,7 @@ var trackOutboundLink = function(id, url) {
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Development Questions”
-  </a> was last updated: December 1, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/67ad978f4f46e683da54941d93ec35d522e4a60a">add more FAQs (67ad978f4)</a>
+  </a> was last updated: January 4, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/57abc2ca754c96ccda3dd9a7b01ce2c0f6b76149">add FAQ on reusing exposecontroller (57abc2ca7)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/develop.md" class="
