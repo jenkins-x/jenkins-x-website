@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>jx diagnose | Jenkins X</title>
+    <title>Prow | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -27,23 +27,19 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="jx diagnose" />
-<meta property="og:description" content="jx diagnose Print diagnostic information about the Jenkins X installation
-Synopsis Print diagnostic information about the Jenkins X installation
-jx diagnose [flags]  Options  -b, --batch-mode In batch mode the command never prompts for user input --headless Enable headless operation if using browser automation -h, --help help for diagnose --install-dependencies Should any required dependencies be installed automatically --log-level string Logging level. Possible values - panic, fatal, error, warning, info, debug." />
+<meta property="og:title" content="Prow" />
+<meta property="og:description" content="The CI/CD system that Kubernetes uses to build itself" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://jenkins-x.io/commands/jx_diagnose/" /><meta property="article:published_time" content="2019-01-07T20:37:53&#43;00:00"/>
-<meta property="article:modified_time" content="2019-01-07T20:37:53&#43;00:00"/>
+<meta property="og:url" content="https://jenkins-x.io/architecture/prow/" /><meta property="article:published_time" content="2019-01-08T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2019-01-08T17:42:29&#43;01:00"/>
 
-<meta itemprop="name" content="jx diagnose">
-<meta itemprop="description" content="jx diagnose Print diagnostic information about the Jenkins X installation
-Synopsis Print diagnostic information about the Jenkins X installation
-jx diagnose [flags]  Options  -b, --batch-mode In batch mode the command never prompts for user input --headless Enable headless operation if using browser automation -h, --help help for diagnose --install-dependencies Should any required dependencies be installed automatically --log-level string Logging level. Possible values - panic, fatal, error, warning, info, debug.">
+<meta itemprop="name" content="Prow">
+<meta itemprop="description" content="The CI/CD system that Kubernetes uses to build itself">
 
 
-<meta itemprop="datePublished" content="2019-01-07T20:37:53&#43;00:00" />
-<meta itemprop="dateModified" content="2019-01-07T20:37:53&#43;00:00" />
-<meta itemprop="wordCount" content="183">
+<meta itemprop="datePublished" content="2019-01-08T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-01-08T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="1786">
 
 
 
@@ -51,10 +47,8 @@ jx diagnose [flags]  Options  -b, --batch-mode In batch mode the command never p
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="jx diagnose"/>
-<meta name="twitter:description" content="jx diagnose Print diagnostic information about the Jenkins X installation
-Synopsis Print diagnostic information about the Jenkins X installation
-jx diagnose [flags]  Options  -b, --batch-mode In batch mode the command never prompts for user input --headless Enable headless operation if using browser automation -h, --help help for diagnose --install-dependencies Should any required dependencies be installed automatically --log-level string Logging level. Possible values - panic, fatal, error, warning, info, debug."/>
+<meta name="twitter:title" content="Prow"/>
+<meta name="twitter:description" content="The CI/CD system that Kubernetes uses to build itself"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
         
@@ -191,10 +185,47 @@ var trackOutboundLink = function(id, url) {
       <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky">
 <aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
 	
+		<p class="b">What&#39;s on this Page</p>
+  	<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#hook">hook</a></li>
+<li><a href="#prow-plugins">Prow Plugins</a>
+<ul>
+<li><a href="#lgtm-plugin">lgtm plugin</a></li>
+<li><a href="#updateconfig-plugin">UpdateConfig plugin</a></li>
+<li><a href="#trigger-plugin">Trigger plugin</a>
+<ul>
+<li><a href="#job-type">Job Type</a></li>
+</ul></li>
+<li><a href="#prowjob-controllers">ProwJob controllers</a>
+<ul>
+<li><a href="#plank-https-github-com-kubernetes-test-infra-tree-master-prow-plank"><a href="https://github.com/kubernetes/test-infra/tree/master/prow/plank">plank</a></a></li>
+<li><a href="#prow-build-https-github-com-kubernetes-test-infra-blob-master-prow-cmd-build-controller-go"><a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></a>
+<ul>
+<li><a href="#steps">Steps</a></li>
+<li><a href="#buildtemplate">BuildTemplate</a>
+<ul>
+<li><a href="#jenkins-x-build-templates">Jenkins X Build Templates</a></li>
+</ul></li>
+<li><a href="#the-job-is-ran-inside-a-pod">The job is ran inside a Pod</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><a href="#sinker">sinker</a></li>
+<li><a href="#crier">crier</a></li>
+<li><a href="#deck">deck</a></li>
+<li><a href="#tide">tide</a></li>
+<li><a href="#ongoing-efforts">Ongoing efforts</a></li>
+</ul></li>
+</ul>
+</nav>
+	
 
 	<div date-pref>
 		
-			<a href="https://jenkins-x.io/commands/jx_delete_vault/" class="dib f6 pl1 hover-bg-light-gray br-100" title="jx delete vault ">
+			<a href="https://jenkins-x.io/architecture/build-packs/" class="dib f6 pl1 hover-bg-light-gray br-100" title="Build Packs ">
 				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
     <path d="M0 0h24v24H0z" fill="none"/>
@@ -204,7 +235,7 @@ var trackOutboundLink = function(id, url) {
 		
 
 		
-			<a href="https://jenkins-x.io/commands/jx_docs/" class="dib f6 pr1 hover-bg-light-gray br-100" title="jx docs">
+			<a href="https://jenkins-x.io/architecture/cloud-native-jenkins/" class="dib f6 pr1 hover-bg-light-gray br-100" title="Cloud Native Jenkins">
 			<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
     <path d="M0 0h24v24H0z" fill="none"/>
@@ -223,10 +254,14 @@ var trackOutboundLink = function(id, url) {
           </div>
           <header class="flex-none w-100">
   
-  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">jx diagnose</h1>
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Prow</h1>
 </header>
 
 <aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
+  
+    <div class="f4 fw4 lh-copy">
+      The CI/CD system that Kubernetes uses to build itself
+    </div>
   
 
   
@@ -238,38 +273,154 @@ var trackOutboundLink = function(id, url) {
 
 
 
-<h2 id="jx-diagnose">jx diagnose</h2>
+<p>Prow is a Kubernetes based CI/CD system. Jobs can be triggered by various types of events and report their status to many different services. In addition to job execution, Prow provides GitHub automation in the form of policy enforcement, chat-ops via /foo style commands, and automatic PR merging.</p>
 
-<p>Print diagnostic information about the Jenkins X installation</p>
+<p>Prow has a microservice architecture implemented as a collection of container images that run as Kubernetes deployments</p>
 
-<h3 id="synopsis">Synopsis</h3>
+<h2 id="hook">hook</h2>
 
-<p>Print diagnostic information about the Jenkins X installation</p>
+<p>There is a <a href="https://github.com/kubernetes/test-infra/tree/master/prow/cmd/hook">binary called hook</a> that receives all the web hooks from Github. It is a stateless server that listens for GitHub webhooks and dispatches them to the appropriate plugins. Hook&rsquo;s plugins are used to trigger jobs, implement &lsquo;slash&rsquo; commands, post to Slack, and more. The hook binary exposes a /hook endpoint to receive the Git server web hook requests (basically all web hooks go to /hook). There is an ingress rule that exposes that endpoint to outside the cluster.</p>
 
-<pre><code>jx diagnose [flags]
-</code></pre>
+<h2 id="prow-plugins">Prow Plugins</h2>
 
-<h3 id="options">Options</h3>
+<p>The <a href="https://github.com/kubernetes/test-infra/tree/master/prow/cmd/hook">hook binary</a> uses several different plugins that can be enable/disable independently, to do different things. They are basically event handlers for the different Github events received through web hooks. These plugins are configured using a yaml config that is passed from a kubernetes ConfigMap to hook and can be enabled per repo or org.
+All plugins have the same interface. The hook process passes two objects to every plugin: a plugin client that let them talk to k8s, git, github, owners file in git repo, slack, etc., and the deserialized GitHub event (like IssueCommentEvent).</p>
 
-<pre><code>  -b, --batch-mode                In batch mode the command never prompts for user input
-      --headless                  Enable headless operation if using browser automation
-  -h, --help                      help for diagnose
-      --install-dependencies      Should any required dependencies be installed automatically
-      --log-level string          Logging level. Possible values - panic, fatal, error, warning, info, debug. (default &quot;info&quot;)
-  -n, --namespace string          The namespace to display the kube resources from. If left out, defaults to the current namespace
-      --no-brew                   Disables the use of brew on macOS to install or upgrade command line dependencies
-      --pull-secrets string       The pull secrets the service account created should have (useful when deploying to your own private registry): provide multiple pull secrets by providing them in a singular block of quotes e.g. --pull-secrets &quot;foo, bar, baz&quot;
-      --skip-auth-secrets-merge   Skips merging a local git auth yaml file with any pipeline secrets that are found
-      --verbose                   Enable verbose logging
-</code></pre>
+<h3 id="lgtm-plugin">lgtm plugin</h3>
 
-<h3 id="see-also">SEE ALSO</h3>
+<p><a href="https://github.com/kubernetes/test-infra/tree/master/prow/plugins/lgtm">The LGTM plugin</a> is a good example to get started on plugins. It&rsquo;s a plugin that adds the LGTM label when someone comments /lgtm on a Pull Request.</p>
+
+<h3 id="updateconfig-plugin">UpdateConfig plugin</h3>
+
+<p><a href="https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig">A plugin that automatically updates a ConfigMap</a> whenever a PR is merged in a repository. That way you can automatically keep your ConfigMaps up to date, following a GitOps flow.
+You can map specific files to ConfigMaps, or even use regex.
+It’s normally used to update the ConfigMap that contains the prow configuration, so every time a PR is merged with changes in the files containing the prow configuration, the ConfigMap is automatically updated.</p>
+
+<h3 id="trigger-plugin">Trigger plugin</h3>
+
+<p>Probably the most important plugin. It&rsquo;s plugin that reacts to comments on PR’s, so we can trigger builds (by writing “test” as a comment or any other trigger). It determines which jobs to run based on the job config. When find a job that needs to be trigger, it creates a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob CRD</a>, using the configuration found in the hook ConfigMap (that way you can create a different <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob</a> object depending on the org or repo, like using a different build agent (jenkins vs knative vs pods), the type of the job, etc). This CRD contains some interesting fields:</p>
 
 <ul>
-<li><a href="https://jenkins-x.io/commands/jx/">jx</a>    - jx is a command line tool for working with Jenkins X</li>
+<li>agent: to select which k8s controller will take care of this job</li>
+<li>refs: GH repository and revision to use for the source code</li>
+<li>type: whether is presubmit or post submit (run the job before merging or post merge)</li>
+<li>pod_spec: spec to create a Pod object, if we use <a href="https://github.com/kubernetes/test-infra/tree/master/prow/plank">plank</a></li>
+<li>build_spec: spec to create a <a href="https://github.com/knative/docs/blob/master/build/builds.md">knative Build object</a>, if we use <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></li>
 </ul>
 
-<h6 id="auto-generated-by-spf13-cobra-on-7-jan-2019">Auto generated by spf13/cobra on 7-Jan-2019</h6>
+<p>The life cycle of a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob</a> is handled by the ProwJob controllers running on the cluster. Potential ProwJob states are:</p>
+
+<ul>
+<li>triggered: the job has been created but not yet scheduled.</li>
+<li>pending: the job is scheduled but not yet running.</li>
+<li>Success/failure: the job has completed.</li>
+<li>aborted: means prow killed the job early (new commit pushed, perhaps).</li>
+<li>error: means the job could not schedule (bad config, perhaps).</li>
+</ul>
+
+<h4 id="job-type">Job Type</h4>
+
+<p>In the Prow configuration you can configure per-repo Presubmits and Postsubmits jobs that are triggered by the trigger plugin. Presubmits are ran when the PR code changes (opening a new PR or pushing code to the PR’s branch), so you can test your new code changes. Postsubmits are ran whenever there is a new commit appearing on an origin branch (GH push event).</p>
+
+<p>The use-case for postsubmits is that there may be fewer than 100 merges a day to a really high-volume repo, but there could be ten or one hundred times that many presubmit jobs run. Postsubmits can be used when something is very expensive to test and is not necessarily blocking for merge, but you do want signal. Similarly, the way the system works is that your presubmit check will run with your code merged into the branch you&rsquo;re targeting, so technically the merge commit that ends up in <code>master</code> branch has effectively been tested already and often this means you may want a presubmit job but not to duplicate it also postsubmit as it gives you no more signal.</p>
+
+<h3 id="prowjob-controllers">ProwJob controllers</h3>
+
+<p>We can later use different Kubernetes Operators that react to ProwJob objects to run our builds, based on the agent field (each operator looks for ProwJobs with specific agent value):</p>
+
+<ul>
+<li><a href="https://github.com/kubernetes/test-infra/blob/master/prow/plank/controller.go">Plank</a> is one that uses kubernetes pods. Uses the <code>pod_spec</code> field.</li>
+<li><a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a> is a build operator that uses Knative Build CRD. Uses the build_spec field.</li>
+<li>There is a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/jenkins/controller.go">jenkins-operator</a> that runs builds on Jenkins. This is currently not recommended.</li>
+</ul>
+
+<p>These controllers manage the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/life_of_a_prow_job.md">the lifecycle of a ProwJob</a>.</p>
+
+<h4 id="plank-https-github-com-kubernetes-test-infra-tree-master-prow-plank"><a href="https://github.com/kubernetes/test-infra/tree/master/prow/plank">plank</a></h4>
+
+<p>Plank is a Kubernetes operator that reacts to ProwJob custom resources. It creates a Pod to run the build associated with the ProwJob object. The ProwJob object itself contains a PodSpec.</p>
+
+<ul>
+<li>If ProwJob doesn’t have a Pod, it creates a pod to run the build. Use init-containers to do VCS checkout.</li>
+<li>If ProwJob has a Pod with completed status, mark ProwJob as completed.</li>
+<li>If ProwJob is completed, do nothing.</li>
+</ul>
+
+<p>We are using knative build in Jenkins X, which uses the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build controller</a>, so you shouldn&rsquo;t have to worry about plank.</p>
+
+<h4 id="prow-build-https-github-com-kubernetes-test-infra-blob-master-prow-cmd-build-controller-go"><a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></h4>
+
+<p>Kubernetes operator that watches ProwJob objects, and reacts to those which agent field is the knative build agent. It will create <a href="https://github.com/knative/docs/blob/master/build/builds.md">a Knative Build object</a> based on the build_spec field of the ProwJob object.
+<a href="https://github.com/knative/build/blob/master/cmd/controller/main.go">The knative build controller</a> reacts to it and creates a Pod to run the build. All the ProwJob, the Build and the Pod have the same name (a UUID).</p>
+
+<p>The Build object contains interesting fields:</p>
+
+<ul>
+<li>serviceAccountName: <a href="https://github.com/knative/docs/blob/master/build/auth.md">ServiceAccount that contains the Secrets required to access the Git server or the Docker registry</a>.</li>
+<li>source: Git repository and revision to use for source code.</li>
+<li>steps: Specifies one or more container images that you want to run in your build. Each container image runs until completion or until the first failure is detected.</li>
+<li>template: contains the name of a registered knative BuildTemplate, along with environment variables to pass to the Build object. The template must be a BuildTemplate object that exists in the cluster. <strong>If template field is defined, the steps field will be ignored</strong>.</li>
+</ul>
+
+<h5 id="steps">Steps</h5>
+
+<p>The steps in a build are the different actions that will be executed as part of that build. Each step in a build must specify a Builder image, or type of container image that adheres to the <a href="https://github.com/knative/docs/blob/master/build/builder-contract.md">Knative builder contract</a>. These steps/builder images</p>
+
+<ul>
+<li>Are run and evaluated in order, starting from the top of the configuration file.</li>
+<li>Each runs until completion or until the first failure is detected.</li>
+<li>Have two volumes that are shared between all the steps. One will be mounted in /workspace, which contains the code specified in the Build source field. Another one is /builder/home that is mounted in $HOME, and it’s mostly used to save credential files that will be used in different steps.</li>
+</ul>
+
+<p>A builder image is a special image that we can run as a Build CRD&rsquo;s step, and that it is typically a purpose-built container whose entrypoint is a tool that performs some action and exits with a zero status on success. These entrypoints are often command-line tools, for example, git, docker, mvn, and so on.</p>
+
+<h5 id="buildtemplate">BuildTemplate</h5>
+
+<p><a href="https://github.com/knative/docs/blob/master/build/build-templates.md">A BuildTemplate</a> encapsulates a shareable build process with some limited parameterization capabilities.</p>
+
+<p>A template contains steps to be executed in the build. Instead of specifying the same steps in different builds, we can reuse those steps creating a BuildTemplate that contains these steps. We use BuildTemplates to share steps between different Builds. <a href="https://github.com/knative/build-templates/">There are community BuildTemplates</a> that you can use, or you can define your own templates.</p>
+
+<h6 id="jenkins-x-build-templates">Jenkins X Build Templates</h6>
+
+<p>Jenkins X uses custom BuildTemplates to run the builds of the applications. <a href="https://github.com/jenkins-x/jenkins-x-serverless">In this repository</a> you can find the different BuildTemplates available, depending on the application language. These BuildTemplates use a different Step builder image depending on the language, since they have to build the application using different tools like maven, go or gradle. So every Builder image has different tools installed, althought eventually all the builder images basically run <a href="https://jenkins-x.io/news/serverless-jenkins/">serverless Jenkins</a> (AKA <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile-Runner</a>). That allows our builds to define the steps in a Jenkinsfile. All these steps are executed inside the same <a href="https://hub.docker.com/r/jenkins/jenkinsfile-runner/dockerfile/">Jenkinsfile Runner container</a>, which doesn&rsquo;t match the Knative Build steps model.</p>
+
+<h5 id="the-job-is-ran-inside-a-pod">The job is ran inside a Pod</h5>
+
+<p>The Pod that’s created to run the actual build has a container that does nothing, but it has init containers to do the steps required to run the job:</p>
+
+<ul>
+<li><a href="https://github.com/knative/build/tree/master/cmd/creds-init">creds-init</a>: Service account secrets are mounted in /var/build-secrets/ so this container has access to them. It aggregates them into their respective credential files in $HOME, which is another volume shared between all the steps. Typically credentials for git server and docker registry.</li>
+<li><a href="https://github.com/knative/build/tree/master/cmd/git-init">git-init</a>: clones the specified sha/revision Git repository into one of the shared volumes /workspace.</li>
+<li>Another init-container for every step defined in the Build or BuildTemplate.</li>
+</ul>
+
+<p>Remember that each init container uses its own container image. Also, they have different filesystem linux namespaces. But they have some shared volumes like the $HOME and the /workspace folders.</p>
+
+<h2 id="sinker">sinker</h2>
+
+<p><a href="https://github.com/kubernetes/test-infra/tree/master/prow/cmd/sinker">Garbage collector</a> for ProwJobs and Pods created to run builds. It removes completed ProwJobs after 2 days, and completed pods after 30 minutes.</p>
+
+<h2 id="crier">crier</h2>
+
+<p>Another Kubernetes controller that watches ProwJobs CRDs. It contains different reporters to notify ProwJob changes to external clients, like Github status check, or message to PubSub.</p>
+
+<p>It&rsquo;s used to update the Github commit status when the ProwJob finishes.</p>
+
+<h2 id="deck">deck</h2>
+
+<p><a href="https://prow.k8s.io/">Presents a UI of recent jobs</a>, and <a href="https://prow.k8s.io/command-help">command/plugin help information</a>.</p>
+
+<h2 id="tide">tide</h2>
+
+<p>PRs satisfying a set of predefined criteria can be configured to be automatically merged by <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/README.md">Tide</a>. It will automatically retest PRs that meet the criteria (&ldquo;tide comes in&rdquo;) and automatically merge them when they have up-to-date passing test results (&ldquo;tide goes out”).</p>
+
+<p>It will query GH every once in a while trying to merge PR’s. It doesn’t react to events, it’s not a plugin.</p>
+
+<h2 id="ongoing-efforts">Ongoing efforts</h2>
+
+<p>Using init-containers for steps <a href="https://github.com/knative/build/pull/470">may change in the future</a>, due to limitations on init-containers.
+Knative Build CRD is being deprecated in favor of the Pipeline CRD. The Build CRD will be superseeded by the new Task CRD, but they are really similar.
+Instead of using the Jenkins File Runner, there are plans to translate from a Jenkinsfile to a declarative Pipeline CRD. Reference: <a href="https://docs.google.com/document/d/1kGWWbpmQFuwIq29iQ2PSg-0xcOFc2U2HdnW47_rJeUw/">https://docs.google.com/document/d/1kGWWbpmQFuwIq29iQ2PSg-0xcOFc2U2HdnW47_rJeUw/</a></p>
 
 </div>
 
@@ -569,10 +720,10 @@ var trackOutboundLink = function(id, url) {
     
       
       <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
-        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".architecture">Architecture</a>
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".architecture">Architecture</a>
 
           
-            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray db">
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/architecture/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
@@ -611,7 +762,7 @@ var trackOutboundLink = function(id, url) {
                 </li>
               
                 <li  class="f6 fw4">
-                  <a href="https://jenkins-x.io/architecture/prow/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                  <a href="https://jenkins-x.io/architecture/prow/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
                     Prow
                   </a>
                 </li>
@@ -773,14 +924,14 @@ var trackOutboundLink = function(id, url) {
   <div class="w-100 bg-light-gray">
     <div class="mw7 pa4 center nested-lh-copy lh-copy">
       <h6 class="f4 dark-gray mb2">
-  <a href="https://jenkins-x.io/commands/jx_diagnose/" class="hide-child link primary-color">
+  <a href="https://jenkins-x.io/architecture/prow/" class="hide-child link primary-color">
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
-    “jx diagnose”
-  </a> was last updated: January 7, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/25d9f28595a1927892db1b010a8061d4b0bb38c7">updated jx commands from 1.3.699 (25d9f2859)</a>
+    “Prow”
+  </a> was last updated: January 8, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/a61a439bbfa4178aa8dbfbbb5667cee2fd02bb79">Linking to prow section (a61a439bb)</a>
 </h6>
 
-      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/commands/jx_diagnose.md" class="
+      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/architecture/prow.md" class="
 f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
 ">Improve this page</a>
 
