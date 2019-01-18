@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions about installing or configuring Jenkins X" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/setup/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-01-17T09:31:11&#43;00:00"/>
+<meta property="article:modified_time" content="2019-01-18T16:02:29&#43;01:00"/>
 
 <meta itemprop="name" content="Setup Questions">
 <meta itemprop="description" content="Questions about installing or configuring Jenkins X">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="544">
+<meta itemprop="wordCount" content="818">
 
 
 
@@ -222,6 +222,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#once-the-user-has-access-to-the-kubernetes-cluster">Once the user has access to the kubernetes cluster</a></li>
 </ul></li>
 <li><a href="#how-do-i-upgrade-my-jenkins-x-installation">How do I upgrade my Jenkins X installation?</a></li>
+<li><a href="#how-do-i-upgrade-the-jx-binary-used-inside-the-builds-when-using-serverless-jenkins">How do I upgrade the jx binary used inside the builds when using serverless jenkins?</a></li>
 <li><a href="#how-does-prow-differ-from-gitops">How does <code>--prow</code> differ from <code>--gitops</code></a></li>
 <li><a href="#how-do-i-reuse-my-existing-ingress-controller">How do I reuse my existing Ingress controller?</a></li>
 </ul></li>
@@ -324,6 +325,58 @@ jx open
 <div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">jx upgrade cli</code></pre></div>
 <p>to get you on the latest CLI then you can upgrade the platform:</p>
 <div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">jx upgrade platform</code></pre></div>
+<h2 id="how-do-i-upgrade-the-jx-binary-used-inside-the-builds-when-using-serverless-jenkins">How do I upgrade the jx binary used inside the builds when using serverless jenkins?</h2>
+
+<p>We use specific <code>BuildTemplates</code> for different programming languages. These <code>BuildTemplates</code> describe the steps that will be executed as part of the job, which in case of the Jenkins X BuildTemplates, they all execute the <code>JenkinsfileRunner</code> to execute the project&rsquo;s Jenkinsfile.</p>
+
+<pre><code>$ kubectl get buildtemplates
+NAME                        AGE
+environment-apply           9d
+environment-build           9d
+jenkins-base                9d
+jenkins-csharp              9d
+jenkins-cwp                 9d
+jenkins-elixir              9d
+jenkins-filerunner          9d
+jenkins-go                  9d
+jenkins-go-nodocker         9d
+jenkins-go-script-bdd       1d
+jenkins-go-script-ci        1d
+jenkins-go-script-release   1d
+jenkins-gradle              9d
+jenkins-javascript          9d
+jenkins-jenkins             9d
+jenkins-maven               9d
+jenkins-python              9d
+jenkins-rust                9d
+jenkins-scala               9d
+jenkins-test                9d
+knative-chart-ci            9d
+knative-chart-release       9d
+knative-deploy              9d
+knative-maven-ci            9d
+knative-maven-release       9d
+</code></pre>
+
+<p>The docker image that has the <code>Jenkinsfile</code> runner has also other tools installed, like the <code>jx</code> binary. If you need to update jx to a newer version, you need to modify <a href="https://github.com/jenkins-x/jenkins-x-serverless/blob/def939f559b6b0e6735c043ce032686397053a6e/Dockerfile.base#L120-L123">the base Dockerfile used for the Jenkinsfile runner step of the BuildTemplate</a>, so that it uses the jx version that you want. Althought <a href="https://github.com/jenkins-x/jenkins-x-serverless/commits/def939f559b6b0e6735c043ce032686397053a6e/Dockerfile.base">this is normally done automatically</a>.</p>
+
+<p>Once this is done, you need to change the BuildTemplate in your cluster so that it starts using the new version of the docker image. For example, you can see the current version of this image for the Go BuildTemplate in your cluster</p>
+
+<pre><code>$ kubectl describe buildtemplate jenkins-go | grep Image
+Image:       jenkinsxio/jenkins-go:256.0.44
+</code></pre>
+
+<p>If you want to use a different version that uses a newer jx version you could manually change all the BuildTemplates but instead let&rsquo;s jx take care of it</p>
+
+<pre><code>$ jx upgrade addon jx-build-templates
+</code></pre>
+
+<p>Check that the change has been done</p>
+
+<pre><code>$ kubectl describe buildtemplate jenkins-go | grep Image
+Image:       jenkinsxio/jenkins-go:256.0.50
+</code></pre>
+
 <h2 id="how-does-prow-differ-from-gitops">How does <code>--prow</code> differ from <code>--gitops</code></h2>
 
 <ul>
@@ -349,13 +402,13 @@ jx open
 <h2>See Also</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
-	
 	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/develop/">Development Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/issues/">Common Problems</a></li>
+	
+	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
 	
 </ul>
 
@@ -867,7 +920,7 @@ jx open
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Setup Questions”
-  </a> was last updated: January 17, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/5d321037caef4308749b2f1e77cba9a7176b3924">add a FAQ on ingress (5d321037c)</a>
+  </a> was last updated: January 18, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/f029a5cb5d9b32097801b7a87d419459ee0a4a82">Added new entry to FAQ on how to update jx binary when using serverless jenkins (f029a5cb5)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/setup.md" class="
