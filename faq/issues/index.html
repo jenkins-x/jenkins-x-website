@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions on common issues setting up Jenkins X." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/issues/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-01-21T12:10:09&#43;00:00"/>
+<meta property="article:modified_time" content="2019-01-21T18:20:22&#43;00:00"/>
 
 <meta itemprop="name" content="Common Problems">
 <meta itemprop="description" content="Questions on common issues setting up Jenkins X.">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1399">
+<meta itemprop="wordCount" content="1535">
 
 
 
@@ -235,6 +235,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#invalid-git-token-to-scan-a-project">Invalid git token to scan a project</a></li>
 <li><a href="#what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</a></li>
 <li><a href="#persistent-volume-claims-do-not-bind">Persistent Volume Claims do not bind</a></li>
+<li><a href="#how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</a></li>
 <li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
 <li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
 <li><a href="#cannot-access-services-on-minikube">Cannot access services on minikube</a></li>
@@ -439,6 +440,20 @@ jx create git token -n GitHub admin
 
 <p>The you should check that you have a cluster default storage class for dynamic persistent volume provisioning.  See <a href="https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/">here</a> for more details.</p>
 
+<h2 id="how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</h2>
+
+<p>When you <a href="https://jenkins-x.io/faq/develop/#how-does-promotion-actually-work">promote a new version of your application to an environment</a>, such as the Staging Environment a Pull Request is raised on the environment repository.</p>
+
+<p>When the master pipeline runs on an environment a Kubernetes <code>Job</code> is created for <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> which runs a pod until it terminates.</p>
+
+<p>It can be tricky finding the log for temporary jobs since the pod is removed.</p>
+
+<p>One way to diagnose logs in your, say, Staging environment is to <a href="https://github.com/boz/kail">download and install kail</a> and add it to your <code>PATH</code>.</p>
+
+<p>Then run this command:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">kail -l job-name<span class="o">=</span>expose -n jx-staging</code></pre></div>
+<p>If you then promote to the Staging environment or retrigger the pipeline on the <code>master</code> branch of your Staging git repository (e.g. via <a href="https://jenkins-x.io/commands/jx_start_pipeline/">jx start pipeline</a>) then you should see the output of the <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> pod.</p>
+
 <h2 id="cannot-create-cluster-minikube">Cannot create cluster minikube</h2>
 
 <p>If you are using a Mac then <code>hyperkit</code> is the best VM driver to use - but does require you to install a recent <a href="https://docs.docker.com/docker-for-mac/install/">Docker for Mac</a> first. Maybe try that then retry <code>jx create cluster minikube</code>?</p>
@@ -523,11 +538,11 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 	
 	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
 	
+	<li><a href="https://jenkins-x.io/faq/develop/">Development Questions</a></li>
+	
 	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
-	
-	<li><a href="https://jenkins-x.io/faq/develop/">Development Questions</a></li>
 	
 </ul>
 
@@ -1039,7 +1054,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Common Problems”
-  </a> was last updated: January 21, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/3cf531935a3292b0bf6e8ceca9f7c8a3c214d545">Correct the create token command (3cf531935)</a>
+  </a> was last updated: January 21, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/2bbd0436c9774eda5a32e998bce29c02fcf3a46e">add FAQ on how to diagnose exposecontroller issues (2bbd0436c)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/issues.md" class="
