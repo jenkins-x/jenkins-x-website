@@ -9,7 +9,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
      
-    <title>Developing | Jenkins X</title>
+    <title>Getting Started | Jenkins X</title>
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
 
@@ -28,19 +28,19 @@
     display: inline;
   }
 </style>
-<meta property="og:title" content="Developing" />
+<meta property="og:title" content="Getting Started" />
 <meta property="og:description" content="Using Jenkins X to continuously deliver value to your customers" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://jenkins-x.io/developing/" />
 <meta property="og:updated_time" content="2017-02-01T00:00:00&#43;00:00"/>
 
-<meta itemprop="name" content="Developing">
+<meta itemprop="name" content="Getting Started">
 <meta itemprop="description" content="Using Jenkins X to continuously deliver value to your customers">
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
 
-<meta name="twitter:title" content="Developing"/>
+<meta name="twitter:title" content="Getting Started"/>
 <meta name="twitter:description" content="Using Jenkins X to continuously deliver value to your customers"/>
 <meta name="twitter:site" content="@jenkinsxio"/>
 
@@ -352,7 +352,7 @@ var trackOutboundLink = function(id, url) {
               
                 <li  class="f6 fw4">
                   <a href="https://jenkins-x.io/developing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
-                    Developing
+                    Getting Started
                   </a>
                 </li>
               
@@ -737,10 +737,139 @@ var trackOutboundLink = function(id, url) {
     <div class="w-100 w-80-l ph0 ph4-l">
       <article class="w-100 nested-copy-line-height nested-links nested-img">
         <h1 class="primary-color-dark f2">
-          Developing
+          Getting Started
         </h1>
         <div class=" mid-gray f5 f4-l">
-          <p>How to use Jenkins X to continuously deliver value.</p>
+          
+
+<p>Jenkins X allows you to edit app code by using a Kubernetes Pod which we call <code>DevPod</code>.  This helps you develop inside the cloud with the same container images and pod templates as the CI/CD pipelines.  There are a couple of ways that you as a developer can quickly become productive when editing an app, and add value ultra fast.</p>
+
+<p>There are specific steps for each approach, and we provide you a visual representation of each workflow, as well as the specific steps to quickly get started.</p>
+
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>Keep in mind, this development workflow helps you make changes before even checking in your code to the repo, or submitting a formal pull request.  Really meant for you to validate your changes fast!</p>
+</div>
+</aside>
+
+
+<h2 id="develop-using-devpods-and-an-ide">Develop Using DevPods and an IDE</h2>
+
+<p>In this scenario, you are using an IDE such as Atom or VSCode which in fact has a plugin for <code>Jenkins X</code>.  You are making <strong>iterative</strong> changes using your IDE and said changes are reflected immediately when you open the <code>url</code> assigned to your <code>DevPod</code></p>
+
+<p><figure>
+<img src="https://jenkins-x.io/images/developing/developer_workflow_ide.png" />
+<figcaption>
+<h5>Developer Workflow - Develop Using DevPods and an IDE</h5>
+</figcaption></p>
+
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>See <a href="http://localhost:1313/developing/ide/#vs-code">IDE</a> for more details on using VSCode</p>
+</div>
+</aside>
+
+
+<p>To get started using this approach, simply execute the following command in the root of your app directory.  We are using a <code>NodeJS</code> app for this example, therefore we specify the language using the <code>-l</code> parameter.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">  jx create devpod -l nodejs --reuse --sync </code></pre></div>
+<p>A successful execution will ensures the following happened:</p>
+
+<ul>
+<li>Output the <code>URLs</code> available to access the <code>Pod</code></li>
+<li>App folder will sync with the <code>Pod</code></li>
+<li>An ssh session is initiated to the <code>Pod</code></li>
+</ul>
+
+<p>Once this happens, you must execute one more command within your ssh session to the Pod to ensure any changes are synchronized.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">./watch.sh</code></pre></div>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>From this point forward, any changes you make <strong>(step 1 in diagram)</strong>, trigger a Docker Image build, and you should see the output of that build command in your terminal as it happens.</p>
+</div>
+</aside>
+
+
+<p>Once you are happy with changes to your app, you go to <strong>(step 2 in diagram)</strong> and check-in your code, create a <code>Pull Request</code> at which point a <code>Jenkins X Pipeline</code> is triggered immediately to promote your changes to <code>Staging</code> enviornment.</p>
+
+<h2 id="develop-using-devpods-and-a-web-based-ide">Develop Using DevPods and a Web-based IDE</h2>
+
+<p>If you prefer not to use an IDE on your desktop using a similar workflow as above.  To edit the app code, you use the well known <a href="https://www.theia-ide.org/">Theia</a> IDE.</p>
+
+<p><figure>
+<img src="https://jenkins-x.io/images/developing/developer_workflow_theia.png" />
+<figcaption>
+<h5>Developer Workflow - Develop Using DevPods and Web-based IDE Theia</h5>
+</figcaption></p>
+
+<p>Using this approach, you execute the following on your terminal.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">jx create devpod --verbose <span class="nb">true</span>                                 
+
+<span class="c1"># some output us removed for brevity
+</span><span class="c1"></span>Creating a DevPod of label: nodejs
+Created pod me-nodejs - waiting <span class="k">for</span> it to be ready...
+Using helmBinary helm with feature flag: none
+Updating Helm repository...
+Helm repository update <span class="k">done</span>.
+...
+Pod me-nodejs is now ready!
+You can open other shells into this DevPod via jx create devpod
+
+You can edit your app using Theia <span class="o">(</span>a browser based IDE<span class="o">)</span> at http://me-nodejs-theia.jx.yourdomain.com
+
+Attempting to install Bash Completion into DevPod
+Running command: kubectl <span class="nb">exec</span> -it -n jx -c theia me-nodejs -- /bin/sh -c mkdir -p /workspace
+<span class="nb">cd</span> /workspace
+...
+<span class="o">[</span>root@me-nodejs node-app<span class="o">]</span>#</code></pre></div>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p><strong>NOTE</strong>: We are not passing the <code>--sync</code> flag because we plan on using the web based IDE</p>
+</div>
+</aside>
+
+
+<p>A succesful execution of the command above, will ensure the following has happened:</p>
+
+<ul>
+<li>DevPod is created, and exposed for you to access app via URL</li>
+<li>Theia Docker container is running</li>
+<li>App folder is mounted to Theia Docker container at <code>/workspace</code> folder.</li>
+<li>You have a terminal session into the <code>DevPod</code></li>
+</ul>
+
+<p>To see your changes in real-time, you must also execute the following command within your terminal session connected to the Pod:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">./watch.sh</code></pre></div>
+<h3 id="promote-to-staging">Promote to Staging</h3>
+
+<p>Once you are happy with the changes you made to the app, you can simply check-in your code and create a <code>pull request</code>.  This will trigger the pipeline to promote your changes to the <code>Staging</code> environment (<strong>Step 2 and 3 in diagram</strong>)</p>
+
+<h3 id="promote-to-production">Promote to Production</h3>
+
+<p>Most of the time,the Production environment in <strong>Jenkins X</strong> will have its <code>Promote</code> setting set to <code>MANUAL</code>.  Therefore, promoting your app can happen manually after stakeholders have reviewed the staging envionment, for example.</p>
+
+<p>To promote the app to production, you can execute the following commands:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># first get the app version from this output
+</span><span class="c1"></span>jx get apps
+
+<span class="c1"># promote app version 0.0.2 from staging to production
+</span><span class="c1"></span>jx promote --version <span class="m">0</span>.0.2 --env production</code></pre></div>
+<h1 id="additional-learning">Additional Learning</h1>
 
         </div>
       </article>
