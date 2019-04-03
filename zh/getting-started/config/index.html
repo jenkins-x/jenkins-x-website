@@ -31,7 +31,7 @@
 <meta property="og:description" content="自定义你的 Jenkins X 安装" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/zh/getting-started/config/" /><meta property="article:published_time" content="2018-07-20T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-03T10:25:38&#43;00:00"/>
+<meta property="article:modified_time" content="2019-04-03T10:37:38&#43;00:00"/>
 
 <meta itemprop="name" content="配置">
 <meta itemprop="description" content="自定义你的 Jenkins X 安装">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-07-20T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-07-20T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="92">
+<meta itemprop="wordCount" content="152">
 
 
 
@@ -207,6 +207,8 @@ var trackOutboundLink = function(id, url) {
 <ul>
 <li>
 <ul>
+<li><a href="#nexus">Nexus</a></li>
+<li><a href="#jenkins-镜像">Jenkins 镜像</a></li>
 <li><a href="#docker-registry">Docker Registry</a></li>
 </ul></li>
 </ul>
@@ -269,6 +271,8 @@ var trackOutboundLink = function(id, url) {
 
 <p>然后，这个 YAML 文件可以覆盖 Jenkins X 中的任何 charts 中的 <code>values.yaml</code> 文件。</p>
 
+<h2 id="nexus">Nexus</h2>
+
 <p>例如：如果你希望在安装过程中禁用 Nexus，而使用不同主机上的一个独立的 Nexus，那么，你可以使用 <code>myvalues.yaml</code> 中的服务链接来替代：</p>
 <div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">nexus<span class="p">:</span><span class="w">
 </span><span class="w">  </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
@@ -281,6 +285,34 @@ var trackOutboundLink = function(id, url) {
 </span><span class="w"></span>chartmuseumServiceLink<span class="p">:</span><span class="w">
 </span><span class="w">  </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
 </span><span class="w">  </span>externalName<span class="p">:</span><span class="w"> </span><span class="s2">&#34;jenkins-x-chartmuseum.jx.svc.cluster.local&#34;</span></code></pre></div>
+<h2 id="jenkins-镜像">Jenkins 镜像</h2>
+
+<p>Jenkins X 中我们提供了一个默认的 Jenkins docker 镜像 <a href="https://hub.docker.com/r/jenkinsxio/jenkinsx/">jenkinsxio/jenkinsx</a>，把我们所需要的所有插件包含在里面。</p>
+
+<p>如果你想添加自己的插件，你可以使用我们的基础镜像创建一个你自己的 Dockerfile 和镜像，如下所示：</p>
+
+<pre><code># Dockerfile for adding plugins to Jenkins X 
+FROM jenkinsxio/jenkinsx:latest
+
+COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
+RUN /usr/local/bin/install-plugins.sh &lt; /usr/share/jenkins/ref/openshift-plugins.txt
+</code></pre>
+
+<p>然后以下面的形式将你所有自定义插件放到 <code>plugins.txt</code>：</p>
+
+<pre><code>myplugin:1.2.3
+anotherplugin:4.5.6
+</code></pre>
+
+<p>一旦你通过 CI/CD 构建和发布了你的镜像，你就可以在安装 Jenkins X 时使用它：</p>
+
+<p>为了用你自定义的镜像配置 Jenkins X ，你可以在 <code>myvalues.yaml</code> 文件中指定你的 Jenkins 镜像：</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">jenkins<span class="p">:</span><span class="w">
+</span><span class="w">  </span>Master<span class="p">:</span><span class="w">
+</span><span class="w">    </span>Image<span class="p">:</span><span class="w"> </span><span class="s2">&#34;acme/my-jenkinsx&#34;</span><span class="w">
+</span><span class="w">    </span>ImageTag<span class="p">:</span><span class="w"> </span><span class="s2">&#34;1.2.3&#34;</span></code></pre></div>
+<p>这里有一个开源项目的例子 <a href="https://github.com/jenkins-x/jenkins-x-openshift-image">jenkins-x/jenkins-x-openshift-image</a>，你可以以它为模板创建一个新的 Jenkins 镜像用来在 OpenShift 上使用 Jenkins X 时增加 OpenShift 特定的插件和配置。</p>
+
 <h2 id="docker-registry">Docker Registry</h2>
 
 <p>We try and use the best defaults for each platform for the Docker Registry; e.g. using ECR on AWS.</p>
@@ -697,7 +729,7 @@ var trackOutboundLink = function(id, url) {
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “配置”
-  </a> 上次更新： April 3, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/47b371495b212b3ac612be3b8df2dc81d685b61c">release 0.0.12 (47b3714)</a>
+  </a> 上次更新： April 3, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/ca63a95f4b89019a52287013f67841599acd0459">release 0.0.13 (ca63a95)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/config.zh.md" class="
