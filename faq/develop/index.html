@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/develop/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-03T15:37:02&#43;00:00"/>
+<meta property="article:modified_time" content="2019-04-04T03:15:15&#43;00:00"/>
 
 <meta itemprop="name" content="Development Questions">
 <meta itemprop="description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1207">
+<meta itemprop="wordCount" content="1319">
 
 
 
@@ -234,6 +234,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#how-does-promotion-actually-work">How does promotion actually work?</a></li>
 <li><a href="#what-if-my-team-does-not-want-to-use-helm">What if my team does not want to use helm?</a></li>
 <li><a href="#can-i-reuse-exposecontroller-for-my-apps">Can I reuse exposecontroller for my apps?</a></li>
+<li><a href="#how-to-add-custom-annotations-to-ingress-controller">How To Add Custom Annotations to Ingress Controller?</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -370,6 +371,31 @@ var trackOutboundLink = function(id, url) {
 </span><span class="w">    </span>fabric8.io/expose<span class="p">:</span><span class="w"> </span><span class="s2">&#34;true&#34;</span><span class="w">  </span></code></pre></div>
 <p>If you want to inject the URL or host name of the external URL or your ingress just <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources">use these annotations</a>.</p>
 
+<h2 id="how-to-add-custom-annotations-to-ingress-controller">How To Add Custom Annotations to Ingress Controller?</h2>
+
+<p>There may be times when you need to add your custom annotations to the ingress controller or <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> which <code>jx</code> uses to expose services.</p>
+
+<p>You can add a list of annotations to your application&rsquo;s service Helm Chart, which is found in your app&rsquo;s code repository.</p>
+
+<p>A custom annotation may be added to the <code>charts/myapp/values.yaml</code> and it may look as follows:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># Default values for node projects.</span><span class="w">
+</span><span class="w"></span><span class="c"># This is a YAML-formatted file.</span><span class="w">
+</span><span class="w"></span><span class="c"># Declare variables to be passed into your templates.</span><span class="w">
+</span><span class="w"></span>replicaCount<span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w"></span>image<span class="p">:</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w"> </span>draft<span class="w">
+</span><span class="w">  </span>tag<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w">  </span>pullPolicy<span class="p">:</span><span class="w"> </span>IfNotPresent<span class="w">
+</span><span class="w"></span>service<span class="p">:</span><span class="w">
+</span><span class="w">  </span>name<span class="p">:</span><span class="w"> </span>node-app<span class="w">
+</span><span class="w">  </span>type<span class="p">:</span><span class="w"> </span>ClusterIP<span class="w">
+</span><span class="w">  </span>externalPort<span class="p">:</span><span class="w"> </span><span class="m">80</span><span class="w">
+</span><span class="w">  </span>internalPort<span class="p">:</span><span class="w"> </span><span class="m">8080</span><span class="w">
+</span><span class="w">  </span>annotations<span class="p">:</span><span class="w">
+</span><span class="w">    </span>fabric8.io/expose<span class="p">:</span><span class="w"> </span><span class="s2">&#34;true&#34;</span><span class="w">
+</span><span class="w">    </span>fabric8.io/ingress.annotations<span class="p">:</span><span class="w"> </span><span class="s2">&#34;kubernetes.io/ingress.class: nginx&#34;</span></code></pre></div>
+<p>To see an example of where we add multiple annotations that the <code>exposecontroller</code> adds to generated ingress rules, take a look at this <a href="https://github.com/jenkins-x/jenkins-x-platform/blob/08a304ff03a3e19a8eb270888d320b4336237005/values.yaml#L655">values.yaml</a></p>
+
 </div>
 
           
@@ -377,11 +403,11 @@ var trackOutboundLink = function(id, url) {
 <h2>See Also</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/faq/issues/">Common Problems</a></li>
-	
 	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
+	
+	<li><a href="https://jenkins-x.io/faq/issues/">Common Problems</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
 	
@@ -932,7 +958,7 @@ var trackOutboundLink = function(id, url) {
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Development Questions”
-  </a> was last updated: April 3, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/67b09fd7990d801585caa212474d5ca0f1140d2b">release 0.0.16 (67b09fd)</a>
+  </a> was last updated: April 4, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/6686a798f9db2d9775644dbcb09a0881f52dd402">release 0.0.17 (6686a79)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/develop.md" class="

@@ -17,6 +17,440 @@
     
     
     <item>
+      <title>News: Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform</title>
+      <link>https://jenkins-x.io/news/terraform-jenkins-x/</link>
+      <pubDate>Wed, 03 Apr 2019 07:36:00 +0200</pubDate>
+      
+      <guid>https://jenkins-x.io/news/terraform-jenkins-x/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/jenkinsTerraform.png&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Provision Jenkins X Kubernetes Clusters using Terraform&lt;/h5&gt;
+&lt;/figcaption&gt;&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+	&lt;div class=&#34;note-icon&#34;&gt;
+		
+	&lt;/div&gt;
+	
+	
+	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;CAUTION: This approach is best suited for when not using GitOps in Jenkins X.  We recommend you do however use GitOps when available.  In addition, do not make updates to the cluster that require recreating the cluster, all data will be lost.  Only changes that update the cluster are supported.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/aside&gt;
+
+
+&lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
+
+&lt;p&gt;Many organizations have adopted DevOps practices in the last few years.  This is valuable as it relates to Jenkins X as we provide a way to manage the Kubernetes clusters  Infrastructure as Code which is one of the core concepts of DevOps practices as it relates to automation.&lt;/p&gt;
+
+&lt;p&gt;Many environments may only allow for creating cloud resources using IasC, therefore we provide you with guidance on how to get started using Terraform to manage your Jekins X clusters.&lt;/p&gt;
+
+&lt;p&gt;Our objective is to bring awareness to our Jenkins X users on know that they can manage the cluster changes and version them by placing the Terraform code source control and adopting the typical developer workflow which includes PRs in source control to make infrastructure changes in a controlled manner.&lt;/p&gt;
+
+&lt;h2 id=&#34;terraform-clusters-for-aws-gcp-and-azure&#34;&gt;Terraform clusters for AWS, GCP and Azure&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X supports generating Terraform plans and code for all three leading clouds (AWS, Azure and GCP).&lt;/p&gt;
+
+&lt;p&gt;On this post we walk you through the steps for terraforming clusters in GKE.&lt;/p&gt;
+
+&lt;h2 id=&#34;benefits-of-using-iac-to-manage-your-k8s-clusters&#34;&gt;Benefits of Using IaC to Manage Your K8s Clusters&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;This is great, because at many companies the Ops team typically is already using IaC to manage the resources deployed to the cloud&lt;/li&gt;
+&lt;li&gt;Our Users gain the ability to version their infrastructure and follow the typical developer workflow as the code is in Github&lt;/li&gt;
+&lt;li&gt;Changes to the cluster can be automated, added to a pipeline&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h1&gt;
+
+&lt;p&gt;To get started, you must have the following items installed on your machine.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;jx&lt;/code&gt; CLI installed.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Terraform - can be installed using &lt;code&gt;brew install terraform&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;GCP account with proper rights to create resources&lt;/li&gt;
+&lt;li&gt;The Google Cloud CLI &lt;code&gt;gcloud&lt;/code&gt;
+&lt;code&gt;kubectl&lt;/code&gt; must also be installed&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;step-1-create-terraform-plan&#34;&gt;Step 1 - Create Terraform Plan&lt;/h1&gt;
+
+&lt;p&gt;Our first task is to generate the Terraform code for each cluster, we create a Dev, Staging and Production cluster.&lt;/p&gt;
+
+&lt;p&gt;We execute the &lt;code&gt;jx create terraform -c dev=gke -c stage=gke -c prod=gke&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The command generates three different clusters for each environment respectively in GCP.  Other providers supported are  aks, eks.&lt;/p&gt;
+
+&lt;h2 id=&#34;folder-structure-output&#34;&gt;Folder Structure Output&lt;/h2&gt;
+
+&lt;p&gt;Running the previous command, outputs the following folder structure wherever we executed the command locally.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;├── README.md
+├── build.sh
+├── ci-demo-206601-121d21dc79ac.json
+└── clusters
+├── dev
+│   └── terraform
+│       ├── README.md
+│       ├── key.json
+│       ├── main.tf
+│       ├── output.tf
+│       ├── terraform.tf
+│       ├── terraform.tfvars
+│       └── variables.tf
+├── prod
+│   └── terraform
+│       ├── README.md
+│       ├── main.tf
+│       ├── output.tf
+│       ├── terraform.tf
+│       ├── terraform.tfvars
+│       └── variables.tf
+└── stage
+└── terraform
+├── README.md
+├── main.tf
+├── output.tf
+├── terraform.tf
+├── terraform.tfvars
+└── variables.tf
+
+7 directories, 22 files
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We now have a great code-base to create our clusters on GKE for three different environments.&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+	&lt;div class=&#34;note-icon&#34;&gt;
+		
+	&lt;/div&gt;
+	
+	
+	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;NOTE: On this Post, we will only create the Dev Cluster, although the process is the same for creating the other Kubernetes clusters.
+First we need to make sure we have credentials to execute our Terraform code.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/aside&gt;
+
+
+&lt;h1 id=&#34;step-2-get-gke-credentials&#34;&gt;Step 2 - Get GKE Credentials&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X creates a Service Account (SA) for each cluster.&lt;/p&gt;
+
+&lt;p&gt;For our dev cluster, it has created the jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com account.&lt;/p&gt;
+
+&lt;p&gt;We need to download the &lt;code&gt;json&lt;/code&gt; file in order to pass as credentials to our &lt;code&gt;terraform.tf&lt;/code&gt; file which contains the definition to access the Terraform Backend.&lt;/p&gt;
+
+&lt;h2 id=&#34;downloading-credentials-json-file&#34;&gt;Downloading Credentials JSON File&lt;/h2&gt;
+
+&lt;p&gt;To download the SA account credentials, go to the GCP Console &amp;gt; IAM &amp;amp;  Admin &amp;gt; Service Accounts.&lt;/p&gt;
+
+&lt;p&gt;We find the one for our cluster which is named in our case
+as follows: &lt;code&gt;jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;We click on the file &lt;em&gt;name&lt;/em&gt;  &amp;gt; &lt;em&gt;edit&lt;/em&gt;, then click on &lt;em&gt;create key&lt;/em&gt; in JSON format, download and save in our project folder structure.&lt;/p&gt;
+
+&lt;p&gt;We now add a reference within the &lt;code&gt;terraform.tf&lt;/code&gt; as shown below.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;terraform {
+    required_version = &amp;quot;&amp;gt;= 0.11.0&amp;quot;
+    backend &amp;quot;gcs&amp;quot; {
+        bucket      = &amp;quot;ci-demo-206601-questerring-terraform-state&amp;quot;
+        prefix      = &amp;quot;dev&amp;quot;
+        credentials = &amp;quot;key.json&amp;quot;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice that we added the &lt;code&gt;credentials&lt;/code&gt; portion and point to the credentials &lt;code&gt;json&lt;/code&gt; file we downloaded from the Google IAM &amp;amp; Admin web console.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-3-initiate-terraform-backend&#34;&gt;Step 3 - Initiate Terraform Backend&lt;/h1&gt;
+
+&lt;p&gt;We are now ready to initiate Terraform backend.  Terraform backends are used to save the Terraform State remotely.  This is great for when a team needs to collaborate on making infrastructure changes, because the Terraform State is stored in the GCP Bucket that was also created when we executed our initial command to create the cluster.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform init                                                                                                               
+Initializing the backend...
+
+Successfully configured the backend &amp;quot;gcs&amp;quot;! Terraform will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+Checking for available provider plugins on https://releases.hashicorp.com...
+Downloading plugin for provider &amp;quot;google&amp;quot; (2.3.0)...
+
+Terraform has been successfully initialized!
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have initiated Terraform and our Terraform State is now configured to use the GCP Buket specified in the terraform.tf file.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-4-terraform-plan&#34;&gt;Step 4 - Terraform Plan&lt;/h1&gt;
+
+&lt;p&gt;We now can execute a &lt;code&gt;terraform plan&lt;/code&gt; and see what will be created.  At this point, we can opt to augment the terraform code.&lt;/p&gt;
+
+&lt;p&gt;For example, you may have an existing network that you wish to deploy the cluster in.  You may also wish to enable the an add-on, or you can specify the cluster_ipv4_cidr_block and many other things (see &lt;a href=&#34;https://www.terraform.io/docs/providers/google/r/container_cluster.html&#34;&gt;https://www.terraform.io/docs/providers/google/r/container_cluster.html&lt;/a&gt;) for details.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform plan                                                                                 
+
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+----
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
++ create
+
+Terraform will perform the following actions:
+
++ google_container_cluster.jx-cluster
+id:                                    &amp;lt;computed&amp;gt;
+additional_zones.#:                    &amp;lt;computed&amp;gt;
+addons_config.#:                       &amp;lt;computed&amp;gt;
+cluster_autoscaling.#:                 &amp;lt;computed&amp;gt;
+cluster_ipv4_cidr:                     &amp;lt;computed&amp;gt;
+description:                           &amp;quot;jx k8s cluster provisioned and managed via Terraform.&amp;quot;
+enable_binary_authorization:           &amp;lt;computed&amp;gt;
+enable_kubernetes_alpha:               &amp;quot;false&amp;quot;
+enable_legacy_abac:                    &amp;quot;false&amp;quot;
+enable_tpu:                            &amp;lt;computed&amp;gt;
+endpoint:                              &amp;lt;computed&amp;gt;
+initial_node_count:                    &amp;quot;3&amp;quot;
+instance_group_urls.#:                 &amp;lt;computed&amp;gt;
+ip_allocation_policy.#:                &amp;lt;computed&amp;gt;
+location:                              &amp;lt;computed&amp;gt;
+logging_service:                       &amp;quot;logging.googleapis.com&amp;quot;
+master_auth.#:                         &amp;lt;computed&amp;gt;
+master_ipv4_cidr_block:                &amp;lt;computed&amp;gt;
+master_version:                        &amp;lt;computed&amp;gt;
+monitoring_service:                    &amp;quot;monitoring.googleapis.com&amp;quot;
+name:                                  &amp;quot;questerring-dev&amp;quot;
+network:                               &amp;quot;default&amp;quot;
+network_policy.#:                      &amp;lt;computed&amp;gt;
+node_config.#:                         &amp;lt;computed&amp;gt;
+node_locations.#:                      &amp;lt;computed&amp;gt;
+node_pool.#:                           &amp;lt;computed&amp;gt;
+node_version:                          &amp;lt;computed&amp;gt;
+private_cluster:                       &amp;lt;computed&amp;gt;
+project:                               &amp;lt;computed&amp;gt;
+region:                                &amp;lt;computed&amp;gt;
+remove_default_node_pool:              &amp;quot;true&amp;quot;
+resource_labels.%:                     &amp;quot;3&amp;quot;
+resource_labels.created-by:            &amp;quot;me&amp;quot;
+resource_labels.created-timestamp:     &amp;quot;20190326093418&amp;quot;
+resource_labels.created-with:          &amp;quot;terraform&amp;quot;
+zone:                                  &amp;quot;us-west1-a&amp;quot;
+
++ google_container_node_pool.jx-node-pool
+id:                                    &amp;lt;computed&amp;gt;
+autoscaling.#:                         &amp;quot;1&amp;quot;
+autoscaling.0.max_node_count:          &amp;quot;5&amp;quot;
+autoscaling.0.min_node_count:          &amp;quot;3&amp;quot;
+cluster:                               &amp;quot;questerring-dev&amp;quot;
+initial_node_count:                    &amp;lt;computed&amp;gt;
+instance_group_urls.#:                 &amp;lt;computed&amp;gt;
+location:                              &amp;lt;computed&amp;gt;
+management.#:                          &amp;quot;1&amp;quot;
+management.0.auto_repair:              &amp;quot;true&amp;quot;
+management.0.auto_upgrade:             &amp;quot;false&amp;quot;
+max_pods_per_node:                     &amp;lt;computed&amp;gt;
+name:                                  &amp;quot;default-pool&amp;quot;
+name_prefix:                           &amp;lt;computed&amp;gt;
+node_config.#:                         &amp;quot;1&amp;quot;
+node_config.0.disk_size_gb:            &amp;quot;100&amp;quot;
+node_config.0.disk_type:               &amp;lt;computed&amp;gt;
+node_config.0.guest_accelerator.#:     &amp;lt;computed&amp;gt;
+node_config.0.image_type:              &amp;lt;computed&amp;gt;
+node_config.0.local_ssd_count:         &amp;lt;computed&amp;gt;
+node_config.0.machine_type:            &amp;quot;n1-standard-2&amp;quot;
+node_config.0.metadata.%:              &amp;lt;computed&amp;gt;
+node_config.0.oauth_scopes.#:          &amp;quot;7&amp;quot;
+node_config.0.oauth_scopes.1277378754: &amp;quot;https://www.googleapis.com/auth/monitoring&amp;quot;
+node_config.0.oauth_scopes.1693978638: &amp;quot;https://www.googleapis.com/auth/devstorage.full_control&amp;quot;
+node_config.0.oauth_scopes.172152165:  &amp;quot;https://www.googleapis.com/auth/logging.write&amp;quot;
+node_config.0.oauth_scopes.1733087937: &amp;quot;https://www.googleapis.com/auth/cloud-platform&amp;quot;
+node_config.0.oauth_scopes.2184564866: &amp;quot;https://www.googleapis.com/auth/service.management&amp;quot;
+node_config.0.oauth_scopes.299962681:  &amp;quot;https://www.googleapis.com/auth/compute&amp;quot;
+node_config.0.oauth_scopes.3663490875: &amp;quot;https://www.googleapis.com/auth/servicecontrol&amp;quot;
+node_config.0.preemptible:             &amp;quot;true&amp;quot;
+node_config.0.service_account:         &amp;lt;computed&amp;gt;
+node_count:                            &amp;quot;3&amp;quot;
+project:                               &amp;lt;computed&amp;gt;
+region:                                &amp;lt;computed&amp;gt;
+version:                               &amp;lt;computed&amp;gt;
+zone:                                  &amp;quot;us-west1-a&amp;quot;
+Plan: 2 to add, 0 to change, 0 to destroy.
+----
+
+Note: You didn&#39;t specify an &amp;quot;-out&amp;quot; parameter to save this plan, so Terraform
+can&#39;t guarantee that exactly these actions will be performed if
+&amp;quot;terraform apply&amp;quot; is subsequently run.
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;step-5-create-cluster-using-terraform-apply&#34;&gt;Step 5 - Create Cluster Using Terraform Apply&lt;/h1&gt;
+
+&lt;p&gt;Now that we&amp;rsquo;ve seen what will be created and using the default terraform code generated, let us create said resources!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform apply
+.....trimmed for brevity
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+cluster_endpoint = 35.203.147.59
+cluster_master_version = 1.11.7-gke.12
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The outcome shows some key information, like the &lt;em&gt;cluster_endpoint&lt;/em&gt; and the &lt;em&gt;cluster_master_version&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;set-kubectl-context&#34;&gt;Set Kubectl Context&lt;/h2&gt;
+
+&lt;p&gt;Let us access the cluster using kubectl.  In order to do that, we need to get credentials.  We execute the following command (which you can get from the UI on GCP right from the cluster connect window)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ gcloud container clusters get-credentials questerring-dev --zone us-west1-a --project ci-demo-206601 
+                        
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated for questerring-dev.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This has effectively modified our &lt;code&gt;kubeconfig&lt;/code&gt; file and we now have a new context.&lt;/p&gt;
+
+&lt;p&gt;Executing the following command, we see our new cluster (in bold)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx context                                                                                                                      
+BigDaddyO
+arn:aws:eks:us-west-2:653931956080:cluster/jxcluster
+gke_ci-demo-206601_europe-west1-b_sirjenkinsgke
+gke_ci-demo-206601_us-west1-a_chingold
+gke_ci-demo-206601_us-west1-a_questerring-dev
+gke_ci-demo-206601_us-west1-a_sirjenkinsgke
+gke_ci-demo-206601_us-west1-a_sirjenkinsx
+gke_ci-demo-206601_us-west1_sirjenkinsxgke
+minikube
+1553553075211690000@jxcluster.us-west-2.eksctl.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We are now ready to install Jenkins X on our cluster!&lt;/p&gt;
+
+&lt;h1 id=&#34;step-6-installing-jenkins-x-on-cluster&#34;&gt;Step 6 - Installing Jenkins X on Cluster&lt;/h1&gt;
+
+&lt;p&gt;To install Jenkins X, we simply run jx intall and follow the prompts.&lt;/p&gt;
+
+&lt;p&gt;{{ note }}
+NOTE that can pass additional flags as per your prefernces.  For example set the default admin password like so &lt;code&gt;--default-admin-password=MyPassw0rd&lt;/code&gt; (see other options by typing &lt;code&gt;jx install --help&lt;/code&gt;
+{{ /note }}&lt;/p&gt;
+
+&lt;p&gt;Now that we have Jenkins X installed, we can deploy an app etc.  We make sure it is up and running.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-7-modify-clusters&#34;&gt;Step 7 - Modify Clusters&lt;/h1&gt;
+
+&lt;p&gt;There are certain properties that can be modified without forcing a recreation of the clusters.  You &lt;em&gt;do not want to recreate them as your data will be lost&lt;/em&gt;.  Only changes that update the clusters are supported.&lt;/p&gt;
+
+&lt;p&gt;We are going to modify the cluster and add an add-on for the Dashboard which is typically disabled.&lt;/p&gt;
+
+&lt;p&gt;To do that we change the following within the cluster declaration in main.tf and add the following (in bold):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;resource &amp;quot;google_container_cluster&amp;quot; &amp;quot;jx-cluster&amp;quot; {
+    name                     = &amp;quot;${var.cluster_name}&amp;quot;
+    description              = &amp;quot;jx k8s cluster provisioned and managed via Terraform.&amp;quot;
+    zone                     = &amp;quot;${var.gcp_zone}&amp;quot;
+    enable_kubernetes_alpha  = &amp;quot;${var.enable_kubernetes_alpha}&amp;quot;
+    enable_legacy_abac       = &amp;quot;${var.enable_legacy_abac}&amp;quot;
+    initial_node_count       = &amp;quot;${var.min_node_count}&amp;quot;
+    remove_default_node_pool = &amp;quot;true&amp;quot;
+    logging_service          = &amp;quot;${var.logging_service}&amp;quot;
+    monitoring_service       = &amp;quot;${var.monitoring_service}&amp;quot;
+
+    resource_labels {
+        created-by = &amp;quot;${var.created_by}&amp;quot;
+        created-timestamp = &amp;quot;${var.created_timestamp}&amp;quot;
+        created-with = &amp;quot;managed by terraform&amp;quot;
+    }
+
+    lifecycle {
+        ignore_changes = [&amp;quot;node_pool&amp;quot;]
+    }
+
+    addons_config {
+        kubernetes_dashboard {
+            disabled = false
+        }
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then we run the terraform plan, output shows a change to the cluster as expected.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;terraform plan                                                                                                             
+
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+google_container_cluster.jx-cluster: Refreshing state... (ID: sposcar-dev)
+google_container_node_pool.jx-node-pool: Refreshing state... (ID: us-west1-a/sposcar-dev/default-pool)
+----
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+~ update in-place
+
+Terraform will perform the following actions:
+
+~ google_container_cluster.jx-cluster
+addons_config.0.kubernetes_dashboard.0.disabled: &amp;quot;true&amp;quot; =&amp;gt; &amp;quot;false&amp;quot;
+resource_labels.created-with:                    &amp;quot;terraform&amp;quot; =&amp;gt; &amp;quot;managed by terraform&amp;quot;
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+
+Note: You didn&#39;t specify an &amp;quot;-out&amp;quot; parameter to save this plan, so Terraform
+can&#39;t guarantee that exactly these actions will be performed if
+&amp;quot;terraform apply&amp;quot; is subsequently run.
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;accessing-kubernetes-dashboard&#34;&gt;Accessing kubernetes dashboard&lt;/h2&gt;
+
+&lt;p&gt;Now that our change has taken effect on our cluster, lets access the Dashboard.&lt;/p&gt;
+
+&lt;p&gt;{{ note }}
+NOTE: This dashboard is deprecated, and we are only showing you in the context of modifying your cluster to add an add-on.  Please use the GKE built-in UI
+{{ /note }}&lt;/p&gt;
+
+&lt;h3 id=&#34;get-access-token&#34;&gt;Get Access token&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;gcloud config config-helper --format=json | jq -r &#39;.credential.access_token&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Copy the token from the output of that command.&lt;/p&gt;
+
+&lt;p&gt;Next, execute &lt;code&gt;kubectl proxy&lt;/code&gt; which will enable you to access via the following URL&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy&#34;&gt;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Paste the token and now you should be able to access the now deprecated dashboard via the browser.&lt;/p&gt;
+
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;We walked through how to create your initial Terraform code and structure, created the Dev cluster and modified it by specifying an add-on to include in our cluster.&lt;/p&gt;
+
+&lt;p&gt;Please keep in mind, that once &lt;em&gt;GitOps&lt;/em&gt; feature in Jenkins X is available, we recommend you manage the platform in that manner.  Documentation, tutorials and presentations on that topic will be coming soon!&lt;/p&gt;
+
+&lt;p&gt;Cheers,&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://twitter.com/SharePointOscar&#34;&gt;@SharePointOscar&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Developer Advocate | Jenkins X&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>News: Jenkins X joins the CDF</title>
       <link>https://jenkins-x.io/news/jenkins-x-cdf/</link>
       <pubDate>Sat, 09 Mar 2019 07:36:00 +0200</pubDate>
