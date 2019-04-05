@@ -31,7 +31,7 @@
 <meta property="og:description" content="How to contribute to Jenkins X development." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/contribute/development/" /><meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-05T00:07:40&#43;00:00"/>
+<meta property="article:modified_time" content="2019-04-05T08:33:37&#43;00:00"/>
 
 <meta itemprop="name" content="Contribute to the code">
 <meta itemprop="description" content="How to contribute to Jenkins X development.">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3812">
+<meta itemprop="wordCount" content="3899">
 
 
 
@@ -280,6 +280,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#debugging-jx-with-stdin">Debugging jx with stdin</a></li>
 <li><a href="#debugging-a-unit-test">Debugging a unit test</a></li>
 <li><a href="#using-a-helper-script">Using a helper script</a></li>
+<li><a href="#enabling-kubernetes-api-tracing">Enabling Kubernetes API tracing</a></li>
 </ul></li>
 <li><a href="#try-a-new-version-of-jx-inside-a-pipeline">Try a new version of jx inside a pipeline</a></li>
 <li><a href="#code-generation">Code Generation</a></li>
@@ -641,6 +642,8 @@ You should <strong>NOT</strong> add <code>t.Parallel()</code> to an unencapsulat
 
 <h3 id="mocking-stubbing">Mocking / Stubbing</h3>
 
+<p><a name="mocking--stubbing"></a></p>
+
 <p>Mocking or stubbing methods in your unit tests will get you a long way towards test isolation. Coupled with the use of interface based APIs you should be able to make your methods easily testable and useful to other packages that may need to import them.
 <a href="https://github.com/petergtz/pegomock">Pegomock</a> is our current mocking library of choice, mainly because it is very easy to use and doesn&rsquo;t require you to write your own mocks (Yay!)
 We place all interfaces for each package in a file called <code>interface.go</code> in the relevant folder. So you can find all interfaces for <code>github.com/jenkins-x/jx/pkg/util</code> in <code>github.com/jenkins-x/jx/pkg/util/interface.go</code>
@@ -740,6 +743,12 @@ make debugtest1</code></pre></div>
 dlv --listen<span class="o">=</span>:2345 --headless<span class="o">=</span><span class="nb">true</span> --api-version<span class="o">=</span><span class="m">2</span> <span class="nb">exec</span> <span class="sb">`</span>which jx<span class="sb">`</span> -- <span class="nv">$*</span></code></pre></div>
 <p>Then you can change your <code>jx someArgs</code> CLI to <code>jxDebug someArgs</code> then debug it!</p>
 
+<h3 id="enabling-kubernetes-api-tracing">Enabling Kubernetes API tracing</h3>
+
+<p>In some cases it can be useful to see the REST API calls made to the Kubernetes cluster.
+You can enable trace by setting the environment variable <code>TRACE_KUBE_API</code> to the value &ldquo;on&rdquo; or &ldquo;1&rdquo;.
+For example:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">TRACE_KUBE_API</span><span class="o">=</span>on jx get apps</code></pre></div>
 <h2 id="try-a-new-version-of-jx-inside-a-pipeline">Try a new version of jx inside a pipeline</h2>
 
 <p>You can usually just run <code>jx</code> locally on your laptop and can simulate being in a pipeline using environment variables and run it inside a git clone of a sample project etc. However there are times you really want to test inside an actual running pipeline - here&rsquo;s how:</p>
@@ -763,26 +772,42 @@ dlv --listen<span class="o">=</span>:2345 --headless<span class="o">=</span><spa
 
 <h2 id="code-generation">Code Generation</h2>
 
-<p>Jenkins X makes use of code generation to create <a href="#mocking--stubbing">Mocks</a>, Kubernetes Custom Resource clients,
-<a href="../apidocs">OpenAPI spec and API Documentation</a>. The generated files are always committed.</p>
-
-<p>• <code>make generate</code> runs all generation you need to do before commiting changes
-• <code>make generate-mocks</code> - generates the mocks only (run by <code>make generate</code>)
-• <code>make generate-client</code> - generates the Kubernetes Custom Resource clients only
-• <code>make generate-openapi</code> generates the OpenAPI spec only (run by <code>make generate</code>)
-• <code>make generate-docs</code> generates the HTML apidocs, and is not committed</p>
-
-<p>If you get a conflict on any of these directories or files when committing, rebasing or merging your best bet is to
-discard the changeset you have, and regenerate the clients:</p>
+<p>Jenkins X makes use of code generation to create <a href="#mocking--stubbing">Mocks</a>, Kubernetes Custom Resource clients, <a href="../apidocs">OpenAPI spec and API Documentation</a>.
+The generated files, except for the HTML docs, checked into version control.
+There are several <code>make</code> targets resposible for code generation.
+They can be found in <code>Makefile.codegen</code>.</p>
 
 <ul>
-<li><code>pkg/client</code></li>
-<li><code>docs/apidocs/openapi-spec</code></li>
-<li><code>*/mocks/*</code></li>
+<li><code>make generate</code> runs all generation you need to do before commiting changes</li>
+<li><code>make generate-mocks</code> - generates the <a href="https://github.com/petergtz/pegomock">Pegomocks</a> only</li>
+<li><code>make generate-client</code> - generates the Kubernetes Custom Resource clientset only.</li>
+<li><code>make generate-openapi</code> generates the <a href="https://swagger.io/specification/">OpenAPI</a> spec only</li>
+<li><code>make generate-docs</code> generates the HTML apidocs, and is not committed</li>
 </ul>
 
-<p>As part of the PR builds we run a job to validate that the code generation is up to date. If the code generation is
-not up to date (running <code>make generate</code> produces a <code>git diff</code> or untracked files) then your PR will be blocked.</p>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>Not all files under <code>pkg/client/clientset/versioned/typed/jenkins.io/v1</code> are generated.
+ The expansion files are manually maintained and need to be kept when re-generating the clientset.
+ See also <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machingenerating-clientset.md">clientset generation</a> in the Kuberenetes Community repository.</p>
+</div>
+</aside>
+
+
+<p>If you get a conflict on any of these directories or files when committing, rebasing or merging your best bet is to discard the changeset you have, and regenerate:</p>
+
+<ul>
+<li><code>pkg/client</code> (<code>make generate-client</code>)</li>
+<li><code>docs/apidocs/openapi-spec</code> (<code>make generate-openapi</code>)</li>
+<li><code>**/mocks/**</code> (<code>make generate-mocks</code>)</li>
+</ul>
+
+<p>As part of the PR builds we run a job to validate that the code generation is up to date.
+If the code generation is not up to date (running <code>make generate</code> produces a <code>git diff</code> or untracked files) then your PR will be blocked.</p>
 
 </div>
 
@@ -1340,7 +1365,7 @@ not up to date (running <code>make generate</code> produces a <code>git diff</co
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Contribute to the code”
-  </a> was last updated: April 5, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/0eaeac039e09c1e5aae7fc2d479f938a6deb82b5">release 0.0.38 (0eaeac0)</a>
+  </a> was last updated: April 5, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/2165d31fda5ee18aee782a6eb88aae27d57e1de3">release 0.0.39 (2165d31)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/contribute/development.md" class="
