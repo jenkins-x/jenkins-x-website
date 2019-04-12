@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions on common issues setting up Jenkins X." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/issues/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-12T05:00:28&#43;00:00"/>
+<meta property="article:modified_time" content="2019-04-12T05:08:43&#43;00:00"/>
 
 <meta itemprop="name" content="Common Problems">
 <meta itemprop="description" content="Questions on common issues setting up Jenkins X.">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1780">
+<meta itemprop="wordCount" content="1782">
 
 
 
@@ -232,6 +232,14 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#helm-fails-with-error-upgrade-failed-incompatible-versions-client-server">Helm fails with Error: UPGRADE FAILED: incompatible versions client[&hellip;] server[&hellip;]&rsquo;</a></li>
 <li><a href="#error-creating-jenkins-credential-jenkins-x-chartmuseum-500-server-error">error creating jenkins credential jenkins-x-chartmuseum 500 Server Error</a></li>
 <li><a href="#errors-with-https-chartmuseum-build-cd-jenkins-x-io">errors with <a href="https://chartmuseum.build.cd.jenkins-x.io">https://chartmuseum.build.cd.jenkins-x.io</a></a></li>
+<li><a href="#git-errors-post-401-bad-credentials">git errors: POST 401 Bad credentials</a></li>
+<li><a href="#invalid-git-token-to-scan-a-project">Invalid git token to scan a project</a></li>
+<li><a href="#what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</a>
+<ul>
+<li><a href="#set-admin-username-and-password-values-for-core-services">Set Admin Username and Password values for Core Services</a></li>
+</ul></li>
+<li><a href="#persistent-volume-claims-do-not-bind">Persistent Volume Claims do not bind</a></li>
+<li><a href="#how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</a></li>
 <li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
 <li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
 <li><a href="#cannot-access-services-on-minikube">Cannot access services on minikube</a></li>
@@ -398,87 +406,82 @@ time=&quot;2018-07-09T21:18:31Z&quot; level=fatal msg=&quot;build step: pushing 
 <h2 id="errors-with-https-chartmuseum-build-cd-jenkins-x-io">errors with <a href="https://chartmuseum.build.cd.jenkins-x.io">https://chartmuseum.build.cd.jenkins-x.io</a></h2>
 
 <p>If you see errors like:</p>
-<div class="highlight"><pre class="chroma"><code class="language-error:failed to add the repository 'jenkins-x' with URL 'https://chartmuseum.build.cd.jenkins-x.io':```" data-lang="error:failed to add the repository 'jenkins-x' with URL 'https://chartmuseum.build.cd.jenkins-x.io':```">or 
 
-```Looks like &#34;https://chartmuseum.build.cd.jenkins-x.io&#34; is not a valid chart repository or cannot be reached```
-
-then it looks like you have a reference to an old chart museum URL for Jenkins X charts.
-
-The new URL is: http://chartmuseum.jenkins-x.io
-
-It could be your helm install has an old repository URL installed. You should see...</code></pre></div>
-<p>$ helm repo list
-NAME        URL
-stable      <a href="https://kubernetes-charts.storage.googleapis.com">https://kubernetes-charts.storage.googleapis.com</a>
-jenkins-x   <a href="http://chartmuseum.jenkins-x.io">http://chartmuseum.jenkins-x.io</a></p>
-
-<pre><code>
-If you see this...
-
+<pre><code>error:failed to add the repository 'jenkins-x' with URL 'https://chartmuseum.build.cd.jenkins-x.io'
 </code></pre>
 
-<p>$ helm repo list
-NAME        URL
-jenkins-x   <a href="https://chartmuseum.build.cd.jenkins-x.io">https://chartmuseum.build.cd.jenkins-x.io</a></p>
+<p>or</p>
 
-<pre><code>
-then please run...
-
+<pre><code>Looks like &quot;https://chartmuseum.build.cd.jenkins-x.io&quot; is not a valid chart repository or cannot be reached
 </code></pre>
 
-<p>helm repo remove jenkins-x
-helm repo add jenkins-x <a href="http://chartmuseum.jenkins-x.io">http://chartmuseum.jenkins-x.io</a></p>
+<p>then it looks like you have a reference to an old chart museum URL for Jenkins X charts.</p>
 
-<pre><code>
-and you should be good to go again.
+<p>The new URL is: <a href="http://chartmuseum.jenkins-x.io">http://chartmuseum.jenkins-x.io</a></p>
 
+<p>It could be your helm install has an old repository URL installed. You should see&hellip;</p>
 
-Another possible cause is an old URL in your environment's git repository may have old references to the URL.
-
-So open your `env/requirements.yaml` in your staging/production git repositories and modify them to use the URL https://chartmuseum.build.cd.jenkins-x.io intsead of https://chartmuseum.build.cd.jenkins-x.io like this [env/requirements file](https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml)
-
-## git errors: POST 401 Bad credentials
-
-This indicates your git API token either was input incorrectly or has been regenerated and is now incorrect.
-
-To recreate it with a new API token value try the following (changing the git server name to match your git provider):
-
+<pre><code>$ helm repo list
+NAME     	URL
+stable   	https://kubernetes-charts.storage.googleapis.com
+jenkins-x	http://chartmuseum.jenkins-x.io
 </code></pre>
 
-<p>jx delete git token -n GitHub admin
-jx create git token -n GitHub admin</p>
+<p>If you see this&hellip;</p>
 
-<pre><code>
-More details on [using git and Jenkins X here](/developing/git/)
-
-
-## Invalid git token to scan a project
-
-If you get an error in Jenkins when it tries to scan your repositories for branches something like:
-
+<pre><code>$ helm repo list
+NAME     	URL
+jenkins-x	https://chartmuseum.build.cd.jenkins-x.io
 </code></pre>
 
-<p>hudson.AbortException: Invalid scan credentials **<strong><em>/</em></strong>*** (API Token for acccessing <a href="https://github.com">https://github.com</a> git service inside pipelines) to connect to <a href="https://api.github.com">https://api.github.com</a>, skipping</p>
+<p>then please run&hellip;</p>
 
-<pre><code>
-Then your git API token was probably wrong or has expired.
-
-To recreate it with a new API token value try the following (changing the git server name to match your git provider):
-
+<pre><code>helm repo remove jenkins-x
+helm repo add jenkins-x	http://chartmuseum.jenkins-x.io
 </code></pre>
 
-<p>jx delete git token -n GitHub admin
-jx create git token -n GitHub admin</p>
+<p>and you should be good to go again.</p>
 
-<pre><code>
-More details on [using git and Jenkins X here](/developing/git/)
+<p>Another possible cause is an old URL in your environment&rsquo;s git repository may have old references to the URL.</p>
 
-## What are the credentials to access core services?
+<p>So open your <code>env/requirements.yaml</code> in your staging/production git repositories and modify them to use the URL <a href="https://chartmuseum.build.cd.jenkins-x.io">https://chartmuseum.build.cd.jenkins-x.io</a> intsead of <a href="https://chartmuseum.build.cd.jenkins-x.io">https://chartmuseum.build.cd.jenkins-x.io</a> like this <a href="https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml">env/requirements file</a></p>
 
-Authenticated core services of Jenkins X include Jenkins, Nexus, ChartMuseum.  The default username is `admin`and the password by default is generated and printed out in the terminal after `jx create cluster` or `jx install`.  
+<h2 id="git-errors-post-401-bad-credentials">git errors: POST 401 Bad credentials</h2>
 
-### Set Admin Username and Password values for Core Services
-You can also set the admin username via the `--default-admin-username=username` flag.
+<p>This indicates your git API token either was input incorrectly or has been regenerated and is now incorrect.</p>
+
+<p>To recreate it with a new API token value try the following (changing the git server name to match your git provider):</p>
+
+<pre><code>jx delete git token -n GitHub admin
+jx create git token -n GitHub admin
+</code></pre>
+
+<p>More details on <a href="https://jenkins-x.io/developing/git/">using git and Jenkins X here</a></p>
+
+<h2 id="invalid-git-token-to-scan-a-project">Invalid git token to scan a project</h2>
+
+<p>If you get an error in Jenkins when it tries to scan your repositories for branches something like:</p>
+
+<pre><code>hudson.AbortException: Invalid scan credentials *****/****** (API Token for acccessing https://github.com git service inside pipelines) to connect to https://api.github.com, skipping
+</code></pre>
+
+<p>Then your git API token was probably wrong or has expired.</p>
+
+<p>To recreate it with a new API token value try the following (changing the git server name to match your git provider):</p>
+
+<pre><code>jx delete git token -n GitHub admin
+jx create git token -n GitHub admin
+</code></pre>
+
+<p>More details on <a href="https://jenkins-x.io/developing/git/">using git and Jenkins X here</a></p>
+
+<h2 id="what-are-the-credentials-to-access-core-services">What are the credentials to access core services?</h2>
+
+<p>Authenticated core services of Jenkins X include Jenkins, Nexus, ChartMuseum.  The default username is <code>admin</code>and the password by default is generated and printed out in the terminal after <code>jx create cluster</code> or <code>jx install</code>.</p>
+
+<h3 id="set-admin-username-and-password-values-for-core-services">Set Admin Username and Password values for Core Services</h3>
+
+<p>You can also set the admin username via the <code>--default-admin-username=username</code> flag.</p>
 
 <aside class="admonition note">
 	<div class="note-icon">
@@ -493,35 +496,31 @@ You can also set the admin username via the `--default-admin-username=username` 
 </aside>
 
 
-If you would like to set the default password yourself then you can set the flag `--default-admin-password=foo` to the two comamnds above.
+<p>If you would like to set the default password yourself then you can set the flag <code>--default-admin-password=foo</code> to the two comamnds above.</p>
 
-If you don't have the terminal console output anymore you can look in the local file `~/.jx/jenkinsAuth.yaml` and find the password that matches your Jenkins server URL for the desired cluster.
+<p>If you don&rsquo;t have the terminal console output anymore you can look in the local file <code>~/.jx/jenkinsAuth.yaml</code> and find the password that matches your Jenkins server URL for the desired cluster.</p>
 
-## Persistent Volume Claims do not bind
+<h2 id="persistent-volume-claims-do-not-bind">Persistent Volume Claims do not bind</h2>
 
-If you notice that the persistent volume claims created when installing Jenkins X don't bind with
+<p>If you notice that the persistent volume claims created when installing Jenkins X don&rsquo;t bind with</p>
 
-    kubectl get pvc
-
-The you should check that you have a cluster default storage class for dynamic persistent volume provisioning.  See [here](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/) for more details.
-
-
-## How can I diagnose exposecontroller issues?
-
-When you [promote a new version of your application to an environment](/faq/develop/#how-does-promotion-actually-work), such as the Staging Environment a Pull Request is raised on the environment repository.
-
-When the master pipeline runs on an environment a Kubernetes `Job` is created for [exposecontroller](https://github.com/jenkins-x/exposecontroller) which runs a pod until it terminates.
-
-It can be tricky finding the log for temporary jobs since the pod is removed.
-
-One way to diagnose logs in your, say, Staging environment is to [download and install kail](https://github.com/boz/kail) and add it to your `PATH`.
-
-Then run this command:
-
-```shell 
-kail -l job-name=expose -n jx-staging
+<pre><code>kubectl get pvc
 </code></pre>
 
+<p>The you should check that you have a cluster default storage class for dynamic persistent volume provisioning.  See <a href="https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/">here</a> for more details.</p>
+
+<h2 id="how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</h2>
+
+<p>When you <a href="https://jenkins-x.io/faq/develop/#how-does-promotion-actually-work">promote a new version of your application to an environment</a>, such as the Staging Environment a Pull Request is raised on the environment repository.</p>
+
+<p>When the master pipeline runs on an environment a Kubernetes <code>Job</code> is created for <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> which runs a pod until it terminates.</p>
+
+<p>It can be tricky finding the log for temporary jobs since the pod is removed.</p>
+
+<p>One way to diagnose logs in your, say, Staging environment is to <a href="https://github.com/boz/kail">download and install kail</a> and add it to your <code>PATH</code>.</p>
+
+<p>Then run this command:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">kail -l job-name<span class="o">=</span>expose -n jx-staging</code></pre></div>
 <p>If you then promote to the Staging environment or retrigger the pipeline on the <code>master</code> branch of your Staging git repository (e.g. via <a href="https://jenkins-x.io/commands/jx_start_pipeline/">jx start pipeline</a>) then you should see the output of the <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> pod.</p>
 
 <h2 id="cannot-create-cluster-minikube">Cannot create cluster minikube</h2>
@@ -1161,7 +1160,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Common Problems”
-  </a> was last updated: April 12, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/5681b7ff0ff8b3fa5fc4f745bc490524c438c0a7">release 0.0.61 (5681b7f)</a>
+  </a> was last updated: April 12, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/4c9d94395144139af4b671657d8ecdd3589f2b7d">release 0.0.62 (4c9d943)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/issues.md" class="
