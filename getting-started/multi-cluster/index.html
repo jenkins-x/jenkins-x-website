@@ -31,7 +31,7 @@
 <meta property="og:description" content="Use separate cluster, account or clouds" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/getting-started/multi-cluster/" /><meta property="article:published_time" content="2016-11-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-26T10:06:06&#43;00:00"/>
+<meta property="article:modified_time" content="2019-04-26T13:52:50&#43;00:00"/>
 
 <meta itemprop="name" content="Multiple Clusters">
 <meta itemprop="description" content="Use separate cluster, account or clouds">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2016-11-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2016-11-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="595">
+<meta itemprop="wordCount" content="924">
 
 
 
@@ -211,7 +211,10 @@ var trackOutboundLink = function(id, url) {
 <li>
 <ul>
 <li><a href="#goal">Goal</a></li>
-<li><a href="#installing">Installing</a></li>
+<li><a href="#creating-your-dev-cluster">Creating your Dev cluster</a></li>
+<li><a href="#configure-an-existing-dev-cluster">Configure an existing Dev cluster</a></li>
+<li><a href="#installing-environment-controller">Installing Environment Controller</a></li>
+<li><a href="#installing-ingress-controller">Installing Ingress Controller</a></li>
 <li><a href="#how-it-works">How it works</a></li>
 <li><a href="#demo">Demo</a></li>
 <li><a href="#known-limitations">Known limitations</a></li>
@@ -291,18 +294,61 @@ var trackOutboundLink = function(id, url) {
 <li>does not require access to the development cluster or anything else in Jenkins X other than the environments git repository and a docker + chart repository</li>
 </ul>
 
-<h2 id="installing">Installing</h2>
+<h2 id="creating-your-dev-cluster">Creating your Dev cluster</h2>
 
-<p>There is a single simple install command <a href="https://jenkins-x.io/commands/jx_create_addon_environment/">jx create addon envctl</a>.</p>
+<p>If you are creating a new installation then when you use <a href="https://jenkins-x.io/commands/jx_create_cluster">jx create cluster</a> or <a href="https://jenkins-x.io/commands/jx_install">jx install</a> then please specify <code>--remote-environments</code> to indicate that <code>Staging/Production</code> environments will be remote from the development cluster.</p>
+
+<p>e.g.</p>
+
+<pre><code>jx create cluster gke --remote-environments --tekton
+</code></pre>
+
+<p>When creating your Environments via <a href="jx_create_environment">jx create environment</a> you can also specify the environment is remote via the <code>--remote</code> or answering <code>Y</code> to the question when prompted.</p>
+
+<p>What this means is that if an environment is remote to the development cluser then we don&rsquo;t register the release pipeline
+of the environment in the Dev cluster; we leave that to the Environment Controller to perform running inside the remote cluster.</p>
+
+<h2 id="configure-an-existing-dev-cluster">Configure an existing Dev cluster</h2>
+
+<p>If you already have a Dev cluster that was setup with <code>Staging</code> and <code>Production</code> namespaces inside your Dev cluster then please do the following:</p>
+
+<p>Edit the environments to mark them as remote via <a href="jx_edit_environment">jx edit environment</a>:</p>
+
+<pre><code>jx edit env staging --remote 
+jx edit env production --remote 
+</code></pre>
+
+<p>You need to manually disable the release pipeline in the Dev cluster.</p>
+
+<p>e.g. by removing the <code>postsubmit</code> setting in your Prow configuration if you are using <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">serverless Jenkins X Pipelines and tekton</a> - or comment out the <code>jx step helm apply</code> command in your <code>Jenkinsfile</code> if using static jenkins server</p>
+
+<h2 id="installing-environment-controller">Installing Environment Controller</h2>
+
+<p>First you need to connect to your remote kubernetes cluster for <code>Staging</code> or <code>Production</code> using your managed kubernetes provider&rsquo;s tooling.</p>
+
+<p>You also need to have RBAC karma to be able to <a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping">escalate roles</a> for <code>Role</code> and/or <code>ClsuterRole</code> permissions.</p>
+
+<p>Then to install the Environment Controller use <a href="https://jenkins-x.io/commands/jx_create_addon_environment/">jx create addon envctl</a>.</p>
 
 <p>You need to specify the environments git repository and docker registry host and on GCP the project ID:</p>
 
-<pre><code>jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true
+<pre><code>jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken -
 </code></pre>
 
 <p>The installer needs a user + API token for the git repository which it will prompt you for the known values from your <code>~/.jx/gitAuth.yaml</code> file so if you already installed Jenkins X it should be able to default those values for you.</p>
 
 <p>If you prefer you can install the helm chart <code>jenkins-x/environment-controller</code> directly with helm by specifying the <a href="https://github.com/jenkins-x-charts/environment-controller/blob/master/environment-controller/values.yaml#L3-L19">required values from the values.yaml file</a></p>
+
+<h2 id="installing-ingress-controller">Installing Ingress Controller</h2>
+
+<p>If you don&rsquo;t already have any kind of Ingress Controller in your remote <code>Staging</code> / <code>Production</code> cluster then it is recommend - particularly if you want to try out our <a href="https://jenkins-x.io/developing/create-quickstart/">quickstarts</a> which depend on Ingress to be able to be used from a web browser.</p>
+
+<p>To install the default ingress controller into a remote cluster (which doesn&rsquo;t have Jenkins X installed) you can use the command <a href="https://jenkins-x.io/commands/jx_create_addon_ingress/">jx create addon ingctl</a></p>
+
+<pre><code>jx create addon ingctl
+</code></pre>
+
+<p>This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct <code>domain</code> value on the generated <code>Ingress</code> resources.</p>
 
 <h2 id="how-it-works">How it works</h2>
 
@@ -331,10 +377,6 @@ var trackOutboundLink = function(id, url) {
 </span><span class="w">    </span>value<span class="p">:</span><span class="w"> </span>http<span class="p">:</span>//chartmuseum.jx.<span class="m">1.2</span>.<span class="m">3.4</span>.nip.io</code></pre></div>
 <p>You can do the above via the <a href="https://jenkins-x.io/commands/jx_create_variable/">jx create var -n CHART_REPOSITORY</a> command if you are inside a clone of the staging/production git repository - then git commit + merge the change.</p>
 
-<ul>
-<li>You need to manually disable the release pipeline in the Dev cluster - e.g. by removing the <code>postsubmit</code> setting in your Prow configuration if you are using <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">serverless Jenkins X Pipelines and tekton</a> - or comment out the <code>jx step helm apply</code> command in your <code>Jenkinsfile</code></li>
-</ul>
-
 </div>
 
           
@@ -342,13 +384,13 @@ var trackOutboundLink = function(id, url) {
 <h2>See Also</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/getting-started/next/">What&#39;s next?</a></li>
-	
 	<li><a href="https://jenkins-x.io/getting-started/install-on-cluster/">Install on Kubernetes</a></li>
 	
-	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
+	<li><a href="https://jenkins-x.io/getting-started/next/">What&#39;s next?</a></li>
 	
 	<li><a href="https://jenkins-x.io/getting-started/manage-via-gitops/">Manage by GitOps</a></li>
+	
+	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
 	
 	<li><a href="https://jenkins-x.io/getting-started/aws-terraform-install-gitops/">Create EKS cluster on AWS</a></li>
 	
@@ -911,7 +953,7 @@ var trackOutboundLink = function(id, url) {
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Multiple Clusters”
-  </a> was last updated: April 26, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/0918a6e237c2c79f06e4b22dacbfe8e734b0a0fd">release 0.0.178 (0918a6e)</a>
+  </a> was last updated: April 26, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/d8241ec1bc525a042742e4b27da428fee621a180">release 0.0.179 (d8241ec)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/multi-cluster.md" class="
