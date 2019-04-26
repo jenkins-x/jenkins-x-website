@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-200.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+     
+    <title>Install Jenkins X on GKE Properly | Jenkins X</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+     <meta name="generator" content="Hugo 0.49" />
+
+      
+        <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+      
+
+    <link href='https://jenkins-x.io/dist/main.css' rel='stylesheet' type="text/css" /><script src="https://jenkins-x.io/js/chart.js"></script>
+<style>
+  img.avatar {
+    width: 32px;
+    display: inline;
+  }
+</style>
+<meta property="og:title" content="Install Jenkins X on GKE Properly" />
+<meta property="og:description" content="A comprehensive tutorial on how to install and configure Jenkins X so that you have a Jenkins X Bot working properly.  This ensures your experience as a Developer interacting with Jenkinx X is more realistic.  
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jenkins-x.io/getting-started/jenkins-x-gke-install-with-bot/" /><meta property="article:published_time" content="2019-04-25T07:36:00&#43;02:00"/>
+<meta property="article:modified_time" content="2019-04-26T03:45:13&#43;00:00"/>
+
+<meta itemprop="name" content="Install Jenkins X on GKE Properly">
+<meta itemprop="description" content="A comprehensive tutorial on how to install and configure Jenkins X so that you have a Jenkins X Bot working properly.  This ensures your experience as a Developer interacting with Jenkinx X is more realistic.  
+">
+
+
+<meta itemprop="datePublished" content="2019-04-25T07:36:00&#43;02:00" />
+<meta itemprop="dateModified" content="2019-04-25T07:36:00&#43;02:00" />
+<meta itemprop="wordCount" content="3553">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
+
+<meta name="twitter:title" content="Install Jenkins X on GKE Properly"/>
+<meta name="twitter:description" content="A comprehensive tutorial on how to install and configure Jenkins X so that you have a Jenkins X Bot working properly.  This ensures your experience as a Developer interacting with Jenkinx X is more realistic.  
+"/>
+<meta name="twitter:site" content="@jenkinsxio"/>
+
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-4216293-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-4216293-7');
+
+
+
+var trackOutboundLink = function(id, url) {
+  console.log("track:", id, url)
+  gtag('event', 'click', {
+    'event_category': 'outbound',
+    'event_label': id,
+    'transport_type': 'beacon',
+    'event_callback': function(){document.location = url;}
+  });
+}
+
+</script>
+
+      
+     <link href='https://jenkins-x.io/css/build_status.css' rel='stylesheet' type="text/css" />
+
+  </head>
+  <body class="ma0 sans-serif bg-primary-color-light production">
+    
+<nav class="bg-primary-color-dark pv4 w-100" role="navigation">
+
+  <div class="center flex-ns flex-wrap items-center justify-start mw9">
+
+    <h1 class="dim f3 lh-solid ml0-ns mr0 mr4-l mv0 pl3 pl4-ns">
+      <a href="https://jenkins-x.io/" class="link white">
+         Jenkins X
+      </a>
+    </h1>
+    <ul class="list ma0 pa0 dn dib-l">
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/documentation" class="dim link light-silver">
+            Documentation
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/news/" class="dim link light-silver">
+            News
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/community" class="dim link light-silver">
+            Community
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://github.com/jenkins-x/jx" class="dim link light-silver">
+            GitHub
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins.io" class="dim link light-silver">
+            Jenkins
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/sponsors/" class="dim link light-silver">
+            Sponsors
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/security/" class="dim link light-silver">
+            Security
+              
+            
+            
+          </a>
+        </li>
+      
+    </ul>
+
+    <div class="db dib-ns pl3"><form id="site-search-form" action="" role="search">
+  <fieldset class="bn ma0 pa0">
+    <label class="clip" for="email-address">Search</label>
+    <input type="search" id="search-input" class="needs-js bg-left bg-transparent bn f5 input-reset lh-solid mt3 mt0-ns pl4 pv2 w5 white" placeholder="Search the Docs" type="text" name="email-address" value="" style="background-image:url('/images/icon-search.png');background-size:16px 16px;">
+  </fieldset>
+</form>
+</div>
+
+    <div class="list ma0 pa0 dn dib-l"></div>
+
+    <span class="absolute mt1 mt2-l pr3 right-0 top-0">
+
+  <a href="https://twitter.com/intent/follow?screen_name=jenkinsxio" title="Follow on Twitter" class="link-transition twitter link dib z-999 pt3 pt0-l mr2">
+    <svg height="32px" id="Layer_1" style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+  </a>
+
+<a class="github-button needs-js link primary-color-dark" href="https://github.com/jenkins-x/jx" data-size="large" data-show-count="false" aria-label="Star jenkins-x/jx on GitHub">Star</a>
+</span>
+
+  </div>
+</nav>
+
+    
+    <main role="main" class="content-with-sidebar min-vh-100 pb7 pb0-ns">
+      
+  <article class="w-100 ph4 pb5 pb6-ns pt1 pt5-ns">
+    <div class="flex-l">
+
+      <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky">
+<aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
+	
+
+	<div date-pref>
+		
+			<a href="https://jenkins-x.io/getting-started/aws-terraform-install-gitops/" class="dib f6 pl1 hover-bg-light-gray br-100" title="Create EKS cluster on AWS ">
+				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+
+		
+	</div>
+
+</aside>
+</div>
+
+      <div class="order-1 w-60-l mw7 ph0 ph5-ns mid-gray nested-copy-line-height no-underline nested-links nested-img nested-copy-seperator nested-blockquote mt0-ns" style="flex-grow:1;">
+        <div class="documentation-copy center measure-wide-l">
+          <div id="readout" class="fixed right-0 bottom-0">
+          </div>
+          <header class="flex-none w-100">
+  
+    
+      <a href="https://jenkins-x.io/categories/blog" class="f6 fw8 mb0 link mid-gray dim mr3">
+        BLOG
+      </a>
+    
+  
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Install Jenkins X on GKE Properly</h1>
+</header>
+
+<aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
+  
+    <div class="f4 fw4 lh-copy">
+      A comprehensive tutorial on how to install and configure Jenkins X so that you have a Jenkins X Bot working properly.  This ensures your experience as a Developer interacting with Jenkinx X is more realistic.
+    </div>
+  
+
+  
+</aside>
+
+
+
+<div class="prose" id="prose">
+
+
+
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p><strong>NOTE:</strong> This tutorial is based on the following jx version</p>
+
+<pre><code>NAME               VERSION
+jx                 2.0.33
+jenkins x platform 2.0.108
+Kubernetes cluster v1.11.8-gke.6
+kubectl            v1.14.0
+helm client        Client: v2.13.1+g618447c
+git                git version 2.21.0
+Operating System   Mac OS X 10.14.3 build 18D42
+</code></pre>
+</div>
+</aside>
+
+
+<h1 id="overview">Overview</h1>
+
+<p>In this tutorial, we walk you through a full setup of Jenkinx X in GKE, including setup of the Bot.  We will install Jenkins X Serverless topology which also brings Tekton pipelines for us to use in this scenario.  We walk through putting an app via CI/CD and ensuring the Jenkins X Bot is working as expected.</p>
+
+<h1 id="what-you-will-learn">What You Will Learn</h1>
+
+<ol>
+<li>Install Jenkins X on GKE including the Jenkins Bot configuration for the full and proper experience</li>
+<li>Run an application through CI/CD and seeing the bot in action, executing approval commands (as the approver)</li>
+</ol>
+
+<h1 id="prerequisites">Prerequisites</h1>
+
+<ol>
+<li>A GCP account along with a <strong>Project</strong> already created.</li>
+<li>You should be able to create resources via the <code>gcloud</code> CLI</li>
+<li>You should have <code>kubectl</code> installed.</li>
+<li>The <code>jx</code> CLI version <code>2.0.33</code> or greater, perferably this specific version.</li>
+<li>Github Organization</li>
+<li>Github account - used as the <em>Jenkins</em> X Bot [  Github account: <code>jenkinsx-bot-sposcar</code> does not have to have high privileges]</li>
+<li>Github account - used as the <em>Developer</em> working on code [  Github account: <code>sharepointoscar</code>]</li>
+<li>Both Github accounts should belong to the Github Organization. [ Github Org: <code>jenkins-oscar</code>]</li>
+</ol>
+
+<aside class="admonition warning">
+	<div class="admonition-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>Lastly, clean up after yourself!  If you&rsquo;ve tried multiple installs, best approach is to remove the <code>~/.jx</code> folder as there are sometimes things that are saved and reused for new installs obviously.</p>
+</div>
+</aside>
+
+
+<p>Your Github Organization and user accounts should be setup similar to how it is shown on <strong>Figure 1</strong> below.</p>
+
+<figure>
+<img src="https://jenkins-x.io/images/getting-started/github_org_settings.png"/>
+<figcaption>
+<h5>Figure 1 - Github Organization and members</h5>
+</figcaption>
+</figure>
+
+<h2 id="creating-gke-cluster-and-installing-jenkins-x">Creating GKE Cluster and Installing Jenkins X</h2>
+
+<p>The first step we need to take, is execute the command which simultaneously will provision a cluster and install Jenkins X.  The following command should be issued on the terminal.  Change placeholders accordingly.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">&gt; $ jx create cluster gke --default-admin-password<span class="o">=</span>&lt;YOURPASSWORD&gt; -n &lt;CLUSTERNAME&gt; —ng<span class="o">=</span>true</code></pre></div>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p><strong>NOTE:</strong> The execution of this command with ONLY the <code>--ng=true</code> flag, ensures several things happen.  First, Tiller is not installed.  Second, this installs the <strong>Serverless</strong> topology and <strong>Tekton</strong> pipelines.</p>
+</div>
+</aside>
+
+
+<h2 id="output-of-the-command-lengthy-but-let-s-break-it-down">Output of the Command - lengthy but let&rsquo;s break it down!</h2>
+
+<p>The output below is quite insightful, we include it here for you to see all of what happens as the install is happening.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">Using the only Google Cloud Project jenkinsx-dev to create the cluster
+Updated property <span class="o">[</span>core/project<span class="o">]</span>.
+Let<span class="err">&#39;</span>s ensure we have container and compute enabled on your project
+No apis to <span class="nb">enable</span>
+? What <span class="nb">type</span> of cluster would you like to create Zonal
+? Google Cloud Zone: us-west1-a
+? Google Cloud Machine Type: n1-standard-2
+? Minimum number of Nodes <span class="o">(</span>per zone<span class="o">)</span> <span class="m">3</span>
+? Maximum number of Nodes <span class="m">5</span>
+? Would you like use preemptible VMs? No
+? Would you like to access Google Cloud Storage / Google Container Registry? No
+? Would you like to <span class="nb">enable</span> Kaniko <span class="k">for</span> building container images Yes
+Creating cluster...
+Initialising cluster ...
+Setting the dev namespace to: jx
+Namespace jx created 
+ 
+Using helmBinary helm with feature flag: none
+Context <span class="s2">&#34;gke_jenkinsx-dev_us-west1-a_sposcar&#34;</span> modified.
+Storing the kubernetes provider gke in the TeamSettings
+Enabling helm template mode in the TeamSettings
+Git configured <span class="k">for</span> user: sharepointoscar and email me@sharepointoscar.com
+Trying to create ClusterRoleBinding omedina-cloudbees-com-cluster-admin-binding <span class="k">for</span> role: cluster-admin <span class="k">for</span> user omedina@cloudbees.com
+ clusterrolebindings.rbac.authorization.k8s.io <span class="s2">&#34;omedina-cloudbees-com-cluster-admin-binding&#34;</span> not found
+Created ClusterRoleBinding omedina-cloudbees-com-cluster-admin-binding
+Using helm2
+Skipping tiller</code></pre></div>
+<h3 id="key-things-happened-above">Key Things happened above&hellip;</h3>
+
+<ul>
+<li>Basic cluster configuration such as max and min nodes are configured.<br /></li>
+<li>Kubectl context is set to new cluster so you can access cluster via both <code>kubectl</code> and <code>jx</code></li>
+<li>Sets cluster admin via ClusterRoleBinding created</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">Using helmBinary helm with feature flag: template-mode
+Initialising Helm <span class="s1">&#39;init --client-only&#39;</span>
+helm installed and configured
+? No existing ingress controller found in the kube-system namespace, shall we install one? Yes
+
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+using stable version <span class="m">1</span>.3.1 from charts of stable/nginx-ingress from /Users/omedina/.jx/jenkins-x-versions
+Installing using helm binary: helm
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+Fetched chart stable/nginx-ingress to dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jxing/chartFiles/nginx-ingress
+Generating Chart Template <span class="s1">&#39;template --name jxing --namespace kube-system /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jxing/chartFiles/nginx-ingress --output-dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jxing/output --debug --set rbac.create=true --set controller.extraArgs.publish-service=kube-system/jxing-nginx-ingress-controller&#39;</span>
+Applying generated chart stable/nginx-ingress YAML via kubectl in dir: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jxing/output
+clusterrole.rbac.authorization.k8s.io/jxing-nginx-ingress created
+clusterrolebinding.rbac.authorization.k8s.io/jxing-nginx-ingress created
+configmap/jxing-nginx-ingress-controller created
+deployment.extensions/jxing-nginx-ingress-controller created
+service/jxing-nginx-ingress-controller created
+deployment.extensions/jxing-nginx-ingress-default-backend created
+service/jxing-nginx-ingress-default-backend created
+role.rbac.authorization.k8s.io/jxing-nginx-ingress created
+rolebinding.rbac.authorization.k8s.io/jxing-nginx-ingress created
+serviceaccount/jxing-nginx-ingress created
+
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jxing,jenkins.io/version!<span class="o">=</span><span class="m">1</span>.3.1 from all pvc configmap release sa role rolebinding secret
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jxing,jenkins.io/version!<span class="o">=</span><span class="m">1</span>.3.1,jenkins.io/namespace<span class="o">=</span>kube-system from clusterrole clusterrolebinding
+Waiting <span class="k">for</span> external loadbalancer to be created and update the nginx-ingress-controller service in kube-system namespace
+Note: this loadbalancer will fail to be provisioned <span class="k">if</span> you have insufficient quotas, this can happen easily on a GKE free account. To view quotas run: gcloud compute project-info describe
+External loadbalancer created
+Waiting to find the external host name of the ingress controller Service in namespace kube-system with name jxing-nginx-ingress-controller
+You can now configure a wildcard DNS pointing to the new Load Balancer address <span class="m">34</span>.83.54.46
+
+If you <span class="k">do</span> not have a custom domain setup yet, Ingress rules will be <span class="nb">set</span> <span class="k">for</span> magic DNS nip.io.
+
+Once you have a custom domain ready, you can update with the <span class="nb">command</span> jx upgrade ingress --cluster</code></pre></div>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>At this point, we have already set our DNS settings to point to the IP listed above for the ingress controller and gave it a bit of time to propagate before hitting <strong>enter</strong> <code>sharepointoscar.com</code> for the Domain, and letting it configure ingress and other endpoints.</p>
+</div>
+</aside>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">If you don<span class="err">&#39;</span>t have a wildcard DNS setup <span class="k">then</span> setup a DNS <span class="o">(</span>A<span class="o">)</span> record and point it at: <span class="m">34</span>.83.54.46 <span class="k">then</span> use the DNS domain in the next input...
+? Domain sharepointoscar.com
+nginx ingress controller installed and configured
+Lets <span class="nb">set</span> up a Git user name and API token to be able to perform CI/CD
+
+? <span class="nb">local</span> Git user <span class="k">for</span> GitHub server: jenkinsx-bot-sposcar
+Select the CI/CD pipelines Git server and user
+? Do you wish to use GitHub as the pipelines Git server: Yes
+Setting the pipelines Git server https://github.com and user name jenkinsx-bot-sposcar.
+Saving the Git authentication configuration
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+Current configuration dir: /Users/omedina/.jx
+options.Flags.CloudEnvRepository: https://github.com/jenkins-x/cloud-environments
+options.Flags.LocalCloudEnvironment: <span class="nb">false</span>
+Cloning the Jenkins X cloud environments repo to /Users/omedina/.jx/cloud-environments
+? A <span class="nb">local</span> Jenkins X cloud environments repository already exists, recreate with latest? Yes
+Current configuration dir: /Users/omedina/.jx
+options.Flags.CloudEnvRepository: https://github.com/jenkins-x/cloud-environments
+options.Flags.LocalCloudEnvironment: <span class="nb">false</span>
+Cloning the Jenkins X cloud environments repo to /Users/omedina/.jx/cloud-environments
+Enumerating objects: <span class="m">1382</span>, <span class="k">done</span>.
+Total <span class="m">1382</span> <span class="o">(</span>delta <span class="m">0</span><span class="o">)</span>, reused <span class="m">0</span> <span class="o">(</span>delta <span class="m">0</span><span class="o">)</span>, pack-reused <span class="m">1382</span>
+? Select Jenkins installation type: Serverless Jenkins X Pipelines with Tekton</code></pre></div>
+<h3 id="key-things-happened-above-1">Key Things happened above&hellip;</h3>
+
+<ul>
+<li>We specified <code>sharepointoscar.com</code> as the domain for the ingress controller and endpoints.</li>
+<li>GitHub server account is set to <code>jenkinsx-bot-sposcar</code> and which is part of the Organization <code>jenkins-oscar</code></li>
+<li>We were prompted to enter an <strong>API token</strong> for the bot account <strong>(we are signed into Github with the bot account)</strong></li>
+<li>Jenkins Installation Type is set to <strong>Serverless Jenkins X Pipelines with Tekton</strong></li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">Configuring Kaniko service account jxkaniko-sposcar <span class="k">for</span> project jenkinsx-dev
+Unable to find service account jxkaniko-sposcar, checking <span class="k">if</span> we have enough permission to create
+Creating service account jxkaniko-sposcar
+Assigning role roles/storage.admin
+Assigning role roles/storage.objectAdmin
+Assigning role roles/storage.objectCreator
+Downloading service account key
+Setting the dev namespace to: jx
+Generated helm values /Users/omedina/.jx/extraValues.yaml
+Creating Secret jx-install-config in namespace jx
+Installing Jenkins X platform helm chart from: /Users/omedina/.jx/cloud-environments/env-gke
+Configuring the TeamSettings <span class="k">for</span> Prow with engine Tekton
+Setting the current namespace to: jx
+
+Installing knative into namespace jx
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+using stable version <span class="m">0</span>.0.35 from charts of jenkins-x/tekton from /Users/omedina/.jx/jenkins-x-versions
+Updating Helm repository...
+Helm repository update <span class="k">done</span>.
+Fetched chart jenkins-x/tekton to dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/tekton/chartFiles/tekton
+Generating Chart Template <span class="s1">&#39;template --name tekton --namespace jx /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/tekton/chartFiles/tekton --output-dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/tekton/output --debug --set  --set tillerNamespace= --set auth.git.username=jenkinsx-bot-sposcar --set auth.git.password=04028f1eba8c0091cecd8f2d277e2569046482d9&#39;</span>
+Applying generated chart jenkins-x/tekton YAML via kubectl in dir: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/tekton/output
+clusterrole.rbac.authorization.k8s.io/tekton-pipelines created
+clusterrolebinding.rbac.authorization.k8s.io/tekton-pipelines-jx created
+secret/knative-git-user-pass created
+serviceaccount/tekton-pipelines created
+serviceaccount/tekton-bot created
+customresourcedefinition.apiextensions.k8s.io/clustertasks.tekton.dev created
+customresourcedefinition.apiextensions.k8s.io/pipelines.tekton.dev created
+customresourcedefinition.apiextensions.k8s.io/pipelineruns.tekton.dev created
+customresourcedefinition.apiextensions.k8s.io/pipelineresources.tekton.dev created
+customresourcedefinition.apiextensions.k8s.io/tasks.tekton.dev created
+customresourcedefinition.apiextensions.k8s.io/taskruns.tekton.dev created
+service/tekton-pipelines-controller created
+service/tekton-pipelines-webhook created
+clusterrole.rbac.authorization.k8s.io/tekton-bot created
+clusterrolebinding.rbac.authorization.k8s.io/tekton-bot-jx created
+role.rbac.authorization.k8s.io/tekton-bot created
+rolebinding.rbac.authorization.k8s.io/tekton-bot created
+configmap/config-artifact-bucket created
+configmap/config-entrypoint created
+configmap/config-logging created
+deployment.apps/tekton-pipelines-controller created
+deployment.apps/tekton-pipelines-webhook created
+
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>tekton,jenkins.io/version!<span class="o">=</span><span class="m">0</span>.0.35 from all pvc configmap release sa role rolebinding secret
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>tekton,jenkins.io/version!<span class="o">=</span><span class="m">0</span>.0.35,jenkins.io/namespace<span class="o">=</span>jx from clusterrole clusterrolebinding
+
+Installing Prow into namespace jx
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+using stable version <span class="m">0</span>.0.540 from charts of jenkins-x/prow from /Users/omedina/.jx/jenkins-x-versions
+Updating Helm repository...
+Helm repository update <span class="k">done</span>.
+Fetched chart jenkins-x/prow to dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jx-prow/chartFiles/prow
+Generating Chart Template <span class="s1">&#39;template --name jx-prow --namespace jx /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jx-prow/chartFiles/prow --output-dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jx-prow/output --debug --set  --set tillerNamespace= --set auth.git.username=jenkinsx-bot-sposcar --set buildnum.enabled=false --set build.enabled=false --set pipelinerunner.enabled=true --set user=jenkinsx-bot-sposcar --set oauthToken=04028f1eba8c0091cecd8f2d277e2569046482d9 --set hmacToken=cfb951f73b3e36557df3f024c1d112351f36a1a2c&#39;</span>
+Applying generated chart jenkins-x/prow YAML via kubectl in dir: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jx-prow/output
+clusterrolebinding.rbac.authorization.k8s.io/cluster-admin-binding-jx created
+clusterrole.rbac.authorization.k8s.io/crier created
+clusterrolebinding.rbac.authorization.k8s.io/crier-jx created
+deployment.extensions/crier created
+rolebinding.rbac.authorization.k8s.io/crier created
+role.rbac.authorization.k8s.io/crier created
+serviceaccount/crier created
+deployment.extensions/deck created
+rolebinding.rbac.authorization.k8s.io/deck created
+role.rbac.authorization.k8s.io/deck created
+serviceaccount/deck created
+service/deck created
+secret/hmac-token created
+deployment.extensions/hook created
+rolebinding.rbac.authorization.k8s.io/hook created
+role.rbac.authorization.k8s.io/hook created
+serviceaccount/hook created
+service/hook created
+deployment.extensions/horologium created
+rolebinding.rbac.authorization.k8s.io/horologium created
+role.rbac.authorization.k8s.io/horologium created
+serviceaccount/horologium created
+secret/oauth-token created
+clusterrole.rbac.authorization.k8s.io/pipeline created
+clusterrolebinding.rbac.authorization.k8s.io/pipeline-jx created
+deployment.extensions/pipeline created
+serviceaccount/pipeline created
+deployment.extensions/pipelinerunner created
+rolebinding.rbac.authorization.k8s.io/pipelinerunner created
+role.rbac.authorization.k8s.io/pipelinerunner created
+serviceaccount/pipelinerunner created
+service/pipelinerunner created
+deployment.extensions/plank created
+rolebinding.rbac.authorization.k8s.io/plank created
+role.rbac.authorization.k8s.io/plank created
+serviceaccount/plank created
+customresourcedefinition.apiextensions.k8s.io/prowjobs.prow.k8s.io created
+deployment.extensions/sinker created
+rolebinding.rbac.authorization.k8s.io/sinker created
+role.rbac.authorization.k8s.io/sinker created
+serviceaccount/sinker created
+deployment.extensions/tide created
+rolebinding.rbac.authorization.k8s.io/tide created
+role.rbac.authorization.k8s.io/tide created
+serviceaccount/tide created
+service/tide created
+
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jx-prow,jenkins.io/version!<span class="o">=</span><span class="m">0</span>.0.540 from all pvc configmap release sa role rolebinding secret
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jx-prow,jenkins.io/version!<span class="o">=</span><span class="m">0</span>.0.540,jenkins.io/namespace<span class="o">=</span>jx from clusterrole clusterrolebinding
+? Pick default workload build pack:  Kubernetes Workloads: Automated CI+CD with GitOps Promotion
+Setting the team build pack to kubernetes-workloads repo: https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git ref: master
+Installing jx into namespace jx
+using stable version <span class="m">2</span>.0.108 from charts of jenkins-x/jenkins-x-platform from /Users/omedina/.jx/jenkins-x-versions
+Installing jenkins-x-platform version: <span class="m">2</span>.0.108
+Adding values file /Users/omedina/.jx/cloud-environments/env-gke/myvalues.yaml
+Adding values file /Users/omedina/.jx/adminSecrets.yaml
+Adding values file /Users/omedina/.jx/extraValues.yaml
+Adding values file /Users/omedina/.jx/cloud-environments/env-gke/secrets.yaml
+Current configuration dir: /Users/omedina/.jx
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+Deleting and cloning the Jenkins X versions repo
+Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
+Enumerating objects: <span class="m">206</span>, <span class="k">done</span>.
+Counting objects: <span class="m">100</span>% <span class="o">(</span><span class="m">206</span>/206<span class="o">)</span>, <span class="k">done</span>.
+Compressing objects: <span class="m">100</span>% <span class="o">(</span><span class="m">89</span>/89<span class="o">)</span>, <span class="k">done</span>.
+Total <span class="m">1096</span> <span class="o">(</span>delta <span class="m">109</span><span class="o">)</span>, reused <span class="m">185</span> <span class="o">(</span>delta <span class="m">101</span><span class="o">)</span>, pack-reused <span class="m">890</span>
+Fetched chart jenkins-x/jenkins-x-platform to dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/chartFiles/jenkins-x-platform
+Generating Chart Template <span class="s1">&#39;template --name jenkins-x --namespace jx /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/chartFiles/jenkins-x-platform --output-dir /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/output --debug --values /Users/omedina/.jx/cloud-environments/env-gke/myvalues.yaml --values /Users/omedina/.jx/adminSecrets.yaml --values /Users/omedina/.jx/extraValues.yaml --values /Users/omedina/.jx/cloud-environments/env-gke/secrets.yaml&#39;</span>
+Applying generated chart jenkins-x/jenkins-x-platform YAML via kubectl in dir: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/output
+deployment.extensions/jenkins-x-chartmuseum created
+persistentvolumeclaim/jenkins-x-chartmuseum created
+secret/jenkins-x-chartmuseum created
+service/jenkins-x-chartmuseum created
+role.rbac.authorization.k8s.io/cleanup created
+rolebinding.rbac.authorization.k8s.io/cleanup created
+serviceaccount/cleanup created
+clusterrole.rbac.authorization.k8s.io/controllerbuild-jx created
+clusterrolebinding.rbac.authorization.k8s.io/controllerbuild-jx created
+deployment.apps/jenkins-x-controllerbuild created
+role.rbac.authorization.k8s.io/controllerbuild created
+rolebinding.rbac.authorization.k8s.io/controllerbuild created
+serviceaccount/jenkins-x-controllerbuild created
+clusterrole.rbac.authorization.k8s.io/controllercommitstatus-jx created
+clusterrolebinding.rbac.authorization.k8s.io/controllercommitstatus-jx created
+deployment.apps/jenkins-x-controllercommitstatus created
+role.rbac.authorization.k8s.io/controllercommitstatus created
+rolebinding.rbac.authorization.k8s.io/controllercommitstatus created
+serviceaccount/jenkins-x-controllercommitstatus created
+clusterrole.rbac.authorization.k8s.io/controllerrole-jx created
+clusterrolebinding.rbac.authorization.k8s.io/controllerrole-jx created
+deployment.apps/jenkins-x-controllerrole created
+role.rbac.authorization.k8s.io/controllerrole created
+rolebinding.rbac.authorization.k8s.io/controllerrole created
+serviceaccount/jenkins-x-controllerrole created
+clusterrole.rbac.authorization.k8s.io/controllerteam-jx created
+clusterrolebinding.rbac.authorization.k8s.io/controllerteam-jx created
+deployment.apps/jenkins-x-controllerteam created
+role.rbac.authorization.k8s.io/controllerteam created
+rolebinding.rbac.authorization.k8s.io/controllerteam created
+serviceaccount/jenkins-x-controllerteam created
+clusterrole.rbac.authorization.k8s.io/controllerworkflow-jx created
+clusterrolebinding.rbac.authorization.k8s.io/controllerworkflow-jx created
+deployment.apps/jenkins-x-controllerworkflow created
+role.rbac.authorization.k8s.io/controllerworkflow created
+rolebinding.rbac.authorization.k8s.io/controllerworkflow created
+serviceaccount/jenkins-x-controllerworkflow created
+configmap/jenkins-x-docker-registry-config created
+deployment.extensions/jenkins-x-docker-registry created
+persistentvolumeclaim/jenkins-x-docker-registry created
+secret/jenkins-x-docker-registry-secret created
+service/jenkins-x-docker-registry created
+configmap/exposecontroller created
+role.rbac.authorization.k8s.io/expose created
+rolebinding.rbac.authorization.k8s.io/expose created
+serviceaccount/expose created
+clusterrole.rbac.authorization.k8s.io/gcactivities-jx created
+clusterrolebinding.rbac.authorization.k8s.io/gcactivities-jx created
+cronjob.batch/jenkins-x-gcactivities created
+role.rbac.authorization.k8s.io/gcactivities created
+rolebinding.rbac.authorization.k8s.io/gcactivities created
+serviceaccount/jenkins-x-gcactivities created
+cronjob.batch/jenkins-x-gcpods created
+role.rbac.authorization.k8s.io/gcpods created
+rolebinding.rbac.authorization.k8s.io/gcpods created
+serviceaccount/jenkins-x-gcpods created
+clusterrole.rbac.authorization.k8s.io/gcpreviews-jx created
+clusterrolebinding.rbac.authorization.k8s.io/gcpreviews-jx created
+cronjob.batch/jenkins-x-gcpreviews created
+role.rbac.authorization.k8s.io/gcpreviews created
+rolebinding.rbac.authorization.k8s.io/gcpreviews created
+serviceaccount/jenkins-x-gcpreviews created
+deployment.extensions/jenkins-x-heapster created
+clusterrolebinding.rbac.authorization.k8s.io/jenkins-x-heapster created
+role.rbac.authorization.k8s.io/jenkins-x-heapster-pod-nanny created
+rolebinding.rbac.authorization.k8s.io/jenkins-x-heapster-pod-nanny created
+service/heapster created
+serviceaccount/jenkins-x-heapster created
+deployment.extensions/jenkins-x-mongodb created
+persistentvolumeclaim/jenkins-x-mongodb created
+secret/jenkins-x-mongodb created
+service/jenkins-x-mongodb created
+configmap/jenkins-x-monocular-api-config created
+deployment.extensions/jenkins-x-monocular-api created
+service/jenkins-x-monocular-api created
+deployment.extensions/jenkins-x-monocular-prerender created
+service/jenkins-x-monocular-prerender created
+configmap/jenkins-x-monocular-ui-config created
+deployment.extensions/jenkins-x-monocular-ui created
+service/jenkins-x-monocular-ui created
+configmap/jenkins-x-monocular-ui-vhost created
+configmap/nexus created
+deployment.extensions/jenkins-x-nexus created
+persistentvolumeclaim/jenkins-x-nexus created
+secret/nexus created
+service/nexus created
+role.rbac.authorization.k8s.io/committer created
+clusterrolebinding.rbac.authorization.k8s.io/jenkins-x-team-controller created
+configmap/jenkins-x-team-controller created
+secret/jenkins-docker-cfg created
+configmap/jenkins-x-devpod-config created
+configmap/jenkins-x-docker-registry created
+configmap/jenkins-x-extensions created
+secret/jx-basic-auth created
+role.rbac.authorization.k8s.io/jx-view created
+secret/kaniko-secret created
+secret/jenkins-maven-settings created
+secret/jenkins-npm-token created
+role.rbac.authorization.k8s.io/owner created
+configmap/jenkins-x-pod-template-dlang created
+configmap/jenkins-x-pod-template-go created
+configmap/jenkins-x-pod-template-python created
+configmap/jenkins-x-pod-template-newman created
+configmap/jenkins-x-pod-template-terraform created
+configmap/jenkins-x-pod-template-maven created
+configmap/jenkins-x-pod-template-rust created
+configmap/jenkins-x-pod-template-python2 created
+configmap/jenkins-x-pod-template-nodejs created
+configmap/jenkins-x-pod-template-aws-cdk created
+configmap/jenkins-x-pod-template-gradle created
+configmap/jenkins-x-pod-template-maven-java11 created
+configmap/jenkins-x-pod-template-scala created
+configmap/jenkins-x-pod-template-python37 created
+configmap/jenkins-x-pod-template-promote created
+configmap/jenkins-x-pod-template-maven-nodejs created
+configmap/jenkins-x-pod-template-swift created
+configmap/jenkins-x-pod-template-jx-base created
+configmap/jenkins-x-pod-template-ruby created
+secret/jenkins-release-gpg created
+secret/jenkins-ssh-config created
+role.rbac.authorization.k8s.io/viewer created
+
+Applying Helm hook post-upgrade YAML via kubectl in file: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/helmHooks/jenkins-x-platform/charts/expose/templates/job.yaml
+job.batch/expose created
+
+Waiting <span class="k">for</span> helm post-upgrade hook Job expose to <span class="nb">complete</span> before removing it
+Deleting helm hook sources from file: /var/folders/hb/w23l1cld7pl2h_rjqk_1yyrr0000gn/T/helm-template-workdir-231692500/jenkins-x/helmHooks/jenkins-x-platform/charts/expose/templates/job.yaml
+job.batch <span class="s2">&#34;expose&#34;</span> deleted
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jenkins-x,jenkins.io/version!<span class="o">=</span><span class="m">2</span>.0.108 from all pvc configmap release sa role rolebinding secret
+Removing Kubernetes resources from older releases using selector: jenkins.io/chart-release<span class="o">=</span>jenkins-x,jenkins.io/version!<span class="o">=</span><span class="m">2</span>.0.108,jenkins.io/namespace<span class="o">=</span>jx from clusterrole clusterrolebinding
+WARNING: waiting <span class="k">for</span> install to be ready, <span class="k">if</span> this is the first <span class="nb">time</span> <span class="k">then</span> it will take a <span class="k">while</span> to download images
+Jenkins X deployments ready in namespace jx
+Configuring the TeamSettings <span class="k">for</span> ImportMode YAML
+
+
+	********************************************************
+
+	     NOTE: Your admin password is: Password1
+
+	********************************************************
+
+	
+Creating default staging and production environments
+? Select the organization where you want to create the environment repository: jenkins-oscar
+Using Git provider GitHub at https://github.com
+
+
+About to create repository environment-sposcar-staging on server https://github.com with user jenkinsx-bot-sposcar
+
+
+Creating repository jenkins-oscar/environment-sposcar-staging
+Creating Git repository jenkins-oscar/environment-sposcar-staging
+Pushed Git repository to https://github.com/jenkins-oscar/environment-sposcar-staging
+
+Creating staging Environment in namespace jx
+Created environment staging
+Namespace jx-staging created 
+ 
+Creating GitHub webhook <span class="k">for</span> jenkins-oscar/environment-sposcar-staging <span class="k">for</span> url http://hook.jx.sharepointoscar.com/hook
+Using Git provider GitHub at https://github.com
+
+
+About to create repository environment-sposcar-production on server https://github.com with user jenkinsx-bot-sposcar
+
+
+Creating repository jenkins-oscar/environment-sposcar-production
+Creating Git repository jenkins-oscar/environment-sposcar-production
+Pushed Git repository to https://github.com/jenkins-oscar/environment-sposcar-production
+
+Creating production Environment in namespace jx
+Created environment production
+Namespace jx-production created 
+ 
+Creating GitHub webhook <span class="k">for</span> jenkins-oscar/environment-sposcar-production <span class="k">for</span> url http://hook.jx.sharepointoscar.com/hook
+
+Jenkins X installation completed successfully
+
+
+	********************************************************
+
+	     NOTE: Your admin password is: Password1
+
+	********************************************************
+
+	
+
+Your Kubernetes context is now <span class="nb">set</span> to the namespace: jx 
+To switch back to your original namespace use: jx namespace default
+Or to use this context/namespace in just one terminal use: jx shell
+For <span class="nb">help</span> on switching contexts see: https://jenkins-x.io/developing/kube-context/
+
+To import existing projects into Jenkins:       jx import
+To create a new Spring Boot microservice:       jx create spring -d web -d actuator
+To create a new microservice from a quickstart: jx create quickstart
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated <span class="k">for</span> sposcar.
+Context <span class="s2">&#34;gke_jenkinsx-dev_us-west1-a_sposcar&#34;</span> modified.
+NAME              HOSTS                                    ADDRESS       PORTS   AGE
+chartmuseum       chartmuseum.jx.sharepointoscar.com       <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+deck              deck.jx.sharepointoscar.com              <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+docker-registry   docker-registry.jx.sharepointoscar.com   <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+hook              hook.jx.sharepointoscar.com              <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+monocular         monocular.jx.sharepointoscar.com         <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+nexus             nexus.jx.sharepointoscar.com             <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m
+tide              tide.jx.sharepointoscar.com              <span class="m">34</span>.83.54.46   <span class="m">80</span>      4m</code></pre></div>
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p><strong>NOTE:</strong> The final and successful output should always show us the endpoint URLs.  If you see something else, most likely your installation did not finish properly.  Typically, it helps to delete the <code>~/.jx</code> folder before trying another install.  Especially if you&rsquo;ve run this command multiple times, there are multiple environments created and you should <strong>only</strong> have the ones Jenkins X is actually using to keep things working properly in my opinion.</p>
+</div>
+</aside>
+
+
+<p>So we now have a clean environment, one thing we can do to simply test our endpoints, is do an <strong>nslookup</strong> against any of the urls in the final output.  This helps ensure that at least DNS is setup properly.</p>
+
+<h1 id="creating-a-quickstart-let-s-pop-the-hood">Creating A QuickStart - Let&rsquo;s Pop The Hood!</h1>
+
+<p>We are ready to try out the entire CI/CD process, which includes seeing the Bot work properly.  To get started, we will create a <code>quickstart</code> based on the <code>NodeJS</code> language.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">&gt; $ omedina$ jx create quickstart
+Using Git provider GitHub at https://github.com
+? Git user name?  <span class="o">[</span>Use arrows to move, space to <span class="k">select</span>, <span class="nb">type</span> to filter<span class="o">]</span>
+&gt; sharepointoscar
+  jenkinsx-bot-sposcar</code></pre></div>
+<p>You will select the personal Github account in this step.</p>
+
+<aside class="admonition warning">
+	<div class="admonition-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p>However, if you get a <em>warning</em> message stating that the Github server username is not set, then the setup somehow was not set correctly.</p>
+
+<p><img src="https://jenkins-x.io/images/getting-started/warning_no_username_git_server.png"/>
+<figcaption>
+<h5>Figure 2 - Github Server username not set</h5>
+</figcaption>
+You can verify that the bot account is setup by checking the values of the secret called <code>jx-pipeline-git-github-github</code>.  In this scenario, it is <code>jenkinsx-bot-sposcar</code> as expected.</p>
+</div>
+</aside>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">About to create repository  on server https://github.com with user sharepointoscar
+? Which organisation <span class="k">do</span> you want to use?  <span class="o">[</span>Use arrows to move, space to <span class="k">select</span>, <span class="nb">type</span> to filter<span class="o">]</span>
+  SPRWD
+  SharePointAce
+&gt; jenkins-oscar
+  sharepointoscar</code></pre></div>
+<p>Select the Github Organization.  In this scenario, it is <code>jenkins-oscar</code> where the bot account and the personal github accounts are members.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">Creating repository jenkins-oscar/node-widget-app
+? <span class="k">select</span> the quickstart you wish to create  <span class="o">[</span>Use arrows to move, space to <span class="k">select</span>, <span class="nb">type</span> to filter<span class="o">]</span>
+  golang-http
+  jenkins-cwp-quickstart
+  jenkins-quickstart
+&gt; node-http
+  node-http-watch-pipeline-activity
+  open-liberty
+  python-http
+
+The directory /Users/omedina/git-repos/node-widget-app is not yet using git
+? Would you like to initialise git now? Yes
+? Commit message:  Initial import</code></pre></div>
+<p>Select <code>node-http</code> for the quickstart builder type. Hit enter for both of the following questions.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">replacing placeholders in directory /Users/omedina/git-repos/node-widget-app
+app name: node-widget-app, git server: github.com, org: jenkins-oscar, Docker registry org: jenkins-oscar
+skipping directory <span class="s2">&#34;/Users/omedina/git-repos/node-widget-app/.git&#34;</span>
+Pushed Git repository to https://github.com/jenkins-oscar/node-widget-app
+
+Automatically adding the pipeline user: jenkinsx-bot-sposcar as a collaborator.
+Creating GitHub webhook <span class="k">for</span> jenkins-oscar/node-widget-app <span class="k">for</span> url http://hook.jx.sharepointoscar.com/hook
+
+Watch pipeline activity via:    jx get activity -f node-widget-app -w
+Browse the pipeline log via:    jx get build logs jenkins-oscar/node-widget-app/master
+Open the Jenkins console via    jx console
+You can list the pipelines via: jx get pipelines
+When the pipeline is complete:  jx get applications
+
+For more <span class="nb">help</span> on available commands see: https://jenkins-x.io/developing/browsing/
+
+Note that your first pipeline may take a few minutes to start <span class="k">while</span> the necessary images get downloaded!</code></pre></div>
+<p>Final output from creating the Quickstart should look like above.</p>
+
+<h2 id="first-time-pipeline-run">First Time Pipeline Run</h2>
+
+<p>Since we just created the new app, if we check on the app activtiies, we will see that there is a pull request. <code>jx get activity -f node-widget-app -w</code> and the app is now version <code>0.0.1</code> and it has been deployed to our <strong>Staging</strong> environment.</p>
+
+<h3 id="deployed-to-staging">Deployed to Staging</h3>
+
+<p>We can also check what applications are deployed, we should have version <code>0.0.1</code> in our staging environment.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">APPLICATION        STAGING PODS URL
+jx-node-widget-app <span class="m">0</span>.0.1   <span class="m">1</span>/1  http://node-widget-app.jx-staging.sharepointoscar.com
+jx-testapp2        <span class="m">0</span>.0.2   <span class="m">1</span>/1  http://testapp2.jx-staging.sharepointoscar.com</code></pre></div>
+<p>Our app is indeed in our Staging environment and accessible at (in this scenario) <code>http://node-widget-app.jx-staging.sharepointoscar.com</code></p>
+
+<aside class="admonition note">
+	<div class="note-icon">
+		
+	</div>
+	
+	
+	<div class="admonition-content"><p><strong>NOTE:</strong> There is a command <code>jx get apps</code>.  Do not confuse the command we executed with this one.  This command actually obtains <code>apps</code> that have been installed.  For example, on our serverless topology, we may opt to install a static jenkins as well by executing <code>jx add app jx-app-jenkins-x</code> and this will deploy a static jenkins which can now be used to put some apps thourgh either Tekton or this static jenkins master.</p>
+</div>
+</aside>
+
+
+<h2 id="modifying-the-app">Modifying The App</h2>
+
+<p>Let&rsquo;s modify the app to trigger a PR and see how the Bot reacts.  To make a change, we create a feature branch as per the usual developer workflow and execute <code>git checkout -b feature1</code>.</p>
+
+<p>Next we change the home page verbiabe a bit, then execute <code>git add . &amp;&amp; git commit -m &quot;changed homepage&quot;</code>.  Next, we push our changes with <code>git push --set-upstream origin feature1</code>.</p>
+
+<p>We should now see on Github UI the Pull Request dialog.  Click that familiar Pull Request button and create it!  This triggers a <strong>Tekton</strong> pipeline which you can see status by tailing the <code>activties</code> for that app with this command <code>jx get activity -f node-widget-app -w</code></p>
+
+<h2 id="preview-environment">Preview Environment</h2>
+
+<p>Because we made a change to the app via a <strong>Pull Request</strong>, we are now shown the Bot in action, and it is telling us that the <strong>PR needs approval</strong> in addition, it has given us a way to see the changes, dope is that?</p>
+
+<p>Our PR should look as shown on the video below.</p>
+
+<video id="PR_Before_Approval" width="800" src="https://jenkins-x.io/images/getting-started/PR_BeforeApproval.mov" controls></video>
+
+<h2 id="approving-the-pr-as-the-approver">Approving the PR (as the approver)</h2>
+
+<p>We now are ready to approve the PR, because after all, that nice change to the home page pleases our stakeholders after they were able to see the changes.  To approve, we simply comment exactly the following command on the Github comment box: <code>/approve</code>.</p>
+
+<p>The <strong>Approver</strong> in this scenario is the <code>sharepointoscar</code> Github account, ideally it would be someone other than the developer itself.</p>
+
+<video id="PR_After_Approval" width="800" src="https://jenkins-x.io/images/getting-started/PR_AfterApproval.mov" controls></video>
+
+<h3 id="bot-activity-on-github">Bot Activity on Github</h3>
+
+<p>We can take a quick look at what the bot has been up to.  Here is all the activity thus far.</p>
+
+<p><img src="https://jenkins-x.io/images/getting-started/bot_in_action.png"></p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>In this tutorial, we walked through a full setup of Jenkins X on GKE.  We ensured that the bot account was specified at setup time.  We then created an app, and put it through CI/CD which allowed us to see the Bot in action, execute an approval command and deploy the app changes to our Staging environment.</p>
+
+<p>It is always best to properly setup Jenkins with the correct Github accounts and Organization as this will give you the exact experience as a developer when interacting with Jenkins X via Github PRs.</p>
+
+<p>Cheers,</p>
+
+<p><a href="http://twitter.com/SharePointOscar">@SharePointOscar</a></p>
+
+<p>Developer Advocate | Jenkins X</p>
+
+</div>
+
+          
+
+
+        </div>
+      </div>
+      <div class="order-0 w-20 dn db-l">
+        
+<nav role="navigation">
+  <ul class="list pa0 nl2">
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".about">About Jenkins X</a>
+
+          
+            <ul class="about desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Features
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/what/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    What Is Jenkins X
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/accelerate/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Accelerate
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/concepts/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Concepts
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/decisions/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Decisions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/license/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    License
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/status/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Status
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".getting-started">Getting Started</a>
+
+          
+            <ul class="getting-started desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Get Started Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/tutorials/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Tutorials
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Get jx
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/create-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create new Cluster
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install-on-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Install on Kubernetes
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    What happens during installation
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/manage-via-gitops/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Manage by GitOps
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/multi-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Multiple Clusters
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/next/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    What&#39;s next?
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/config/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Configuration
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create custom Builder
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/aws-terraform-install-gitops/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create EKS cluster on AWS
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".developing">Developing</a>
+
+          
+            <ul class="developing desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Getting Started
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Spring Boot
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-quickstart/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Quickstart
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-camel/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Camel
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/import/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Import
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/browsing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Browsing
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/kube-context/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Kubernetes Context
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/promote/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Promote
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/preview/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Preview Environments
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/ide/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    IDE
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/devpods/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Dev Pods
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/git/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Git Servers
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Issues
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/security-features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Security Features
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/serverless-apps/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Serverless Apps
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".demos">Demos</a>
+
+          
+            <ul class="demos desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Demos
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/articles/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Articles
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/talks/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Talks and Conferences
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Cluster
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_cluster_gke/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Cluster GKE
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Spring
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/image-security/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Docker Image CVE Scanning
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/kubecon-2018/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    KubeCon 2018 Demo
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/devoxx-uk-2018/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    DevOxx UK 2018 Demo
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".architecture">Architecture</a>
+
+          
+            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Architecture
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/diagram/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Diagram
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/components/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Components
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/source/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Source
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Jenkins X Pipelines
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/build-packs/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Build Packs
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/custom-resources/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Custom Resources
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/cloud-native-jenkins/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Cloud Native Jenkins
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/prow/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Prow
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Pod Templates
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/storage/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Storage
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/version-stream/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Version Stream
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/docker-registry/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Docker Registry
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/rbac/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    RBAC
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/custom-jenkins/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Custom Jenkins Servers
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".apps">Extending</a>
+
+          
+            <ul class="apps desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/apps/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Apps Framework
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="https://jenkins-x.io/apidocs/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".api">API</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="https://jenkins-x.io/commands/jx/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".commands">CLI</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".faq">FAQ</a>
+
+          
+            <ul class="faq desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    FAQ Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    General Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/setup/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Setup Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Common Problems
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/technology/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Technology Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/develop/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Development Questions
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".contribute">Contribute</a>
+
+          
+            <ul class="contribute desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Contribute to Jenkins X
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/development/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Development
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/apidocs/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    API Documentation
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/documentation/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Documentation
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/roadmap/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Planned Features
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/triage/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Triaging issues
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+  </ul>
+</nav>
+
+      </div>
+
+    </div>
+  </article>
+
+  <div class="w-100 bg-light-gray">
+    <div class="mw7 pa4 center nested-lh-copy lh-copy">
+      <h6 class="f4 dark-gray mb2">
+  <a href="https://jenkins-x.io/getting-started/jenkins-x-gke-install-with-bot/" class="hide-child link primary-color">
+  <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+</span>
+    “Install Jenkins X on GKE Properly”
+  </a> was last updated: April 26, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/a8c91dacdb8d74faf17cce2b7bd580955dfbe028">release 0.0.177 (a8c91da)</a>
+</h6>
+
+      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/install-gke-with-bot-tutorial.md" class="
+f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
+">Improve this page</a>
+
+      
+
+
+    </div>
+  </div>
+
+    </main>
+
+    <footer class="bg-primary-color-dark ph4-ns pt4 relative w-100" role="contentinfo">
+  <div class="center flex-ns flex-wrap justify-between mw9 w-90">
+    <div class="pb3 pt4 w-100 w-50-ns">
+
+      <div class="b f3  light-gray mb3 nested-links tc">
+        By the <a href="https://github.com/jenkins-x/jx/contributors" class="link">Jenkins X Authors</a><br/>
+      </div>
+
+      <ul class="center f6 list ma0 mv3 pa0 tc"><li class="dib mr3"><a href="https://github.com/jenkins-x/jx/issues/new" class="dim link light-gray pv2">File an Issue</a></li><li class="dib mr3"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Get Help</a></li><li class="dib"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Discuss Source Code</a></li></ul>
+
+      <ul class="center f6 list ma0 mv4 pa0 tc">
+        <li class="dib mr3"><a href="https://twitter.com/jenkinsxio" class="dim link light-gray pv2">@jenkinsxio</a>
+        </li>
+      </ul>
+
+      
+    </div>
+
+    <div> 
+      <img src="https://jenkins-x.io/img/profile.png" with="100" height="100">
+    </div>
+
+  </div>
+
+  <div class="f7 gray mb5 mb0-ns ph3 w-100"> 
+    <p class="dib mr4">Jenkins&reg; is a registered trademark of <a href="https://www.spi-inc.org/" class="link">Software in the Public Interest, Inc.</a></p>
+    <p class="dib">Copyright 2018–2019 the original authors.</p>
+  </div>
+
+
+  <div class="bg-primary-color-dark bottom-0 left-0 right-0 dn-l fixed pb3 ph3 w-100"><div  class="globalmenu mobilemenu pb3 dn">
+    
+
+<ul class="list hidden dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/documentation" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Documentation
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/news/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          News
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/community" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Community
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://github.com/jenkins-x/jx" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          GitHub
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins.io" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Jenkins
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/sponsors/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Sponsors
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/security/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Security
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+<div  class="docsmenu mobilemenu pb3 dn">
+    
+
+<ul class="list dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/about/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          About Jenkins X
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/getting-started/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Getting Started
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/developing/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Developing
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/demos/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Demos
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/architecture/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Architecture
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/apps/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Extending
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/apidocs/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          API
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/commands/jx/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          CLI
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/faq/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          FAQ
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/contribute/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Contribute
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+
+<div class="flex dn-l justify-between">
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link mr2 white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".globalmenu">Menu</button>
+
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".docsmenu">Docs Menu</button>
+</div>
+</div>
+
+</footer>
+
+    <script src="https://jenkins-x.io/dist/app.bundle.js"></script>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+<script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/d0c128ac1f69ba2bb20742976/9159f4f527ec7e8e4d019eb5c.js");</script>
+<script>
+    !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+    },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+    a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+    
+    twq('init','o14ln');
+    twq('track','PageView');
+ </script>
+
+  </body>
+</html>
