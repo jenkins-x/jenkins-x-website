@@ -31,7 +31,7 @@
 <meta property="og:description" content="Questions on common issues setting up Jenkins X." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/issues/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-04-30T15:38:48&#43;00:00"/>
+<meta property="article:modified_time" content="2019-05-01T10:34:27&#43;00:00"/>
 
 <meta itemprop="name" content="Common Problems">
 <meta itemprop="description" content="Questions on common issues setting up Jenkins X.">
@@ -39,7 +39,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1915">
+<meta itemprop="wordCount" content="2137">
 
 
 
@@ -240,6 +240,7 @@ var trackOutboundLink = function(id, url) {
 </ul></li>
 <li><a href="#persistent-volume-claims-do-not-bind">Persistent Volume Claims do not bind</a></li>
 <li><a href="#how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</a></li>
+<li><a href="#why-is-promotion-really-slow">Why is promotion really slow?</a></li>
 <li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
 <li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
 <li><a href="#cannot-access-services-on-minikube">Cannot access services on minikube</a></li>
@@ -524,6 +525,36 @@ jx create git token -n GitHub admin
 <div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">kail -l job-name<span class="o">=</span>expose -n jx-staging</code></pre></div>
 <p>If you then promote to the Staging environment or retrigger the pipeline on the <code>master</code> branch of your Staging git repository (e.g. via <a href="https://jenkins-x.io/commands/jx_start_pipeline/">jx start pipeline</a>) then you should see the output of the <a href="https://github.com/jenkins-x/exposecontroller">exposecontroller</a> pod.</p>
 
+<h2 id="why-is-promotion-really-slow">Why is promotion really slow?</h2>
+
+<p>If you find you get lots of warnings in your pipelines like this&hellip;</p>
+
+<pre><code>&quot;Failed to query the Pull Request last commit status for https://github.com/myorg/environment-mycluster-staging/pull/1 ref xyz Could not find a status for repository myorg/environment-mycluster-staging with ref xyz
+</code></pre>
+
+<p>and promotion takes 30 minutes from a release pipeline on an application starting to the change hitting <code>Staging</code> then its mostly probably due to Webhooks.</p>
+
+<p>When we <a href="https://jenkins-x.io/developing/import/">import projects</a> or <a href="https://jenkins-x.io/developing/create-quickstart/">create quickstarts</a> we automate the setup of CI/CD pipelines for the git repository. What this does is setup Webhooks on the git repository to trigger Jenkins X to trigger pipelines (either using Prow for <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">serverless Jenkins X Pipelines</a> or the static jenkins server if not).</p>
+
+<p>However sometimes your git provider (e.g. <a href="https://github.com/">GitHub</a> may not be able to do connect to your Jenkins X installation (e.g. due to networking / firewall issues).</p>
+
+<p>The easiest way to diagnose this is opening the git repository (e.g. for your environment repository).</p>
+
+<pre><code>jx get env
+</code></pre>
+
+<p>Then:</p>
+
+<ul>
+<li>click on the generated URL for, say, your <code>Staging</code>  git repository</li>
+<li>click the <code>Settings</code> icon</li>
+<li>select the <code>Webhooks</code> tab on the left</li>
+<li>select your Jenkins X webhook URL</li>
+<li>view the last webhook - did it succeed? Try re-trigger it? That should highlight any network issues etc</li>
+</ul>
+
+<p>If you cannot use public webhooks you could look at something like <a href="http://www.ultrahook.com/">ultrahook</a></p>
+
 <h2 id="cannot-create-cluster-minikube">Cannot create cluster minikube</h2>
 
 <p>If you are using a Mac then <code>hyperkit</code> is the best VM driver to use - but does require you to install a recent <a href="https://docs.docker.com/docker-for-mac/install/">Docker for Mac</a> first. Maybe try that then retry <code>jx create cluster minikube</code>?</p>
@@ -621,13 +652,13 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 <h2>See Also</h2>
 <ul>
 	
-	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
-	
 	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/develop/">Development Questions</a></li>
+	
+	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
 	
 </ul>
 
@@ -1188,7 +1219,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Common Problems”
-  </a> was last updated: April 30, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/145f48d2926d357e8ca36125798a86de20c13211">release 0.0.197 (145f48d)</a>
+  </a> was last updated: May 1, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/2c21073d086e8a50a64b4df094e4c0e2e72cf2c6">release 0.0.198 (2c21073)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/issues.md" class="
