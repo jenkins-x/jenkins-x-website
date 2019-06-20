@@ -32,7 +32,7 @@
 <meta property="og:description" content="cloud native serverless pipelines" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/architecture/pipeline-syntax-reference/" /><meta property="article:published_time" content="2019-06-20T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-06-20T15:38:59&#43;00:00"/>
+<meta property="article:modified_time" content="2019-06-20T16:25:07&#43;00:00"/>
 
 <meta itemprop="name" content="Jenkins X Pipeline Syntax Reference">
 <meta itemprop="description" content="cloud native serverless pipelines">
@@ -40,7 +40,7 @@
 
 <meta itemprop="datePublished" content="2019-06-20T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-06-20T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1094">
+<meta itemprop="wordCount" content="1570">
 
 
 
@@ -209,7 +209,7 @@ var trackOutboundLink = function(id, url) {
 		<p class="b">What&#39;s on this Page</p>
   	<nav id="TableOfContents">
 <ul>
-<li>
+<li><a href="#syntax-for-jenkins-x-yml-and-build-packs">Syntax for <code>jenkins-x.yml</code> and build packs</a>
 <ul>
 <li><a href="#where-to-define-your-pipelines">Where to Define Your Pipelines</a></li>
 <li><a href="#top-level-configuration">Top-Level Configuration</a></li>
@@ -224,6 +224,10 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#configuration-for-steps">Configuration for Steps</a></li>
 </ul></li>
 <li><a href="#common-directives">Common Directives</a></li>
+</ul></li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#full-pipeline-definition-in-jenkins-x-yml">Full pipeline definition in <code>jenkins-x.yml</code></a></li>
 </ul></li>
 </ul>
 </nav>
@@ -278,6 +282,8 @@ var trackOutboundLink = function(id, url) {
 <div class="prose" id="prose">
 
 
+
+<h1 id="syntax-for-jenkins-x-yml-and-build-packs">Syntax for <code>jenkins-x.yml</code> and build packs</h1>
 
 <h2 id="where-to-define-your-pipelines">Where to Define Your Pipelines</h2>
 
@@ -474,9 +480,120 @@ label to use.</li>
 <ul>
 <li>See <a href="https://kubernetes.io/docs/concepts/containers">Kubernetes container configuration</a>.
 <code>name</code>, <code>command</code>, <code>args</code>, <code>image</code>, and <code>workingDir</code> cannot be specified.</li>
+<li>Common use cases for <code>containerOptions</code> include resource requests and
+limits, and volume mounts.</li>
 </ul></li>
 </ul>
 
+<h1 id="examples">Examples</h1>
+
+<h2 id="full-pipeline-definition-in-jenkins-x-yml">Full pipeline definition in <code>jenkins-x.yml</code></h2>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.</span><span class="w">
+</span><span class="w"></span>buildPack<span class="p">:</span><span class="w"> </span>none<span class="w">
+</span><span class="w">
+</span><span class="w"></span>pipelineConfig<span class="p">:</span><span class="w">
+</span><span class="w">  </span>pipelines<span class="p">:</span><span class="w">
+</span><span class="w">    </span>release<span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="c"># While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.</span><span class="w">
+</span><span class="w">      </span>pipeline<span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="c"># Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is</span><span class="w">
+</span><span class="w">        </span><span class="c"># specified on a stage or step.</span><span class="w">
+</span><span class="w">        </span>agent<span class="p">:</span><span class="w">
+</span><span class="w">          </span>image<span class="p">:</span><span class="w"> </span><span class="s2">&#34;some/image@version&#34;</span><span class="w"> </span><span class="c"># or &#34;maven&#34; - this means &#34;use the maven pod template&#34;</span><span class="w">
+</span><span class="w">        </span><span class="c"># Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.</span><span class="w">
+</span><span class="w">        </span><span class="c"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core</span><span class="w">
+</span><span class="w">        </span><span class="c"># for more information on valueFrom.</span><span class="w">
+</span><span class="w">        </span><span class="c"># Environment variables defined at the top level can be overridden in stages and individual</span><span class="w">
+</span><span class="w">        </span><span class="c"># steps.</span><span class="w">
+</span><span class="w">        </span>environment<span class="p">:</span><span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>SOME_VAR<span class="w">
+</span><span class="w">            </span>value<span class="p">:</span><span class="w"> </span>A<span class="w"> </span>value<span class="w"> </span>for<span class="w"> </span>the<span class="w"> </span>env<span class="w"> </span>var<span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>SOME_OTHER_VAR<span class="w">
+</span><span class="w">            </span>value<span class="p">:</span><span class="w"> </span>Another<span class="w"> </span>var<span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>SOME_API_KEY<span class="w">
+</span><span class="w">            </span>valueFrom<span class="p">:</span><span class="w">
+</span><span class="w">              </span>secretKeyRef<span class="p">:</span><span class="w">
+</span><span class="w">                </span>name<span class="p">:</span><span class="w"> </span>mysecret<span class="w">
+</span><span class="w">                </span>key<span class="p">:</span><span class="w"> </span>apikey<span class="w">
+</span><span class="w">        </span><span class="c"># Options contains other configuration for the pipeline.</span><span class="w">
+</span><span class="w">        </span>options<span class="p">:</span><span class="w">
+</span><span class="w">          </span><span class="c"># containerOptions allows specifying more advanced default configuration for the containers</span><span class="w">
+</span><span class="w">          </span><span class="c"># used for all stages and steps in this scope, using the standard Kubernetes syntax for</span><span class="w">
+</span><span class="w">          </span><span class="c"># containers.</span><span class="w">
+</span><span class="w">          </span><span class="c"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.</span><span class="w">
+</span><span class="w">          </span><span class="c"># Not all fields can be configured - e.g., name, command, arguments, image, and dir are all</span><span class="w">
+</span><span class="w">          </span><span class="c"># defined via the syntax - but everything else can be.</span><span class="w">
+</span><span class="w">          </span><span class="c"># Like with environment variables, containerOptions at the top level can be overridden and</span><span class="w">
+</span><span class="w">          </span><span class="c"># added to by stages.</span><span class="w">
+</span><span class="w">          </span>containerOptions<span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="c"># Here we&#39;re setting the resource requests and limits for all step containers within this</span><span class="w">
+</span><span class="w">            </span><span class="c"># pipeline.</span><span class="w">
+</span><span class="w">            </span>resources<span class="p">:</span><span class="w">
+</span><span class="w">              </span>requests<span class="p">:</span><span class="w">
+</span><span class="w">                </span>cpu<span class="p">:</span><span class="w"> </span><span class="m">0.1</span><span class="w">
+</span><span class="w">                </span>memory<span class="p">:</span><span class="w"> </span>64Mi<span class="w">
+</span><span class="w">              </span>limits<span class="p">:</span><span class="w">
+</span><span class="w">                </span>cpu<span class="p">:</span><span class="w"> </span><span class="m">0.2</span><span class="w">
+</span><span class="w">                </span>memory<span class="p">:</span><span class="w"> </span>128Mi<span class="w">
+</span><span class="w">          </span><span class="c"># timeout allows you to set the maximum duration for builds of this pipeline.</span><span class="w">
+</span><span class="w">          </span>timeout<span class="p">:</span><span class="w">
+</span><span class="w">            </span>time<span class="p">:</span><span class="w"> </span><span class="m">15</span><span class="w">
+</span><span class="w">            </span>unit<span class="p">:</span><span class="w"> </span>minutes<span class="w">
+</span><span class="w">        </span><span class="c"># A pipeline must contain at least one stage, and each stage must have a unique name.</span><span class="w">
+</span><span class="w">        </span>stages<span class="p">:</span><span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>Stage<span class="w"> </span>With<span class="w"> </span>Steps<span class="w"> </span>And<span class="w"> </span>Options<span class="w"> </span>Etc<span class="w">
+</span><span class="w">            </span><span class="c"># agent, options, and environment are valid on stages as well. For the parents of nested</span><span class="w">
+</span><span class="w">            </span><span class="c"># sequential or parallel stages, their children inherit the parent&#39;s agent, options,</span><span class="w">
+</span><span class="w">            </span><span class="c"># and environment.</span><span class="w">
+</span><span class="w">            </span><span class="c"># options on a stage currently only can contain containerOptions.</span><span class="w">
+</span><span class="w">            </span>options<span class="p">:</span><span class="w">
+</span><span class="w">              </span>containerOptions<span class="p">:</span><span class="w">
+</span><span class="w">                </span>resources<span class="p">:</span><span class="w">
+</span><span class="w">                  </span>limits<span class="p">:</span><span class="w">
+</span><span class="w">                    </span>cpu<span class="p">:</span><span class="w"> </span><span class="m">0.4</span><span class="w">
+</span><span class="w">                    </span>memory<span class="p">:</span><span class="w"> </span>256Mi<span class="w">
+</span><span class="w">            </span><span class="c"># A stage must contain at least one of &#34;steps&#34;, &#34;stages&#34;, or &#34;parallel&#34;</span><span class="w">
+</span><span class="w">            </span><span class="c"># Steps must contain at least one command to be executed or a loop.</span><span class="w">
+</span><span class="w">            </span>steps<span class="p">:</span><span class="w">
+</span><span class="w">              </span>-<span class="w"> </span>command<span class="p">:</span><span class="w"> </span>mvn<span class="w">
+</span><span class="w">                </span><span class="c"># args are a YAML array, so can be specified either on multiple lines or in a []</span><span class="w">
+</span><span class="w">                </span>args<span class="p">:</span><span class="w">
+</span><span class="w">                  </span>-<span class="w"> </span>clean<span class="w">
+</span><span class="w">                  </span>-<span class="w"> </span>install<span class="w">
+</span><span class="w">                </span>dir<span class="p">:</span><span class="w"> </span>foo<span class="w">  </span><span class="c"># Optional, allows running this step in a subdirectory of the workspace, or</span><span class="w">
+</span><span class="w">                          </span><span class="c"># a different absolute directory.</span><span class="w">
+</span><span class="w">                </span><span class="c"># Steps can have their own images specified, overriding the stage and top-level images.</span><span class="w">
+</span><span class="w">                </span>agent<span class="p">:</span><span class="w">
+</span><span class="w">                  </span>image<span class="p">:</span><span class="w"> </span>some-other-image<span class="w">
+</span><span class="w">              </span><span class="c"># A loop allows you to specify a list of potential values for an environment variable and a</span><span class="w">
+</span><span class="w">              </span><span class="c"># set of one or more steps. Those steps will be run, sequentially, for each of the</span><span class="w">
+</span><span class="w">              </span><span class="c"># potential values. Loops can also be nested for more complex combinations.</span><span class="w">
+</span><span class="w">              </span>-<span class="w"> </span>loop<span class="p">:</span><span class="w">
+</span><span class="w">                  </span>variable<span class="p">:</span><span class="w"> </span>LANGUAGE<span class="w">
+</span><span class="w">                  </span>values<span class="p">:</span><span class="w">
+</span><span class="w">                    </span>-<span class="w"> </span>maven<span class="w">
+</span><span class="w">                    </span>-<span class="w"> </span>gradle<span class="w">
+</span><span class="w">                    </span>-<span class="w"> </span>nodejs<span class="w">
+</span><span class="w">                  </span>steps<span class="p">:</span><span class="w">
+</span><span class="w">                    </span>-<span class="w"> </span>command<span class="p">:</span><span class="w"> </span>echo<span class="w">
+</span><span class="w">                      </span>args<span class="p">:</span><span class="w">
+</span><span class="w">                        </span>-<span class="w"> </span>hello<span class="w">
+</span><span class="w">                        </span>-<span class="w"> </span>${LANGUAGE}<span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>Stage<span class="w"> </span>with<span class="w"> </span>nested<span class="w"> </span>sequential<span class="w"> </span>stages<span class="w">
+</span><span class="w">            </span><span class="c"># Any configuration of agent, options, or environment will apply to all child stages.</span><span class="w">
+</span><span class="w">            </span>environment<span class="p">:</span><span class="w">
+</span><span class="w">              </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>SPECIFIC_TO_SEQUENTIAL_PARENT<span class="w">
+</span><span class="w">                </span>value<span class="p">:</span><span class="w"> </span>something<span class="w">
+</span><span class="w">            </span><span class="c"># A list of nested stages to run sequentially. This is meant to allow for avoiding</span><span class="w">
+</span><span class="w">            </span><span class="c"># copy-pasting configuration across a set of stages that need to have the same configuration</span><span class="w">
+</span><span class="w">            </span><span class="c"># but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.</span><span class="w">
+</span><span class="w">            </span>stages<span class="p">:</span><span class="w">
+</span><span class="w">              </span><span class="c"># ...insert stages here. =)</span><span class="w">
+</span><span class="w">          </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>Stage<span class="w"> </span>with<span class="w"> </span>nested<span class="w"> </span>parallel<span class="w"> </span>stages<span class="w">
+</span><span class="w">            </span><span class="c"># Works very similarly to sequential stages, except that the stages are executed in parallel,</span><span class="w">
+</span><span class="w">            </span><span class="c"># rather than sequentially.</span><span class="w">
+</span><span class="w">            </span>parallel<span class="p">:</span><span class="w">
+</span><span class="w">              </span><span class="c"># ...insert stages here. =)</span></code></pre></div>
 </div>
 
           
@@ -1077,7 +1194,7 @@ label to use.</li>
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Jenkins X Pipeline Syntax Reference”
-  </a> was last updated: June 20, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/05324b7331b60e96ec9b613a3d5364964f00821a">release 0.0.546 (05324b7)</a>
+  </a> was last updated: June 20, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/ad2f72cbbdf27b314e260c96dc67f1b3a63189ad">release 0.0.547 (ad2f72c)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/architecture/pipeline-syntax-reference.md" class="
