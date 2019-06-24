@@ -32,7 +32,7 @@
 <meta property="og:description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/faq/develop/" /><meta property="article:published_time" content="2018-02-10T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-06-24T14:09:54&#43;00:00"/>
+<meta property="article:modified_time" content="2019-06-24T14:11:12&#43;00:00"/>
 
 <meta itemprop="name" content="Development Questions">
 <meta itemprop="description" content="Questions on how to use Kubernetes, Helm and Jenkins X to build cloud native applications">
@@ -40,7 +40,7 @@
 
 <meta itemprop="datePublished" content="2018-02-10T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2018-02-10T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1497">
+<meta itemprop="wordCount" content="1492">
 
 
 
@@ -236,6 +236,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#how-do-i-change-the-owner-of-a-docker-image">How do I change the owner of a docker image</a></li>
 <li><a href="#what-if-my-team-does-not-want-to-use-helm">What if my team does not want to use helm?</a></li>
 <li><a href="#how-do-i-change-the-domain-of-serverless-apps">How do I change the domain of serverless apps?</a></li>
+<li><a href="#can-i-reuse-exposecontroller-for-my-apps">Can I reuse exposecontroller for my apps?</a></li>
 <li><a href="#how-to-add-custom-annotations-to-ingress-controller">How To Add Custom Annotations to Ingress Controller?</a></li>
 </ul></li>
 </ul>
@@ -393,23 +394,25 @@ var trackOutboundLink = function(id, url) {
 <p>If you use <a href="https://jenkins-x.io/developing/serverless-apps/">serverless apps</a> with Knative we don&rsquo;t use thee default exposecontroller mechanism for defaulting the <code>Ingress</code> resources since knative does not use kubernetes <code>Service</code> resources.</p>
 
 <p>You can work around this by manually editing the <em>knative</em> config via:</p>
-<div class="highlight"><pre class="chroma"><code class="language-kubectl edit cm config-domain --namespace knative-serving```" data-lang="kubectl edit cm config-domain --namespace knative-serving```">For more help see [using a custom domain with knative](https://knative.dev/docs/serving/using-a-custom-domain/)
 
-## Can I reuse exposecontroller for my apps?
+<pre><code>kubectl edit cm config-domain --namespace knative-serving
+</code></pre>
 
-You should be able to use [exposecontroller](https://github.com/jenkins-x/exposecontroller/blob/master/README.md) directly in any app you deploy in any environment (e.g. Staging or Production) as we already trigger exposecontroller on each new release.
+<p>For more help see <a href="https://knative.dev/docs/serving/using-a-custom-domain/">using a custom domain with knative</a></p>
 
-We use [exposecontroller](https://github.com/jenkins-x/exposecontroller/blob/master/README.md) for Jenkins X to handle the generation of `Ingress` resources so that we can support wildcard DNS on a domain or automate the setup of HTTPS/TLS along with injecting external endpoints into applications in ConfigMaps via [annotations](https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources).
+<h2 id="can-i-reuse-exposecontroller-for-my-apps">Can I reuse exposecontroller for my apps?</h2>
 
-To get [exposecontroller](https://github.com/jenkins-x/exposecontroller/blob/master/README.md) to generate the `Ingress` for a `Service` just [add the label to your Service](https://github.com/jenkins-x/exposecontroller/blob/master/README.md#label). e.g. add this to your `charts/myapp/templates/service.yaml`:
+<p>You should be able to use <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> directly in any app you deploy in any environment (e.g. Staging or Production) as we already trigger exposecontroller on each new release.</p>
 
-```yaml 
-apiVersion: v1
-kind: Service
-metadata:
-  name: myapp
-  annotations:
-    fabric8.io/expose: &#34;true&#34;  </code></pre></div>
+<p>We use <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> for Jenkins X to handle the generation of <code>Ingress</code> resources so that we can support wildcard DNS on a domain or automate the setup of HTTPS/TLS along with injecting external endpoints into applications in ConfigMaps via <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources">annotations</a>.</p>
+
+<p>To get <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md">exposecontroller</a> to generate the <code>Ingress</code> for a <code>Service</code> just <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#label">add the label to your Service</a>. e.g. add this to your <code>charts/myapp/templates/service.yaml</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">apiVersion<span class="p">:</span><span class="w"> </span>v1<span class="w">
+</span><span class="w"></span>kind<span class="p">:</span><span class="w"> </span>Service<span class="w">
+</span><span class="w"></span>metadata<span class="p">:</span><span class="w">
+</span><span class="w">  </span>name<span class="p">:</span><span class="w"> </span>myapp<span class="w">
+</span><span class="w">  </span>annotations<span class="p">:</span><span class="w">
+</span><span class="w">    </span>fabric8.io/expose<span class="p">:</span><span class="w"> </span><span class="s2">&#34;true&#34;</span><span class="w">  </span></code></pre></div>
 <p>If you want to inject the URL or host name of the external URL or your ingress just <a href="https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources">use these annotations</a>.</p>
 
 <h2 id="how-to-add-custom-annotations-to-ingress-controller">How To Add Custom Annotations to Ingress Controller?</h2>
@@ -446,13 +449,13 @@ metadata:
 	
 	<li><a href="https://jenkins-x.io/faq/technology/">Technology Questions</a></li>
 	
-	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
-	
 	<li><a href="https://jenkins-x.io/faq/issues/">Common Problems</a></li>
+	
+	<li><a href="https://jenkins-x.io/faq/pipelines/">Jenkins X Pipelines Questions</a></li>
 	
 	<li><a href="https://jenkins-x.io/faq/faq/">General Questions</a></li>
 	
-	<li><a href="https://jenkins-x.io/faq/pipelines/">Jenkins X Pipelines Questions</a></li>
+	<li><a href="https://jenkins-x.io/faq/setup/">Setup Questions</a></li>
 	
 </ul>
 
@@ -1043,7 +1046,7 @@ metadata:
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Development Questions”
-  </a> was last updated: June 24, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/a9d15a15de01ea42636b06db1e9d0e0412fa6719">release 0.0.571 (a9d15a1)</a>
+  </a> was last updated: June 24, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/d33d91e32c6db0eb0871eff7fc9e2c530302cc8f">release 0.0.572 (d33d91e)</a>
 </h6>
 
       <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/faq/develop.md" class="
