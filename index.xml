@@ -153,28 +153,31 @@ alicloud-disk-ssd             alicloud/disk   44h&lt;/code&gt;&lt;/pre&gt;&lt;/d
 &lt;p&gt;Then we need to create a Container Registry namespace that allows us to push any image and make them public by default.&lt;/p&gt;
 
 &lt;p&gt;From the web UI we can create a Docker login password that we will be using later.&lt;/p&gt;
-
-&lt;p&gt;We could do it through the command line with the following instructions but unfortunately the API always returns a 500 error.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;nv&#34;&gt;NAMESPACE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;jenkins-x-&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat /dev/urandom &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; env &lt;span class=&#34;nv&#34;&gt;LC_CTYPE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;C tr -dc &lt;span class=&#34;s1&#34;&gt;&amp;#39;a-z&amp;#39;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; fold -w &lt;span class=&#34;m&#34;&gt;6&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; head -n &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;
 cat &lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt; EOF &amp;gt; namespace.json
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;{
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;    &amp;#34;Namespace&amp;#34;: {
-&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;Namespace&amp;#34;: &amp;#34;jenkins-x-${NAMESPACE}&amp;#34;,
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;Namespace&amp;#34;: &amp;#34;${NAMESPACE}&amp;#34;
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;    }
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;}
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;EOF&lt;/span&gt;
-aliyun cr POST /namespace/&lt;span class=&#34;si&#34;&gt;${&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;NAMESPACE&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+aliyun cr PUT /namespace &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --header &lt;span class=&#34;s2&#34;&gt;&amp;#34;Content-Type=application/json&amp;#34;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --body &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat namespace.json&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
 
 cat &lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt; EOF &amp;gt; namespace.json
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;{
-&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;    &amp;#34;Namespace&amp;#34;: {
-&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;AutoCreate&amp;#34;: true,
-&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;DefaultVisibility&amp;#34;: &amp;#34;public&amp;#34;
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;    &amp;#34;namespace&amp;#34;: {
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;namespace&amp;#34;: &amp;#34;${NAMESPACE}&amp;#34;,
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;defaultVisibility&amp;#34;: &amp;#34;PUBLIC&amp;#34;,
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;        &amp;#34;autoCreate&amp;#34;: true
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;    }
 &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;}
-&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;EOF&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;EOF&lt;/span&gt;
+
+aliyun cr POST /namespace/&lt;span class=&#34;si&#34;&gt;${&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;NAMESPACE&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --header &lt;span class=&#34;s2&#34;&gt;&amp;#34;Content-Type=application/json&amp;#34;&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --body &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;cat namespace.json&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Now we can install Jenkins X as usual, passing the &lt;code&gt;--provider alibaba&lt;/code&gt; flag.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx install &lt;span class=&#34;se&#34;&gt;\
 &lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --provider alibaba &lt;span class=&#34;se&#34;&gt;\
