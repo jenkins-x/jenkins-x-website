@@ -32,7 +32,7 @@
 <meta property="og:description" content="A new consistent way to install, configure or upgrade Jenkins X via GitOps and a Jenkins X Pipeline" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/getting-started/boot/" /><meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-06-27T06:48:47&#43;00:00"/>
+<meta property="article:modified_time" content="2019-06-27T07:23:02&#43;00:00"/>
 
 <meta itemprop="name" content="Jenkins X Boot">
 <meta itemprop="description" content="A new consistent way to install, configure or upgrade Jenkins X via GitOps and a Jenkins X Pipeline">
@@ -40,7 +40,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1073">
+<meta itemprop="wordCount" content="1119">
 
 
 
@@ -215,7 +215,10 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#background">Background</a></li>
 <li><a href="#overview">Overview</a>
 <ul>
-<li><a href="#about-jx-boot">About &lsquo;jx boot&rsquo;</a></li>
+<li><a href="#about-jx-boot">About &lsquo;jx boot&rsquo;</a>
+<ul>
+<li><a href="#pre-and-post-validation">Pre and Post Validation</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#changing-your-installation">Changing your installation</a></li>
 <li><a href="#requirements">Requirements</a></li>
@@ -230,7 +233,7 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#improvements-to-values-yaml">Improvements to values.yaml</a>
 <ul>
 <li><a href="#support-a-tree-of-values-yaml-files">Support a tree of values.yaml files</a></li>
-<li><a href="#values-yaml-templates">values.yaml templates</a></li>
+<li><a href="#values-tmpl-yaml-templates">values.tmpl.yaml templates</a></li>
 </ul></li>
 </ul></li>
 </ul></li>
@@ -305,7 +308,6 @@ f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
 <p>Currently <a href="https://github.com/jenkins-x/jx/issues/4326">unsupported features</a>:</p>
 
 <ul>
-<li>vault</li>
 <li>external dns</li>
 <li>environment git repositories are hard coded in the <a href="https://github.com/jstrachan/environment-simple-tekton/blob/master/env/values.yaml#L11-L16">values.yaml</a> and the webhooks don&rsquo;t get automatically registered</li>
 <li>we don&rsquo;t automate setting up your own dev, staging, production git repositories easily</li>
@@ -375,7 +377,9 @@ cd my-jx-config
 
 <h3 id="about-jx-boot">About &lsquo;jx boot&rsquo;</h3>
 
-<p>The <a href="https://jenkins-x.io/commands/jx_boot">jx boot</a> interprets the boot pipeline using your local <code>jx</code> binary.</p>
+<p>The <a href="https://jenkins-x.io/commands/jx_boot">jx boot</a> interprets the boot pipeline using your local <code>jx</code> binary. The underlying pipeline for booting Jenkins X can later on be ran inside kubernetes via Tekton. If ever something goes wrong with tekton you can always <code>jx boot</code> again to get things back up and running (e.g. if someone accidentally deletes your cluster).</p>
+
+<h4 id="pre-and-post-validation">Pre and Post Validation</h4>
 
 <p>Before ny installation is attempted it runs the <a href="https://jenkins-x.io/commands/jx_step_verify_preinstall/">jx step verify preinstall</a> command to check everything looks OK. If you are using Terraform (so that your &lsquo;jx-requirements.yml&rsquo; file has <code>terraform: true</code>) it will fail if Terraform has not created the required cloud resources. Otherwise they are lazily created for you if they don&rsquo;t exist.</p>
 
@@ -423,7 +427,7 @@ cd my-jx-config
 <li><code>local:</code> to load from a key in a YAML file at <code>~/.jx/localSecrets/$path.yml</code></li>
 </ul>
 
-<p>This means we can populate all the Parameters we need on startup then refer to them from <code>values.yaml</code> to populate the tree of values to then inject those into Vault.</p>
+<p>This means we can populate all the Parameters we need on startup then refer to them from <code>values.tmpl.yaml</code> to populate the tree of values to then inject those into Vault.</p>
 
 <h3 id="populating-the-parameters-yaml-file">Populating the <code>parameters.yaml</code> file</h3>
 
@@ -445,16 +449,16 @@ cd my-jx-config
   prow/
     values.yaml # prow specific config
   tekton/
-    vales.yaml  # tekton specific config 
+    values.yaml  # tekton specific config 
 </code></pre>
 
-<h4 id="values-yaml-templates">values.yaml templates</h4>
+<h4 id="values-tmpl-yaml-templates">values.tmpl.yaml templates</h4>
 
-<p>When using <code>jx step helm apply</code> we now allow <code>values.yaml</code> files to use go/helm templates just like <code>templates/foo.yaml</code> files support inside helm charts so that we can generate value/secret strings which can use templating to compose things from smaller secret values. e.g. creating a maven <code>settings.xml</code> file or docker <code>config.json</code> which includes many user/passwords for different registries.</p>
+<p>When using <code>jx step helm apply</code> we now allow <code>values.tmpl.yaml</code> files to use go/helm templates just like <code>templates/foo.yaml</code> files support inside helm charts so that we can generate value/secret strings which can use templating to compose things from smaller secret values. e.g. creating a maven <code>settings.xml</code> file or docker <code>config.json</code> which includes many user/passwords for different registries.</p>
 
-<p>We can then check in the <code>values.yaml</code> file which does all of this composition and reference the actual secret values via URLs (or template functions) to access vault or local vault files</p>
+<p>We can then check in the <code>values.tmpl.yaml</code> file which does all of this composition and reference the actual secret values via URLs (or template functions) to access vault or local vault files</p>
 
-<p>To do this we use expressions like: <code>{{ .Parameter.pipelineUser.token }}</code> somewhere in the <code>values.yaml</code> values file. So this is like injecting values into the helm templates; but it happens up front to help generate the <code>values.yaml</code> files.</p>
+<p>To do this we use expressions like: <code>{{ .Parameter.pipelineUser.token }}</code> somewhere in the <code>values.tmpl.yaml</code> values file. So this is like injecting values into the helm templates; but it happens up front to help generate the <code>values.yaml</code> files.</p>
 
 </div>
 
@@ -471,7 +475,7 @@ cd my-jx-config
 	
 	<li><a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/">What happens during installation</a></li>
 	
-	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
+	<li><a href="https://jenkins-x.io/getting-started/multi-cluster/">Multiple Clusters</a></li>
 	
 </ul>
 
@@ -1074,7 +1078,7 @@ cd my-jx-config
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Jenkins X Boot”
-  </a> was last updated: June 27, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/9c151bd7763bdbf9fe1d2199c9896da76d7d5794">release 0.0.599 (9c151bd)</a>
+  </a> was last updated: June 27, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/348ff24b2aa9f96e82e408d6fe8d623d773e9aab">release 0.0.600 (348ff24)</a>
 </h6>
 
       
