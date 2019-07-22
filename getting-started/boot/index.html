@@ -32,7 +32,7 @@
 <meta property="og:description" content="A new consistent way to install, configure or upgrade Jenkins X via GitOps and a Jenkins X Pipeline" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/getting-started/boot/" /><meta property="article:published_time" content="2017-02-01T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-07-19T17:31:36&#43;00:00"/>
+<meta property="article:modified_time" content="2019-07-22T08:31:23&#43;00:00"/>
 
 <meta itemprop="name" content="Jenkins X Boot">
 <meta itemprop="description" content="A new consistent way to install, configure or upgrade Jenkins X via GitOps and a Jenkins X Pipeline">
@@ -40,7 +40,7 @@
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1175">
+<meta itemprop="wordCount" content="1356">
 
 
 
@@ -223,6 +223,8 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#changing-your-installation">Changing your installation</a></li>
 <li><a href="#source-repositories">Source Repositories</a></li>
 <li><a href="#requirements">Requirements</a></li>
+<li><a href="#storage">Storage</a></li>
+<li><a href="#ingress">Ingress</a></li>
 <li><a href="#pipeline">Pipeline</a></li>
 <li><a href="#configuration">Configuration</a>
 <ul>
@@ -399,7 +401,7 @@ cd my-jx-config
 
 <h2 id="requirements">Requirements</h2>
 
-<p>There is a file called <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yaml</a> which is used to specify the logical requirements of your installation; such as:</p>
+<p>There is a file called <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> which is used to specify the logical requirements of your installation; such as:</p>
 
 <ul>
 <li>what kubernetes provider to use</li>
@@ -408,7 +410,90 @@ cd my-jx-config
 <li>if you wish to use kaniko for container image builds</li>
 </ul>
 
-<p>You may want to review the  <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yaml</a> file and make any changes you need.</p>
+<p>You may want to review the  <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file and make any changes you need.</p>
+
+<h2 id="storage">Storage</h2>
+
+<p>the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file can configure whether you want to use long term storage for logs + reports and what cloud storage buckets to use to store the data.</p>
+
+<p>e.g. the following <code>jx-requirements.yml</code> file enables long term storage:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span></code></pre></div>
+<p>You can also specify the URLs of the storage buckets in the <code>storage</code> section. The following URL syntax is supported</p>
+
+<ul>
+<li><code>gs://anotherBucket/mydir/something.txt</code> : using a GCS bucket on GCP</li>
+<li><code>s3://nameOfBucket/mydir/something.txt</code> : using S3 bucket on AWS</li>
+<li><code>azblob://thatBucket/mydir/something.txt</code> : using an Azure bucket</li>
+<li><code>http://foo/bar</code> : file stored in git not using HTTPS</li>
+<li><code>https://foo/bar</code> : file stored in a git repo using HTTPS</li>
+</ul>
+
+<p>e.g.</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span>gs<span class="p">:</span>//my-logs<span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span>gs<span class="p">:</span>//my-logs<span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span>gs<span class="p">:</span>//my-repo</code></pre></div>
+<p>For more details see the <a href="https://jenkins-x.io/architecture/storage">Storage Guide</a>.</p>
+
+<h2 id="ingress">Ingress</h2>
+
+<p>If you don&rsquo;t specify anything in your <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file then boot will default to using HTTP (rathter than HTTPS) and using <a href="https://nip.io/">nip.io</a> as the DNS mechanism.</p>
+
+<p>After running boot your <code>jx-requirements.yml</code> may look like:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w">  </span>clusterName<span class="p">:</span><span class="w"> </span>my-cluster-name<span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>my-git-org<span class="w">
+</span><span class="w">  </span>project<span class="p">:</span><span class="w"> </span>my-gke-project<span class="w">
+</span><span class="w">  </span>zone<span class="p">:</span><span class="w"> </span>europe-west1-d<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>ingress<span class="p">:</span><span class="w">
+</span><span class="w">  </span>domain<span class="p">:</span><span class="w"> </span><span class="m">1.2</span>.<span class="m">3.4</span>.nip.io<span class="w">
+</span><span class="w">  </span>externalDNS<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>tls<span class="p">:</span><span class="w">
+</span><span class="w">    </span>email<span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">    </span>production<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>secretStorage<span class="p">:</span><span class="w"> </span>local<span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>prow</code></pre></div>
+<p>If you wish tot enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the <code>ingress</code> section of your  <code>jx-requirements.yml</code> file and re-run <code>jx boot</code></p>
 
 <h2 id="pipeline">Pipeline</h2>
 
@@ -481,7 +566,7 @@ cd my-jx-config
 	
 	<li><a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/">What happens during installation</a></li>
 	
-	<li><a href="https://jenkins-x.io/getting-started/config/">Configuration</a></li>
+	<li><a href="https://jenkins-x.io/getting-started/manage-via-gitops/">Manage by GitOps</a></li>
 	
 </ul>
 
@@ -1096,7 +1181,7 @@ cd my-jx-config
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Jenkins X Boot”
-  </a> was last updated: July 19, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/27743f3bf3b9ac6c9ea867ac7c53aea95a51f4c5">release 0.0.675 (27743f3)</a>
+  </a> was last updated: July 22, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/8a6726b248dd48ccbec9249400af7fbc581f3f20">release 0.0.676 (8a6726b)</a>
 </h6>
 
       
