@@ -32,7 +32,7 @@
 <meta property="og:description" content="The CI/CD system that Kubernetes uses to build itself" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/architecture/prow/" /><meta property="article:published_time" content="2019-01-08T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-09-03T17:37:50&#43;00:00"/>
+<meta property="article:modified_time" content="2019-09-03T20:49:06&#43;00:00"/>
 
 <meta itemprop="name" content="Prow">
 <meta itemprop="description" content="The CI/CD system that Kubernetes uses to build itself">
@@ -40,7 +40,7 @@
 
 <meta itemprop="datePublished" content="2019-01-08T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-01-08T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="1764">
+<meta itemprop="wordCount" content="1765">
 
 
 
@@ -309,7 +309,7 @@ f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
 <h2 id="prow-plugins">Prow Plugins</h2>
 
 <p>The <a href="https://github.com/kubernetes/test-infra/tree/master/prow/cmd/hook">hook binary</a> uses several different plugins that can be enable/disable independently, to do different things. They are basically event handlers for the different GitHub events received through web hooks. These plugins are configured using a yaml config that is passed from a kubernetes ConfigMap to hook and can be enabled per repo or org.
-All plugins have the same interface. The hook process passes two objects to every plugin: a plugin client that let them talk to k8s, git, github, owners file in git repo, slack, etc., and the deserialized GitHub event (like IssueCommentEvent).</p>
+All plugins have the same interface. The hook process passes two objects to every plugin: a plugin client that let them talk to k8s, git, GitHub, owners file in git repo, slack, etc., and the deserialized GitHub event (like IssueCommentEvent).</p>
 
 <h3 id="lgtm-plugin">lgtm plugin</h3>
 
@@ -323,14 +323,14 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 <h3 id="trigger-plugin">Trigger plugin</h3>
 
-<p>Probably the most important plugin. It&rsquo;s plugin that reacts to comments on PR’s, so we can trigger builds (by writing “test” as a comment or any other trigger). It determines which jobs to run based on the job config. When find a job that needs to be trigger, it creates a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob CRD</a>, using the configuration found in the hook ConfigMap (that way you can create a different <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob</a> object depending on the org or repo, like using a different build agent (jenkins vs knative vs pods), the type of the job, etc). This CRD contains some interesting fields:</p>
+<p>Probably the most important plugin. It&rsquo;s plugin that reacts to comments on PR’s, so we can trigger builds (by writing “test” as a comment or any other trigger). It determines which jobs to run based on the job config. When find a job that needs to be trigger, it creates a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob CRD</a>, using the configuration found in the hook ConfigMap (that way you can create a different <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob</a> object depending on the org or repo, like using a different build agent (Jenkins vs Knative vs pods), the type of the job, etc). This CRD contains some interesting fields:</p>
 
 <ul>
 <li>agent: to select which k8s controller will take care of this job</li>
-<li>refs: GH repository and revision to use for the source code</li>
+<li>refs: GitHub repository and revision to use for the source code</li>
 <li>type: whether is presubmit or post submit (run the job before merging or post merge)</li>
 <li>pod_spec: spec to create a Pod object, if we use <a href="https://github.com/kubernetes/test-infra/tree/master/prow/plank">plank</a></li>
-<li>build_spec: spec to create a <a href="https://github.com/knative/docs/blob/master/build/builds.md">knative Build object</a>, if we use <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></li>
+<li>build_spec: spec to create a <a href="https://github.com/knative/docs/blob/master/build/builds.md">Knative Build object</a>, if we use <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></li>
 </ul>
 
 <p>The life cycle of a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/apis/prowjobs/v1/types.go#L85">ProwJob</a> is handled by the ProwJob controllers running on the cluster. Potential ProwJob states are:</p>
@@ -345,7 +345,7 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 <h4 id="job-type">Job Type</h4>
 
-<p>In the Prow configuration you can configure per-repo Presubmits and Postsubmits jobs that are triggered by the trigger plugin. Presubmits are run when the PR code changes (opening a new PR or pushing code to the PR’s branch), so you can test your new code changes. Postsubmits are run whenever there is a new commit appearing on an origin branch (GH push event).</p>
+<p>In the Prow configuration you can configure per-repo Presubmits and Postsubmits jobs that are triggered by the trigger plugin. Presubmits are run when the PR code changes (opening a new PR or pushing code to the PR’s branch), so you can test your new code changes. Postsubmits are run whenever there is a new commit appearing on an origin branch (GitHub push event).</p>
 
 <p>The use-case for postsubmits is that there may be fewer than 100 merges a day to a really high-volume repo, but there could be ten or one hundred times that many presubmit jobs run. Postsubmits can be used when something is very expensive to test and is not necessarily blocking for merge, but you do want signal. Similarly, the way the system works is that your presubmit check will run with your code merged into the branch you&rsquo;re targeting, so technically the merge commit that ends up in <code>master</code> branch has effectively been tested already and often this means you may want a presubmit job but not to duplicate it also postsubmit as it gives you no more signal.</p>
 
@@ -359,7 +359,7 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 <li>There is a <a href="https://github.com/kubernetes/test-infra/blob/master/prow/jenkins/controller.go">jenkins-operator</a> that runs builds on Jenkins. This is currently not recommended.</li>
 </ul>
 
-<p>These controllers manage the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/life_of_a_prow_job.md">the lifecycle of a ProwJob</a>.</p>
+<p>These controllers manage the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/life_of_a_prow_job.md">the life cycle of a ProwJob</a>.</p>
 
 <h4 id="plank-https-github-com-kubernetes-test-infra-tree-master-prow-plank"><a href="https://github.com/kubernetes/test-infra/tree/master/prow/plank">plank</a></h4>
 
@@ -371,12 +371,12 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 <li>If ProwJob is completed, do nothing.</li>
 </ul>
 
-<p>We are using knative build in Jenkins X, which uses the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build controller</a>, so you shouldn&rsquo;t have to worry about plank.</p>
+<p>We are using Knative build in Jenkins X, which uses the <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build controller</a>, so you shouldn&rsquo;t have to worry about plank.</p>
 
 <h4 id="prow-build-https-github-com-kubernetes-test-infra-blob-master-prow-cmd-build-controller-go"><a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/build/controller.go">prow-build</a></h4>
 
-<p>Kubernetes operator that watches ProwJob objects, and reacts to those whose agent field is the knative build agent. It will create <a href="https://github.com/knative/docs/blob/master/build/builds.md">a Knative Build object</a> based on the build_spec field of the ProwJob object.
-<a href="https://github.com/knative/build/blob/master/cmd/controller/main.go">The knative build controller</a> reacts to it and creates a Pod to run the build. All the ProwJob, the Build and the Pod have the same name (a UUID).</p>
+<p>Kubernetes operator that watches ProwJob objects, and reacts to those whose agent field is the Knative build agent. It will create <a href="https://github.com/knative/docs/blob/master/build/builds.md">a Knative Build object</a> based on the build_spec field of the ProwJob object.
+<a href="https://github.com/knative/build/blob/master/cmd/controller/main.go">The Knative build controller</a> reacts to it and creates a Pod to run the build. All the ProwJob, the Build and the Pod have the same name (a UUID).</p>
 
 <p>The Build object contains interesting fields:</p>
 
@@ -384,7 +384,7 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 <li>serviceAccountName: <a href="https://github.com/knative/docs/blob/master/build/auth.md">ServiceAccount that contains the Secrets required to access the Git server or the Docker registry</a>.</li>
 <li>source: Git repository and revision to use for source code.</li>
 <li>steps: Specifies one or more container images that you want to run in your build. Each container image runs until completion or until the first failure is detected.</li>
-<li>template: contains the name of a registered knative BuildTemplate, along with environment variables to pass to the Build object. The template must be a BuildTemplate object that exists in the cluster. <strong>If template field is defined, the steps field will be ignored</strong>.</li>
+<li>template: contains the name of a registered Knative BuildTemplate, along with environment variables to pass to the Build object. The template must be a BuildTemplate object that exists in the cluster. <strong>If template field is defined, the steps field will be ignored</strong>.</li>
 </ul>
 
 <h5 id="steps">Steps</h5>
@@ -407,7 +407,7 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 <h6 id="jenkins-x-build-templates">Jenkins X Build Templates</h6>
 
-<p>Jenkins X uses custom BuildTemplates to run the builds of the applications. <a href="https://github.com/jenkins-x/jenkins-x-serverless">In this repository</a> you can find the different BuildTemplates available, depending on the application language. These BuildTemplates use a different Step builder image depending on the language, since they have to build the application using different tools like maven, go or gradle. So every Builder image has different tools installed, althought eventually all the builder images basically run <a href="https://jenkins-x.io/news/serverless-jenkins/">serverless Jenkins</a> (AKA <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile-Runner</a>). That allows our builds to define the steps in a Jenkinsfile. All these steps are executed inside the same <a href="https://hub.docker.com/r/jenkins/jenkinsfile-runner/dockerfile/">Jenkinsfile Runner container</a>, which doesn&rsquo;t match the Knative Build steps model.</p>
+<p>Jenkins X uses custom BuildTemplates to run the builds of the applications. <a href="https://github.com/jenkins-x/jenkins-x-serverless">In this repository</a> you can find the different BuildTemplates available, depending on the application language. These BuildTemplates use a different Step builder image depending on the language, since they have to build the application using different tools like maven, go or Gradle. So every Builder image has different tools installed, although eventually all the builder images basically run <a href="https://jenkins-x.io/news/serverless-jenkins/">serverless Jenkins</a> (AKA <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile-Runner</a>). That allows our builds to define the steps in a Jenkinsfile. All these steps are executed inside the same <a href="https://hub.docker.com/r/jenkins/jenkinsfile-runner/dockerfile/">Jenkinsfile Runner container</a>, which doesn&rsquo;t match the Knative Build steps model.</p>
 
 <h5 id="the-job-is-run-inside-a-pod">The job is run inside a Pod</h5>
 
@@ -415,7 +415,7 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 <ul>
 <li><a href="https://github.com/knative/build/tree/master/cmd/creds-init">creds-init</a>: Service account secrets are mounted in /var/build-secrets/ so this container has access to them. It aggregates them into their respective credential files in $HOME, which is another volume shared between all the steps. Typically credentials for git server and docker registry.</li>
-<li><a href="https://github.com/knative/build/tree/master/cmd/git-init">git-init</a>: clones the specified sha/revision Git repository into one of the shared volumes /workspace.</li>
+<li><a href="https://github.com/knative/build/tree/master/cmd/git-init">git-init</a>: clones the specified SHA/revision Git repository into one of the shared volumes /workspace.</li>
 <li>Another init-container for every step defined in the Build or BuildTemplate.</li>
 </ul>
 
@@ -439,12 +439,12 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 <p>PRs satisfying a set of predefined criteria can be configured to be automatically merged by <a href="https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/README.md">Tide</a>. It will automatically retest PRs that meet the criteria (&ldquo;tide comes in&rdquo;) and automatically merge them when they have up-to-date passing test results (&ldquo;tide goes out”).</p>
 
-<p>It will query GH every once in a while trying to merge PR’s. It doesn’t react to events, it’s not a plugin.</p>
+<p>It will query GitHub every once in a while trying to merge PR’s. It doesn’t react to events, it’s not a plugin.</p>
 
 <h2 id="ongoing-efforts">Ongoing efforts</h2>
 
 <p>Using init-containers for steps <a href="https://github.com/knative/build/pull/470">may change in the future</a>, due to limitations on init-containers.
-Knative Build CRD is being deprecated in favor of the Pipeline CRD. The Build CRD will be superseeded by the new Task CRD, but they are really similar.</p>
+Knative Build CRD is being deprecated in favor of the Pipeline CRD. The Build CRD will be superseded by the new Task CRD, but they are really similar.</p>
 
 </div>
 
@@ -1079,7 +1079,7 @@ Knative Build CRD is being deprecated in favor of the Pipeline CRD. The Build CR
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Prow”
-  </a> was last updated: September 3, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/8ad0b21d3d9e090a756f67dbcc5c593053681466">release 0.0.871 (8ad0b21)</a>
+  </a> was last updated: September 3, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/395f6bef05c83eda44f8c3291c9ca1ab89503bdf">release 0.0.873 (395f6be)</a>
 </h6>
 
       
