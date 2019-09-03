@@ -17,6 +17,263 @@
     
     
     <item>
+      <title>News: Jenkins X Key Takeaways from Jenkins World 2019</title>
+      <link>https://jenkins-x.io/news/jenkinsworld-2019-takeaways/</link>
+      <pubDate>Tue, 03 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/news/jenkinsworld-2019-takeaways/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X was the star of the show at DevOps World | Jenkins World 2019. In this article I will
+share with you the dozen key things I learned about this exciting new cloud native CI/CD tool.
+Beyond its capabilities as a CI/CD tool, Jenkins X also provides an excellent example of how to architect
+a cloud native application on Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is a completely new CI/CD system that shares little but its name with the existing Jenkins. Jenkins X incorporates the best practices from the &lt;em&gt;State of DevOps&lt;/em&gt; reports and the seminal book, &lt;em&gt;Accelerate&lt;/em&gt; by &lt;a href=&#34;https://twitter.com/nicolefv&#34;&gt;Nicole Forsgren&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/jezhumble&#34;&gt;Jez Humble&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/RealGeneKim&#34;&gt;Gene Kim&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img width=&#34;70%&#34; height=&#34;70%&#34; alt=&#34;Capabilities of Jenkins X&#34; src=&#34;https://www.cloudbees.com/sites/default/files/jenkinsx_capabilities.png&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;I attended multiple presentations by &lt;a href=&#34;https://twitter.com/jstrachan&#34;&gt;James Strachan&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/abayer&#34;&gt;Andrew Bayer&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/jdrawlings&#34;&gt;James Rawlings&lt;/a&gt; of CloudBees, and &lt;a href=&#34;https://twitter.com/salaboy&#34;&gt;Mauricio Salatino&lt;/a&gt;. Mr. Rawlings even gave two presentations. Each presentation covered Jenkins X from a different perspective, so here I compose everything into a unified summary.&lt;/p&gt;
+
+&lt;h2 id=&#34;setting-up-kubernetes&#34;&gt;Setting up Kubernetes&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34;&gt;Terraform is recommended&lt;/a&gt; for
+setting up the required Kubernetes cluster and storage buckets. As explained below, you may find it
+useful to run &lt;code&gt;jx boot&lt;/code&gt; from within Terraform.&lt;/p&gt;
+
+&lt;p&gt;By default, Terraform stores its state in local file &lt;code&gt;terraform.tfstate&lt;/code&gt;. In an ephemeral cloud
+environment, this state gets lost and you would create a new cluster each time you applied
+Terraform. Remedy this by specifying a &lt;a href=&#34;https://www.terraform.io/docs/
+backends/index.html&#34;&gt;Terraform backend&lt;/a&gt; to store the state in more durable storage like Google Cloud Storage or
+Amazon S3.&lt;/p&gt;
+
+&lt;p&gt;Presenters recommended nginx as an ingress controller and
+&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34;&gt;cert-manager&lt;/a&gt; to manage TLS
+(HTTPS SSL) certificates.&lt;/p&gt;
+
+&lt;p&gt;For introspection, navigation and object management of your Kubernetes cluster, try
+&lt;a href=&#34;https://github.com/vmware/octant&#34;&gt;VMWare&amp;rsquo;s Octant UI tool&lt;/a&gt;. It runs on your local client just like
+&lt;code&gt;kubectl&lt;/code&gt;. An advantage of Octant is that it authenticates the same way as &lt;code&gt;kubectl&lt;/code&gt;: if &lt;code&gt;kubectl&lt;/code&gt; works, octant works.&lt;/p&gt;
+
+&lt;h2 id=&#34;setting-up-jenkins-x&#34;&gt;Setting up Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;For a stable build of Jenkins X, get the
+&lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution&#34;&gt;CloudBees Jenkins X Distribution&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X has two modes:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Static traditional Jenkins master with Jenkins pipelines. Use this if you want to continue
+using your existing Jenkinsfiles.&lt;/li&gt;
+&lt;li&gt;Jenkins X pipelines based on &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34;&gt;Tekton pipelines&lt;/a&gt;.
+This is now the default, and is recommended for the long term. This mode is controlled by
+the new &lt;code&gt;jenkins-x.yml&lt;/code&gt; file, whose syntax resembles the Jenkinsfile declarative pipeline
+syntax.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are two interactive quick start commands. The older and presumably more stable is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create quickstart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The new way to install, configure and upgrade Jenkins X is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx boot
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;jx boot&lt;/code&gt; interactively queries the user for the required setup data, recording the responses in file &lt;code&gt;jx-requirements.yml&lt;/code&gt;. It is re-entrant so you can run it repeatedly. Running &lt;code&gt;jx boot&lt;/code&gt; from within Terraform is a useful technique.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X evolves quickly, so &lt;code&gt;jx boot&lt;/code&gt; records the Jenkinx X version to use in field
+&lt;code&gt;versionStream&lt;/code&gt; within &lt;code&gt;jx-requirements.yml&lt;/code&gt;. This establishes the version to use on subsequent
+invocations of &lt;code&gt;jx boot&lt;/code&gt;. Update &lt;code&gt;versionStream&lt;/code&gt; when you want to start using a newer version of
+Jenkins X.&lt;/p&gt;
+
+&lt;h2 id=&#34;getting-status&#34;&gt;Getting status&lt;/h2&gt;
+
+&lt;p&gt;Get logs using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get build logs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Track execution with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get activity
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;List preview environments using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get environments
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;basic-concepts-in-jenkins-x-pipelines&#34;&gt;Basic concepts in Jenkins X pipelines&lt;/h2&gt;
+
+&lt;p&gt;At this point a little vocabulary lession is in order.&lt;/p&gt;
+
+&lt;h3 id=&#34;step&#34;&gt;Step&lt;/h3&gt;
+
+&lt;p&gt;A step is a command that runs in a separate container, sharing a workspace with other steps. Once a step fails, subsequent steps will not run. Step names must be unique within a stage. There is also a loop step, which runs the same command for each value in a list.&lt;/p&gt;
+
+&lt;p&gt;All the usual Kubernetes container configuration of resources, limits, volume mounts and so on are available within steps.&lt;/p&gt;
+
+&lt;h3 id=&#34;stage&#34;&gt;Stage&lt;/h3&gt;
+
+&lt;p&gt;A stage is a unit of work in a pipeline. A stage contains either steps or nested stages. Each stage with steps runs in its own pod. The workspace is copied from one stage&amp;rsquo;s pod to the next.&lt;/p&gt;
+
+&lt;h3 id=&#34;pipeline&#34;&gt;Pipeline&lt;/h3&gt;
+
+&lt;p&gt;There are two types of pipelines:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Release pipelines merge into master, create a release and trigger promotion&lt;/li&gt;
+&lt;li&gt;As the name implies, pull request pipelines are used to create a merge request preview environment&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;A pipeline is controlled by a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file at the top of the source control repository.&lt;/p&gt;
+
+&lt;h3 id=&#34;meta-pipeline&#34;&gt;Meta pipeline&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X has a bootstrapping problem: how to create a pipeline? The meta pipeline creates the real pipeline, sort of like Maven &lt;code&gt;release:prepare&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;defining-pipelines&#34;&gt;Defining pipelines&lt;/h2&gt;
+
+&lt;p&gt;There are three ways to define a Jenkins X pipeline:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Automatically via a build pack. The build pack automatically detects the source code language.&lt;/li&gt;
+&lt;li&gt;Specify a build pack and then override portions of it in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Fully define an entirely new pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt;. This is only useful for a pipeline
+that will not be reused. For reusable pipelines, define a build pack.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Build packs are standard, opinionated pipelines for languages. They consist of a predefined
+sequence of steps that run in a consistent order. They are similar to stages in that they can be
+overridden and extended.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is controlled by a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file that lives at the root of the Git repository.
+In &lt;code&gt;jenkins-x.yml&lt;/code&gt;, you can:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Override build packs&lt;/li&gt;
+&lt;li&gt;Run steps before existing step using setup&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;type: replace&lt;/code&gt; to replace a step&lt;/li&gt;
+&lt;li&gt;To add a step to the end of the stage, leave the step name unspecified&lt;/li&gt;
+&lt;li&gt;To apply an override to all pipelines, leave the pipeline name unspecified&lt;/li&gt;
+&lt;li&gt;Modify container configuration or environment variables. Override environment variables
+using the same syntax as Kubernetes.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can also define a completely new pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt;, but this is useful chiefly for debugging and testing. Again, make a pipeline reusable by defining it as a build pack.&lt;/p&gt;
+
+&lt;h3 id=&#34;default-pipeline&#34;&gt;Default pipeline&lt;/h3&gt;
+
+&lt;p&gt;Pull request and release pipelines are often very similar, so define common attributes for both
+in a default pipeline.&lt;/p&gt;
+
+&lt;h2 id=&#34;validating-syntax-and-ide-autocompletion&#34;&gt;Validating syntax and IDE autocompletion&lt;/h2&gt;
+
+&lt;p&gt;Check your pipelines using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step syntax validate
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Pipelines are usually defined by multiple YAML files. See how they fit together in a single flat pipeline file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step syntax effective
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Jenkins X YAML schema is uploaded to &lt;a href=&#34;https://schemastore.org&#34;&gt;schemastore.org&lt;/a&gt;, where amazingly IntelliJ and the VS Code YAML Language Extension automatically pick it up.&lt;/p&gt;
+
+&lt;h2 id=&#34;gitops-prow-and-lighthouse&#34;&gt;GitOps, Prow and Lighthouse&lt;/h2&gt;
+
+&lt;p&gt;GitOps is at the core of Jenkins X. GitOps extends Infrastructure as code by using pull requests to manage infrastructure changes. These pull requests might be created by developers, or they might be generated automatically by tooling.&lt;/p&gt;
+
+&lt;p&gt;Accordingly, Jenkins X creates a preview environment for each run of a pull request pipeline.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X currently uses Prow as a webhook handler and ChatOps engine for pull requests. Importantly, &lt;strong&gt;at this time Prow supports only GitHub.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Since Jenkins X uses only a small portion of Prow, and since Prow supports only GitHub, the
+Jenkins X team is developing &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;Lighthouse&lt;/a&gt; as a
+lightweight replacement. In this very experimental webhook handler, the Git provider is factored
+out so that new providers can be easily added.&lt;/p&gt;
+
+&lt;p&gt;As an aside, adding a &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34;&gt;new Git provider for Lighthouse&lt;/a&gt; would be an excellent way to learn the Go language.&lt;/p&gt;
+
+&lt;h2 id=&#34;avoiding-committing-secrets&#34;&gt;Avoiding committing secrets&lt;/h2&gt;
+
+&lt;p&gt;It can be difficult to avoid commiting secrets to Git. Thus separate file &lt;code&gt;parameters.yml&lt;/code&gt; contains URL references to a secret. Also, Jenkins X runs Helm in a temporary directory.&lt;/p&gt;
+
+&lt;p&gt;The Helm chart &lt;code&gt;values.yml&lt;/code&gt; files are separated into individual &lt;code&gt;values.tmpl.yml&lt;/code&gt; files. These are templates so you can easily interpolate secrets into them.&lt;/p&gt;
+
+&lt;h2 id=&#34;implementing-https-in-preview-environments&#34;&gt;Implementing HTTPS in preview environments&lt;/h2&gt;
+
+&lt;p&gt;It is difficult to get HTTPS to work in preview environments because each preview environment gets a different URL. James Rawlings demonstrated the solution:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Specify that you want to use DNS for HTTPS in &lt;code&gt;jx boot&lt;/code&gt;. This will cause &lt;a href=&#34;https://github.com/kubernetes-incubator/external-dns&#34;&gt;external-dns&lt;/a&gt; to be installed automatically.&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add &lt;code&gt;externalDNS&lt;/code&gt; in &lt;code&gt;requirements.yml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ingress:
+ externalDNS: true
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Then, create the domain (this example assumes you are using GKE):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create domain gke --domain rawlingsdemo.co.uk
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Finally, go to your domain registrar and replace their name servers with Google&amp;rsquo;s name servers&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;using-jenkins-x-in-multiple-clusters&#34;&gt;Using Jenkins X in multiple clusters&lt;/h2&gt;
+
+&lt;p&gt;Strictly speaking, Jenkins X does not require its own cluster, but things work better operationally if you use separate clusters for testing, staging and production.&lt;/p&gt;
+
+&lt;p&gt;You only need to install Jenkins X on the development cluster. Install the Jenkins X &lt;a href=&#34;https://github.com/jenkins-x-charts/environment-controller&#34;&gt;environment controller&lt;/a&gt; on the staging and production clusters. This is further explained in the article &lt;a href=&#34;https://jenkins-x.io/getting-started/multi-cluster/&#34;&gt;Multiple Clusters&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;upcoming-jenkins-x-features&#34;&gt;Upcoming Jenkins X features&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X is evolving rapidly. Upcoming features are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Conditional execution of stages&lt;/li&gt;
+&lt;li&gt;Jenkins X apps to inject steps and stages&lt;/li&gt;
+&lt;li&gt;More advanced configuration of stage pods&lt;/li&gt;
+&lt;li&gt;More advanced solution for pipeline and stage sharing across repos&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;learning-jenkins-x&#34;&gt;Learning Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;Many fine examples with source code on GitHub were presented:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Mauricio Salatino presented what was by far
+&lt;a href=&#34;https://salaboy.com/2019/08/12/building-cloud-native-platforms-with-jenkins-x/&#34;&gt;the most extensive example&lt;/a&gt;.
+Starting with a monolithic application, he decomposed it into microservices, built it with
+Jenkins X and deployed it on Kubernetes.&lt;/li&gt;
+&lt;li&gt;For instruction on how to use Kubernetes itself, Mauricio recommends
+&lt;a href=&#34;https://learnk8s.io/academy/&#34;&gt;learnk8s.io&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Kurt Madel&amp;rsquo;s CloudBees Technologists Group gave
+&lt;a href=&#34;https://cb-technologists.github.io/posts/lightning-talks-dw-jw-2019/&#34;&gt;several lightning talks&lt;/a&gt;
+that discuss Jenkins X.
+&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34;&gt;GitOps for Jenkins Infrastructure&lt;/a&gt;
+contains great Terraform tips for regular Jenkins (not Jenkins X). Whether or not you really
+want to use GitOps for your blog,
+&lt;a href=&#34;https://github.com/cb-technologists/blog&#34;&gt;GitOps for Blogging, Why Not?&lt;/a&gt;
+demonstrates GitOps principles.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;getting-involved-with-the-jenkins-community&#34;&gt;Getting involved with the Jenkins Community&lt;/h2&gt;
+
+&lt;p&gt;Multiple presenters recommended the &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;Jenkins X Slack channels&lt;/a&gt; as the best source of help and information. For more ways to get involved, see the &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;Jenkins X community page&lt;/a&gt;. I&amp;rsquo;ll see you there.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>News: A New Logo for Jenkins X</title>
       <link>https://jenkins-x.io/news/new-logo-jenkins-x/</link>
       <pubDate>Wed, 31 Jul 2019 07:36:00 +0200</pubDate>
