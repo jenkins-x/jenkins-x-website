@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Jenkins X – Jenkins X is a CI / CD platform for Kubernetes</title>
@@ -356,15 +355,15 @@ Credit: &lt;a href=&#34;https://www.mindseyecreative.ca/&#34;&gt;Minds Eye Creat
 &lt;p&gt;Today, I walk you through the process of increasing observability in your build and release pipeline by implementing tracing for a couple of events such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; which are part of a sample NodeJS application.&lt;/p&gt;
 
 &lt;aside class=&#34;admonition note&#34;&gt;
-	&lt;div class=&#34;note-icon&#34;&gt;
-		
-	&lt;/div&gt;
-	
-	
-	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;NOTE: Tracing is only a small portion of other things that need to be in place.  Logging and Metrics are also required.  The combination and aggregation of this data allows you to understand how observable your pipeline is.&lt;/p&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: Tracing is only a small portion of other things that need to be in place.  Logging and Metrics are also required.  The combination and aggregation of this data allows you to understand how observable your pipeline is.
 &lt;/div&gt;
 &lt;/aside&gt;
-
 
 &lt;p&gt;&lt;figure&gt;
 &lt;img src=&#34;https://peter.bourgon.org/img/instrumentation/01.png&#34;/&gt;
@@ -387,15 +386,15 @@ Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 &lt;p&gt;In this scenario we want to trace start and end times for certain events.  In our example NodeJS app, we have commands such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt;, which are part of our &lt;strong&gt;build-pack&lt;/strong&gt; pipeline out of the box.  To do start tracing, we modify the Tekton pipeline and inject calls to the Honeycomb.io API before and after these specific &lt;strong&gt;build pack&lt;/strong&gt; named steps.&lt;/p&gt;
 
 &lt;aside class=&#34;admonition note&#34;&gt;
-	&lt;div class=&#34;note-icon&#34;&gt;
-		
-	&lt;/div&gt;
-	
-	
-	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;NOTE: Please be sure to sign up for &lt;a href=&#34;http://honeycomb.io&#34;&gt;honeycomb.io&lt;/a&gt; to obtain your &lt;strong&gt;API Key&lt;/strong&gt;&lt;/p&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: Please be sure to sign up for [honeycomb.io](http://honeycomb.io) to obtain your **API Key**
 &lt;/div&gt;
 &lt;/aside&gt;
-
 
 &lt;h4 id=&#34;create-kubernetes-secret&#34;&gt;Create Kubernetes Secret&lt;/h4&gt;
 
@@ -410,20 +409,22 @@ Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;CI Provider&lt;/strong&gt;:  this is the JENKINS-X environment variable.  Honeycomb will add additional metadata fields to our dataset&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;BUILDEVENT_DATASET&lt;/strong&gt;: this indicates which dataset we want to populate (you can have many).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;BUILDEVENT_APIKEY&lt;/strong&gt;: the Kubernetes Secret value, which is the API Key provided via the honeycomb site&lt;/li&gt;
-&lt;/ul&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;BUILDEVENT_APIKEY&lt;/strong&gt;: the Kubernetes Secret value, which is the API Key provided via the honeycomb site&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;buildPack&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;javascript&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;pipelineConfig&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;env&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;JENKINS-X&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;value&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;JENKINS-X&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_DATASET&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;value&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;jx&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_APIKEY&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;valueFrom&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;secretKeyRef&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;key&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_APIKEY&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-creds&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;env&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;JENKINS-X&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;value&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;JENKINS-X&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_DATASET&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;value&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;jx&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_APIKEY&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;valueFrom&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;secretKeyRef&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;key&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;BUILDEVENT_APIKEY&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-creds&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;p&gt;The &lt;strong&gt;build-pack&lt;/strong&gt; used for a NodeJS app is &lt;strong&gt;javascript&lt;/strong&gt; as detected by the language.  Hence, why the single line we had as the contents of the &lt;code&gt;jenkins-x.yaml&lt;/code&gt; file.&lt;/p&gt;
 
 &lt;p&gt;Because we know which build-pack is being used, we can determine which named steps exist.  As you can imagine, a typical &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; typically exist.&lt;/p&gt;
@@ -437,39 +438,39 @@ Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;command&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=====&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pullrequest&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;build&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;before&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;sending&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;trace&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;===============&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-install-set-step-start-timestamp&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;&amp;gt; step_start
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-npm-install-before-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo =================================  $(cat step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: before
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    - name: npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      pipeline: pullRequest
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      stage: build
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - command: echo ===== pullrequest:build:after   sending honeycomb step trace  ===============
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-npm-install-after-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo =================================  $(cat step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-step-log-after-npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: ./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo npm-install | sum | cut -f 1 -d \ ) $(cat step_start) npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: after
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    - name: npm-test
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      pipeline: pullRequest
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      stage: build
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-npm-test-set-step-start-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo $(date +%s) &amp;gt; step_start
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-npm-test-before-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo =================================  $(cat step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: before
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    - name: npm-test
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      pipeline: pullRequest
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      stage: build
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-npm-test-after-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo =================================  $(cat step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: honeycomb-step-log-after-npm-test
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: ./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo npm-test | sum | cut -f 1 -d \ ) $(cat step_start) npm-test
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: after&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&amp;gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-install-before-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;before&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;pipeline&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pullRequest&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;stage&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;command&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=====&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pullrequest&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;build&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;after&lt;span class=&#34;w&#34;&gt;   &lt;/span&gt;sending&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;trace&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;===============&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-install-after-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-step-log-after-npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;./buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-install&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;sum&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;cut&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-f&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-d&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;\&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;after&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-test&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;pipeline&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pullRequest&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;stage&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-test-set-step-start-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&amp;gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-test-before-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;before&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-test&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;pipeline&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pullRequest&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;stage&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-npm-test-after-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-step-log-after-npm-test&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;./buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-test&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;sum&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;cut&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-f&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-d&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;\&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step_start)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-test&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;after&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Now that I have  captured timestamps for these two named steps, I want to send an API call to honeycomb as follows.  You will notice how I am using a binary called &lt;strong&gt;buildevents&lt;/strong&gt; this is downloaded during the setup of my pipelines which I discuss shortly.&lt;/p&gt;
 
 &lt;p&gt;By concatenating a few metadata pieces that exist as &lt;strong&gt;environment variables&lt;/strong&gt; in Jenkins X, I build a unique name which is needed by honeycomb to track things correctly.&lt;/p&gt;
@@ -490,29 +491,29 @@ Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;command&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=====&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;build&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;before&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;sending&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;trace&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;===============&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-npm-install-step-start-timestamp&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;&amp;gt; release_step_start
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: release-honeycomb-npm-install-before-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo ================================= release  release-npm-install step start  $(cat release_step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: before
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    - name: npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      pipeline: release
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      stage: build
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: release-honeycomb-npm-install-after-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo ================================= release npm-install step end  $(cat release_step_start)  =================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: release-honeycomb-step-log-after-npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: ./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo release-npm-install | sum | cut -f 1 -d \ ) $(cat release_step_start) release-npm-install
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: after
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    - pipeline: release
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      stage: build
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: release-honeycomb-build-name-concat
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat release_start)
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      - name: release-honeycomb-build-send-success
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        sh: ./buildevents build &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(cat release_start) success
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      type: after&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&amp;gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_step_start&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-npm-install-before-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;release-npm-install&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;start&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;before&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;pipeline&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;stage&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-npm-install-after-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;npm-install&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;end&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_step_start)&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;=================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-step-log-after-npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;./buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;step&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-npm-install&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;sum&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;|&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;cut&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-f&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-d&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;\&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_step_start)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-npm-install&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;after&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;pipeline&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;stage&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-build-name-concat&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;the&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;is&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;and&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;HONEYCOMB_BUILD_START=$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_start)&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-build-send-success&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;./buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_start)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;success&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;type&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;after&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;This is portion of the pipeline executes first hence the &lt;strong&gt;setup&lt;/strong&gt; node.  There are several things we want to accomplish in the setup of our pipelines.&lt;/p&gt;
 
 &lt;ul&gt;
@@ -532,21 +533,21 @@ Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-display-buildevents-version&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;./buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;--version&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-setup-build-timestamp&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;&amp;gt; build_start
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;          - name: honeycomb-output-debug
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;            sh: echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat build_start)   =======================================================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;    release:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;      setup:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        steps:
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        - command: echo =========================== release:setup downloading Honeycomb.io buildevents binary ===========================
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        - name: release-download-honeycomb-binary
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;          sh: curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        - name: release-honeycomb-set-binary-permissions
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;          sh: chmod 755 buildevents
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        - name: release-honeycomb-setup-build-timestamp
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;          sh: echo $(date +%s) &amp;gt; release_start
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;        - name: release-honeycomb-output-debug
-&lt;/span&gt;&lt;span class=&#34;sd&#34;&gt;          sh: echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat release_start)   =======================================================&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&amp;gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build_start&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;honeycomb-output-debug&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;the&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;is&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;and&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;HONEYCOMB_BUILD_START=$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build_start)&lt;span class=&#34;w&#34;&gt;   &lt;/span&gt;=======================================================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;      &lt;/span&gt;setup&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;steps&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;command&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;===========================&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;setup&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;downloading&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;Honeycomb.io&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;binary&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;===========================&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-download-honeycomb-binary&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;curl&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-L&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-o&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;buildevents&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;https&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;//github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-set-binary-permissions&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;chmod&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;755&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;buildevents&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-setup-build-timestamp&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;$(date&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;+%s)&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&amp;gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_start&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;-&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release-honeycomb-output-debug&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;          &lt;/span&gt;sh&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;echo&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;the&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;build&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;is&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;and&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;HONEYCOMB_BUILD_START=$(cat&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;release_start)&lt;span class=&#34;w&#34;&gt;   &lt;/span&gt;=======================================================&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Once this pipeline executes, the dashboard on the honeycomb.io site will show us the execution tracing as follows.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/news/jenkins-x-observability/honeycomb_trace_example.png&#34; alt=&#34;Honeycomb Dashboard&#34; /&gt;&lt;/p&gt;
@@ -1087,15 +1088,15 @@ cat &lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl apply -f -
 &lt;/figure&gt;
 
 &lt;aside class=&#34;admonition note&#34;&gt;
-	&lt;div class=&#34;note-icon&#34;&gt;
-		
-	&lt;/div&gt;
-	
-	
-	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;CAUTION: Do not make updates to the cluster that require recreating the cluster resources, all data will be lost.  Only changes that update the cluster are supported at this time.&lt;/p&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+CAUTION: Do not make updates to the cluster that require recreating the cluster resources, all data will be lost.  Only changes that update the cluster are supported at this time.
 &lt;/div&gt;
 &lt;/aside&gt;
-
 
 &lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
 
@@ -1179,16 +1180,16 @@ cat &lt;span class=&#34;s&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl apply -f -
 &lt;p&gt;We now have a great code-base to create our clusters on GKE for three different environments.&lt;/p&gt;
 
 &lt;aside class=&#34;admonition note&#34;&gt;
-	&lt;div class=&#34;note-icon&#34;&gt;
-		
-	&lt;/div&gt;
-	
-	
-	&lt;div class=&#34;admonition-content&#34;&gt;&lt;p&gt;NOTE: On this Post, we will only create the Dev Cluster, although the process is the same for creating the other Kubernetes clusters.
-First we need to make sure we have credentials to execute our Terraform code.&lt;/p&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: On this Post, we will only create the Dev Cluster, although the process is the same for creating the other Kubernetes clusters.
+First we need to make sure we have credentials to execute our Terraform code.
 &lt;/div&gt;
 &lt;/aside&gt;
-
 
 &lt;h1 id=&#34;step-2-get-gke-credentials&#34;&gt;Step 2 - Get GKE Credentials&lt;/h1&gt;
 
@@ -1544,7 +1545,7 @@ NOTE: This dashboard is deprecated, and we are only showing you in the context o
 
 
 &lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
-  &lt;iframe src=&#34;//www.youtube.com/embed/EYywyqcPVMY?autoplay=1&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/EYywyqcPVMY?autoplay=1&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
 &lt;/div&gt;
 
 
@@ -4599,16 +4600,16 @@ NOTE: This dashboard is deprecated, and we are only showing you in the context o
 &lt;p&gt;So to preserve the helm semantics of removing old resources from a chart in newer versions (e.g. removing a microservice from the Staging environment) or removing an entire release we do the following:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;the YAML generated by&lt;code&gt;helm template&lt;/code&gt; is post processed to add 2 labels:&lt;/li&gt;
-&lt;/ul&gt;
+&lt;li&gt;&lt;p&gt;the YAML generated by&lt;code&gt;helm template&lt;/code&gt; is post processed to add 2 labels:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;metadata&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;mything&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;  &lt;/span&gt;labels&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;jenkins.io/chart-release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;my-release&lt;span class=&#34;w&#34;&gt;
-&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;jenkins.io/version&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1.2&lt;/span&gt;.&lt;span class=&#34;m&#34;&gt;3&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;ul&gt;
-&lt;li&gt;after an upgrade we remove any resources for the same helm release name but different version (to remove any old resources) via the selector &lt;code&gt;jenkins.io/chart-release=my-release,jenkins.io/version!=1.2.3&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;to remove a release completely we just delete all resources with the label selector: &lt;code&gt;jenkins.io/chart-release=my-release&lt;/code&gt;&lt;br /&gt;&lt;/li&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;name&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;mything&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;labels&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;jenkins.io/chart-release&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;my-release&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;jenkins.io/version&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;m&#34;&gt;1.2.3&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;after an upgrade we remove any resources for the same helm release name but different version (to remove any old resources) via the selector &lt;code&gt;jenkins.io/chart-release=my-release,jenkins.io/version!=1.2.3&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;to remove a release completely we just delete all resources with the label selector: &lt;code&gt;jenkins.io/chart-release=my-release&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;kustomize&#34;&gt;Kustomize?&lt;/h3&gt;
