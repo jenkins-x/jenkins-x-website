@@ -35,14 +35,14 @@
 
 <meta property="og:image" content="https://jenkins-x.io/images/logo.png" />
 <meta property="article:published_time" content="2017-02-01T00:00:00+00:00" />
-<meta property="article:modified_time" content="2019-09-08T14:41:10+00:00" />
+<meta property="article:modified_time" content="2019-09-09T08:36:07+00:00" />
 <meta itemprop="name" content="Jenkins X Boot">
 <meta itemprop="description" content="A new consistent way to install, configure or upgrade Jenkins X via GitOps and a Jenkins X Pipeline">
 
 
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-09-08T14:41:10&#43;00:00" />
-<meta itemprop="wordCount" content="1597">
+<meta itemprop="dateModified" content="2019-09-09T08:36:07&#43;00:00" />
+<meta itemprop="wordCount" content="1789">
 
 
 
@@ -222,7 +222,6 @@ var trackOutboundLink = function(id, url) {
 </ul></li>
 </ul></li>
 <li><a href="#changing-your-installation">Changing your installation</a></li>
-<li><a href="#source-repositories">Source Repositories</a></li>
 <li><a href="#requirements">Requirements</a></li>
 <li><a href="#secrets">Secrets</a>
 <ul>
@@ -235,8 +234,17 @@ var trackOutboundLink = function(id, url) {
 <li><a href="#lighthouse">Lighthouse</a></li>
 <li><a href="#jenkins">Jenkins</a></li>
 </ul></li>
+<li><a href="#git">Git</a>
+<ul>
+<li><a href="#github">GitHub</a></li>
+<li><a href="#github-enterprise">GitHub Enterprise</a></li>
+<li><a href="#bitbucket-server">Bitbucket Server</a></li>
+<li><a href="#bitbucket-cloud">Bitbucket Cloud</a></li>
+<li><a href="#gitlab">Gitlab</a></li>
+</ul></li>
 <li><a href="#storage">Storage</a></li>
 <li><a href="#ingress">Ingress</a></li>
+<li><a href="#source-repositories">Source Repositories</a></li>
 <li><a href="#pipeline">Pipeline</a></li>
 <li><a href="#configuration">Configuration</a>
 <ul>
@@ -393,14 +401,6 @@ cd my-jx-config
 
 <p>So just edit anything in the configuration you like and re-run <a href="https://jenkins-x.io/commands/jx_boot">jx boot</a> - whether thats to add or remove Apps, to change parameters or configuration or upgrade or downgrade versions of dependencies.</p>
 
-<h2 id="source-repositories">Source Repositories</h2>
-
-<p>Boot automatically sets up any source repositories which exist in the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates">repositories/templates</a> folder as <a href="https://jenkins-x.io/architecture/custom-resources/#sourcerepository">SourceRepository</a>  custom resources and uses any associated <a href="https://jenkins-x.io/architecture/custom-resources/#scheduler">Scheduler</a> custom resources to regenerate the Prow configuration.</p>
-
-<p>Boot also automatically creates or updates any required webhooks on the git provider for your <a href="https://jenkins-x.io/architecture/custom-resources/#sourcerepository">SourceRepository</a> resources.</p>
-
-<p>If you are using GitOps we hope to automate the population of the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates">repositories/templates</a> folder as you import/create projects. Until then you can manually create a Pull Request on your boot git repository via <a href="https://jenkins-x.io/commands/jx_step_create_pullrequest_repositories/">jx step create pullrequest repositories</a></p>
-
 <h2 id="requirements">Requirements</h2>
 
 <p>There is a file called <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> which is used to specify the logical requirements of your installation; such as:</p>
@@ -412,7 +412,7 @@ cd my-jx-config
 <li>if you wish to use kaniko for container image builds</li>
 </ul>
 
-<p>You may want to review the  <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file and make any changes you need.</p>
+<p>This is the main configuration file for <code>jx boot</code> and where you make most of your changes. You may want to review the  <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file and make any changes you need.</p>
 
 <h2 id="secrets">Secrets</h2>
 
@@ -500,6 +500,132 @@ cd my-jx-config
 
 <p>To use a Jenkins server in boot for processing webhooks and pipelines configure it via <code>webhook: jenkins</code> in <code>jx-requirements.yml</code></p>
 
+<h2 id="git">Git</h2>
+
+<p>Jenkins X supports a number of different git providers. You can specify the git provider you wish to use and the organisation to use for the git providers for each environment in your <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file.</p>
+
+<h3 id="github">GitHub</h3>
+
+<p>This is the default if you don&rsquo;t specify anything.</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>myorg<span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w"></span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>prow</code></pre></div>
+<h3 id="github-enterprise">GitHub Enterprise</h3>
+
+<p>The configuration is similar to the above but you need to specify the URL of the <code>gitServer</code> (if it differs from <a href="https://github.com">https://github.com</a>) and <code>gitKind: github</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>myorg<span class="w">
+</span><span class="w">  </span>gitKind<span class="p">:</span><span class="w"> </span>github<span class="w">
+</span><span class="w">  </span>gitName<span class="p">:</span><span class="w"> </span>ghe<span class="w">
+</span><span class="w">  </span>gitServer<span class="p">:</span><span class="w"> </span>https<span class="p">:</span>//github.myserver.com<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>secretStorage<span class="p">:</span><span class="w"> </span>local<span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>lighthouse</code></pre></div>
+<h3 id="bitbucket-server">Bitbucket Server</h3>
+
+<p>For this specify the URL of the <code>gitServer</code> and <code>gitKind: bitbucketserver</code>. If you want to use <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Serverless Jenkins X Pipelines</a> with <a href="https://tekton.dev/">Tekton</a> then make sure you specify the <a href="#webhook">lighthouse webhook</a> via <code>webhook: lighthouse</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>myorg<span class="w">
+</span><span class="w">  </span>gitKind<span class="p">:</span><span class="w"> </span>bitbucketserver<span class="w">
+</span><span class="w">  </span>gitName<span class="p">:</span><span class="w"> </span>bs<span class="w">
+</span><span class="w">  </span>gitServer<span class="p">:</span><span class="w"> </span>https<span class="p">:</span>//bitbucket.myserver.com<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>secretStorage<span class="p">:</span><span class="w"> </span>local<span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>lighthouse</code></pre></div>
+<h3 id="bitbucket-cloud">Bitbucket Cloud</h3>
+
+<p>For this specify<code>gitKind: bitbucketcloud</code>. If you want to use <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Serverless Jenkins X Pipelines</a> with <a href="https://tekton.dev/">Tekton</a> then make sure you specify the <a href="#webhook">lighthouse webhook</a> via <code>webhook: lighthouse</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>myorg<span class="w">
+</span><span class="w">  </span>gitKind<span class="p">:</span><span class="w"> </span>bitbucketcloud<span class="w">
+</span><span class="w">  </span>gitName<span class="p">:</span><span class="w"> </span>bc<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>secretStorage<span class="p">:</span><span class="w"> </span>local<span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>lighthouse</code></pre></div>
+<h3 id="gitlab">Gitlab</h3>
+
+<p>For this specify the URL of the <code>gitServer</code> and <code>gitKind: gitlab</code>. If you want to use <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Serverless Jenkins X Pipelines</a> with <a href="https://tekton.dev/">Tekton</a> then make sure you specify the <a href="#webhook">lighthouse webhook</a> via <code>webhook: lighthouse</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">cluster<span class="p">:</span><span class="w">
+</span><span class="w">  </span>provider<span class="p">:</span><span class="w"> </span>gke<span class="w">
+</span><span class="w">  </span>environmentGitOwner<span class="p">:</span><span class="w"> </span>myorg<span class="w">
+</span><span class="w">  </span>gitKind<span class="p">:</span><span class="w"> </span>gitlab<span class="w">
+</span><span class="w">  </span>gitName<span class="p">:</span><span class="w"> </span>gl<span class="w">
+</span><span class="w">  </span>gitServer<span class="p">:</span><span class="w"> </span>https<span class="p">:</span>//gitlab.com<span class="w">
+</span><span class="w"></span>environments<span class="p">:</span><span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>dev<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>staging<span class="w">
+</span><span class="w">  </span>-<span class="w"> </span>key<span class="p">:</span><span class="w"> </span>production<span class="w">
+</span><span class="w"></span>kaniko<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w"></span>secretStorage<span class="p">:</span><span class="w"> </span>local<span class="w">
+</span><span class="w"></span>storage<span class="p">:</span><span class="w">
+</span><span class="w">  </span>logs<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>reports<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w">  </span>repository<span class="p">:</span><span class="w">
+</span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;gs://jx-logs&#34;</span><span class="w">
+</span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>lighthouse</code></pre></div>
 <h2 id="storage">Storage</h2>
 
 <p>the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml">jx-requirements.yml</a> file can configure whether you want to use long term storage for logs + reports and what cloud storage buckets to use to store the data.</p>
@@ -619,6 +745,14 @@ cd my-jx-config
 </span><span class="w">    </span>enabled<span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
 </span><span class="w">    </span>url<span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
 </span><span class="w"></span>webhook<span class="p">:</span><span class="w"> </span>prow</code></pre></div>
+<h2 id="source-repositories">Source Repositories</h2>
+
+<p>Boot automatically sets up any source repositories which exist in the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates">repositories/templates</a> folder as <a href="https://jenkins-x.io/architecture/custom-resources/#sourcerepository">SourceRepository</a>  custom resources and uses any associated <a href="https://jenkins-x.io/architecture/custom-resources/#scheduler">Scheduler</a> custom resources to regenerate the Prow configuration.</p>
+
+<p>Boot also automatically creates or updates any required webhooks on the git provider for your <a href="https://jenkins-x.io/architecture/custom-resources/#sourcerepository">SourceRepository</a> resources.</p>
+
+<p>If you are using GitOps we hope to automate the population of the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates">repositories/templates</a> folder as you import/create projects. Until then you can manually create a Pull Request on your boot git repository via <a href="https://jenkins-x.io/commands/jx_step_create_pullrequest_repositories/">jx step create pullrequest repositories</a></p>
+
 <h2 id="pipeline">Pipeline</h2>
 
 <p>The install/upgrade process is defined in a <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Jenkins X Pipeline</a> in a file called <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml">jenkins-x.yml</a>.</p>
@@ -1329,7 +1463,7 @@ cd my-jx-config
   <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
 </span>
     “Jenkins X Boot”
-  </a> was last updated: September 8, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/1577ad0a52c4e95913497bb4c8c9bb72545b0c25">release 0.0.910 (1577ad0)</a>
+  </a> was last updated: September 9, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/8fb8d376bd207da013ea5bd6cbfa68ae4d045d36">release 0.0.911 (8fb8d37)</a>
 </h6>
 
       
