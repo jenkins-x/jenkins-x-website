@@ -1,0 +1,316 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Contribute to the code</title>
+    <link>/docs/contributing/code/</link>
+    <description>Recent content in Contribute to the code on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/contributing/code/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: DNS</title>
+      <link>/docs/contributing/code/contribute_dns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/contributing/code/contribute_dns/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Some features and issues require DNS to be configured. The domain name &lt;code&gt;jenkins-x.rocks&lt;/code&gt; is available for
+use. Jenkins X can either manage your DNS for you or you can manage the DNS manually. Read more about how
+&lt;a href=&#34;../../architecture/dns&#34;&gt;Jenkins X manages your DNS for you&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;In both scenarios you can reuse the domain name if you delete the old cluster that was using it and create a new one. If
+you run both clusters at the same time you will need a domain name for each.&lt;/p&gt;
+
+&lt;h2 id=&#34;without-external-dns&#34;&gt;Without External DNS&lt;/h2&gt;
+
+&lt;p&gt;To add records, visit &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones/jenkins-x-rocks?project=jenkins-x-rocks&amp;amp;organizationId=41792434410&#34; target=&#34;_blank&#34;&gt;the Cloud DNS dashboard&lt;/a&gt;.
+If you need access please contact one of the project maintainers.&lt;/p&gt;
+
+&lt;p&gt;Once you have access, you can use the &lt;code&gt;Add record set&lt;/code&gt; button to add entries or the pencil to edit entries.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Choose a unique DNS name; you can use nested domains (e.g. &lt;code&gt;demo.example.pmuir.jenkins-x.rocks&lt;/code&gt;). We recommend using
+&lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; so you can easily identify domains created by you. Enter this in the
+&lt;code&gt;DNS Name&lt;/code&gt; field using the format &lt;code&gt;*.&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x-rocks.&lt;/code&gt; (note that you can&amp;rsquo;t change the
+the &lt;code&gt;jenkins-x.rocks&lt;/code&gt; suffix and it is prefilled for you).&lt;/li&gt;
+&lt;li&gt;Find the cluster IP. The way to do this varies.
+
+&lt;ul&gt;
+&lt;li&gt;If you used &lt;code&gt;jx install&lt;/code&gt; then you &lt;strong&gt;must&lt;/strong&gt; configure this during install. When you are prompted if you want to use
+the default &lt;code&gt;.nip.io&lt;/code&gt; domain copy the IP. You &lt;strong&gt;must&lt;/strong&gt; now wait until your domain name is ready.&lt;/li&gt;
+&lt;li&gt;If you used jx boot then you can do this at any time. The domain name is present in the domain name and can be found
+in &lt;code&gt;jx-requirements.yaml&lt;/code&gt;. Copy the IP.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Use the default values for &lt;code&gt;Resource Record Type&lt;/code&gt; (&lt;code&gt;A&lt;/code&gt;), &lt;code&gt;TTL&lt;/code&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;code&gt;TTL Unit&lt;/code&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Paste the IP address you found above into the &lt;code&gt;IPv4 Address&lt;/code&gt; field&lt;/li&gt;
+&lt;li&gt;Click &lt;code&gt;Create&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Check if the DNS has propagated to wherever you are running the &lt;code&gt;jx&lt;/code&gt; command. Run
+&lt;code&gt;watch dig +short A test-dns.&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt;. Once the output changes to the IP address
+you found above the DNS has propagated. If you are using a Mac &lt;code&gt;watch&lt;/code&gt; can be installed using &lt;code&gt;brew install watch&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Tell Jenkins X about the name.
+
+&lt;ul&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx install&lt;/code&gt; then paste &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; into the prompt where you paused earlier&lt;/li&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx boot&lt;/code&gt; then edit &lt;code&gt;jx-requirements.yaml&lt;/code&gt;, and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;)
+to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; and run &lt;code&gt;jx boot&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;If you prefer to use the gcloud CLI you can find instructions for usage on the &amp;ldquo;Create record set&amp;rdquo; screen.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;with-external-dns&#34;&gt;With External DNS&lt;/h2&gt;
+
+&lt;p&gt;To add records, visit &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones/jenkins-x-rocks?project=jenkins-x-rocks&amp;amp;organizationId=41792434410&#34; target=&#34;_blank&#34;&gt;the Cloud DNS dashboard&lt;/a&gt;.
+If you need access please contact one of the project maintainers.&lt;/p&gt;
+
+&lt;p&gt;Once you have access, you can use the &lt;code&gt;Add record set&lt;/code&gt; button to add entries. External DNS will automatically update the
+records if you reuse the domain name, so if you delete the old cluster and create a new one there is no need to go through
+this process again.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Choose a unique DNS name; you can use nested domains (e.g. &lt;code&gt;demo.example.pmuir.jenkins-x.rocks&lt;/code&gt;). We recommend using
+&lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; so you can easily identify domains created by you. Enter this in the
+&lt;code&gt;DNS Name&lt;/code&gt; field using the format &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x-rocks.&lt;/code&gt; (note that you can&amp;rsquo;t change the
+the &lt;code&gt;jenkins-x.rocks&lt;/code&gt; suffix and it is prefilled for you).&lt;/li&gt;
+&lt;li&gt;Run &lt;code&gt;jx create domain gke --domain &amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt;. Make a note of the nameservers printed out.&lt;/li&gt;
+&lt;li&gt;Change the &lt;code&gt;Resource Record Type&lt;/code&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default values for &lt;code&gt;TTL&lt;/code&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;code&gt;TTL Unit&lt;/code&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Add the first nameserver to the &lt;code&gt;Name server&lt;/code&gt; field&lt;/li&gt;
+&lt;li&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add the second nameserver. Do the same for rest of the nameservers&lt;/li&gt;
+&lt;li&gt;Click &lt;code&gt;Create&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Tell Jenkins X about the name.
+
+&lt;ul&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx install --external-dns&lt;/code&gt; then paste &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; into the prompt where you paused earlier&lt;/li&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx boot&lt;/code&gt; then edit &lt;code&gt;jx-requirements.yaml&lt;/code&gt;, and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;)
+to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; and run &lt;code&gt;jx boot&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Pull Request Reviews</title>
+      <link>/docs/contributing/code/pullrequestreview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/contributing/code/pullrequestreview/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;The pull request is the main place we gate changes in Jenkins X. It&amp;rsquo;s here we:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;run the tests (&lt;code&gt;make test-slow-integration&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;execute &lt;a href=&#34;https://github.com/jenkins-x/bdd-jx&#34; target=&#34;_blank&#34;&gt;end to end tests&lt;/a&gt; against static jenkins and Tekton&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/blob/2d54b6ef9a276f148cbc7cb10169e83238f2d83e/hack/linter.sh&#34; target=&#34;_blank&#34;&gt;check the change&lt;/a&gt; for linting issues&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/blob/2d54b6ef9a276f148cbc7cb10169e83238f2d83e/hack/gofmt.sh&#34; target=&#34;_blank&#34;&gt;check the code&lt;/a&gt; for formatting issues&lt;/li&gt;
+&lt;li&gt;validate that &lt;a href=&#34;/docs/contributing/code/#code-generation&#34;&gt;all generated code&lt;/a&gt; (mocks, kubernetes clients, kubernetes openapi structs) are up to date&lt;/li&gt;
+&lt;li&gt;validate that we can &lt;a href=&#34;/docs/contributing/code/#code-generation&#34;&gt;generate the apidoc&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;validate that your &lt;a href=&#34;/docs/contributing/code/#the-commit-message&#34;&gt;commits are conventional&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Our philosophy is to automate the checks as much as possible - there are some that must still be done by a human but we
+plan to reduce those as far as possible.&lt;/p&gt;
+
+&lt;p&gt;These review guidelines apply to all github repos in &lt;a href=&#34;https://github.com/jenkins-x&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x&lt;/a&gt;, &lt;a href=&#34;https://github.com/jenkins-x-charts&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-charts&lt;/a&gt;,
+&lt;a href=&#34;https://github.com/jenkins-x-apps&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-apps&lt;/a&gt;, &lt;a href=&#34;https://github.com/jenkins-x-quickstarts&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-quickstarts&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x-buildpacks&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-buildpacks&lt;/a&gt;.
+A repository with the &lt;code&gt;proof-of-concept&lt;/code&gt; label does not have to follow these guidelines. If we decide that the proof
+of concept is going to become the longterm solution the &lt;code&gt;proof-of-concept&lt;/code&gt; label should be removed and the code in the
+repository should be reviewed to ensure that these guidelines are met (and any remedial action needed added to the issue
+tracker and scheduled).&lt;/p&gt;
+
+&lt;h1 id=&#34;getting-your-pr-merged&#34;&gt;Getting your PR merged&lt;/h1&gt;
+
+&lt;p&gt;In order to get your PR merged you&amp;rsquo;ll need to get a pass on all the automated checks. You&amp;rsquo;ll also need a maintainer to
+approve the change using &lt;code&gt;/lgtm&lt;/code&gt;. In order to get an &lt;code&gt;/lgtm&lt;/code&gt; it helps to give a little bit of context to your PR in the
+body of the PR - an essay is not necessary (or helpful!).&lt;/p&gt;
+
+&lt;p&gt;We believe that the person who knows the most about the change is the author of the change and that the role of the approver
+is to try to spot any functional or non-functional problems that the change might introduce. We&amp;rsquo;ll cover this in more
+detail in &amp;ldquo;Approving a PR&amp;rdquo;. If you are uncertain about a part (or all) of the change please do mention this either in
+the PR or as an inline comment as this means the approver can focus on the right part.&lt;/p&gt;
+
+&lt;p&gt;All PRs are approved by a maintainer, and for all non-experimental repositories that maintainer must be a different
+individual to the author.&lt;/p&gt;
+
+&lt;p&gt;And above all, remember that as a PR author it&amp;rsquo;s your responsibility to get your PR merged!&lt;/p&gt;
+
+&lt;h1 id=&#34;approving-a-pr&#34;&gt;Approving a PR&lt;/h1&gt;
+
+&lt;p&gt;Your five principal tasks as an approver are to:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;verify that the change is of overall benefit to Jenkins X&lt;/li&gt;
+&lt;li&gt;spot potential functional or non-functional problems with a PR&lt;/li&gt;
+&lt;li&gt;ensure any non-automated checks pass&lt;/li&gt;
+&lt;li&gt;signal when a PR needs security review by applying the &lt;code&gt;needs-security-review&lt;/code&gt; label and wait with the approval
+until a security person reviews the changes and removes the label&lt;/li&gt;
+&lt;li&gt;identify when a PR requires some documentation by adding the &lt;code&gt;needs-docs&lt;/code&gt; label and also request to author
+to create a follow up issue with label &lt;code&gt;area/docs&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Verifying that the change is of &lt;strong&gt;overall benefit&lt;/strong&gt; is your most important responsibility as a PR approver. By default
+we assume that changes are beneficial and that it is the responsibility of the approver to identify if the change would
+be detrimental (rather than requiring the author to prove or assert benefit in all cases).&lt;/p&gt;
+
+&lt;p&gt;If, as a PR approver, you feel that a PR is detrimental to Jenkins X you should:&lt;/p&gt;
+
+&lt;p&gt;1) Place the PR on hold using the &lt;code&gt;/hold&lt;/code&gt; command, with the comment &amp;ldquo;I want to discuss whether this PR is beneficial or
+not before approving. I&amp;rsquo;ll start a discussion in the #jenkins-x-dev channel shortly to discuss my concerns.&amp;rdquo;
+2) Once you have started a discussion, add a comment with a PR with a link to the discussion
+3) Once you have have reached mutual agreement update the PR:
+   * Summarize the discussion on the PR
+   * If you agree that the PR is ok or mostly ok (but need some changes) follow the standard approval process outlined in
+     this document
+   * If you agree that the PR is not ok close it with a the comment &amp;ldquo;We&amp;rsquo;ve agreed to not merge this PR&amp;rdquo;&lt;/p&gt;
+
+&lt;p&gt;These sorts of discussions have the potential to become heated. Whilst we advise starting a discussion on slack we would
+strongly encourage you to have a quick call with anyone interested if you can&amp;rsquo;t quickly (quickly means a couple of
+messages, a minute discussion or a few sentances) reach agreement with the PR author to hash out what to do. You may also
+want to consider asking a third developer to act as a facilitator/moderator to help you stay on track with the discussion.&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;This process is intentionally onerous on the approver as we feel change creates opportunity and that there must be a
+good reason to prevent change that you can justify and explain. That does not diminish the responsibility on every
+approver to ensure that a change is of benefit, and you will have the full support of all members of the project in
+challenging the benefit even if some of the members disagree with your challenge!&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;Functional problems&lt;/strong&gt; are might potentially cause the code to not function as described on one of the PR, an attached issue,
+an external document or PR against the docs repo. Examples might include missing prompts or questions, incomplete or
+misleading helptext or an API that doesn&amp;rsquo;t make sense.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Non-functional problems&lt;/strong&gt; are that set of problems that don&amp;rsquo;t affect the functioning of the program but are known to cause
+problems. An exhaustive list of non-functional problems the reviewer should check for is maintained here, and this list
+must be updated when new non-functional areas for review are identified.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Too many files in a package. Go uses a lot of memory at compilation time and large packages can cause compilation to
+crash. This is particularly a problem when running a test suite as we like to run tests in parallel for speed. Approvers
+should use their discretion but as a rule of thumb any new functionality should go in it&amp;rsquo;s own package and not be
+added to an existing package as a number (e.g. &lt;code&gt;kube&lt;/code&gt;, &lt;code&gt;util&lt;/code&gt;, &lt;code&gt;cmd&lt;/code&gt;) are already far too large&lt;/li&gt;
+&lt;li&gt;Duplicated functionality. The codebase is large, and has many dependencies. When writing a new feature it&amp;rsquo;s often easy
+to miss existing functions or dependency that do what you need, and add a new function or dependency. Approvers should
+try to identify a duplicated dependencies or functions and ask for them to be consolidated.&lt;/li&gt;
+&lt;li&gt;Excessive custom resource creation. Etcd struggles with too many custom resources being created (e.g. we saw 50k created)
+by some errant code in one day recently. Approvers should check that the code won&amp;rsquo;t result in too many custom resources
+being created - think about the complexity (is it linear, polynomial, exponential etc.). If a lot of custom resources are
+being created, then ensure there is some form of garbage collection.&lt;/li&gt;
+&lt;li&gt;Pushing secrets to source control. Validate that the code doesn&amp;rsquo;t risk pushing secrets&lt;/li&gt;
+&lt;li&gt;Non-intuitive behavior that doesn&amp;rsquo;t have a comment. We don&amp;rsquo;t require comments for code that is logical and makes sense
+but sometimes we have to write code in a certain way to deal with external circumstances. You can easily identify this
+kind of code - if your reactions is &amp;ldquo;WTF&amp;rdquo; then it probably needs a comment. On the other hand if your reaction is
+&amp;ldquo;I don&amp;rsquo;t understand this&amp;rdquo; then that&amp;rsquo;s not a good indication of non-intuitive code!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Security review&lt;/strong&gt; should be requested for any changes in security sensitive areas such as secrets handling with or without
+vault, authentication/authorization, cloud service accounts and permissions, commands dealing with credentials, changes to
+RBAC rules in various helm charts, changes to TLS configuration and so on.&lt;/p&gt;
+
+&lt;p&gt;Non automated checks currently include:
+* for a PR that includes a new feature, ensure that there is an associated PR for documentation
+* That the commit message type (i.e. &lt;code&gt;fix&lt;/code&gt;, &lt;code&gt;chore&lt;/code&gt;, &lt;code&gt;feat&lt;/code&gt; or &lt;code&gt;BREAKING CHANGE&lt;/code&gt;) is correct as this will affect the release number used.
+* Changes introduced to debug or test the PR being committed (e.g. changes to the test repo in use)&lt;/p&gt;
+
+&lt;p&gt;As an approver there are a number of traps it&amp;rsquo;s very easy to fall into when reviewing a pull request. We regard these as
+bad behaviors and a PR author or another community member should call out an approver if one of these behaviors is noticed:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;requesting stylistic changes - &amp;ldquo;That&amp;rsquo;s not how &lt;strong&gt;I&lt;/strong&gt; would have done it!&amp;ldquo;, &amp;ldquo;Could you rename that variable/func/package
+to &lt;code&gt;XXX&lt;/code&gt;&amp;rdquo;. As an approver you normally have the ability to edit the PR directly, you should make any changes like this
+yourself.&lt;/li&gt;
+&lt;li&gt;requesting trivial changes. As an approver you normally have the ability to edit the PR directly, you should make any
+changes like this yourself.&lt;/li&gt;
+&lt;li&gt;Requesting clarification of how something works. This is unhelpful as PR discussions are essentially lost when the PR
+is merged. If you don&amp;rsquo;t understand how something works, puzzle over it for 5 minutes, clone the branch, run a test and
+use your debugger. If you are still struggling then ask the author on slack and explain why you can&amp;rsquo;t understand it. The
+author should then update the PR either with some comments or different code. You should also post a short summary back
+on to the PR, focusing on the &amp;ldquo;why&amp;rdquo; - in other words why were you confused and why did the change fix it.&lt;/li&gt;
+&lt;li&gt;Discussions about a change. If you need to discuss a change, then use #jenkins-x-dev on slack or do a call
+(advertising it on slack ideally). Once you&amp;rsquo;ve got a conclusion make a quick note of that on the PR.&lt;/li&gt;
+&lt;li&gt;Tangents. There are many problems in the codebase, but don&amp;rsquo;t be tempted to try to solve all of them in a review. Focus
+on what problems this PR will cause.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Above all, remember that as an approver your role is not to make the code into something that you would have written
+but to check it won&amp;rsquo;t cause a problem.&lt;/p&gt;
+
+&lt;h1 id=&#34;future-enhancements-planned&#34;&gt;Future Enhancements Planned&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Switch config on all repos to use &lt;code&gt;lgtm&lt;/code&gt; plugin not &lt;code&gt;approval&lt;/code&gt; plugin, except those with the &lt;code&gt;proof-of-concept&lt;/code&gt; label&lt;/li&gt;
+&lt;li&gt;Consider using something like &lt;a href=&#34;https://pullpanda.com/assigner&#34; target=&#34;_blank&#34;&gt;https://pullpanda.com/assigner&lt;/a&gt; to allocate reviewers automatically&lt;/li&gt;
+&lt;li&gt;Add code coverage tools and implement a ratchet. For example, if the overall coverage is 40% then the coverage of the
+change would have to be 50%. We will decide the size of the ratchet as part of this. The goal here is to steadily
+improve the coverage&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Triaging issues</title>
+      <link>/docs/contributing/code/triage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/contributing/code/triage/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;The main issue tracker for the Jenkins X project is &lt;a href=&#34;https://github.com/jenkins-x/jx/issues&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jx/issues&lt;/a&gt;.  This aims to capture issues, ideas and development work.  If in doubt please raise an issue and a Jenkins X team member will look to triage it as soon as possible.&lt;/p&gt;
+
+&lt;p&gt;As Jenkins X is using &lt;a href=&#34;https://www.cloudbees.com/blog/serverless-jenkins-jenkins-x&#34; target=&#34;_blank&#34;&gt;prow&lt;/a&gt; from the Kubernetes ecosystem we figured we&amp;rsquo;d take their lead in triaging a large number of issues to aid and encourage contributions.  We are reusing the style of labels including colours in an attempt to create familiarity across open source projects and reduce the barrier to contributing.&lt;/p&gt;
+
+&lt;h1 id=&#34;triaging-issues&#34;&gt;Triaging issues&lt;/h1&gt;
+
+&lt;p&gt;For a full list of available labels please see &lt;a href=&#34;https://github.com/jenkins-x/jx/labels&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jx/labels&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;When triaging an issue, someone from the Jenkins X team will assign labels to describe the &lt;strong&gt;area&lt;/strong&gt; and &lt;strong&gt;kind&lt;/strong&gt; of issue.  Where possible they will also add a priority however these are subject to change after further analysis or wider visibility.&lt;/p&gt;
+
+&lt;p&gt;Labels are added via the prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34; target=&#34;_blank&#34;&gt;label&lt;/a&gt; plugin using GitHub comments.  For example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/kind bug
+/area prow
+/priority important-soon
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/contribute/triage.png&#34; alt=&#34;Triage&#34; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;assigning-issues&#34;&gt;Assigning issues&lt;/h1&gt;
+
+&lt;p&gt;When triaging we will attempt to assign someone to the issue.  This may change depending on the investigation or availability of people.&lt;/p&gt;
+
+&lt;h1 id=&#34;investigating-issues&#34;&gt;Investigating issues&lt;/h1&gt;
+
+&lt;p&gt;When anyone is working on an issue we aim to capture any analysis by adding comments.  This helps people learn tips on how to investigate similar problems, helps people understand the thought process and provides context for any linked fixes via pull requests.&lt;/p&gt;
+
+&lt;h1 id=&#34;new-labels&#34;&gt;New labels&lt;/h1&gt;
+
+&lt;p&gt;If you would like to request a new label be created please raise an issue with as much context as possible.&lt;/p&gt;
+
+&lt;h1 id=&#34;stale-issues&#34;&gt;Stale issues&lt;/h1&gt;
+
+&lt;p&gt;As we encourrage a wide range of issue kinds like general ideas and thoughts the issue tracker can grow quite high.  We are going to be enabling the prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34; target=&#34;_blank&#34;&gt;lifecycle&lt;/a&gt; plugin to help manage stale issues.  This is not meant to be intrusive but instead allow us to continually rethink problems and keep momentum across issues.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

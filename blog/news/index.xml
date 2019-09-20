@@ -1,0 +1,1953 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – News About Jenkins X</title>
+    <link>/blog/news/</link>
+    <description>Recent content in News About Jenkins X on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/blog/news/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Blog: Jenkins X Key Takeaways from Jenkins World 2019</title>
+      <link>/blog/2019/09/03/jenkinsworld-2019-takeaways/</link>
+      <pubDate>Tue, 03 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/09/03/jenkinsworld-2019-takeaways/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X was the star of the show at DevOps World | Jenkins World 2019. In this article I will
+share with you the dozen key things I learned about this exciting new cloud native CI/CD tool.
+Beyond its capabilities as a CI/CD tool, Jenkins X also provides an excellent example of how to architect
+a cloud native application on Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is a completely new CI/CD system that shares little but its name with the existing Jenkins. Jenkins X incorporates the best practices from the &lt;em&gt;State of DevOps&lt;/em&gt; reports and the seminal book, &lt;em&gt;Accelerate&lt;/em&gt; by &lt;a href=&#34;https://twitter.com/nicolefv&#34; target=&#34;_blank&#34;&gt;Nicole Forsgren&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/jezhumble&#34; target=&#34;_blank&#34;&gt;Jez Humble&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/RealGeneKim&#34; target=&#34;_blank&#34;&gt;Gene Kim&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img width=&#34;70%&#34; height=&#34;70%&#34; alt=&#34;Capabilities of Jenkins X&#34; src=&#34;https://www.cloudbees.com/sites/default/files/jenkinsx_capabilities.png&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;I attended multiple presentations by &lt;a href=&#34;https://twitter.com/jstrachan&#34; target=&#34;_blank&#34;&gt;James Strachan&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/abayer&#34; target=&#34;_blank&#34;&gt;Andrew Bayer&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/jdrawlings&#34; target=&#34;_blank&#34;&gt;James Rawlings&lt;/a&gt; of CloudBees, and &lt;a href=&#34;https://twitter.com/salaboy&#34; target=&#34;_blank&#34;&gt;Mauricio Salatino&lt;/a&gt;. Mr. Rawlings even gave two presentations. Each presentation covered Jenkins X from a different perspective, so here I compose everything into a unified summary.&lt;/p&gt;
+
+&lt;h2 id=&#34;setting-up-kubernetes&#34;&gt;Setting up Kubernetes&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34; target=&#34;_blank&#34;&gt;Terraform is recommended&lt;/a&gt; for
+setting up the required Kubernetes cluster and storage buckets. As explained below, you may find it
+useful to run &lt;code&gt;jx boot&lt;/code&gt; from within Terraform.&lt;/p&gt;
+
+&lt;p&gt;By default, Terraform stores its state in local file &lt;code&gt;terraform.tfstate&lt;/code&gt;. In an ephemeral cloud
+environment, this state gets lost and you would create a new cluster each time you applied
+Terraform. Remedy this by specifying a &lt;a href=&#34;https://www.terraform.io/docs/
+backends/index.html&#34; target=&#34;_blank&#34;&gt;Terraform backend&lt;/a&gt; to store the state in more durable storage like Google Cloud Storage or
+Amazon S3.&lt;/p&gt;
+
+&lt;p&gt;Presenters recommended nginx as an ingress controller and
+&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34; target=&#34;_blank&#34;&gt;cert-manager&lt;/a&gt; to manage TLS
+(HTTPS SSL) certificates.&lt;/p&gt;
+
+&lt;p&gt;For introspection, navigation and object management of your Kubernetes cluster, try
+&lt;a href=&#34;https://github.com/vmware/octant&#34; target=&#34;_blank&#34;&gt;VMWare&amp;rsquo;s Octant UI tool&lt;/a&gt;. It runs on your local client just like
+&lt;code&gt;kubectl&lt;/code&gt;. An advantage of Octant is that it authenticates the same way as &lt;code&gt;kubectl&lt;/code&gt;: if &lt;code&gt;kubectl&lt;/code&gt; works, octant works.&lt;/p&gt;
+
+&lt;h2 id=&#34;setting-up-jenkins-x&#34;&gt;Setting up Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;For a stable build of Jenkins X, get the
+&lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution&#34; target=&#34;_blank&#34;&gt;CloudBees Jenkins X Distribution&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X has two modes:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Static traditional Jenkins master with Jenkins pipelines. Use this if you want to continue
+using your existing Jenkinsfiles.&lt;/li&gt;
+&lt;li&gt;Jenkins X pipelines based on &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34; target=&#34;_blank&#34;&gt;Tekton pipelines&lt;/a&gt;.
+This is now the default, and is recommended for the long term. This mode is controlled by
+the new &lt;code&gt;jenkins-x.yml&lt;/code&gt; file, whose syntax resembles the Jenkinsfile declarative pipeline
+syntax.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are two interactive quick start commands. The older and presumably more stable is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create quickstart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The new way to install, configure and upgrade Jenkins X is:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx boot
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;jx boot&lt;/code&gt; interactively queries the user for the required setup data, recording the responses in file &lt;code&gt;jx-requirements.yml&lt;/code&gt;. It is re-entrant so you can run it repeatedly. Running &lt;code&gt;jx boot&lt;/code&gt; from within Terraform is a useful technique.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X evolves quickly, so &lt;code&gt;jx boot&lt;/code&gt; records the Jenkinx X version to use in field
+&lt;code&gt;versionStream&lt;/code&gt; within &lt;code&gt;jx-requirements.yml&lt;/code&gt;. This establishes the version to use on subsequent
+invocations of &lt;code&gt;jx boot&lt;/code&gt;. Update &lt;code&gt;versionStream&lt;/code&gt; when you want to start using a newer version of
+Jenkins X.&lt;/p&gt;
+
+&lt;h2 id=&#34;getting-status&#34;&gt;Getting status&lt;/h2&gt;
+
+&lt;p&gt;Get logs using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get build logs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Track execution with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get activity
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;List preview environments using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get environments
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;basic-concepts-in-jenkins-x-pipelines&#34;&gt;Basic concepts in Jenkins X pipelines&lt;/h2&gt;
+
+&lt;p&gt;At this point a little vocabulary lession is in order.&lt;/p&gt;
+
+&lt;h3 id=&#34;step&#34;&gt;Step&lt;/h3&gt;
+
+&lt;p&gt;A step is a command that runs in a separate container, sharing a workspace with other steps. Once a step fails, subsequent steps will not run. Step names must be unique within a stage. There is also a loop step, which runs the same command for each value in a list.&lt;/p&gt;
+
+&lt;p&gt;All the usual Kubernetes container configuration of resources, limits, volume mounts and so on are available within steps.&lt;/p&gt;
+
+&lt;h3 id=&#34;stage&#34;&gt;Stage&lt;/h3&gt;
+
+&lt;p&gt;A stage is a unit of work in a pipeline. A stage contains either steps or nested stages. Each stage with steps runs in its own pod. The workspace is copied from one stage&amp;rsquo;s pod to the next.&lt;/p&gt;
+
+&lt;h3 id=&#34;pipeline&#34;&gt;Pipeline&lt;/h3&gt;
+
+&lt;p&gt;There are two types of pipelines:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Release pipelines merge into master, create a release and trigger promotion&lt;/li&gt;
+&lt;li&gt;As the name implies, pull request pipelines are used to create a merge request preview environment&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;A pipeline is controlled by a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file at the top of the source control repository.&lt;/p&gt;
+
+&lt;h3 id=&#34;meta-pipeline&#34;&gt;Meta pipeline&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X has a bootstrapping problem: how to create a pipeline? The meta pipeline creates the real pipeline, sort of like Maven &lt;code&gt;release:prepare&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;defining-pipelines&#34;&gt;Defining pipelines&lt;/h2&gt;
+
+&lt;p&gt;There are three ways to define a Jenkins X pipeline:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Automatically via a build pack. The build pack automatically detects the source code language.&lt;/li&gt;
+&lt;li&gt;Specify a build pack and then override portions of it in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Fully define an entirely new pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt;. This is only useful for a pipeline
+that will not be reused. For reusable pipelines, define a build pack.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Build packs are standard, opinionated pipelines for languages. They consist of a predefined
+sequence of steps that run in a consistent order. They are similar to stages in that they can be
+overridden and extended.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is controlled by a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file that lives at the root of the Git repository.
+In &lt;code&gt;jenkins-x.yml&lt;/code&gt;, you can:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Override build packs&lt;/li&gt;
+&lt;li&gt;Run steps before existing step using setup&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;type: replace&lt;/code&gt; to replace a step&lt;/li&gt;
+&lt;li&gt;To add a step to the end of the stage, leave the step name unspecified&lt;/li&gt;
+&lt;li&gt;To apply an override to all pipelines, leave the pipeline name unspecified&lt;/li&gt;
+&lt;li&gt;Modify container configuration or environment variables. Override environment variables
+using the same syntax as Kubernetes.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can also define a completely new pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt;, but this is useful chiefly for debugging and testing. Again, make a pipeline reusable by defining it as a build pack.&lt;/p&gt;
+
+&lt;h3 id=&#34;default-pipeline&#34;&gt;Default pipeline&lt;/h3&gt;
+
+&lt;p&gt;Pull request and release pipelines are often very similar, so define common attributes for both
+in a default pipeline.&lt;/p&gt;
+
+&lt;h2 id=&#34;validating-syntax-and-ide-autocompletion&#34;&gt;Validating syntax and IDE autocompletion&lt;/h2&gt;
+
+&lt;p&gt;Check your pipelines using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step syntax validate
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Pipelines are usually defined by multiple YAML files. See how they fit together in a single flat pipeline file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step syntax effective
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The Jenkins X YAML schema is uploaded to &lt;a href=&#34;https://schemastore.org&#34; target=&#34;_blank&#34;&gt;schemastore.org&lt;/a&gt;, where amazingly IntelliJ and the VS Code YAML Language Extension automatically pick it up.&lt;/p&gt;
+
+&lt;h2 id=&#34;gitops-prow-and-lighthouse&#34;&gt;GitOps, Prow and Lighthouse&lt;/h2&gt;
+
+&lt;p&gt;GitOps is at the core of Jenkins X. GitOps extends Infrastructure as code by using pull requests to manage infrastructure changes. These pull requests might be created by developers, or they might be generated automatically by tooling.&lt;/p&gt;
+
+&lt;p&gt;Accordingly, Jenkins X creates a preview environment for each run of a pull request pipeline.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X currently uses Prow as a webhook handler and ChatOps engine for pull requests. Importantly, &lt;strong&gt;at this time Prow supports only GitHub.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Since Jenkins X uses only a small portion of Prow, and since Prow supports only GitHub, the
+Jenkins X team is developing &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;Lighthouse&lt;/a&gt; as a
+lightweight replacement. In this very experimental webhook handler, the Git provider is factored
+out so that new providers can be easily added.&lt;/p&gt;
+
+&lt;p&gt;As an aside, adding a &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;new Git provider for Lighthouse&lt;/a&gt; would be an excellent way to learn the Go language.&lt;/p&gt;
+
+&lt;h2 id=&#34;avoiding-committing-secrets&#34;&gt;Avoiding committing secrets&lt;/h2&gt;
+
+&lt;p&gt;It can be difficult to avoid commiting secrets to Git. Thus separate file &lt;code&gt;parameters.yml&lt;/code&gt; contains URL references to a secret. Also, Jenkins X runs Helm in a temporary directory.&lt;/p&gt;
+
+&lt;p&gt;The Helm chart &lt;code&gt;values.yml&lt;/code&gt; files are separated into individual &lt;code&gt;values.tmpl.yml&lt;/code&gt; files. These are templates so you can easily interpolate secrets into them.&lt;/p&gt;
+
+&lt;h2 id=&#34;implementing-https-in-preview-environments&#34;&gt;Implementing HTTPS in preview environments&lt;/h2&gt;
+
+&lt;p&gt;It is difficult to get HTTPS to work in preview environments because each preview environment gets a different URL. James Rawlings demonstrated the solution:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Specify that you want to use DNS for HTTPS in &lt;code&gt;jx boot&lt;/code&gt;. This will cause &lt;a href=&#34;https://github.com/kubernetes-incubator/external-dns&#34; target=&#34;_blank&#34;&gt;external-dns&lt;/a&gt; to be installed automatically.&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add &lt;code&gt;externalDNS&lt;/code&gt; in &lt;code&gt;requirements.yml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ingress:
+ externalDNS: true
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Then, create the domain (this example assumes you are using GKE):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create domain gke --domain rawlingsdemo.co.uk
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Finally, go to your domain registrar and replace their name servers with Google&amp;rsquo;s name servers&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;using-jenkins-x-in-multiple-clusters&#34;&gt;Using Jenkins X in multiple clusters&lt;/h2&gt;
+
+&lt;p&gt;Strictly speaking, Jenkins X does not require its own cluster, but things work better operationally if you use separate clusters for testing, staging and production.&lt;/p&gt;
+
+&lt;p&gt;You only need to install Jenkins X on the development cluster. Install the Jenkins X &lt;a href=&#34;https://github.com/jenkins-x-charts/environment-controller&#34; target=&#34;_blank&#34;&gt;environment controller&lt;/a&gt; on the staging and production clusters. This is further explained in the article &lt;a href=&#34;https://jenkins-x.io/getting-started/multi-cluster/&#34; target=&#34;_blank&#34;&gt;Multiple Clusters&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;upcoming-jenkins-x-features&#34;&gt;Upcoming Jenkins X features&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X is evolving rapidly. Upcoming features are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Conditional execution of stages&lt;/li&gt;
+&lt;li&gt;Jenkins X apps to inject steps and stages&lt;/li&gt;
+&lt;li&gt;More advanced configuration of stage pods&lt;/li&gt;
+&lt;li&gt;More advanced solution for pipeline and stage sharing across repos&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;learning-jenkins-x&#34;&gt;Learning Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;Many fine examples with source code on GitHub were presented:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Mauricio Salatino presented what was by far
+&lt;a href=&#34;https://salaboy.com/2019/08/12/building-cloud-native-platforms-with-jenkins-x/&#34; target=&#34;_blank&#34;&gt;the most extensive example&lt;/a&gt;.
+Starting with a monolithic application, he decomposed it into microservices, built it with
+Jenkins X and deployed it on Kubernetes.&lt;/li&gt;
+&lt;li&gt;For instruction on how to use Kubernetes itself, Mauricio recommends
+&lt;a href=&#34;https://learnk8s.io/academy/&#34; target=&#34;_blank&#34;&gt;learnk8s.io&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Kurt Madel&amp;rsquo;s CloudBees Technologists Group gave
+&lt;a href=&#34;https://cb-technologists.github.io/posts/lightning-talks-dw-jw-2019/&#34; target=&#34;_blank&#34;&gt;several lightning talks&lt;/a&gt;
+that discuss Jenkins X.
+&lt;a href=&#34;https://cb-technologists.github.io/posts/gitops-series-part-1/&#34; target=&#34;_blank&#34;&gt;GitOps for Jenkins Infrastructure&lt;/a&gt;
+contains great Terraform tips for regular Jenkins (not Jenkins X). Whether or not you really
+want to use GitOps for your blog,
+&lt;a href=&#34;https://github.com/cb-technologists/blog&#34; target=&#34;_blank&#34;&gt;GitOps for Blogging, Why Not?&lt;/a&gt;
+demonstrates GitOps principles.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;getting-involved-with-the-jenkins-community&#34;&gt;Getting involved with the Jenkins Community&lt;/h2&gt;
+
+&lt;p&gt;Multiple presenters recommended the &lt;a href=&#34;https://jenkins-x.io/community/&#34; target=&#34;_blank&#34;&gt;Jenkins X Slack channels&lt;/a&gt; as the best source of help and information. For more ways to get involved, see the &lt;a href=&#34;https://jenkins-x.io/community/&#34; target=&#34;_blank&#34;&gt;Jenkins X community page&lt;/a&gt;. I&amp;rsquo;ll see you there.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: A New Logo for Jenkins X</title>
+      <link>/blog/2019/07/31/new-logo-jenkins-x/</link>
+      <pubDate>Wed, 31 Jul 2019 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/07/31/new-logo-jenkins-x/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Back in March 2018, the Jenkins X project burst onto the scene as the Jenkins counterpart for automated CI/CD for Kubernetes. As part of that launch featured the logo: a variation of the Jenkins logo, featuring a pipe-smoking ship captain with Kubernetes logo on his cap.&lt;/p&gt;
+
+&lt;p&gt;In software, we like to say that naming is hard - because it is. Another thing that is also hard is trying to capture the essence of a project in a logo. Logos pack a lot of meaning into a small space. Icons, such as the Jenkins logo, establish a strong emotional connection with many developers. So with that in mind we always listened closely to feedback on the new logo and how people perceive the project as a result of it.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-we-are-changing-the-logo&#34;&gt;Why we are changing the logo&lt;/h2&gt;
+
+&lt;p&gt;In listening to various types of feedback from all sorts of different sources we heard many positive things but also some problems and confusion were highlighted.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Not everyone was a fan of the logo and we heard quite a few comments back about aspects that people didn’t like about it, with the ‘pipe-smoking’ featuring high on that list.&lt;/li&gt;
+&lt;li&gt;Confusion with Jenkins project - we also saw that the logo was more in keeping with A other Jenkins mascots, which led to confusion about what kind of project Jenkins X is - some perceived it as another plugin in the ecosystem.&lt;/li&gt;
+&lt;li&gt;We also heard that use of the Kubernetes logo was confusing or perhaps not completely within the remit of the Kubernetes logo guidelines.&lt;/li&gt;
+&lt;li&gt;From a practical perspective we also heard that the logo was too detailed and as a result would not work well as an icon, especially for a favicon. It  was seen as more of a mascot than a logo.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;With the setup of the CD.Foundation and Jenkins X being one of the founding projects, distinct from Jenkins, we felt the time was right to address this feedback. So we literally went back to the drawing board to think about what logo could better represent Jenkins X as a project. We thought about what we want people to associate with the project: open source, continuous delivery, speed, automation, stability, teams, etc. We also wanted a logo that could improve representation, so we wanted to avoid a human-based logo that might inadvertently encode gender, age and other factors. Additionally, the &amp;lsquo;X&amp;rsquo; has become a distinct part of the project&amp;rsquo;s identity and so we wanted to really emphasize it in the new logo.&lt;/p&gt;
+
+&lt;h2 id=&#34;designing-the-new-logo-community-feedback&#34;&gt;Designing the new logo &amp;amp; community feedback&lt;/h2&gt;
+
+&lt;p&gt;Ultimately we focussed on trying to visualize speed and automation which led to the idea of a robot. However, we still wanted to have a nod to the original Jenkins project featured in the logo somehow or the other. We explicitly decided to not stick with the nautical theme traditionally associated with Kubernetes and related projects. We went through a few iterations, refining and cutting down details as we went. The design effort was a close partnership with Craig Ross, Creative Director at the Linux Foundation and his team, who also produced the &lt;a href=&#34;https://cd.foundation/&#34; target=&#34;_blank&#34;&gt;CD Foundation&lt;/a&gt;, CNCF, Network Service Mesh, and Tekton brands.&amp;rdquo;&lt;/p&gt;
+
+&lt;p&gt;After the core Jenkins X team had settled on a design they were happy with, we took it to the community for feedback and to address some of the details. We had alot of feedback, including all the things it reminded folks of (an upside-down koala, Bill Nye, Reddit logo, Flash Gordon, Tekton logo, etc). One overarching consistent theme about the original design was that it did not reflect the friendliness of the community. &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4144#issuecomment-497787629&#34; target=&#34;_blank&#34;&gt;Kyounger&lt;/a&gt; in particular helped analyse this reaction and went the extra mile to propose a solution. We agreed and loved this suggestion and fed this back into the final version of the logo. Thanks alot Kenny &amp;amp; open source FTW!&lt;/p&gt;
+
+&lt;h2 id=&#34;jenkins-jenkins-x&#34;&gt;Jenkins &amp;amp; Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X started life as a Jenkins subproject and is now an independent project with the Continuous Delivery Foundation (CDF). The bowtie in the new logo is an ever-present reminder of that provenance. Even though our logo and branding may be changing, under the umbrella of the CDF, we continue to work closely with the Jenkins project, sharing that same spirit of service towards developers’ CI/CD and productivity needs.&lt;/p&gt;
+
+&lt;h2 id=&#34;rolling-out-the-new-logo&#34;&gt;Rolling out the new logo&lt;/h2&gt;
+
+&lt;p&gt;We have now started switching over to the new logo and expect to see some new swag available soon too. The old logo we will now consider as a mascot of the Jenkins X project. If you are looking to update your use of the logo, &lt;a href=&#34;https://github.com/cdfoundation/artwork&#34; target=&#34;_blank&#34;&gt;here is the new artwork&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/news/new-logo-jenkins-x/jenkinsx-stacked-color.png&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;It is a big change for the project but ultimately the reason we put so much time and energy into this is that is important to us we represent the spirit of Jenkins X in everything we do. So when you are using Jenkins X, and you see the new logo, we want you to feel part of the open and friendly community and we want your team to focus on what you really want to focus on: delivering quality software at speed and at any scale.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Increasing CI/CD Pipeline Observability in Jenkins X</title>
+      <link>/blog/2019/07/29/jenkins-x-observability/</link>
+      <pubDate>Mon, 29 Jul 2019 10:44:40 -0700</pubDate>
+      
+      <guid>/blog/2019/07/29/jenkins-x-observability/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;&lt;figure&gt;
+&lt;img src=&#34;https://assets.devopsdays.org/events/2018/toronto/DevOpsDaysTO_May31_2018_ClaySmith.jpg&#34;/&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Increasing CI/CD Pipeline Observability, implement tracing&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+Credit: &lt;a href=&#34;https://www.mindseyecreative.ca/&#34; target=&#34;_blank&#34;&gt;Minds Eye Creative&lt;/a&gt; | &lt;a href=&#34;https://devopsdays.org/events/2018-toronto/program/clay-smith/&#34; target=&#34;_blank&#34;&gt;DevOps Days Toronto&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
+
+&lt;p&gt;You might have heard of Observability given that folks have been talking about this for a while now.  Sure, you might think it is just the latest tech buzzword.  However, the practice has been around for a long time now.&lt;/p&gt;
+
+&lt;p&gt;Observability is certainly relevant today given the Microservices architectures, distributed systems, and the characteristics of modern applications being deployed at a faster pace by leveraging CI/CD pipelines to Kubernetes, in this case using Jenkins X.  Indeed old practices of setting up monitoring after an app is deployed, are no longer acceptable.&lt;/p&gt;
+
+&lt;p&gt;Let’s face it, modern apps call for modern instrumentation, not only once they are deployed; even at build-time having proper instrumentation can help you gain insights into what is happening at various stages of the build and release process. This may include spotting any latency issues, performance and dependency download times.  In other words, instrumentation and monitoring should be baked into our deployment pipeline in Jenkins X!&lt;/p&gt;
+
+&lt;p&gt;Given that Jenkins X is the native CI/CD platform for Kubernetes, we must start thinking of Observability in the context of the build and release of our containerized applications via this platform, and not after the deployment process itself.&lt;/p&gt;
+
+&lt;h1 id=&#34;what-we-are-doing-today&#34;&gt;What we are doing today&lt;/h1&gt;
+
+&lt;p&gt;Today, I walk you through the process of increasing observability in your build and release pipeline by implementing tracing for a couple of events such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; which are part of a sample NodeJS application.&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: Tracing is only a small portion of other things that need to be in place.  Logging and Metrics are also required.  The combination and aggregation of this data allows you to understand how observable your pipeline is.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;p&gt;&lt;figure&gt;
+&lt;img src=&#34;https://peter.bourgon.org/img/instrumentation/01.png&#34;/&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Metrics, Logs, Traces are all needed.&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+Diagram by: &lt;a href=&#34;https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html&#34; target=&#34;_blank&#34;&gt;Peter Bourgon&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;leveraging-third-party-tools&#34;&gt;Leveraging Third-Party Tools&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X was built with extensibility and flexibility in mind.  Today, you can easily create &lt;strong&gt;QuickStarts&lt;/strong&gt; for a language not implemented.  You can also build &lt;strong&gt;addOns&lt;/strong&gt; to augment the platform functionality.  There are currently &lt;strong&gt;addOns&lt;/strong&gt; for &lt;code&gt;istio&lt;/code&gt;, &lt;code&gt;prometheus&lt;/code&gt; and &lt;code&gt;anchore&lt;/code&gt; to name a few.  Given this extensibility, we encourage our community to build these components and share with everyone.&lt;/p&gt;
+
+&lt;p&gt;If you look around, you’ll find that &lt;a href=&#34;http://Honeycomb.io&#34; target=&#34;_blank&#34;&gt;Honeycomb.io&lt;/a&gt; is at the forefront of Observability.  We are collaborating with them to eventually have a &lt;em&gt;Honeycomb addOn&lt;/em&gt; for Jenkins X&lt;/p&gt;
+
+&lt;p&gt;In this post, we use the Honeycomb.io API to trace our pipeline events.&lt;/p&gt;
+
+&lt;h3 id=&#34;tracing-ci-cd-pipeline-events&#34;&gt;Tracing CI/CD Pipeline Events&lt;/h3&gt;
+
+&lt;p&gt;In this scenario we want to trace start and end times for certain events.  In our example NodeJS app, we have commands such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt;, which are part of our &lt;strong&gt;build-pack&lt;/strong&gt; pipeline out of the box.  To do start tracing, we modify the Tekton pipeline and inject calls to the Honeycomb.io API before and after these specific &lt;strong&gt;build pack&lt;/strong&gt; named steps.&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: Please be sure to sign up for [honeycomb.io](http://honeycomb.io) to obtain your **API Key**
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h4 id=&#34;create-kubernetes-secret&#34;&gt;Create Kubernetes Secret&lt;/h4&gt;
+
+&lt;p&gt;Once we have our API Key, we want to create a Kubernetes Secret which is required to make API calls within our pipeline.  To do this, we create it in the &lt;code&gt;jx&lt;/code&gt; and &lt;code&gt;jx-staging&lt;/code&gt; namespaces.  For each namespace execute the following command (be sure to modify the namespace value as needed).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;&amp;gt;$ kubectl create secret generic honeycomb-creds —from-literal=BUILDEVENT_APIKEY=&amp;lt;KEY&amp;gt;  --namespace=&amp;lt;NAMESPACE&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;modify-tekton-pipeline&#34;&gt;Modify Tekton Pipeline&lt;/h4&gt;
+
+&lt;p&gt;Now that we have our Kubernetes Secret in place, we will modify the &lt;code&gt;jenkins-x.yaml&lt;/code&gt; file, which currently has exactly one line as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;buildpack: javascript
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&amp;rsquo;s go over the important components of the YAML file once modified.  The first items I&amp;rsquo;d like to highlight, are the environment variables needed.  We need to provide honeycomb.io three key pieces of information:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;CI Provider&lt;/strong&gt;:  this is the JENKINS-X environment variable.  Honeycomb will add additional metadata fields to our dataset&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;BUILDEVENT_DATASET&lt;/strong&gt;: this indicates which dataset we want to populate (you can have many).&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;BUILDEVENT_APIKEY&lt;/strong&gt;: the Kubernetes Secret value, which is the API Key provided via the honeycomb site&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;buildPack: javascript
+pipelineConfig:
+env:
+- name: JENKINS-X
+value: JENKINS-X
+- name: BUILDEVENT_DATASET
+value: jx
+- name: BUILDEVENT_APIKEY
+valueFrom:
+  secretKeyRef:
+    key: BUILDEVENT_APIKEY
+    name: honeycomb-creds
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The &lt;strong&gt;build-pack&lt;/strong&gt; used for a NodeJS app is &lt;strong&gt;javascript&lt;/strong&gt; as detected by the language.  Hence, why the single line we had as the contents of the &lt;code&gt;jenkins-x.yaml&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Because we know which build-pack is being used, we can determine which named steps exist.  As you can imagine, a typical &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; typically exist.&lt;/p&gt;
+
+&lt;p&gt;Therefore, we want to inject a timestamp &lt;strong&gt;before&lt;/strong&gt; and &lt;strong&gt;after&lt;/strong&gt; each of these named steps are called.  The following shows how I inject this.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;  pipelines:
+    overrides:
+    - name: npm-install
+      pipeline: pullRequest
+      stage: build
+      steps:
+      - command: echo ===== pullrequest:build:before  sending honeycomb step trace  ===============
+      - name: honeycomb-npm-install-set-step-start-timestamp
+        sh: echo $(date +%s) &amp;gt; step_start
+      - name: honeycomb-npm-install-before-timestamp
+        sh: echo =================================  $(cat step_start)  =================================
+      type: before
+      
+    - name: npm-install
+      pipeline: pullRequest
+      stage: build
+      steps:
+      - command: echo ===== pullrequest:build:after   sending honeycomb step trace  ===============
+      - name: honeycomb-npm-install-after-timestamp
+        sh: echo =================================  $(cat step_start)  =================================
+      - name: honeycomb-step-log-after-npm-install
+        sh: ./buildevents step &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; $(echo npm-install | sum | cut -f 1 -d \ ) $(cat step_start) npm-install
+      type: after
+    - name: npm-test
+      pipeline: pullRequest
+      stage: build
+      steps:
+      - name: honeycomb-npm-test-set-step-start-timestamp
+        sh: echo $(date +%s) &amp;gt; step_start
+      - name: honeycomb-npm-test-before-timestamp
+        sh: echo =================================  $(cat step_start)  =================================
+      type: before
+    - name: npm-test
+      pipeline: pullRequest
+      stage: build
+      steps:
+      - name: honeycomb-npm-test-after-timestamp
+        sh: echo =================================  $(cat step_start)  =================================
+      - name: honeycomb-step-log-after-npm-test
+        sh: ./buildevents step &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; $(echo npm-test | sum | cut -f 1 -d \ ) $(cat step_start) npm-test
+      type: after
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now that I have  captured timestamps for these two named steps, I want to send an API call to honeycomb as follows.  You will notice how I am using a binary called &lt;strong&gt;buildevents&lt;/strong&gt; this is downloaded during the setup of my pipelines which I discuss shortly.&lt;/p&gt;
+
+&lt;p&gt;By concatenating a few metadata pieces that exist as &lt;strong&gt;environment variables&lt;/strong&gt; in Jenkins X, I build a unique name which is needed by honeycomb to track things correctly.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    - pipeline: pullRequest
+      stage: build
+      steps:
+      - name: honeycomb-build-name-concat
+        sh: echo the build is &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; and HONEYCOMB_BUILD_START=$(cat build_start)
+      - name: honeycomb-send-success
+        sh: ./buildevents build &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; $(cat build_start) success
+      type: after
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We do the same for the &lt;strong&gt;Release&lt;/strong&gt; pipeline&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# release pipeline releated calls
+
+    - name: npm-install
+      pipeline: release
+      stage: build
+      steps:
+      - command: echo ===== release:build:before  sending honeycomb step trace  ===============
+      - name: release-honeycomb-npm-install-step-start-timestamp
+        sh: echo $(date +%s) &amp;gt; release_step_start
+      - name: release-honeycomb-npm-install-before-timestamp
+        sh: echo ================================= release  release-npm-install step start  $(cat release_step_start)  =================================
+      type: before
+
+    - name: npm-install
+      pipeline: release
+      stage: build
+      steps:
+      - name: release-honeycomb-npm-install-after-timestamp
+        sh: echo ================================= release npm-install step end  $(cat release_step_start)  =================================
+      - name: release-honeycomb-step-log-after-npm-install
+        sh: ./buildevents step &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; $(echo release-npm-install | sum | cut -f 1 -d \ ) $(cat release_step_start) release-npm-install
+      type: after
+
+    - pipeline: release
+      stage: build
+      steps:
+      - name: release-honeycomb-build-name-concat
+        sh: echo the build is &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; and HONEYCOMB_BUILD_START=$(cat release_start)
+      - name: release-honeycomb-build-send-success
+        sh: ./buildevents build &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; $(cat release_start) success
+      type: after
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is portion of the pipeline executes first hence the &lt;strong&gt;setup&lt;/strong&gt; node.  There are several things we want to accomplish in the setup of our pipelines.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Download the Build Events binary provided by Honeycomb, make it executable&lt;/li&gt;
+&lt;li&gt;Create the timestamp we will use to track the &lt;strong&gt;pullRequest&lt;/strong&gt; pipeline execution.  I do this by saving a temporary file with the timestamp.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is done for both pipelines, as we are working with both.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;
+    pullRequest:
+      setup:
+        steps:
+          - command: echo =========================== pullrequest:setup downloading Honeycomb.io buildevents binary ===========================
+          - name: pullrequest-download-honeycomb-binary
+            sh: curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
+          - name: honeycomb-set-binary-permissions
+            sh: chmod 755 buildevents
+          - name: honeycomb-display-buildevents-version
+            sh: ./buildevents --version
+          - name: honeycomb-setup-build-timestamp
+            sh: echo $(date +%s) &amp;gt; build_start
+          - name: honeycomb-output-debug
+            sh: echo the build is &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; and HONEYCOMB_BUILD_START=$(cat build_start)   =======================================================
+    release:
+      setup:
+        steps:
+        - command: echo =========================== release:setup downloading Honeycomb.io buildevents binary ===========================
+        - name: release-download-honeycomb-binary
+          sh: curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
+        - name: release-honeycomb-set-binary-permissions
+          sh: chmod 755 buildevents
+        - name: release-honeycomb-setup-build-timestamp
+          sh: echo $(date +%s) &amp;gt; release_start
+        - name: release-honeycomb-output-debug
+          sh: echo the build is &amp;quot;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;quot; and HONEYCOMB_BUILD_START=$(cat release_start)   =======================================================
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once this pipeline executes, the dashboard on the honeycomb.io site will show us the execution tracing as follows.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/news/jenkins-x-observability/honeycomb_trace_example.png&#34; alt=&#34;Honeycomb Dashboard&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see, we have a unique name for our build being traced, underneath that we are tracking the two events &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; time spans.  We can easily see how long our dependencies are taking to download, and how long does it take to run the tests for the app.&lt;/p&gt;
+
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;Hopefully I’ve enticed you to at least look into why you might consider incorporating observability into your build and release process. There is a lot more that can be done.  In a future post, we will cover additional setup.&lt;/p&gt;
+
+&lt;h2 id=&#34;jenkins-world-devops-world-2019&#34;&gt;Jenkins World | DevOps World 2019&lt;/h2&gt;
+
+&lt;p&gt;I&amp;rsquo;ll be demoing this solution at various times while at the conference this year.  You can still register and get a big discount by using code: &lt;strong&gt;PREVIEW&lt;/strong&gt;.  You can find my full schedule on the &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco/agenda&#34; target=&#34;_blank&#34;&gt;official website&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Cheers,&lt;br/&gt;
+&lt;a href=&#34;https://twitter.com/SharePointOscar&#34; target=&#34;_blank&#34;&gt;@SharePointOscar&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Using Jenkins X To Define And Run Serverless Deployments</title>
+      <link>/blog/2019/07/23/serverless-deployments/</link>
+      <pubDate>Tue, 23 Jul 2019 12:20:42 -0200</pubDate>
+      
+      <guid>/blog/2019/07/23/serverless-deployments/</guid>
+      <description>
+        
+        
+        
+
+&lt;figure&gt;
+&lt;img src=&#34;/images/2019-dwjw-san-fran-rev.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;h1 id=&#34;using-jenkins-x-to-define-and-run-serverless-deployments&#34;&gt;Using Jenkins X To Define And Run Serverless Deployments&lt;/h1&gt;
+
+&lt;h2 id=&#34;what-is-serverless-computing&#34;&gt;What is Serverless Computing?&lt;/h2&gt;
+
+&lt;p&gt;To understand serverless computing, one needs to understand the challenges we are facing with more &amp;ldquo;traditional&amp;rdquo; types of deployments of our applications. A long time ago, most of us were deploying our apps directly to servers. We had to decide the size (memory and CPU) of the nodes where our applications would run, we had to create those servers, and we had to maintain them. The situation improved with the emergence of cloud computing. We still had to do all those things, but now those tasks were much easier due to the simplicity of the APIs and services cloud vendors gave us. Suddenly, we had (a perception of) infinite resources and all we had to do is run a command, and a few minutes later the servers (VMs) we needed would materialize. Things become much easier and faster. But, that did not remove the tasks of creating and maintaining servers. Instead, that made them more straightforward. Concepts like immutability become mainstream as well. As a result, we got much-needed reliability, reduced drastically lean time, and started to rip benefits of elasticity.&lt;/p&gt;
+
+&lt;p&gt;Still, some important questions were left unanswered. Should we keep our servers running even when our applications are not serving any requests? If we shouldn&amp;rsquo;t, how can we ensure that they are readily available when we do need them? Who should be responsible for the maintenance of those servers? Is it our infrastructure department, our cloud provider, or can we build a system that will do that for us without human intervention?&lt;/p&gt;
+
+&lt;p&gt;Things changed with the emergence of containers and schedulers. After a few years of uncertainty created by having too many options on the table, the situation stabilized around Kubernetes that become the de-facto standard. At roughly the same time, in parallel with the rise of popularity of containers and schedulers, solutions for serverless computing concepts started to materialize. Those solutions were not related to each other or, to be more precise, they were not during the first few years. Kubernetes provided us with means to run microservices as well as more traditional types of applications, while serverless focused on running functions (often only a few lines of code).&lt;/p&gt;
+
+&lt;p&gt;The name serverless is misleading by giving the impression that they are no servers involved. They are certainly still there, but the concept and the solutions implementing them allow us (users) to ignore their existence. The major cloud providers (AWS, Microsoft Azure, and Google) all came up with solutions for serverless computing. Developers could focus on writing functions with a few additional lines of code specific to our serverless computing vendor. Everything else required for running and scaling those functions become transparent.&lt;/p&gt;
+
+&lt;p&gt;But not everything is excellent in the serverless world. The number of use-cases that can be fulfilled with writing functions (as opposed to applications) is limited. Even when we do have enough use-cases to make serverless computing worthwhile effort, a more significant concern is lurking just around the corner. We are likely going to be locked to a vendor given that none of them implements any type of industry standard. No matter whether we choose AWS Lambda, Azure Functions, or Google Cloud Functions, the code we write will not be portable from one vendor to another. That does not mean that there are no serverless frameworks that are not tied to a specific cloud provider. There are, but we&amp;rsquo;d need to maintain them ourselves, be it on-prem or inside clusters running in a public cloud. That removes one of the most essential benefits of serverless concepts.&lt;/p&gt;
+
+&lt;p&gt;That&amp;rsquo;s where Kuberentes comes into play.&lt;/p&gt;
+
+&lt;h2 id=&#34;serverless-deployments-in-kubernetes&#34;&gt;Serverless Deployments In Kubernetes&lt;/h2&gt;
+
+&lt;p&gt;At this point, I must make an assumption that you, dear reader, might dissagree with. Most of the companies will run at least some (if not all) of their applications in Kubernetes. It is becoming (or it already is) a standard API that will be used by (almost) everyone. Why is that assumption important? If I am right, then (almost) everyone will have a Kubernetes cluster. Everyone will spend time maintaining it, and everyone will have some level of in-house knowledge of how it works. If that assumption is correct, it stands to reason that Kubernetes would be the best choice of a platform to run serverless applications as well. That would avoid vendor lock-in since Kubernetes can run (almost) anywhere.&lt;/p&gt;
+
+&lt;p&gt;Kubernetes-based serverless computing would provide quite a few other benefits. We could be free to write our applications in any language, instead of being limited by those supported by function-as-a-service solutions offered by cloud vendors. Also, we would not be limited to writing only functions. A microservice or even a monolith could run as a serverless application. We just need to find a solution to make that happen. After all, proprietary cloud-specific serverless solutions use containers (of sorts) as well, and the standard mechanism for running containers is Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;There is an increasing number of Kubernetes platforms that allow us to run serverless applications. We won&amp;rsquo;t go into all of those, but fastrack the conversation by me stating that Knative is likely going to become the de-facto standard how to deploy serverless load to Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://knative.dev/&#34; target=&#34;_blank&#34;&gt;Knative&lt;/a&gt; is an open source project that delivers components used to build and run serverless applications on Kubernetes. We can use it to scale-to-zero, to autoscale, for in-cluster builds, and as an eventing framework for applications on Kubernetes. The part of the project we&amp;rsquo;re interested in right now is its ability to convert our applications into serverless deployments. That should allow us both to save resources (memory and CPU) when our applications are idle, as well as to scale them fast when trafic increases.&lt;/p&gt;
+
+&lt;p&gt;Now that we discussed what is serverless and that I made an outlandish statement that Kubernetes is the platform where your serverless applications should be running, let&amp;rsquo;s talk which types of scenarios are a good fit for serverless deployments.&lt;/p&gt;
+
+&lt;h2 id=&#34;which-types-of-applications-should-run-as-serverless&#34;&gt;Which Types Of Applications Should Run As Serverless?&lt;/h2&gt;
+
+&lt;p&gt;Initially, the idea was to have only functions running as serverless loads. Those would be single-purpose pieces of code that contain only a small number of lines of code. A typical example of a serverless application would be an image processing function that responds to a single request and can run for a limited period. Restrictions like the size of applications (functions) and their maximum duration are imposed by implementations of serverless computing in cloud providers. But, if we adopt Kubernetes as the platform to run serverless deployments, those restrictions might not be valid anymore. We can say that any application that can be packaged into a container image can run as a serverless deployment in Kubernetes. That, however, does not mean that any container is as good of a candidate as any other. The smaller the application or, to be more precise, the faster its boot-up time is, the better the candidate for serverless deployments.&lt;/p&gt;
+
+&lt;p&gt;However, things are not as straight forward as they may seem. Not being a good candidate does not mean that one should not compete at all. Knative, as many other serverless frameworks do allow us to fine-tune configurations. We can, for example, specify with Knative that there should never be less than one replica of an application. That would solve the problem of slow boot-up while still maintaining some of the benefits of serverless deployments. In such a case, there would always be at least one replica to handle requests, while we would benefit from having the elasticity of serverless providers.&lt;/p&gt;
+
+&lt;p&gt;The size and the booot-up time are not the only criteria we can use to decide whether an application should be serverless or not. We might want to consider traffic as well. If, for example, our app has high traffic and it receives requests throughout the whole day, we might never need to scale it down to zero replicas. Similarly, our application might not be designed in a way that every request is processed by a different replica. After all, most of the apps can handle a vast number of requests by a single replica. In such cases, serverless computing implemented by cloud vendors and based on function-as-a-service might not be the right choice. But, as we already discussed, there are other serverless platforms, and those based on Kubernetes do not follow those rules. Since we can run any container as serverless, any type of applications can be deployed as such, and that means that a single replica can handle as many requests as its design allows. Also, Knative and other platforms can be configured to have a minimum number of replicas, so they might be well suited even for the applications with a constant flow of traffic.&lt;/p&gt;
+
+&lt;p&gt;All in all, if it can run in a container, it can be converted into a serverless deployment, as long as we understand that smaller applications with faster boot-up times are better candidates than others. If there is a rule we should follow when deciding whether to run an application as serverless, it is related to the state. Or, to be more precise, the luck of it. If an application is stateless, it might be the right candidate for serverless computing.&lt;/p&gt;
+
+&lt;p&gt;Now, let us imagine that you have an application that is not the right candidate to be serverless. Does that mean that we cannot rip any benefit from frameworks like Knative? We can since there is still the question of deployments to different environments.&lt;/p&gt;
+
+&lt;p&gt;Typically, we have permanent and temporary environments. The examples of the former would be staging and production. If we do not want our application to be serverless in production, we will probably not want it to be any different in staging. Otherwise, the behavior would be different, and we could not say that we tested precisely the same behavior as the one we expect to run in production. So, in most cases, if an application should not be serverless in production, it should not be serverless in any other permanent environment. But, that does not mean that it shouldn&amp;rsquo;t be serverless in temporary environments.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s take an environment in which we deploy an application as a result of making a pull request as an example. It would be a temporary environment since we&amp;rsquo;d remove it the moment that pull request is closed. Its time span is relatively short. It could exist for a few minutes, but sometimes that could be days or even weeks. It all depends on how fast we are in closing pull requests.&lt;/p&gt;
+
+&lt;p&gt;Nevertheless, there is a high chance that the application deployed in such temporary environment will have low trafic. We would typically run a set of automated tests when the pull request is created or when we make changes to it. That would certainly result in a traffic spike. But, after that, the traffic would be much lower and most of the time non-existent. We might open the application to have a look at it, we might run some manual tests, and then we would wait for the pull request to be approved or for someone to push additional changes if we found some issues or inconsistencies. That means that the deployment in question would be unused most of the time. Still, if it would be a &amp;ldquo;traditional&amp;rdquo; deployment, it would oocupy resources for no particular reason. That might even discourage us from making temporary environments due to high costs.&lt;/p&gt;
+
+&lt;p&gt;Given that  deployments based on pull requests are not used for final validations before deploying to production (that&amp;rsquo;s what permanent environments are for), we do not need to insist that they are the same as production. On the other hand, the applications in such environments are mostly unused. Those facts lead us to conclude that temporary (often pull-request based) environments are a great candidate for serverless deployments, no matter the deployment type we use in permanent environments (e.g., staging and production).&lt;/p&gt;
+
+&lt;p&gt;Now that we saw some of the use cases for serverless computing, there is still an important one that we did not discuss.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-do-we-need-jenkins-x-to-be-serverless&#34;&gt;Why Do We Need Jenkins X To Be Serverless?&lt;/h2&gt;
+
+&lt;p&gt;There are quite a few problems with the traditional Jenkins. Most of us already know them, so I&amp;rsquo;ll repeat them only briefly. Jenkins (without X) does not scale, it is not fault-tolerant, it&amp;rsquo;s resource usage is heavy, it is slow, it is not API-driven, and so on. In other words, it was not designed yesterday, but when those things were not as important as they are today. Jenkins had to go away for Jenkins X to take its place.&lt;/p&gt;
+
+&lt;p&gt;Initially, Jenkins X had a stripped-down version of Jenkins but, since the release 2, not a single line of the traditional Jenkins is left in Jenkins X. Now it is fully serverless thanks to Tekton and a lot of custom code written from scratch to support the need for a modern Kubernetes-based solution. Excluding a very thin layer that mostly acts as an API gateway, Jenkins X is fully serverless. Nothing runs when there are no builds, and it scales to accommodate any load. And that might be the best example of serverless computing we can have.&lt;/p&gt;
+
+&lt;p&gt;Coontinuous integration and continuous delivery flows are temporary by their nature. When we make a change to a Git repository, it notifies the cluster, and a set of processes are spun. Each Git webhook request results in a pipeline run that builds, validates, and deploys a new release and, once those processes are finished, it dissapears from the system. Nothing is executing when there are no pipeline runs, and we can have as many of them in parallel as we need. It is elastic and resource-efficient, and the heavy lifting is done by Tekton.&lt;/p&gt;
+
+&lt;p&gt;Continuous integration and continuous delivery tools are probably one of the best examples of a use-case that fits well in serverless computing concepts.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-is-tekton-and-how-does-it-fix-jenkins-x&#34;&gt;What Is Tekton And How Does It Fix Jenkins X?&lt;/h2&gt;
+
+&lt;p&gt;Those of you using serverless Jenkins X already experienced Knative, of sorts. Tekton is a spin-off project of Knative, and it is the essential component in the solution. It is in charge of creating pipeline runs (a special type of Pods) when needed and destroying them when finished. Thanks to Tekton, the total footprint of serverless Jenkins X is very small when idle. Similarly, it allows the solution to scale to almost any size when that is needed.&lt;/p&gt;
+
+&lt;p&gt;Tekton is designed only for &amp;ldquo;special&amp;rdquo; type of processes, mostly those associated with continuous integration and continuous delivery pipelines. It is not, however, suited for long-running applications designed to handle requests. So, why am I talking about Tekton if it does not allow us to run our applications as serverless? The answer lies in Tekton&amp;rsquo;s father.&lt;/p&gt;
+
+&lt;p&gt;Tekton is a Knative spin-off. It was forked from it in hopes to provide better CI/CD capabilities. Or, to be more precise, Tekton was born out of the &lt;a href=&#34;https://knative.dev/docs/build/&#34; target=&#34;_blank&#34;&gt;Knative Build&lt;/a&gt; component, which is now considered deprecated. But, Knative still stays the most promising way to run serverless applications in Kubernetes. It is the father of Tekton, which we&amp;rsquo;ve been using for a while now given that it is an integral part of serverless Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;Now, I could walk you through the details of Knative definitions, but that would be out of the scope of this subject. It&amp;rsquo;s about Jenkins X, not about Knative and other platforms for running serverless application. But, my unwilingness to show you the ups and downs of Knative does not mean that we cannot use it. As a matter of fact, Jenkins X already provides means to select whether we want to create a quickstart or import an existing project that will be deployed as a serverless application using Knative. We just need to let Jenkins X know that&amp;rsquo;s what we want, and it&amp;rsquo;ll do the heavy lifing of creating the definition (YAML file) that we need.&lt;/p&gt;
+
+&lt;p&gt;So, Jenkins X is an excellent example of both a set of serverless applications that constitute the solution, as well as a tool that allows us to convert our existing applications into serverless deployments. All we have to do to accomplish the latter is to express that as our desire, and Jenkins X will do all the heavy lifting of creating the correct definitions for our applications as well as to move them through their life cycles.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: DevOps World - Jenkins World 2019 San Francisco: Lunch Time Demos</title>
+      <link>/blog/2019/07/18/jenkins-world-lunch-demos/</link>
+      <pubDate>Thu, 18 Jul 2019 12:20:42 -0200</pubDate>
+      
+      <guid>/blog/2019/07/18/jenkins-world-lunch-demos/</guid>
+      <description>
+        
+        
+        &lt;figure&gt;
+&lt;img src=&#34;/images/2019-dwjw-san-fran-rev.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;If you’re looking for more opportunities to learn Jenkins and Jenkins X during the lunch hours while at &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World 2019 San Francisco&lt;/a&gt;, come join us at the Jenkins and Jenkins X Community Booth!&lt;/p&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t yet have your pass for &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World 2019 San Francisco&lt;/a&gt;, and don&amp;rsquo;t want to miss out on the fun, you can get yours using &lt;strong&gt;JWFOSS&lt;/strong&gt; for a 30% discount.&lt;/p&gt;
+
+&lt;p&gt;During lunch hours we are scheduling the following demo briefs at the Jenkins and Jenkins X Community Booth:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Wednesday  August 14, 2019&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:10 - 12:25pm Faster Git &lt;a href=&#34;https://github.com/MarkEWaite&#34; target=&#34;_blank&#34;&gt;Mark Waite&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Attendees will learn the techniques they can use with Jenkins to make their systems clone and update git repositories faster and with less disc space.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:25 - 12:40pm   Observability in Jenkins X  &lt;a href=&#34;https://github.com/sharepointoscar&#34; target=&#34;_blank&#34;&gt;Oscar Medina&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;If you are using Jenkins X, you’re already building at rapid pace.  However, most miss the opportunity to gain real insights into their build and release pipeline.  I&amp;rsquo;ll show you how you can increase observability by activating metric capture and analysis during a containerized application deployment with Jenkins X.  This  entails modifying the declarative Tekton pipelines.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:40 - 12:55pm   Jenkins-Rest, A JClouds Java Library for the Jenkins REST API   &lt;a href=&#34;https://github.com/martinda&#34; target=&#34;_blank&#34;&gt;Martin d&amp;rsquo;Anjou&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Using the Java-Rest library, we demonstrate how to submit a job to Jenkins, and track it to its completion, all from the command line, without ever touching the GUI.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:55 - 1:10pm DevOps without Quality: An IT Horror Story Laura Keaton&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;DevOps, the current IT Industry sweetheart, has a dark secret that has victimized organizations on their transformational journey. Investigate two case studies that left development and delivery teams in tatters and how quality engineering solutions could have prevented their disastrous outcomes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1:10 - 1:25pm Securing Your Jenkins Container Pipeline with Open Source Tools &lt;a href=&#34;https://github.com/cwiens1211&#34; target=&#34;_blank&#34;&gt;Christian Wiens&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Discuss the security pitfalls of containers and how embedding an open source image scanning and policy based compliance tool like Anchore into your CI/CD pipeline can mitigate this risk.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Thursday  August 15, 2019&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:25 - 12:40pm   Results from the 2019 Jenkins Google Summer of Code &lt;a href=&#34;https://github.com/martinda&#34; target=&#34;_blank&#34;&gt;Martin d&amp;rsquo;Anjou&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In 2019, the Jenkins project participated in the Google Summer of Code. This is an annual, international, program which encourages college-aged students to participate in open source projects during the summer break between classes. In 2019, we had dozens of applications and many student projects. In this session, we will showcase the students&amp;rsquo; projects and talk about what they bring to the Jenkins ecosystem.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:40 - 12:55pm   Sysdig Secure Jenkins Plugin    &lt;a href=&#34;https://github.com/markyjackson-taulia&#34; target=&#34;_blank&#34;&gt;Marky Jackson&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://sysdig.com/products/secure&#34; target=&#34;_blank&#34;&gt;Sysdig Secure&lt;/a&gt; is a container security platform that brings together docker image scanning and run-time protection to identify vulnerabilities, block threats, enforce compliance, and audit activity across your microservices. The Sysdig Secure Jenkins plugin can be used in a Pipeline job, or added as a build step to a Freestyle job, to automate the process of running an image analysis, evaluating custom policies against images, and performing security scans.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;12:55 - 1:10pm    Using React for plugin UI   &lt;a href=&#34;https://github.com/jeffpearce&#34; target=&#34;_blank&#34;&gt;Jeff Pearce&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The working hours plugin has a date driven UI. During this summer&amp;rsquo;s Google Summer of Code, our student rewrite the UI in React, so that we could take advantage open source modules such as calendar pickers. I&amp;rsquo;ll talk about how the student approached the UI, demonstrate the UI and talk about particular challenges we faces.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1:10 - 1:25pm Jenkins GKE Plugin &lt;a href=&#34;https://github.com/craigdbarber&#34; target=&#34;_blank&#34;&gt;Craig Barber&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In this demo we will showcase the Jenkins GKE plugin, newest addition to GCP’s suite of officially supported plugins. We’ll show how to leverage this plugin to deploy applications built in Jenkins pipelines to multiple clusters running in GKE.&lt;/p&gt;
+
+&lt;p&gt;Grab your lunch and join us at the community theater!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Join Us at the Jenkins X Contributor Summit San Francisco, Monday August 12, 2019</title>
+      <link>/blog/2019/07/16/jenkins-x-contributor-summit/</link>
+      <pubDate>Tue, 16 Jul 2019 10:20:42 -0200</pubDate>
+      
+      <guid>/blog/2019/07/16/jenkins-x-contributor-summit/</guid>
+      <description>
+        
+        
+        &lt;figure&gt;
+&lt;img src=&#34;/images/old-Jenkins-x-Contributor-Summit.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.eventbrite.com/e/jenkins-x-contributor-summit-2019-san-francisco-tickets-65105473223&#34; target=&#34;_blank&#34;&gt;Register here&lt;/a&gt; to participate in the Jenkins X Contributor Summit in San Francisco. Attendance at the Jenkins X Contributor Summit is free, and a &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary, but please &lt;a href=&#34;https://www.eventbrite.com/e/jenkins-x-contributor-summit-2019-san-francisco-tickets-65105473223&#34; target=&#34;_blank&#34;&gt;RSVP&lt;/a&gt; if you are going to attend.&lt;/p&gt;
+
+&lt;p&gt;The Jenkins X Contributor Summit is an opportunity for current and future Jenkins X contributors to come together to discuss the project, learn and collaborate. There will be discussions on the latest exciting developments in Jenkins X and time to contribute to the project. We welcome new contributors: this is a great chance to learn more about the project, find out how to contribute and meet the core contributors!&lt;/p&gt;
+
+&lt;p&gt;The contributor summit is part of a joint &lt;a href=&#34;https://cd.foundation/&#34; target=&#34;_blank&#34;&gt;Continuous Delivery Foundation (CDF)&lt;/a&gt; contributor summit alongside &lt;a href=&#34;https://thenewstack.io/continuous-delivery-foundation-launches-with-jenkins-jenkins-x-spinnaker-tekton/&#34; target=&#34;_blank&#34;&gt;CDF projects&lt;/a&gt; like &lt;a href=&#34;https://github.com/tektoncd&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; and &lt;a href=&#34;https://jenkins.io/&#34; target=&#34;_blank&#34;&gt;Jenkins&lt;/a&gt;. In the morning, there will be presentations by the core contributors of all CDF projects. These will highlight the mission, goals and future direction of each project, as well as how community members can contribute. In the afternoon, there will be breakout Birds-of-a-Feather sessions for deeper discussion and collaboration with Jenkins X contributors. Bring your laptop, ideas and questions, and be ready for some hacking.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Agenda:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;9:00 am - Kickoff &amp;amp; Welcome with coffee/pastries&lt;/li&gt;
+&lt;li&gt;10:00 am - Project Updates&lt;/li&gt;
+&lt;li&gt;12:00 pm - Lunch&lt;/li&gt;
+&lt;li&gt;1:00 pm - Birds-of-a-Feather/Unconference&lt;/li&gt;
+&lt;li&gt;3:00 pm - Break&lt;/li&gt;
+&lt;li&gt;3:30 pm - Birds-of-a-Feather/Unconference&lt;/li&gt;
+&lt;li&gt;4:30 - Ignite Talks&lt;/li&gt;
+&lt;li&gt;5:00 pm - Wrap-up&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;All levels of contributors are welcome! During the Birds-of-a-Feather sessions you are welcome to join in any session that interests you. At the end of the day, if you would like to share what you have learned or worked on, there will be Ignite lightning talks. After the summit, all attendees will be invited to a contributor appreciation social event.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ve had &lt;a href=&#34;https://jenkins.io/blog/2018/10/18/contributor-summit-summary/&#34; target=&#34;_blank&#34;&gt;a fantastic time at past contributor summits&lt;/a&gt;, focused on Jenkins, and look forward to seeing you at this year&amp;rsquo;s Jenkins X Contributor Summit as part of a bigger, broader CDF Contributor Summit.&lt;/p&gt;
+
+&lt;figure&gt;
+&lt;img src=&#34;/images/contributor_summit_sf.jpg&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;A &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary to attend the Contributor Summit, but if you don&amp;rsquo;t want to miss out on &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; you can get yours using &lt;strong&gt;JWFOSS&lt;/strong&gt; for a 30% discount.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Installing Jenkins X on Alibaba Cloud Container Service</title>
+      <link>/blog/2019/06/17/alibaba-container-service-jenkins-x/</link>
+      <pubDate>Mon, 17 Jun 2019 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/06/17/alibaba-container-service-jenkins-x/</guid>
+      <description>
+        
+        
+        
+
+&lt;figure&gt;
+&lt;img src=&#34;/images/alibaba-cloud-logo.svg&#34;/&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Installing Jenkins X on Alibaba Cloud Container Service&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h1 id=&#34;installing-jenkins-x-in-alibaba-kubernetes-container-service&#34;&gt;Installing Jenkins X in Alibaba Kubernetes Container Service&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X has just added initial support to install in &lt;a href=&#34;https://www.alibabacloud.com/product/container-service&#34; target=&#34;_blank&#34;&gt;Alibaba Container Service&lt;/a&gt;, its Kubernetes offering.&lt;/p&gt;
+
+&lt;p&gt;The following instructions allow installation in a managed Kubernetes cluster in any region outside of mainland China, where more configuration is needed avoid using Google services blocked by chinese authorities (Docker images in GCR). There is a &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/issues/5551&#34; target=&#34;_blank&#34;&gt;pending issue&lt;/a&gt; for that.&lt;/p&gt;
+
+&lt;h2 id=&#34;creating-a-kubernetes-cluster&#34;&gt;Creating a Kubernetes Cluster&lt;/h2&gt;
+
+&lt;p&gt;Alibaba requires several things in order to create a Kubernetes cluster, so it is easier to do it through the &lt;a href=&#34;https://cs.console.aliyun.com/&#34; target=&#34;_blank&#34;&gt;web UI&lt;/a&gt; the first time.&lt;/p&gt;
+
+&lt;p&gt;The following services need to be activated: Container Service, Resource Orchestration Service (ROS), RAM, and Auto Scaling service, and created the &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/86484.htm?spm=a2c63.p38356.b99.38.663a333eMXExon&#34; target=&#34;_blank&#34;&gt;Container Service roles&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If we want to use the command line we can install the &lt;a href=&#34;https://github.com/aliyun/aliyun-cli&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;aliyun&lt;/code&gt;&lt;/a&gt; cli. I have added all the steps needed below in case you want to use it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;brew install aliyun-cli
+aliyun configure
+REGION=ap-southeast-1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The clusters need to be created in a VPC, so that needs to be created with VSwitches for each zone to be used.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;aliyun vpc CreateVpc \
+    --VpcName jx \
+    --Description &amp;quot;Jenkins X&amp;quot; \
+    --RegionId ${REGION} \
+    --CidrBlock 172.16.0.0/12
+
+{
+    &amp;quot;ResourceGroupId&amp;quot;: &amp;quot;rg-acfmv2nomuaaaaa&amp;quot;,
+    &amp;quot;RequestId&amp;quot;: &amp;quot;2E795E99-AD73-4EA7-8BF5-F6F391000000&amp;quot;,
+    &amp;quot;RouteTableId&amp;quot;: &amp;quot;vtb-t4nesimu804j33p4aaaaa&amp;quot;,
+    &amp;quot;VRouterId&amp;quot;: &amp;quot;vrt-t4n2w07mdra52kakaaaaa&amp;quot;,
+    &amp;quot;VpcId&amp;quot;: &amp;quot;vpc-t4nszyte14vie746aaaaa&amp;quot;
+}
+
+VPC=vpc-t4nszyte14vie746aaaaa
+
+aliyun vpc CreateVSwitch \
+    --VSwitchName jx \
+    --VpcId ${VPC} \
+    --RegionId ${REGION} \
+    --ZoneId ${REGION}a \
+    --Description &amp;quot;Jenkins X&amp;quot; \
+    --CidrBlock 172.16.0.0/24
+
+{
+    &amp;quot;RequestId&amp;quot;: &amp;quot;89D9AB1F-B4AB-4B4B-8CAA-F68F84417502&amp;quot;,
+    &amp;quot;VSwitchId&amp;quot;: &amp;quot;vsw-t4n7uxycbwgtg14maaaaa&amp;quot;
+}
+
+VSWITCH=vsw-t4n7uxycbwgtg14maaaaa
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Next, a keypair (or password) is needed for the cluster instances.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;aliyun ecs ImportKeyPair \
+    --KeyPairName jx \
+    --RegionId ${REGION} \
+    --PublicKeyBody &amp;quot;$(cat ~/.ssh/id_rsa.pub)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The last step is to create the cluster using the just created VPC, VSwitch and Keypair. It&amp;rsquo;s important to select the option &lt;em&gt;Expose API Server with EIP&lt;/em&gt; (&lt;code&gt;public_slb&lt;/code&gt; in the API json) to be able to connect to the API from the internet.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;echo &amp;lt;&amp;lt; EOF &amp;gt; cluster.json
+{
+    &amp;quot;name&amp;quot;: &amp;quot;jx-rocks&amp;quot;,
+    &amp;quot;cluster_type&amp;quot;: &amp;quot;ManagedKubernetes&amp;quot;,
+    &amp;quot;disable_rollback&amp;quot;: true,
+    &amp;quot;timeout_mins&amp;quot;: 60,
+    &amp;quot;region_id&amp;quot;: &amp;quot;${REGION}&amp;quot;,
+    &amp;quot;zoneid&amp;quot;: &amp;quot;${REGION}a&amp;quot;,
+    &amp;quot;snat_entry&amp;quot;: true,
+    &amp;quot;cloud_monitor_flags&amp;quot;: false,
+    &amp;quot;public_slb&amp;quot;: true,
+    &amp;quot;worker_instance_type&amp;quot;: &amp;quot;ecs.c4.xlarge&amp;quot;,
+    &amp;quot;num_of_nodes&amp;quot;: 3,
+    &amp;quot;worker_system_disk_category&amp;quot;: &amp;quot;cloud_efficiency&amp;quot;,
+    &amp;quot;worker_system_disk_size&amp;quot;: 120,
+    &amp;quot;worker_instance_charge_type&amp;quot;: &amp;quot;PostPaid&amp;quot;,
+    &amp;quot;vpcid&amp;quot;: &amp;quot;${VPC}&amp;quot;,
+    &amp;quot;vswitchid&amp;quot;: &amp;quot;${VSWITCH}&amp;quot;,
+    &amp;quot;container_cidr&amp;quot;: &amp;quot;172.20.0.0/16&amp;quot;,
+    &amp;quot;service_cidr&amp;quot;: &amp;quot;172.21.0.0/20&amp;quot;,
+    &amp;quot;key_pair&amp;quot;: &amp;quot;jx&amp;quot;
+}
+EOF
+
+aliyun cs  POST /clusters \
+    --header &amp;quot;Content-Type=application/json&amp;quot; \
+    --body &amp;quot;$(cat create.json)&amp;quot;
+
+{
+    &amp;quot;cluster_id&amp;quot;: &amp;quot;cb643152f97ae4e44980f6199f298f223&amp;quot;,
+    &amp;quot;request_id&amp;quot;: &amp;quot;0C1E16F8-6A9E-4726-AF6E-A8F37CDDC50C&amp;quot;,
+    &amp;quot;task_id&amp;quot;: &amp;quot;T-5cd93cf5b8ff804bb40000e1&amp;quot;,
+    &amp;quot;instanceId&amp;quot;: &amp;quot;cb643152f97ae4e44980f6199f298f223&amp;quot;
+}
+
+CLUSTER=cb643152f97ae4e44980f6199f298f223
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We can now download &lt;code&gt;kubectl&lt;/code&gt; configuration with&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;aliyun cs GET /k8s/${CLUSTER}/user_config | jq -r .config &amp;gt; ~/.kube/config-alibaba
+export KUBECONFIG=$KUBECONFIG:~/.kube/config-alibaba
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Another detail before being able to install applications that use &lt;code&gt;PersistentVolumeClaims&lt;/code&gt; is to &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/86612.htm#a2c63.p38356.879954.i0.11497ec4J5rKJd&#34; target=&#34;_blank&#34;&gt;configure a default storage class&lt;/a&gt;. There are several volume options that can be listed with &lt;code&gt;kubectl get storageclass&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;NAME                          PROVISIONER     AGE
+alicloud-disk-available       alicloud/disk   44h
+alicloud-disk-common          alicloud/disk   44h
+alicloud-disk-efficiency      alicloud/disk   44h
+alicloud-disk-ssd             alicloud/disk   44h
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Each of them matches the following cloud disks:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;alicloud-disk-common: basic cloud disk (minimum size 5GiB). Only available in some zones (us-west-1a, cn-beijing-b,&amp;hellip;)&lt;/li&gt;
+&lt;li&gt;alicloud-disk-efficiency: high-efficiency cloud disk, ultra disk (minimum size 20GiB).&lt;/li&gt;
+&lt;li&gt;alicloud-disk-ssd: SSD disk (minimum size 20GiB).&lt;/li&gt;
+&lt;li&gt;alicloud-disk-available: provides highly available options, first attempts to create a high-efficiency cloud disk. If the corresponding AZ&amp;rsquo;s efficient cloud disk resources are sold out, tries to create an SSD disk. If the SSD is sold out, tries to create a common cloud disk.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To set SSDs as the default:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl patch storageclass alicloud-disk-ssd \
+    -p &#39;{&amp;quot;metadata&amp;quot;: {&amp;quot;annotations&amp;quot;: {&amp;quot;storageclass.kubernetes.io/is-default-class&amp;quot;:&amp;quot;true&amp;quot;}}}&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: Alibaba cloud disks must be &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/25513.htm#h2-url-2&#34; target=&#34;_blank&#34;&gt;more than 5GiB (basic) or 20GiB (SSD and Ultra)&lt;/a&gt;) so we will need to configure any service that is deployed with PVCs to have that size as a minimum or the &lt;code&gt;PersistentVolume&lt;/code&gt; provision will fail. The Jenkins X deployments &lt;a href=&#34;https://github.com/jenkins-x/cloud-environments/blob/master/env-alibaba/myvalues.yaml&#34; target=&#34;_blank&#34;&gt;are already configured with this in mind&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-jenkins-x&#34;&gt;Installing Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;Alibaba Kubernetes clusters won&amp;rsquo;t be able to pull images from the insecure docker registry included in Jenkins X, we need to use Alibaba&amp;rsquo;s Container Registry by going to &lt;a href=&#34;https://cr.console.aliyun.com&#34; target=&#34;_blank&#34;&gt;https://cr.console.aliyun.com&lt;/a&gt; and setting a password.&lt;/p&gt;
+
+&lt;p&gt;Then we need to create a Container Registry namespace that allows us to push any image and make them public by default.&lt;/p&gt;
+
+&lt;p&gt;From the web UI we can create a Docker login password that we will be using later.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;NAMESPACE=jenkins-x-$(cat /dev/urandom | env LC_CTYPE=C tr -dc &#39;a-z&#39; | fold -w 6 | head -n 1)
+cat &amp;lt;&amp;lt; EOF &amp;gt; namespace.json
+{
+    &amp;quot;Namespace&amp;quot;: {
+        &amp;quot;Namespace&amp;quot;: &amp;quot;${NAMESPACE}&amp;quot;
+    }
+}
+EOF
+aliyun cr PUT /namespace \
+    --header &amp;quot;Content-Type=application/json&amp;quot; \
+    --body &amp;quot;$(cat namespace.json)&amp;quot;
+
+cat &amp;lt;&amp;lt; EOF &amp;gt; namespace.json
+{
+    &amp;quot;namespace&amp;quot;: {
+        &amp;quot;namespace&amp;quot;: &amp;quot;${NAMESPACE}&amp;quot;,
+        &amp;quot;defaultVisibility&amp;quot;: &amp;quot;PUBLIC&amp;quot;,
+        &amp;quot;autoCreate&amp;quot;: true
+    }
+}
+EOF
+
+aliyun cr POST /namespace/${NAMESPACE} \
+    --header &amp;quot;Content-Type=application/json&amp;quot; \
+    --body &amp;quot;$(cat namespace.json)&amp;quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we can install Jenkins X as usual, passing the &lt;code&gt;--provider alibaba&lt;/code&gt; flag.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx install \
+    --provider alibaba \
+    --default-admin-password=admin \
+    --default-environment-prefix=jx-rocks \
+    --tekton \
+    --docker-registry=registry.${REGION}.aliyuncs.com \
+    --docker-registry-org=${NAMESPACE} \
+    -b
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After installation we need to add the Container Registry credentials to the cluster, the Docker password we have previously created.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;AUTH=$(echo -n &amp;quot;${DOCKER_USERNAME}:${DOCKER_PASSWORD}&amp;quot; | base64)
+DATA=$(cat &amp;lt;&amp;lt; EOF | base64
+{
+    &amp;quot;auths&amp;quot;: {
+        &amp;quot;registry.${REGION}.aliyuncs.com&amp;quot;: {
+            &amp;quot;auth&amp;quot;: &amp;quot;${AUTH}&amp;quot;
+        }
+    }
+}
+EOF
+)
+cat &amp;lt;&amp;lt; EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: jenkins-docker-cfg
+  namespace: jx
+data:
+  config.json: ${DATA}
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;installing-addons&#34;&gt;Installing Addons&lt;/h2&gt;
+
+&lt;p&gt;Addons can be installed normally with the caveat mentioned above about PVC minimum size. Which means that we may need to pass some Helm values to the &lt;code&gt;create addon&lt;/code&gt; command, depending on the chart we are installing.&lt;/p&gt;
+
+&lt;p&gt;For instance to install Prometheus with 20Gi disks:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create addon prometheus \
+    -s alertmanager.persistentVolume.size=20Gi,pushgateway.persistentVolume.size=20Gi,server.persistentVolume.size=20Gi
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;tekton&#34;&gt;Tekton&lt;/h2&gt;
+
+&lt;p&gt;Tekton builds need to be configured to use PVCs bigger than 20Gi due to the same reasons. The default is to use 5GiB PVCs.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cat &amp;lt;&amp;lt; EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-artifact-pvc
+  namespace: jx
+data:
+  size: 20Gi
+EOF
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: DevOps World-Jenkins World 2019 San Francisco: Agenda is Live</title>
+      <link>/blog/2019/06/06/jenkins-world-agenda/</link>
+      <pubDate>Thu, 06 Jun 2019 12:20:42 -0700</pubDate>
+      
+      <guid>/blog/2019/06/06/jenkins-world-agenda/</guid>
+      <description>
+        
+        
+        &lt;figure&gt;
+&lt;img src=&#34;/images/2019-dwjw-san-fran-rev.png&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; is the largest Jenkins gathering of the year.  From August 12 - 15, 2019 the event will take place at the Moscone West Center in San Francisco.  The event boasts 100+ sessions, and will offer training, hands-on workshops, onsite certification, contributor summit and much more.  Conference attendees can expect to be inspired while learning the latest innovations from industry leaders. Attendees will learn the value that digital transformation has in delivering software more efficiently, more quickly and with higher quality.&lt;/p&gt;
+
+&lt;p&gt;We are excited to announce most of the agenda for DevOps World | Jenkins World San Francisco is now live. We will continue to fill out the agenda with more sessions, trainings/workshops, and activities in the coming weeks. Below is a sampling of the Jenkins X sessions taking place at DevOps World | Jenkins World San Francisco:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Continuous Delivery with Jenkins X Workshop&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We need a tool that will allow us to leverage all the latest and greatest processes and tools. At the same time, we need them to be simple and straightforward so that everyone can benefit from them. That is the primary objective behind the Jenkins X project. It brings power by combining best practices and tools while keeping it so simple that anyone can use it.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Cloud Native CI/CD with Jenkins X and Tekton&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In this talk, we’ll explain the CI/CD challenges in a cloud native landscape, and show how Jenkins X rises to them by leveraging open source cloud native technologies like Tekton.  We will describe how the Jenkins X project has evolved on it&amp;rsquo;s own cloud native journey and the amazing benefits we are gaining by using the cloud well.  People who attend will leave with a better understanding of the awesome new technologies, architecture and benefits which are transforming the way we build, release, deploy and run our software.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Jenkins X Optimized for GCP -  Craig Barber&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Jenkins X is an industry-wide leap forward to provide developers with a cloud native CI/CD experience. As the next evolution in the Jenkins space, Jenkins X redefines how CI/CD workloads run. In this talk, we will guide you on how to deploy, configure and use Jenkins X CI/CD pipelines within the Google Kubernetes Engine while taking full advantage of Jenkins X&amp;rsquo;s native integration with GCP&amp;rsquo;s industry leading services.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Integrating JX (Serverless) with your Business&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;CI/CD + GitOps is changing the way that we build software, it comes with a great cultural change and challenges but a lot of advantages. While using JX is an amazing starting point to get familiar with CI/CD and GitOps, companies can integrate with these tools in a whole new level to build the next generation SaaS offerings. In this presentation we will look at the Kubernetes Resources provided by JX and how can we integrate our own domain specific concepts to leverage JX from inside our services/products.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;See the full agenda &lt;a href=&#34;https://web.cvent.com/event/eac49765-9235-4b96-aaba-3bcb9cc837c3/websitePage:645d57e4-75eb-4769-b2c0-f201a0bfc6ce&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The Jenkins X creators and contributors will be onsite to mingle and answer any Jenkins X technical questions you might have.  Come if you are simply curious and just want to learn more or ask the experts those Jenkins X questions that has been keeping you up at night.&lt;/p&gt;
+
+&lt;p&gt;Hope to see you there!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Jenkins Community Awards</title>
+      <link>/blog/2019/04/17/jenkins-community-awards/</link>
+      <pubDate>Wed, 17 Apr 2019 12:20:42 -0700</pubDate>
+      
+      <guid>/blog/2019/04/17/jenkins-community-awards/</guid>
+      <description>
+        
+        
+        
+
+&lt;figure&gt;
+&lt;img src=&#34;/images/dwjw-2019-io.jpg&#34;/&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;It is time for the 3rd annual,  &lt;a href=&#34;http://www.cvent.com/c/abstracts/bd21fac2-4c66-4ddf-b4c3-a5eb42270e1c&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World 2019&lt;/a&gt; Community Awards. These nominations are indicative of the excellent work Jenkins community members are doing for the betterment of Jenkins.&lt;/p&gt;
+
+&lt;p&gt;This will be the third year we are commemorating community members who have shown excellence through commitment, creative thinking, and contributions to continue making Jenkins a great open source community.&lt;/p&gt;
+
+&lt;h2 id=&#34;the-award-categories-include&#34;&gt;The award categories include:&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Most Valuable Contributor&lt;/strong&gt; - This award is presented to the Jenkins contributor who has helped move the Jenkins project forward the most through their invaluable feature contributions, bug fixes or plugin development efforts.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Jenkins Security MVP&lt;/strong&gt; - This award is presented to the individual most consistently providing excellent security reports or who helped secure Jenkins by fixing security issues.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Most Valuable Advocate&lt;/strong&gt; - This award is presented to an individual who has helped advocate for Jenkins through the organization of their local Jenkins Area Meetup.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Most Innovative Jenkins X Implementation&lt;/strong&gt; - Presented to an innovative user who has embraced Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.cvent.com/c/abstracts/bd21fac2-4c66-4ddf-b4c3-a5eb42270e1c&#34; target=&#34;_blank&#34;&gt;Nominate yourself&lt;/a&gt; or someone today! Winners will be announced at &lt;a href=&#34;https://www.cloudbees.com/devops-world&#34; target=&#34;_blank&#34;&gt;DevOps World | Jenkins World San Francisco 2019&lt;/a&gt; on August 12-15. The deadline for nomination is &lt;strong&gt;Tuesday, April 30th&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;We look forward to hearing about the great Jenkins work you are doing.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform</title>
+      <link>/blog/2019/04/03/terraform-jenkins-x/</link>
+      <pubDate>Wed, 03 Apr 2019 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/04/03/terraform-jenkins-x/</guid>
+      <description>
+        
+        
+        
+
+&lt;figure&gt;
+&lt;img src=&#34;/images/jenkinsTerraform.png&#34;/&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Provision Jenkins X Kubernetes Clusters using Terraform&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+CAUTION: Do not make updates to the cluster that require recreating the cluster resources, all data will be lost.  Only changes that update the cluster are supported at this time.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
+
+&lt;p&gt;Many organizations have adopted DevOps practices in the last few years.  This is valuable as it relates to Jenkins X as we provide a way to manage the Kubernetes clusters  Infrastructure as Code which is one of the core concepts of DevOps practices as it relates to automation.&lt;/p&gt;
+
+&lt;p&gt;Many environments may only allow for creating cloud resources using IaC, therefore we provide you with guidance on how to get started using Terraform to manage your Jekins X clusters.&lt;/p&gt;
+
+&lt;p&gt;Our objective is to bring awareness to our Jenkins X users on know that they can manage the cluster changes and version them by placing the Terraform code source control and adopting the typical developer workflow which includes PRs in source control to make infrastructure changes in a controlled manner.&lt;/p&gt;
+
+&lt;h2 id=&#34;terraform-clusters-for-aws-gcp-and-azure&#34;&gt;Terraform clusters for AWS, GCP and Azure&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X supports generating Terraform plans and code for all three leading clouds (AWS, Azure and GCP).&lt;/p&gt;
+
+&lt;p&gt;On this post we walk you through the steps for terraforming clusters in GKE.&lt;/p&gt;
+
+&lt;h2 id=&#34;benefits-of-using-iac-to-manage-your-k8s-clusters&#34;&gt;Benefits of Using IaC to Manage Your K8s Clusters&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;This is great, because at many companies the Ops team typically is already using IaC to manage the resources deployed to the cloud&lt;/li&gt;
+&lt;li&gt;Our Users gain the ability to version their infrastructure and follow the typical developer workflow as the code is in Github&lt;/li&gt;
+&lt;li&gt;Changes to the cluster can be automated, added to a pipeline&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h1&gt;
+
+&lt;p&gt;To get started, you must have the following items installed on your machine.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;jx&lt;/code&gt; CLI installed.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Terraform - can be installed using &lt;code&gt;brew install terraform&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;GCP account with proper rights to create resources&lt;/li&gt;
+&lt;li&gt;The Google Cloud CLI &lt;code&gt;gcloud&lt;/code&gt;
+&lt;code&gt;kubectl&lt;/code&gt; must also be installed&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;step-1-create-terraform-plan&#34;&gt;Step 1 - Create Terraform Plan&lt;/h1&gt;
+
+&lt;p&gt;Our first task is to generate the Terraform code for each cluster, we create a Dev, Staging and Production cluster.&lt;/p&gt;
+
+&lt;p&gt;We execute the &lt;code&gt;jx create terraform -c dev=gke -c stage=gke -c prod=gke&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The command generates three different clusters for each environment respectively in GCP.  Other providers supported are  aks, eks.&lt;/p&gt;
+
+&lt;h2 id=&#34;folder-structure-output&#34;&gt;Folder Structure Output&lt;/h2&gt;
+
+&lt;p&gt;Running the previous command, outputs the following folder structure wherever we executed the command locally.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;├── README.md
+├── build.sh
+├── ci-demo-206601-121d21dc79ac.json
+└── clusters
+├── dev
+│   └── terraform
+│       ├── README.md
+│       ├── key.json
+│       ├── main.tf
+│       ├── output.tf
+│       ├── terraform.tf
+│       ├── terraform.tfvars
+│       └── variables.tf
+├── prod
+│   └── terraform
+│       ├── README.md
+│       ├── main.tf
+│       ├── output.tf
+│       ├── terraform.tf
+│       ├── terraform.tfvars
+│       └── variables.tf
+└── stage
+└── terraform
+├── README.md
+├── main.tf
+├── output.tf
+├── terraform.tf
+├── terraform.tfvars
+└── variables.tf
+
+7 directories, 22 files
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We now have a great code-base to create our clusters on GKE for three different environments.&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+NOTE: On this Post, we will only create the Dev Cluster, although the process is the same for creating the other Kubernetes clusters.
+First we need to make sure we have credentials to execute our Terraform code.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h1 id=&#34;step-2-get-gke-credentials&#34;&gt;Step 2 - Get GKE Credentials&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X creates a Service Account (SA) for each cluster.&lt;/p&gt;
+
+&lt;p&gt;For our dev cluster, it has created the jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com account.&lt;/p&gt;
+
+&lt;p&gt;We need to download the &lt;code&gt;json&lt;/code&gt; file in order to pass as credentials to our &lt;code&gt;terraform.tf&lt;/code&gt; file which contains the definition to access the Terraform Backend.&lt;/p&gt;
+
+&lt;h2 id=&#34;downloading-credentials-json-file&#34;&gt;Downloading Credentials JSON File&lt;/h2&gt;
+
+&lt;p&gt;To download the SA account credentials, go to the GCP Console &amp;gt; IAM &amp;amp;  Admin &amp;gt; Service Accounts.&lt;/p&gt;
+
+&lt;p&gt;We find the one for our cluster which is named in our case
+as follows: &lt;code&gt;jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;We click on the file &lt;em&gt;name&lt;/em&gt;  &amp;gt; &lt;em&gt;edit&lt;/em&gt;, then click on &lt;em&gt;create key&lt;/em&gt; in JSON format, download and save in our project folder structure.&lt;/p&gt;
+
+&lt;p&gt;We now add a reference within the &lt;code&gt;terraform.tf&lt;/code&gt; as shown below.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;terraform {
+    required_version = &amp;quot;&amp;gt;= 0.11.0&amp;quot;
+    backend &amp;quot;gcs&amp;quot; {
+        bucket      = &amp;quot;ci-demo-206601-questerring-terraform-state&amp;quot;
+        prefix      = &amp;quot;dev&amp;quot;
+        credentials = &amp;quot;key.json&amp;quot;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice that we added the &lt;code&gt;credentials&lt;/code&gt; portion and point to the credentials &lt;code&gt;json&lt;/code&gt; file we downloaded from the Google IAM &amp;amp; Admin web console.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-3-initiate-terraform-backend&#34;&gt;Step 3 - Initiate Terraform Backend&lt;/h1&gt;
+
+&lt;p&gt;We are now ready to initiate Terraform backend.  Terraform backends are used to save the Terraform State remotely.  This is great for when a team needs to collaborate on making infrastructure changes, because the Terraform State is stored in the GCP Bucket that was also created when we executed our initial command to create the cluster.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform init                                                                                                               
+Initializing the backend...
+
+Successfully configured the backend &amp;quot;gcs&amp;quot;! Terraform will automatically
+use this backend unless the backend configuration changes.
+
+Initializing provider plugins...
+Checking for available provider plugins on https://releases.hashicorp.com...
+Downloading plugin for provider &amp;quot;google&amp;quot; (2.3.0)...
+
+Terraform has been successfully initialized!
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have initiated Terraform and our Terraform State is now configured to use the GCP Buket specified in the terraform.tf file.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-4-terraform-plan&#34;&gt;Step 4 - Terraform Plan&lt;/h1&gt;
+
+&lt;p&gt;We now can execute a &lt;code&gt;terraform plan&lt;/code&gt; and see what will be created.  At this point, we can opt to augment the terraform code.&lt;/p&gt;
+
+&lt;p&gt;For example, you may have an existing network that you wish to deploy the cluster in.  You may also wish to enable the an add-on, or you can specify the cluster_ipv4_cidr_block and many other things (see &lt;a href=&#34;https://www.terraform.io/docs/providers/google/r/container_cluster.html&#34; target=&#34;_blank&#34;&gt;https://www.terraform.io/docs/providers/google/r/container_cluster.html&lt;/a&gt;) for details.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform plan                                                                                 
+
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+----
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
++ create
+
+Terraform will perform the following actions:
+
++ google_container_cluster.jx-cluster
+id:                                    &amp;lt;computed&amp;gt;
+additional_zones.#:                    &amp;lt;computed&amp;gt;
+addons_config.#:                       &amp;lt;computed&amp;gt;
+cluster_autoscaling.#:                 &amp;lt;computed&amp;gt;
+cluster_ipv4_cidr:                     &amp;lt;computed&amp;gt;
+description:                           &amp;quot;jx k8s cluster provisioned and managed via Terraform.&amp;quot;
+enable_binary_authorization:           &amp;lt;computed&amp;gt;
+enable_kubernetes_alpha:               &amp;quot;false&amp;quot;
+enable_legacy_abac:                    &amp;quot;false&amp;quot;
+enable_tpu:                            &amp;lt;computed&amp;gt;
+endpoint:                              &amp;lt;computed&amp;gt;
+initial_node_count:                    &amp;quot;3&amp;quot;
+instance_group_urls.#:                 &amp;lt;computed&amp;gt;
+ip_allocation_policy.#:                &amp;lt;computed&amp;gt;
+location:                              &amp;lt;computed&amp;gt;
+logging_service:                       &amp;quot;logging.googleapis.com&amp;quot;
+master_auth.#:                         &amp;lt;computed&amp;gt;
+master_ipv4_cidr_block:                &amp;lt;computed&amp;gt;
+master_version:                        &amp;lt;computed&amp;gt;
+monitoring_service:                    &amp;quot;monitoring.googleapis.com&amp;quot;
+name:                                  &amp;quot;questerring-dev&amp;quot;
+network:                               &amp;quot;default&amp;quot;
+network_policy.#:                      &amp;lt;computed&amp;gt;
+node_config.#:                         &amp;lt;computed&amp;gt;
+node_locations.#:                      &amp;lt;computed&amp;gt;
+node_pool.#:                           &amp;lt;computed&amp;gt;
+node_version:                          &amp;lt;computed&amp;gt;
+private_cluster:                       &amp;lt;computed&amp;gt;
+project:                               &amp;lt;computed&amp;gt;
+region:                                &amp;lt;computed&amp;gt;
+remove_default_node_pool:              &amp;quot;true&amp;quot;
+resource_labels.%:                     &amp;quot;3&amp;quot;
+resource_labels.created-by:            &amp;quot;me&amp;quot;
+resource_labels.created-timestamp:     &amp;quot;20190326093418&amp;quot;
+resource_labels.created-with:          &amp;quot;terraform&amp;quot;
+zone:                                  &amp;quot;us-west1-a&amp;quot;
+
++ google_container_node_pool.jx-node-pool
+id:                                    &amp;lt;computed&amp;gt;
+autoscaling.#:                         &amp;quot;1&amp;quot;
+autoscaling.0.max_node_count:          &amp;quot;5&amp;quot;
+autoscaling.0.min_node_count:          &amp;quot;3&amp;quot;
+cluster:                               &amp;quot;questerring-dev&amp;quot;
+initial_node_count:                    &amp;lt;computed&amp;gt;
+instance_group_urls.#:                 &amp;lt;computed&amp;gt;
+location:                              &amp;lt;computed&amp;gt;
+management.#:                          &amp;quot;1&amp;quot;
+management.0.auto_repair:              &amp;quot;true&amp;quot;
+management.0.auto_upgrade:             &amp;quot;false&amp;quot;
+max_pods_per_node:                     &amp;lt;computed&amp;gt;
+name:                                  &amp;quot;default-pool&amp;quot;
+name_prefix:                           &amp;lt;computed&amp;gt;
+node_config.#:                         &amp;quot;1&amp;quot;
+node_config.0.disk_size_gb:            &amp;quot;100&amp;quot;
+node_config.0.disk_type:               &amp;lt;computed&amp;gt;
+node_config.0.guest_accelerator.#:     &amp;lt;computed&amp;gt;
+node_config.0.image_type:              &amp;lt;computed&amp;gt;
+node_config.0.local_ssd_count:         &amp;lt;computed&amp;gt;
+node_config.0.machine_type:            &amp;quot;n1-standard-2&amp;quot;
+node_config.0.metadata.%:              &amp;lt;computed&amp;gt;
+node_config.0.oauth_scopes.#:          &amp;quot;7&amp;quot;
+node_config.0.oauth_scopes.1277378754: &amp;quot;https://www.googleapis.com/auth/monitoring&amp;quot;
+node_config.0.oauth_scopes.1693978638: &amp;quot;https://www.googleapis.com/auth/devstorage.full_control&amp;quot;
+node_config.0.oauth_scopes.172152165:  &amp;quot;https://www.googleapis.com/auth/logging.write&amp;quot;
+node_config.0.oauth_scopes.1733087937: &amp;quot;https://www.googleapis.com/auth/cloud-platform&amp;quot;
+node_config.0.oauth_scopes.2184564866: &amp;quot;https://www.googleapis.com/auth/service.management&amp;quot;
+node_config.0.oauth_scopes.299962681:  &amp;quot;https://www.googleapis.com/auth/compute&amp;quot;
+node_config.0.oauth_scopes.3663490875: &amp;quot;https://www.googleapis.com/auth/servicecontrol&amp;quot;
+node_config.0.preemptible:             &amp;quot;true&amp;quot;
+node_config.0.service_account:         &amp;lt;computed&amp;gt;
+node_count:                            &amp;quot;3&amp;quot;
+project:                               &amp;lt;computed&amp;gt;
+region:                                &amp;lt;computed&amp;gt;
+version:                               &amp;lt;computed&amp;gt;
+zone:                                  &amp;quot;us-west1-a&amp;quot;
+Plan: 2 to add, 0 to change, 0 to destroy.
+----
+
+Note: You didn&#39;t specify an &amp;quot;-out&amp;quot; parameter to save this plan, so Terraform
+can&#39;t guarantee that exactly these actions will be performed if
+&amp;quot;terraform apply&amp;quot; is subsequently run.
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;step-5-create-cluster-using-terraform-apply&#34;&gt;Step 5 - Create Cluster Using Terraform Apply&lt;/h1&gt;
+
+&lt;p&gt;Now that we&amp;rsquo;ve seen what will be created and using the default terraform code generated, let us create said resources!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ terraform apply
+.....trimmed for brevity
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+cluster_endpoint = 35.203.147.59
+cluster_master_version = 1.11.7-gke.12
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The outcome shows some key information, like the &lt;em&gt;cluster_endpoint&lt;/em&gt; and the &lt;em&gt;cluster_master_version&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;set-kubectl-context&#34;&gt;Set Kubectl Context&lt;/h2&gt;
+
+&lt;p&gt;Let us access the cluster using kubectl.  In order to do that, we need to get credentials.  We execute the following command (which you can get from the UI on GCP right from the cluster connect window)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ gcloud container clusters get-credentials questerring-dev --zone us-west1-a --project ci-demo-206601 
+                        
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated for questerring-dev.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This has effectively modified our &lt;code&gt;kubeconfig&lt;/code&gt; file and we now have a new context.&lt;/p&gt;
+
+&lt;p&gt;Executing the following command, we see our new cluster (in bold)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx context                                                                                                                      
+BigDaddyO
+arn:aws:eks:us-west-2:653931956080:cluster/jxcluster
+gke_ci-demo-206601_europe-west1-b_sirjenkinsgke
+gke_ci-demo-206601_us-west1-a_chingold
+gke_ci-demo-206601_us-west1-a_questerring-dev
+gke_ci-demo-206601_us-west1-a_sirjenkinsgke
+gke_ci-demo-206601_us-west1-a_sirjenkinsx
+gke_ci-demo-206601_us-west1_sirjenkinsxgke
+minikube
+1553553075211690000@jxcluster.us-west-2.eksctl.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We are now ready to install Jenkins X on our cluster!&lt;/p&gt;
+
+&lt;h1 id=&#34;step-6-installing-jenkins-x-on-cluster&#34;&gt;Step 6 - Installing Jenkins X on Cluster&lt;/h1&gt;
+
+&lt;p&gt;To install Jenkins X, we simply run jx intall and follow the prompts.&lt;/p&gt;
+
+&lt;p&gt;{{ note }}
+NOTE that can pass additional flags as per your prefernces.  For example set the default admin password like so &lt;code&gt;--default-admin-password=MyPassw0rd&lt;/code&gt; (see other options by typing &lt;code&gt;jx install --help&lt;/code&gt;
+{{ /note }}&lt;/p&gt;
+
+&lt;p&gt;Now that we have Jenkins X installed, we can deploy an app etc.  We make sure it is up and running.&lt;/p&gt;
+
+&lt;h1 id=&#34;step-7-modify-clusters&#34;&gt;Step 7 - Modify Clusters&lt;/h1&gt;
+
+&lt;p&gt;There are certain properties that can be modified without forcing a recreation of the clusters.  You &lt;em&gt;do not want to recreate them as your data will be lost&lt;/em&gt;.  Only changes that update the clusters are supported.&lt;/p&gt;
+
+&lt;p&gt;We are going to modify the cluster and add an add-on for the Dashboard which is typically disabled.&lt;/p&gt;
+
+&lt;p&gt;To do that we change the following within the cluster declaration in main.tf and add the following (in bold):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;resource &amp;quot;google_container_cluster&amp;quot; &amp;quot;jx-cluster&amp;quot; {
+    name                     = &amp;quot;${var.cluster_name}&amp;quot;
+    description              = &amp;quot;jx k8s cluster provisioned and managed via Terraform.&amp;quot;
+    zone                     = &amp;quot;${var.gcp_zone}&amp;quot;
+    enable_kubernetes_alpha  = &amp;quot;${var.enable_kubernetes_alpha}&amp;quot;
+    enable_legacy_abac       = &amp;quot;${var.enable_legacy_abac}&amp;quot;
+    initial_node_count       = &amp;quot;${var.min_node_count}&amp;quot;
+    remove_default_node_pool = &amp;quot;true&amp;quot;
+    logging_service          = &amp;quot;${var.logging_service}&amp;quot;
+    monitoring_service       = &amp;quot;${var.monitoring_service}&amp;quot;
+
+    resource_labels {
+        created-by = &amp;quot;${var.created_by}&amp;quot;
+        created-timestamp = &amp;quot;${var.created_timestamp}&amp;quot;
+        created-with = &amp;quot;managed by terraform&amp;quot;
+    }
+
+    lifecycle {
+        ignore_changes = [&amp;quot;node_pool&amp;quot;]
+    }
+
+    addons_config {
+        kubernetes_dashboard {
+            disabled = false
+        }
+    }
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then we run the terraform plan, output shows a change to the cluster as expected.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;terraform plan                                                                                                             
+
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+google_container_cluster.jx-cluster: Refreshing state... (ID: sposcar-dev)
+google_container_node_pool.jx-node-pool: Refreshing state... (ID: us-west1-a/sposcar-dev/default-pool)
+----
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+~ update in-place
+
+Terraform will perform the following actions:
+
+~ google_container_cluster.jx-cluster
+addons_config.0.kubernetes_dashboard.0.disabled: &amp;quot;true&amp;quot; =&amp;gt; &amp;quot;false&amp;quot;
+resource_labels.created-with:                    &amp;quot;terraform&amp;quot; =&amp;gt; &amp;quot;managed by terraform&amp;quot;
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+
+Note: You didn&#39;t specify an &amp;quot;-out&amp;quot; parameter to save this plan, so Terraform
+can&#39;t guarantee that exactly these actions will be performed if
+&amp;quot;terraform apply&amp;quot; is subsequently run.
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;accessing-kubernetes-dashboard&#34;&gt;Accessing kubernetes dashboard&lt;/h2&gt;
+
+&lt;p&gt;Now that our change has taken effect on our cluster, lets access the Dashboard.&lt;/p&gt;
+
+&lt;p&gt;{{ note }}
+NOTE: This dashboard is deprecated, and we are only showing you in the context of modifying your cluster to add an add-on.  Please use the GKE built-in UI
+{{ /note }}&lt;/p&gt;
+
+&lt;h3 id=&#34;get-access-token&#34;&gt;Get Access token&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;gcloud config config-helper --format=json | jq -r &#39;.credential.access_token&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Copy the token from the output of that command.&lt;/p&gt;
+
+&lt;p&gt;Next, execute &lt;code&gt;kubectl proxy&lt;/code&gt; which will enable you to access via the following URL&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy&#34; target=&#34;_blank&#34;&gt;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Paste the token and now you should be able to access the now deprecated dashboard via the browser.&lt;/p&gt;
+
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;We walked through how to create your initial Terraform code and structure, created the Dev cluster and modified it by specifying an add-on to include in our cluster.&lt;/p&gt;
+
+&lt;p&gt;Please keep in mind, that once &lt;em&gt;GitOps&lt;/em&gt; feature in Jenkins X is available, we recommend you manage the platform in that manner.  Documentation, tutorials and presentations on that topic will be coming soon!&lt;/p&gt;
+
+&lt;p&gt;Cheers,&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://twitter.com/SharePointOscar&#34; target=&#34;_blank&#34;&gt;@SharePointOscar&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Developer Advocate | Jenkins X&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Jenkins X joins the CDF</title>
+      <link>/blog/2019/03/09/jenkins-x-cdf/</link>
+      <pubDate>Sat, 09 Mar 2019 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/03/09/jenkins-x-cdf/</guid>
+      <description>
+        
+        
+        &lt;p&gt;We are thrilled to announce that Jenkins X will be joining the &lt;a href=&#34;https://cd.foundation/&#34; target=&#34;_blank&#34;&gt;Continuous Delivery Foundation&lt;/a&gt; as one of the founding projects.  The Continuous Delivery Foundation (CDF) is a brand new sub-foundation of the Linux Foundation and will be dedicated to advancing the practice of continuous delivery and nurturing an ecosystem of interoperable tools for software delivery.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/news/jenkins-x-cdf/cdf-stacked-color.png&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is just over &lt;a href=&#34;/news/happy-first-birthday/&#34;&gt;a year old&lt;/a&gt; but has been growing rapidly as the CI/CD solution for modern cloud applications on Kubernetes. Jenkins X automates CI+CD for Kubernetes using the best of breed OSS tools such as Jenkins, Tekton, Prow, Skaffold, Kaniko and Helm. The CDF will be a sibling foundation to the Cloud Native Computing Foundation (CNCF) which hosts Kubernetes amongst others. CDF will have its first event, CDF Summit, on May 20th alongside KubeCon Barcelona. We always love to work closely with other communities, and this will continue at scale within the CDF.&lt;/p&gt;
+
+&lt;p&gt;“I’m really excited to see the formation of the CDF - it&amp;rsquo;s starting with some of the most popular best-of-breed open source tools in the CI/CD space,&amp;rdquo; said James Strachan, co-founder of Jenkins X and distinguished engineer, CloudBees. &amp;ldquo;I’m looking forward to increased collaboration between us all to help accelerate the open source CI/CD landscape.”&lt;/p&gt;
+
+&lt;p&gt;Jenkins X started life under the Jenkins umbrella. In CDF, Jenkins X will be a distinct project from Jenkins which means some changes, such as having a Jenkins X Technical Steering Committee. These changes will happen gradually as we transition to CDF over the coming weeks. Normal development work will continue as usual.&lt;/p&gt;
+
+&lt;p&gt;We are excited about all the new possibilities that being part of the CDF will bring. We look forward to new initiatives and welcoming everybody to &lt;a href=&#34;/contribute/&#34;&gt;get involved with the project&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Jenkins X Pipelines integrated with Tekton</title>
+      <link>/blog/2019/02/19/jenkins-x-next-gen-pipeline-engine/</link>
+      <pubDate>Tue, 19 Feb 2019 10:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/02/19/jenkins-x-next-gen-pipeline-engine/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;introducing-the-new-jenkins-x-pipeline-engine&#34;&gt;Introducing the new Jenkins X Pipeline Engine&lt;/h2&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/&#34; target=&#34;_blank&#34;&gt;Jenkins X&lt;/a&gt; team and &lt;a href=&#34;https://www.cloudbees.com/&#34; target=&#34;_blank&#34;&gt;CloudBees&lt;/a&gt; are excited to announce some changes that we’ve been working on and are jntroducing the new &lt;a href=&#34;/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline Engine&lt;/a&gt;.&lt;/p&gt;
+
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/EYywyqcPVMY?autoplay=1&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;Today, there are two ways that you can run your Jenkins pipelines in Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;By default today, Jenkins X uses a static traditional Jenkins master and Jenkins Pipelines. This mode works well for those who may have complex existing Jenkins pipelines and want to be able to use all the Jenkins X goodness of GitOps and preview environments in Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;As of last October, you can run Jenkins pipelines without the static Jenkins server &amp;ndash; so, it’s &lt;a href=&#34;https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870&#34; target=&#34;_blank&#34;&gt;serverless&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Serverless pipeline execution mode will become the best way to run Jenkins X in the not-too-distant future. And as we’re looking forward, we’ve begun to find ways to further improve the serverless mode of Jenkins X. We now have &lt;a href=&#34;/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; which are based on &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; which is a new Kubernetes-native way of running serverless pipelines. While it’s still in its early stages, Tekton will eventually become the best way to run CI/CD pipelines in Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;We’ve begun some early work to add Tekton into Jenkins X. You can now begin testing the pipeline, and we’d love to get your feedback. To use the new Tekton execution mode you &lt;a href=&#34;/architecture/jenkins-x-pipelines/#trying-jenkins-x-pipelines&#34;&gt;install your Jenkins X cluster using the new tekton mode&lt;/a&gt;. You will then get a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file with your application instead of a Jenkinsfile in your source code repository. This YAML file is organized similarly to the Jenkins declarative pipeline syntax used in a Jenkinsfile.&lt;/p&gt;
+
+&lt;p&gt;We’ll continue to update the community on progress accordingly and welcome your feedback! Feel free to contact the &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34; target=&#34;_blank&#34;&gt;Jenkins X team via Slack&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/community/#office-hours&#34; target=&#34;_blank&#34;&gt;office hours&lt;/a&gt; or send us an email with any questions or concerns. The next office hours will be on Thursday, February 21st, at 11:00am ET and Andrew Bayer will be demoing progress. Thanks!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Happy 1st Birthday Jenkins X</title>
+      <link>/blog/2019/01/14/happy-first-birthday/</link>
+      <pubDate>Mon, 14 Jan 2019 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2019/01/14/happy-first-birthday/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Time flies when you are delivering software. It has been just over a year since the &lt;a href=&#34;https://github.com/jenkins-x/jx/commit/e255f7ea050c4a410a21183ec85a510c8e4ca8c6&#34; target=&#34;_blank&#34;&gt;initial commit&lt;/a&gt; went into Github for Jenkins X, the CI/CD solution for cloud native. In just 12 months, Jenkins X progress has been breathtaking, so let’s celebrate by taking a look at all that has been accomplished in this short space of time.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/news/jenkins-x-first-birthday/birthday.jpg&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;One of the main founders of Jenkins X is &lt;a href=&#34;https://twitter.com/jstrachan&#34; target=&#34;_blank&#34;&gt;James Strachan&lt;/a&gt; of CloudBees, who is known for building many popular open source software projects such as &lt;a href=&#34;http://groovy-lang.org/index.html&#34; target=&#34;_blank&#34;&gt;Apache Groovy&lt;/a&gt;, &lt;a href=&#34;http://camel.apache.org/&#34; target=&#34;_blank&#34;&gt;Apache Camel&lt;/a&gt; and fabric8. Notable these projects also have enduring open source software communities around them. With all this experience it is safe to say James simply gets developers and what they want, need and care about.&lt;/p&gt;
+
+&lt;p&gt;Developers WANT to ship code fast.&lt;/p&gt;
+
+&lt;p&gt;Developers NEED to use best practices as they go so they can keep the long term sustainability of their code in mind.&lt;/p&gt;
+
+&lt;p&gt;Developers CARE ABOUT what they are building; the code, the programming language, the environment, the quirks: everything that makes it special (and also makes one-size-fits-all tools impossible to build). Jenkins X gets all of this, let’s take a look at what it offers developers.&lt;/p&gt;
+
+&lt;h2 id=&#34;ship-code-fast&#34;&gt;Ship Code Fast&lt;/h2&gt;
+
+&lt;p&gt;To help developers get their code out to the world quickly Jenkins X offers preview environments, a seamless developer experience (DevEx) and support for multi-cloud platforms.&lt;/p&gt;
+
+&lt;h3 id=&#34;preview-environments&#34;&gt;Preview Environments&lt;/h3&gt;
+
+&lt;p&gt;These are the Jenkins X killer feature. Preview environments enable developers to preview pull requests before changes merge to master. This takes away the pain of having to look at code to work out how good a PR is. Preview environments allow for fast and early feedback as developers can review actual functionality in an automatically provisioned environment. Typically the creation of preview environments is automated inside the Pipelines created by Jenkins X. Read more about &lt;a href=&#34;https://jenkins-x.io/developing/preview/#readout&#34; target=&#34;_blank&#34;&gt;preview environments&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;developer-experience-devex&#34;&gt;Developer Experience (DevEx)&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X can provide preview environments and a complete system for scalable CI/CD because it builds on Kubernetes and the cloud native ecosystem (tools such as Helm). However Kubernetes is complex so Jenkins X abstracts away a lot of this complexity, for example by providing a one line &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_cluster/&#34; target=&#34;_blank&#34;&gt;‘jx create cluster’&lt;/a&gt; command to create a fully formed cluster automatically set up with sensible defaults.&lt;/p&gt;
+
+&lt;h3 id=&#34;multicloud&#34;&gt;Multicloud&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X can create a cluster with a single command on virtually any flavour of Kubernetes, either on prem or using a public cloud provider. Google Cloud, Microsoft Azure, Amazon Web Services, Oracle Cloud, IBM Cloud, RedHat Openshift and more are all supported. Jenkins X does the heavy lifting so developers can get started without needing to know the cloud-specific command line interface (CLI), how to set up role-based access (RBAC) or what ingress controllers are.&lt;/p&gt;
+
+&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
+
+&lt;h3 id=&#34;gitops&#34;&gt;GitOps&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X comes built in with the most modern best practices for CI/CD including GitOps, operation by pull request. Jenkins X uses GitOps for promoting pull requests and to manage the configuration and version of the kubernetes resources which are deployed to each environment. Read &lt;a href=&#34;https://jenkins-x.io/about/features/#environments&#34; target=&#34;_blank&#34;&gt;more about GitOps here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;accelerate-capabilities&#34;&gt;Accelerate Capabilities&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X uses capabilities identified by the Accelerate book such as automating the deployment process, using trunk-based development and using loosely coupled architecture. Read &lt;a href=&#34;https://jenkins-x.io/about/accelerate/&#34; target=&#34;_blank&#34;&gt;more here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;extensibility&#34;&gt;Extensibility&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X works in different environments with any programming language and empowers developers to extend it in so it is optimized for their environments.&lt;/p&gt;
+
+&lt;h3 id=&#34;quickstart-templates&#34;&gt;Quickstart templates&lt;/h3&gt;
+
+&lt;p&gt;This is the most popular way to extend Jenkins X as the community have contributed many quickstart templates for their favourite programming languages and frameworks. Read more about &lt;a href=&#34;https://jenkins-x.io/extending/&#34; target=&#34;_blank&#34;&gt;extending Jenkins X&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;workloads&#34;&gt;Workloads&lt;/h3&gt;
+
+&lt;p&gt;Not everybody has the luxury of starting on cloud native apps from fresh. so recently Jenkins X added buildpacks to bridge the cloud-native divide for typical Jenkins workloads such as Java, Maven, Gradle etc.. Buildpacks themselves are extensible. Read more about &lt;a href=&#34;https://jenkins-x.io/architecture/build-packs/&#34; target=&#34;_blank&#34;&gt;buildpacks here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-do-developer-think-of-jenkins-x&#34;&gt;What do developer think of Jenkins X?&lt;/h2&gt;
+
+&lt;p&gt;From the early adopters trying out Jenkins X we hear ‘Wow’ a lot, for example:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;When Dailymotion wrote about how they went from &lt;a href=&#34;https://medium.com/dailymotion/from-jenkins-to-jenkins-x-604b6cde0ce3&#34; target=&#34;_blank&#34;&gt;Jenkins to Jenkins X&lt;/a&gt; they described the ‘wow effect’ of creating a cluster in one command&lt;/li&gt;
+&lt;li&gt;Joselie Castañeda commented ‘take my wow!’ after watching the &lt;a href=&#34;https://youtu.be/uHe7R_iZSLU&#34; target=&#34;_blank&#34;&gt;Jenkins X talk video from Kubecon&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;community&#34;&gt;Community&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X would not be where it is today without the lovely community who make lots of contributions: code contributions, giving feedback and even being good sports making the Jenkins X signal. Thank you all!&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is transforming the way developers continuously deliver code and we are excited to see how things progress in the next 12 months!&lt;/p&gt;
+
+&lt;p&gt;Happy first birthday Jenkins X!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Serverless Jenkins</title>
+      <link>/blog/2018/10/20/serverless-jenkins/</link>
+      <pubDate>Sat, 20 Oct 2018 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/10/20/serverless-jenkins/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;serverless-jenkins&#34;&gt;Serverless Jenkins&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://medium.com/@jdrawlings/&#34; target=&#34;_blank&#34;&gt;James Rawlings&lt;/a&gt; has just published an excellent article on &lt;a href=&#34;https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870&#34; target=&#34;_blank&#34;&gt;Serverless Jenkins with Jenkins X&lt;/a&gt; that is well worth a read.&lt;/p&gt;
+
+&lt;p&gt;It describes how you can use it via the &lt;code&gt;--prow&lt;/code&gt; feature flag when using either &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --prow 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For more details see the &lt;a href=&#34;https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870&#34; target=&#34;_blank&#34;&gt;blog&lt;/a&gt; or check out the video:&lt;/p&gt;
+
+&lt;iframe width=&#34;800&#34; height=&#34;500&#34; src=&#34;https://www.youtube.com/embed/DmhDvr8fExA&#34; frameborder=&#34;0&#34; allow=&#34;autoplay; encrypted-media&#34; allowfullscreen&gt;&lt;/iframe&gt;    
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Helm 2.x without Tiller</title>
+      <link>/blog/2018/10/03/helm-without-tiller/</link>
+      <pubDate>Wed, 03 Oct 2018 07:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/10/03/helm-without-tiller/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;how-to-avoid-tiller&#34;&gt;How to avoid Tiller&lt;/h2&gt;
+
+&lt;p&gt;Helm 2.x uses a server side component called &lt;em&gt;tiller&lt;/em&gt;. Typically Tiller is installed in a global namespace; or you can install a Tiller in each namespace and configure your &lt;code&gt;helm&lt;/code&gt; CLI to talk to the right tiller in the right namespace.&lt;/p&gt;
+
+&lt;p&gt;However Tiller has a number of issues&amp;hellip;&lt;/p&gt;
+
+&lt;h3 id=&#34;the-problem-with-tiller&#34;&gt;The problem with Tiller&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;complicates RBAC since its not using the RBAC of the user or pod running the helm commands to read/write kubernetes resources - helm is talking to the remote tiller pod to do the work. If you are using a global tiller then thats often got something like the &lt;code&gt;cluster-admin&lt;/code&gt; role which means anyone running helm commands effectively side steps RBAC completely! :).&lt;/li&gt;
+&lt;li&gt;helm forces all releases to have a unique name within a tiller. This means if you have one global tiller then each release name must be globally unique across all namespaces. This leads to very long release names since they must typically append the namespace too. This means often service names are very different between environments as the release name is often included in the service name in many charts which &lt;a href=&#34;https://kubernetes.io/docs/concepts/services-networking/service/#discovering-services&#34; target=&#34;_blank&#34;&gt;breaks lots of the promise of using canonical service discovery in kubernetes&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;We prefer to use same service names in every environment (development, testing, staging, production) - to minimise the amount of per-environment configuration that is required which avoids manual effort and reduces errors. e.g. refer to &lt;a href=&#34;http://my-service/&#34; target=&#34;_blank&#34;&gt;http://my-service/&lt;/a&gt; in your app and it should just work in every namespace/environment your app is deployed in without wiring up special configuration.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;can cause lots of version conflicts between helm clients + tiller versions. We&amp;rsquo;ve seen this a lot in Jenkins X this year. e.g. a user has, say, helm 2.9 installed locally and installs Jenkins X. Then a build pod with helm 2.10 runs and barfs as the tiller and helm versions don&amp;rsquo;t match.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;helm-3-will-be-tiller-less&#34;&gt;Helm 3 will be tiller-less&lt;/h3&gt;
+
+&lt;p&gt;Whenever Helm 3 shows up Tiller will be a thing of the past - which is awesome - all of the above issues will be fixed! The only downside is no-one outside of Microsoft has any clue when Helm 3 will be a thing. Very little is &lt;a href=&#34;https://github.com/helm/helm/tree/dev-v3&#34; target=&#34;_blank&#34;&gt;happening on the public helm 3 branch&lt;/a&gt;, no &lt;a href=&#34;https://github.com/helm/helm/issues/4255&#34; target=&#34;_blank&#34;&gt;issues&lt;/a&gt; or &lt;a href=&#34;https://github.com/helm/helm/pull/4257&#34; target=&#34;_blank&#34;&gt;pull requests&lt;/a&gt; are being accepted yet. I&amp;rsquo;m hoping there&amp;rsquo;s loads of activity on a private branch somewhere - but its probably a while away from being public and GA.&lt;/p&gt;
+
+&lt;h3 id=&#34;going-tiller-less-on-helm-2-x&#34;&gt;Going tiller-less on Helm 2.x&lt;/h3&gt;
+
+&lt;p&gt;Until Helm 3 the Jenkins X community needed a nice workaround for tiller on helm 2.x.&lt;/p&gt;
+
+&lt;p&gt;So now if you want to use Jenkins X without tiller there&amp;rsquo;s a new magic command line argument &lt;code&gt;--no-tiller&lt;/code&gt; you can use when &lt;a href=&#34;/getting-started/create-cluster/&#34;&gt;creating a cluster&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; jx create cluster gke --no-tiller 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or if you are &lt;a href=&#34;/docs/managing/tasks/install-on-cluster/&#34;&gt;installing on an existing kubernetes cluster&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; jx install --no-tiller
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;how-does-it-work&#34;&gt;How does it work?&lt;/h3&gt;
+
+&lt;p&gt;To be able to change the helm behaviour via feature flags we abstracted away the low level calls to the helm CLI behind some &lt;a href=&#34;/commands/jx_step_helm/&#34;&gt;jx step helm&lt;/a&gt; commands. e.g. to apply a helm chart in an environment pipeline we use&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step helm apply
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This lets us use feature flags to use different helm behaviours.&lt;/p&gt;
+
+&lt;p&gt;What &lt;code&gt;--no-tiller&lt;/code&gt;  means is to switch helm to use &lt;code&gt;template mode&lt;/code&gt; which means we no longer internally use &lt;code&gt;helm install mychart&lt;/code&gt; to install a chart, we actually use &lt;code&gt;helm template mychart&lt;/code&gt; instead which generates the YAML using the same helm charts and the standard helm confiugration management via &lt;code&gt;--set&lt;/code&gt; and &lt;code&gt;values.yaml&lt;/code&gt; files.&lt;/p&gt;
+
+&lt;p&gt;Then we use &lt;code&gt;kubectl apply&lt;/code&gt; to apply the YAML.&lt;/p&gt;
+
+&lt;p&gt;Since we are using &lt;a href=&#34;/about/features/#promotion&#34;&gt;GitOps&lt;/a&gt; in Jenkins X it turns out we don&amp;rsquo;t really need to rely on Helm&amp;rsquo;s use of kubernetes resources to store environment specific configuration values; since everything is already in git!&lt;/p&gt;
+
+&lt;p&gt;One added complication though is, with Helm you can add and remove resources inside a chart and as you upgrade to newer versions of the chart the old resources get automatically removed. Also with helm there&amp;rsquo;s a way to remove a release by name and all the resources are removed.&lt;/p&gt;
+
+&lt;p&gt;So to preserve the helm semantics of removing old resources from a chart in newer versions (e.g. removing a microservice from the Staging environment) or removing an entire release we do the following:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;the YAML generated by&lt;code&gt;helm template&lt;/code&gt; is post processed to add 2 labels:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;metadata:
+name: mything
+labels:
+jenkins.io/chart-release: my-release
+jenkins.io/version: 1.2.3
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;after an upgrade we remove any resources for the same helm release name but different version (to remove any old resources) via the selector &lt;code&gt;jenkins.io/chart-release=my-release,jenkins.io/version!=1.2.3&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;to remove a release completely we just delete all resources with the label selector: &lt;code&gt;jenkins.io/chart-release=my-release&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;kustomize&#34;&gt;Kustomize?&lt;/h3&gt;
+
+&lt;p&gt;One nice benefit of using &lt;code&gt;helm template&lt;/code&gt; to generate the YAML then using &lt;code&gt;kubectl apply&lt;/code&gt; means that we can look at optionally using tools like &lt;a href=&#34;https://github.com/kubernetes-sigs/kustomize&#34; target=&#34;_blank&#34;&gt;kustomize&lt;/a&gt; post process the output of &lt;code&gt;helm template&lt;/code&gt; to allow resources to be overridden or enriched in ways that the chart author did not think of.&lt;/p&gt;
+
+&lt;h3 id=&#34;other-helm-feature-flags&#34;&gt;Other helm feature flags&lt;/h3&gt;
+
+&lt;p&gt;Our first experiment to remove tiller involved running the tiller process locally. We still have the feature flag &lt;code&gt;--remote-tiller=false&lt;/code&gt; which means that Jenkins X will ensure there&amp;rsquo;s a local &lt;code&gt;tiller&lt;/code&gt; process running and that the &lt;code&gt;helm&lt;/code&gt; CLI is pointed to the localhost port. This at least helps avoid the RBAC issues with tiller since the &lt;code&gt;tiller&lt;/code&gt; will be reusing the same RBAC rules as the caller of &lt;code&gt;helm&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;It turns out this kinda works; though we found some issues around multi-team support so we ended up moving to the template mode described above which works much more reliably.&lt;/p&gt;
+
+&lt;p&gt;Another feature flag we added was allowing different helm binaries to be used; so that we could switch between, say, &lt;code&gt;helm&lt;/code&gt; for helm 2.x and &lt;code&gt;helm3&lt;/code&gt; for the 3.x version so that folks could experiment with alphas of helm 3.&lt;/p&gt;
+
+&lt;p&gt;Though its looking like helm 3 is still some way off so its not recommended any time soon but as helm 3 gets near to RC stage we&amp;rsquo;ll be able to reuse the helm 3 feature flag again to let folks experiment with helm 3 until its GA and we make it the default in Jenkins X.&lt;/p&gt;
+
+&lt;h3 id=&#34;summary&#34;&gt;Summary&lt;/h3&gt;
+
+&lt;p&gt;If you use helm then we highly recommend you avoid tiller!&lt;/p&gt;
+
+&lt;p&gt;If you are using Jenkins X then please consider using the &lt;code&gt;--no-tiller&lt;/code&gt;  option when you&amp;rsquo;re &lt;a href=&#34;/getting-started/create-cluster/&#34;&gt;creating a cluster&lt;/a&gt; or &lt;a href=&#34;/docs/managing/tasks/install-on-cluster/&#34;&gt;install Jenkins X on an existing cluster&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;re working  on Jenkins X 2.0 - most of its features are already available hidden behind feature flags. So in Jenkins X 2.0 we will default disable tiller by default along with enabling other things like Prow integration and using &lt;em&gt;serverless&lt;/em&gt; Jenkins by default (more on those in a separate blog!).&lt;/p&gt;
+
+&lt;p&gt;We are also really looking forward to helm 3! :). Helm rocks, but tiller does not!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Jenkins X at Jenkins World</title>
+      <link>/blog/2018/09/06/jenkins-x-at-jenkinsworld/</link>
+      <pubDate>Thu, 06 Sep 2018 08:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/09/06/jenkins-x-at-jenkinsworld/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;jenkins-x-at-jenkinsworld&#34;&gt;Jenkins X at JenkinsWorld&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://www.cloudbees.com/devops-world/&#34; target=&#34;_blank&#34;&gt;Jenkins World&lt;/a&gt; has combined with DevOps world to become the premier DevOps event in your calendar this year - and there really isn&amp;rsquo;t much time left if you still have to register. The event is happening at San Francisco 16-19 September, and Nice,France  22-25 October.  To get a discount on entry - you are invited to use the dscount code: JWRDAVIES&lt;/p&gt;
+
+&lt;p&gt;Some of the Jenkins X team, including James Strachan, James Rawlings, Rob Davies and Pete Muir will be available if you want some extra help with the Jenkins X project - we are cheap too - beer tokens gratefully received.&lt;/p&gt;
+
+&lt;p&gt;There will be interactive Jenkins X demonstrations at the Jenkins X community booth and the exhibition theatre. There will be Jenkins X book signings and much more.&lt;/p&gt;
+
+&lt;p&gt;There is a &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/FYjb/building-continuous-delivery-for-microservices-with-jenkins-x-25?iframe=no&amp;amp;w=100%&amp;amp;sidebar=yes&amp;amp;bg=no&#34; target=&#34;_blank&#34;&gt;Jenkins X workshop&lt;/a&gt;, which is unfortunately already sold out!&lt;/p&gt;
+
+&lt;p&gt;James Strachan will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/FlPE/jenkins-x-continuous-delivery-for-kubernetes?iframe=no&amp;amp;w=100%&amp;amp;sidebar=yes&amp;amp;bg=no&#34; target=&#34;_blank&#34;&gt;Jenkins X: Continuous Delivery for Kubernetes&lt;/a&gt; on Tuesday 18 Sep&lt;/p&gt;
+
+&lt;p&gt;and James Rawlings and Rob Davies will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/GFmE/extending-jenkins-x-for-fun-and-profit?iframe=no&amp;amp;w=100%&amp;amp;sidebar=yes&amp;amp;bg=no&#34; target=&#34;_blank&#34;&gt;Extending Jenkins X for fun&lt;/a&gt; on Tuesday 18 Sep too&lt;/p&gt;
+
+&lt;p&gt;The Jenkins X team is looking forward to seeing you at Jenkins World this year!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Jenkins X does KubeCon</title>
+      <link>/blog/2018/05/05/jenkins-x-does-kubecon/</link>
+      <pubDate>Sat, 05 May 2018 10:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/05/05/jenkins-x-does-kubecon/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;jenkins-x-at-kubecon&#34;&gt;Jenkins X at KubeCon&lt;/h2&gt;
+
+&lt;p&gt;Here is the &lt;a href=&#34;https://youtu.be/uHe7R_iZSLU?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34; target=&#34;_blank&#34;&gt;video of my talk: Jenkins X: Easy CI/CD for Kubernetes&lt;/a&gt; at &lt;a href=&#34;https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/&#34; target=&#34;_blank&#34;&gt;KubeCon Europe 2018&lt;/a&gt;.&lt;/p&gt;
+
+&lt;iframe width=&#34;640&#34; height=&#34;360&#34; src=&#34;https://www.youtube.com/embed/uHe7R_iZSLU?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34; frameborder=&#34;0&#34; allow=&#34;autoplay; encrypted-media&#34; allowfullscreen&gt;&lt;/iframe&gt;
+
+&lt;p&gt;You can also &lt;a href=&#34;https://docs.google.com/presentation/d/19DAFONpT3L4t6sisyTuK2_chHrVorQO_1ijWEo8Euas/edit?usp=sharing&#34; target=&#34;_blank&#34;&gt;get the slides from this talk here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/news/jenkins-x-does-kubecon/kubecon-talk.jpg&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;You can also watch all the other &lt;a href=&#34;https://www.youtube.com/playlist?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34; target=&#34;_blank&#34;&gt;KubeCon videos here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;You can also register your interest in the &lt;a href=&#34;https://pages.cloudbees.com/K8s&#34; target=&#34;_blank&#34;&gt;CloudBees Kubernetes product&lt;/a&gt; that I gave a quick sneak peek at towards the end of the talk.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://www.cloudbees.com/sites/default/files/cloudbees-kubernetes.png&#34;&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Introducing Jenkins X</title>
+      <link>/blog/2018/03/19/introducing-jenkins-x/</link>
+      <pubDate>Mon, 19 Mar 2018 18:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/03/19/introducing-jenkins-x/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;introducing-jenkins-x&#34;&gt;Introducing Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;There&amp;rsquo;s a new blog post on &lt;a href=&#34;https://jenkins.io/node/&#34; target=&#34;_blank&#34;&gt;jenkins.io&lt;/a&gt; which introduces Jenkins X and gives an overview of what it, what we&amp;rsquo;re doing and why:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins.io/blog/2018/03/19/introducing-jenkins-x/&#34; target=&#34;_blank&#34;&gt;Introducing Jenkins X: a CI/CD solution for modern cloud applications on Kubernetes&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Please check it out and &lt;a href=&#34;/community/&#34;&gt;let us know what you think&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: JEP 400 submitted</title>
+      <link>/blog/2018/03/09/jep-400-submitted/</link>
+      <pubDate>Fri, 09 Mar 2018 18:36:00 +0200</pubDate>
+      
+      <guid>/blog/2018/03/09/jep-400-submitted/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;jep-400-submitted-for-jenkins-x&#34;&gt;JEP 400 Submitted for Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;We have submitted &lt;a href=&#34;https://github.com/jenkinsci/jep/tree/master/jep/400&#34; target=&#34;_blank&#34;&gt;JEP 400&lt;/a&gt; to propose Jenkins X as a sub project in the Jenkins Foundation.&lt;/p&gt;
+
+&lt;p&gt;Please &lt;a href=&#34;https://github.com/jenkinsci/jep/tree/master/jep/400&#34; target=&#34;_blank&#34;&gt;check out JEP 400&lt;/a&gt; and &lt;a href=&#34;https://groups.google.com/d/msg/jenkinsci-dev/O8F8s1Iyq5I/H_2GHzUlAgAJ&#34; target=&#34;_blank&#34;&gt;let us know what you think on the Jenkins dev list&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

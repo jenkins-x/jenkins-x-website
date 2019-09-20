@@ -1,0 +1,2156 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Core Tasks</title>
+    <link>/docs/managing-jx/common-tasks/</link>
+    <description>Recent content in Core Tasks on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/managing-jx/common-tasks/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Access Control</title>
+      <link>/docs/managing-jx/common-tasks/access-control/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/access-control/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X uses Role-Based Access Control (RBAC) policies to control access to its various resources.  The enforcement of the policies is provided by &lt;a href=&#34;https://kubernetes.io/docs/reference/access-authn-authz/rbac/&#34; target=&#34;_blank&#34;&gt;Kubernetes&amp;rsquo; RBAC support&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/concepts/features/#teams&#34;&gt;Teams&lt;/a&gt; can have a number of &lt;a href=&#34;/docs/concepts/features/#environments&#34;&gt;Environments&lt;/a&gt; (e.g., Dev, Staging, Production) along with dynamic &lt;a href=&#34;/docs/reference/preview/&#34;&gt;Preview Environments&lt;/a&gt;; keeping  the &lt;a href=&#34;https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/a&gt; and &lt;a href=&#34;https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;RoleBinding&lt;/code&gt;&lt;/a&gt; resources from &lt;a href=&#34;https://kubernetes.io/docs/reference/access-authn-authz/rbac/&#34; target=&#34;_blank&#34;&gt;Kubernetes RBAC&lt;/a&gt; in sync with all the various namespaces and members of your team can be challenging.&lt;/p&gt;
+
+&lt;p&gt;To make this management easier, Jenkins X creates a new &lt;a href=&#34;https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/&#34; target=&#34;_blank&#34;&gt;Custom Resource&lt;/a&gt; called &lt;a href=&#34;/docs/reference/components/custom-resources/#environmentrolebinding&#34;&gt;&lt;code&gt;EnvironmentRoleBinding&lt;/code&gt;&lt;/a&gt; which allows you to associate a &lt;code&gt;Role&lt;/code&gt; labeled with &lt;code&gt;jenkins.io/kind=EnvironmentRole&lt;/code&gt; with as many &lt;code&gt;Users&lt;/code&gt; or &lt;code&gt;ServiceAccounts&lt;/code&gt; as you like. As Environments are created or the &lt;code&gt;Role&lt;/code&gt; or &lt;code&gt;EnvironmentRoleBinding&lt;/code&gt; in the Dev environment is modified, the &lt;a href=&#34;/commands/jx_controller_role/#jx-controller-role&#34;&gt;&lt;code&gt;role controller&lt;/code&gt;&lt;/a&gt; ensures that the configuration is replicated to all the environment namespaces by creating or updating all of the &lt;code&gt;Role&lt;/code&gt; and &lt;code&gt;RoleBinding&lt;/code&gt;s per namespace.&lt;/p&gt;
+
+&lt;p&gt;Roles are per Team so it is possible to have special roles per team, or to use common names for roles but have them customized for each team.&lt;/p&gt;
+
+&lt;h2 id=&#34;security-implications-for-the-admin-namespace&#34;&gt;Security Implications for the admin namespace&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X stores various configuration and settings (e.g., &lt;code&gt;Users&lt;/code&gt;, &lt;code&gt;Teams&lt;/code&gt;) in the main admin namespace (&lt;code&gt;jx&lt;/code&gt;). Be careful when granting roles in the default &lt;code&gt;jx&lt;/code&gt; team as allowing users to edit some of these files may allow them to escalate their permissions.
+Instead of granting non-admin users access to the &lt;code&gt;jx&lt;/code&gt; namespace, create teams and grant users access to those when using a shared cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;default-roles&#34;&gt;Default Roles&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X ships with a collection of default &lt;code&gt;Role&lt;/code&gt; objects you can use in the &lt;code&gt;jenkins-x-platform&lt;/code&gt; template.  You can create your own if you wish, but any edits may be lost when Jenkins X is upgraded.&lt;/p&gt;
+
+&lt;dl&gt;
+&lt;dt&gt;&lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/templates/viewer-role.yaml&#34; target=&#34;_blank&#34;&gt;viewer&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;The &lt;code&gt;viewer&lt;/code&gt; role allows access to read projects, builds, and logs. It does not allow access to sensitive information&lt;/dd&gt;
+&lt;dt&gt;&lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/templates/committer-role.yaml&#34; target=&#34;_blank&#34;&gt;committer&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;The &lt;code&gt;committer&lt;/code&gt; role provides the same permissions as &lt;code&gt;viewer&lt;/code&gt; and allows the user to trigger builds and import new projects.&lt;/dd&gt;
+&lt;dt&gt;&lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/templates/owner-role.yaml&#34; target=&#34;_blank&#34;&gt;owner&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;The owner role allows users to modify all team resources.&lt;/dd&gt;
+&lt;/dl&gt;
+
+&lt;h2 id=&#34;adding-users&#34;&gt;Adding Users&lt;/h2&gt;
+
+&lt;p&gt;To add users use the &lt;a href=&#34;/commands/jx_create_user/&#34;&gt;jx create user&lt;/a&gt; command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create user --email &amp;quot;joe@example.com&amp;quot; --login joe --name &amp;quot;Joe Bloggs&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;changing-user-roles&#34;&gt;Changing User Roles&lt;/h2&gt;
+
+&lt;p&gt;To modify the roles for a user, use &lt;a href=&#34;/commands/jx_edit_userroles/&#34;&gt;jx edit userroles&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you omit the &lt;code&gt;--login&lt;/code&gt; (&lt;code&gt;-l&lt;/code&gt;) flag, you will be prompted to pick the user to edit.&lt;/p&gt;
+
+&lt;p&gt;For example, to make a user &lt;code&gt;joe&lt;/code&gt; have the &lt;code&gt;committer&lt;/code&gt; Role (and remove any existing roles):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe --role committer
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you have fine-grained roles and want to grant multiple roles to a user, you can specify the roles as a comma-separated list:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe --role committer,viewer
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Modifying a user&amp;rsquo;s roles changes the &lt;code&gt;EnvironmentRoleBinding&lt;/code&gt;. The &lt;a href=&#34;/commands/jx_controller_role/#jx-controller-role&#34;&gt;role controller&lt;/a&gt; will replicate these changes to all the underlying Environment namespaces.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Build Packs</title>
+      <link>/docs/managing-jx/common-tasks/build-packs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/build-packs/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We use &lt;a href=&#34;https://draft.sh/&#34; target=&#34;_blank&#34;&gt;draft&lt;/a&gt; style &lt;em&gt;build packs&lt;/em&gt; for different languages, runtimes and build tools to add the necessary configuration files to projects as we &lt;a href=&#34;/docs/using-jx/common-tasks/import/&#34;&gt;import them&lt;/a&gt; or &lt;a href=&#34;/docs/using-jx/common-tasks/create-spring/&#34;&gt;create&lt;/a&gt; &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;them&lt;/a&gt; so that we can build and deploy them in kubernetes.&lt;/p&gt;
+
+&lt;p&gt;The build packs are used to default the following files if they do not already exist in the project being created/imported:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to turn the code into an immutable docker image for running on kubernetes&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to define the declarative Jenkins pipeline to define the CI/CD steps for the application&lt;/li&gt;
+&lt;li&gt;helm chart in the &lt;code&gt;charts&lt;/code&gt; folder to generate the kubernetes resources to run the application on kubernetes&lt;/li&gt;
+&lt;li&gt;a &lt;em&gt;preview chart&lt;/em&gt; in the &lt;code&gt;charts/preview&lt;/code&gt; folder to define any dependencies for deploying a &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;preview environment&lt;/a&gt; on a Pull Request&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The default build packs are at &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&lt;/a&gt; with a folder for each language or build tool.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; command line clones the build packs to your &lt;code&gt;.~/.jx/draft/packs/&lt;/code&gt; folder and updates them via a &lt;code&gt;git pull&lt;/code&gt; each time you try create or import a project.&lt;/p&gt;
+
+&lt;h2 id=&#34;pipeline-extension-model&#34;&gt;Pipeline extension model&lt;/h2&gt;
+
+&lt;p&gt;As part of the move to &lt;a href=&#34;/docs/managing-jx/common-tasks/cloud-native-jenkins/&#34;&gt;cloud native Jenkins&lt;/a&gt; we&amp;rsquo;ve refactored our &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/&#34; target=&#34;_blank&#34;&gt;build packs&lt;/a&gt; so that they are more modular and easier to compose and reuse across workloads.&lt;/p&gt;
+
+&lt;p&gt;For example the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;jenkins-x-kubernetes&lt;/a&gt; build pack inherits from the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic&#34; target=&#34;_blank&#34;&gt;jenkins-x-classic&lt;/a&gt; build pack, reusing the CI and release pipelines but then adding the kubernetes specific workloads (e.g. building docker images, creating helm charts, &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt; and &lt;a href=&#34;/docs/concepts/features/#promotion&#34;&gt;Promotion via GitOps&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;To do this we&amp;rsquo;ve introduced a simple new YAML file format for defining pipelines.&lt;/p&gt;
+
+&lt;h2 id=&#34;pipelines&#34;&gt;Pipelines&lt;/h2&gt;
+
+&lt;p&gt;Each Pipeline YAML file has a number of separate logical pipelines:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;release&lt;/code&gt; for processing merges to the &lt;code&gt;master&lt;/code&gt; branch which typically creates a new version and release then triggers promotion&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pullRequest&lt;/code&gt; for processing Pull Requests&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;feature&lt;/code&gt; for processing merges to a feature branch. Though note that the &lt;a href=&#34;/about/accelerate/&#34;&gt;accelerate book&lt;/a&gt; recommends against long term feature branches. Instead consider using trunk based development which is a practice of high performing teams.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;life-cycles&#34;&gt;Life Cycles&lt;/h2&gt;
+
+&lt;p&gt;Then each pipeline has a number of distinct life cycle phases - rather like maven has &lt;code&gt;clean&lt;/code&gt;, &lt;code&gt;compile&lt;/code&gt;, &lt;code&gt;compile-test&lt;/code&gt;, &lt;code&gt;package&lt;/code&gt; etc.&lt;/p&gt;
+
+&lt;p&gt;The life cycle phases in Jenkins X Pipeline YAML are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;setup&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;preBuild&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;build&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postBuild&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;promote&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;extending&#34;&gt;Extending&lt;/h2&gt;
+
+&lt;p&gt;A Pipeline YAML can extend another YAML file. You can reference a base pipeline YAML via:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;using &lt;code&gt;file&lt;/code&gt; to reference a relative file path in the same build pack &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L1-L2&#34; target=&#34;_blank&#34;&gt;like this example using file&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;using &lt;code&gt;import&lt;/code&gt; to reference a YAML file which is imported like &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml#L2-L3&#34; target=&#34;_blank&#34;&gt;this example using import&lt;/a&gt; which then refers to a &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/imports.yaml#L2-L4&#34; target=&#34;_blank&#34;&gt;named imported module via git&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;overriding-steps&#34;&gt;Overriding steps&lt;/h2&gt;
+
+&lt;p&gt;Rather like classes in languages like Java you can override steps in a Pipeline YAML from a base Pipeline YAML. This lets you reuse the steps in a base pipeline&amp;rsquo;s life cycle then add your own additional steps.&lt;/p&gt;
+
+&lt;p&gt;By default any steps you define are added after the base pipeline YAML steps like in &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence/pipeline.yaml#L7&#34; target=&#34;_blank&#34;&gt;this example&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can add steps before the base pipeline steps using the &lt;code&gt;preSteps:&lt;/code&gt; property like &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L6&#34; target=&#34;_blank&#34;&gt;this example&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you want to completely replace all the steps from a base pipeline for a particular life cycle you can use &lt;code&gt;replace: true&lt;/code&gt; like in &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L11-L14&#34; target=&#34;_blank&#34;&gt;this example&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;example-pipeline&#34;&gt;Example Pipeline&lt;/h2&gt;
+
+&lt;p&gt;For example for &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml&#34; target=&#34;_blank&#34;&gt;maven libraries we use this pipeline.yaml file&lt;/a&gt; which:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L1-L2&#34; target=&#34;_blank&#34;&gt;extends&lt;/a&gt; the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/pipeline.yaml&#34; target=&#34;_blank&#34;&gt;common pipeline&lt;/a&gt; that sets up git and defines common post build steps&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L3-L5&#34; target=&#34;_blank&#34;&gt;configures the agent&lt;/a&gt; in terms of &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and container name&lt;/li&gt;
+&lt;li&gt;defines the steps for the &lt;code&gt;pull request&lt;/code&gt; pipeline &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L7-L11&#34; target=&#34;_blank&#34;&gt;build steps&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;defines the &lt;code&gt;release&lt;/code&gt; pipeline &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L13-L18&#34; target=&#34;_blank&#34;&gt;set version steps&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L19-L21&#34; target=&#34;_blank&#34;&gt;build steps&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Then the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml&#34; target=&#34;_blank&#34;&gt;maven kubernetes pipeline.yaml&lt;/a&gt; then &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml#L2-L3&#34; target=&#34;_blank&#34;&gt;extends&lt;/a&gt; from the classic pipeline to add the kubernetes steps&lt;/p&gt;
+
+&lt;h1 id=&#34;creating-new-build-packs&#34;&gt;Creating new build packs&lt;/h1&gt;
+
+&lt;p&gt;We love &lt;a href=&#34;/community/&#34;&gt;contributions&lt;/a&gt; so please consider adding new build packs and &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod templates&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here are instructions on how to create a new build pack - please if anything is not clear come &lt;a href=&#34;/community/&#34;&gt;join the community and just ask&lt;/a&gt; we are happy to help!&lt;/p&gt;
+
+&lt;p&gt;The best place to start with is a &lt;em&gt;quickstart&lt;/em&gt; application. A sample project that you can use as a test. So create/find a suitable example project and then &lt;a href=&#34;/developing/import&#34;&gt;import it&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then manually add a &lt;code&gt;Dockerfile&lt;/code&gt; and &lt;code&gt;Jenkinsfile&lt;/code&gt; if one is not already added for you. You could start with files from the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs&#34; target=&#34;_blank&#34;&gt;current build pack folders&lt;/a&gt; - using the most similar language/framework to yours.&lt;/p&gt;
+
+&lt;p&gt;If your build pack is using build tools which are not yet available in one of the existing &lt;a href=&#34;/architecture/pod-templates&#34;&gt;pod templates&lt;/a&gt; then you will need to &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/#submitting-new-pod-templates&#34;&gt;submit a new pod template&lt;/a&gt; probably using a new build container image too.&lt;/p&gt;
+
+&lt;p&gt;Once you have a pod template to use, say, &lt;code&gt;jenkins-foo&lt;/code&gt; then refer to it in your &lt;code&gt;Jenkinsfile&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;// my declarative Jenkinsfile
+
+pipeline {
+    agent {
+      label &amp;quot;jenkins-foo&amp;quot;
+    }
+    environment {
+      ...
+    }
+    stages {
+      stage(&#39;CI Build and push snapshot&#39;) {
+        steps {
+          container(&#39;foo&#39;) {
+            sh &amp;quot;foo deploy&amp;quot;
+          }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once your &lt;code&gt;Jenkinsfile&lt;/code&gt; is capable of doing CI/CD for your language/runtime on your sample project then we should be able to take the &lt;code&gt;Dockerfile&lt;/code&gt;, &lt;code&gt;Jenkinsfile&lt;/code&gt; and charts folder and copy them into a folder in your fork of the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;jenkins-x/draft-packs repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can try that out locally by adding these files to your local clone of the build packs repository at &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;export PACK=&amp;quot;foo&amp;quot;
+mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+
+# the charts will be in some folder charts/somefoo
+cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK/charts
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once your build pack is in a folder at &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;/code&gt;
+then it should be usable by the &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; code
+which uses programming language detection to find the most suitable build pack to use when importing a project.
+If your build pack requires custom logic to detect it then let us know
+and we can help patch &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; to work better for your build pack.
+For example, we have some custom logic for handling &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/712d9edf5e55aafaadfb3e0ac57692bb44634b1c/pkg/jx/cmd/common_buildpacks.go#L82:L108&#34; target=&#34;_blank&#34;&gt;Maven and Gradle better&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you need any more help &lt;a href=&#34;/community/&#34;&gt;join the community&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Cloud Native Jenkins</title>
+      <link>/docs/managing-jx/common-tasks/cloud-native-jenkins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/cloud-native-jenkins/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X helps to support &lt;em&gt;cloud native Jenkins&lt;/em&gt; via:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;orchestrating either &lt;a href=&#34;/news/serverless-jenkins/&#34;&gt;serverless Jenkins&lt;/a&gt; using &lt;a href=&#34;/architecture/prow&#34;&gt;prow&lt;/a&gt; or a Static Jenkins masters per team. This lets teams move towards serverless while bring along static masters too.&lt;/li&gt;
+&lt;li&gt;each team can install its own Jenkins X in its own namespace (via &lt;code&gt;jx install --namespace myteam&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;support for different workloads per team (see &lt;a href=&#34;/commands/jx_edit_buildpack/&#34;&gt;jx edit buildpack&lt;/a&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;different-workloads&#34;&gt;Different workloads&lt;/h2&gt;
+
+&lt;p&gt;Some teams develop cloud native applications on kubernetes and so should use the &lt;code&gt;kubernetes workloads&lt;/code&gt; option.&lt;/p&gt;
+
+&lt;p&gt;For teams that do not deploy applications to kubernetes - such as delivering libraries or binaries - there&amp;rsquo;s a new &lt;code&gt;library workloads&lt;/code&gt; option which has CI and automated releases but no CD.&lt;/p&gt;
+
+&lt;p&gt;When you &lt;a href=&#34;getting-started/create-cluster/&#34; target=&#34;_blank&#34;&gt;create a cluster&lt;/a&gt; or &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install Jenkins X&lt;/a&gt; you are prompted to pick between the available build packs.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;? Pick workload build pack:   [Use arrows to move, type to filter]
+&amp;gt; Kubernetes Workloads: Automated CI+CD with GitOps Promotion
+  Library Workloads: CI+Release but no CD
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can change this configuration at any time via &lt;a href=&#34;/commands/jx_edit_buildpack/&#34;&gt;jx edit buildpack&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;By default just hit enter to stick to the &lt;code&gt;kubernetes workloads&lt;/code&gt; option. Though if you have a significant number of libraries you wish to manage you could setup a separate team for this and import your various library projects there.&lt;/p&gt;
+
+&lt;h2 id=&#34;current-workloads&#34;&gt;Current workloads&lt;/h2&gt;
+
+&lt;p&gt;We store our build packs in &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/&#34; target=&#34;_blank&#34;&gt;jenkins-x-buildpacks&lt;/a&gt; organization at GitHub. Currently we support:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic&#34; target=&#34;_blank&#34;&gt;jenkins-x-classic&lt;/a&gt; build pack supports CI+Releases but does not include CD. e.g. do CI and release of your Java libraries or Node modules but don&amp;rsquo;t deploy to Kubernetes&lt;/li&gt;
+&lt;li&gt;the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;jenkins-x-kubernetes&lt;/a&gt; build pack supports automated CI+CD with GitOps promotion and Preview Environments for &lt;code&gt;kubernetes workloads&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;However you should be able to extend either of these build packs to add alternative platforms and capabilities.&lt;/p&gt;
+
+&lt;h2 id=&#34;writing-your-own-build-pack&#34;&gt;Writing your own build pack&lt;/h2&gt;
+
+&lt;p&gt;We want you to &lt;a href=&#34;/extending/&#34;&gt;extend Jenkins X&lt;/a&gt; so please check out the &lt;a href=&#34;/docs/managing-jx/common-tasks/build-packs/#creating-new-build-packs&#34;&gt;documentation on creating your own build packs&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Configuration</title>
+      <link>/docs/managing-jx/common-tasks/config/</link>
+      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/config/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X should work out of the box with smart defaults for your cloud provider. e.g. Jenkins X automatically uses ECR if you are using AWS or EKS.&lt;/p&gt;
+
+&lt;p&gt;However you can configure values in the underlying helm charts used by Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;To do this you need to create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in the current directory you are in when you run either &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Then this YAML file can be used to override any of the underlying &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/values.yaml&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;values.yaml&lt;/code&gt;&lt;/a&gt; in any of the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/requirements.yaml&#34; target=&#34;_blank&#34;&gt;charts&lt;/a&gt; in Jenkins X.&lt;/p&gt;
+
+&lt;h2 id=&#34;making-changes-after-the-install&#34;&gt;Making changes after the install&lt;/h2&gt;
+
+&lt;p&gt;Once you have installed you can make more changes via &lt;a href=&#34;/commands/jx_upgrade_platform/&#34;&gt;jx upgrade platform&lt;/a&gt; which will reuse your &lt;code&gt;myvalues.yaml&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Or if you use &lt;a href=&#34;/docs/managing-jx/common-tasks/manage-via-gitops/&#34;&gt;GitOps management&lt;/a&gt; you can just create a Pull Request on your Development environment git repository.&lt;/p&gt;
+
+&lt;h2 id=&#34;nexus&#34;&gt;Nexus&lt;/h2&gt;
+
+&lt;p&gt;e.g. if you wish to disable Nexus being installed and instead service link to a separate nexus at a different host name you can use this &lt;code&gt;myvalues.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;nexus:
+  enabled: false
+nexusServiceLink:
+  enabled: true
+  externalName: &amp;quot;nexus.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;chartmuseum&#34;&gt;ChartMuseum&lt;/h2&gt;
+
+&lt;p&gt;To disable and service link chart museum add:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;chartmuseum:
+  enabled: false
+chartmuseumServiceLink:
+  enabled: true
+  externalName: &amp;quot;jenkins-x-chartmuseum.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;jenkins-image&#34;&gt;Jenkins Image&lt;/h2&gt;
+
+&lt;p&gt;We ship with a default Jenkins docker image &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/jenkinsx/&#34; target=&#34;_blank&#34;&gt;jenkinsxio/jenkinsx&lt;/a&gt; with Jenkins X which has all of our required plugins inside.&lt;/p&gt;
+
+&lt;p&gt;If you wish to add your own plugins you can create your own &lt;code&gt;Dockerfile&lt;/code&gt; and image using our base image like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Dockerfile for adding plugins to Jenkins X 
+FROM jenkinsxio/jenkinsx:latest
+
+COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
+RUN /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then add your custom plugins to &lt;code&gt;plugins.txt&lt;/code&gt; locally of the form:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;myplugin:1.2.3
+anotherplugin:4.5.6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once you have built and released your image via CI/CD you can then use it in your Jenkins X installation.&lt;/p&gt;
+
+&lt;p&gt;To configure Jenkins X to use your custom image you can specify your own Jenkins image via a &lt;code&gt;myvalues.yaml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Master:
+    Image: &amp;quot;acme/my-jenkinsx&amp;quot;
+    ImageTag: &amp;quot;1.2.3&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There is an example OSS project &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-openshift-image&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-openshift-image&lt;/a&gt; you could use as a template which creates a new Jenkins image to add OpenShift specific plugins and configuration for using Jenkins X on OpenShift.&lt;/p&gt;
+
+&lt;h2 id=&#34;docker-registry&#34;&gt;Docker Registry&lt;/h2&gt;
+
+&lt;p&gt;We try and use the best defaults for each platform for the Docker Registry; e.g. using ECR on AWS.&lt;/p&gt;
+
+&lt;p&gt;However you can also specify this via the &lt;code&gt;--docker-registry&lt;/code&gt; option when running  &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --docker-registry eu.gcr.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Though if you use a different Docker Registry you will probably need to &lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/#update-the-config-json-secret&#34;&gt;also modify the secret for connecting to docker&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Create custom Builder</title>
+      <link>/docs/managing-jx/common-tasks/create-custom-builder/</link>
+      <pubDate>Mon, 01 Jul 2013 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/create-custom-builder/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;In Jenkins X, it is possible to create your custom Builders (aka &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34; target=&#34;_blank&#34;&gt;POD templates&lt;/a&gt;) or overwrite existing onces. You just need to base your Docker
+image on this &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt; image or on its &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.slim&#34; target=&#34;_blank&#34;&gt;slim&lt;/a&gt; version.
+These images contain a number of pre-installed tools which get constantly updated and published to &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/builder-base/&#34; target=&#34;_blank&#34;&gt;Docker Hub&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;create-a-custom-builder-from-scratch&#34;&gt;Create a custom Builder from scratch&lt;/h2&gt;
+
+&lt;h3 id=&#34;builder-image&#34;&gt;Builder image&lt;/h3&gt;
+
+&lt;p&gt;First you need to create a docker image for your builder. For instance a starting &lt;code&gt;Dockerfile&lt;/code&gt; can look like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM jenkinsxio/builder-base:latest
+
+# Install your tools and libraries
+RUN yum install -y gcc openssl-devel
+
+CMD [&amp;quot;gcc&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now you can build the image and publish it to your registry:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;export BUILDER_IMAGE=&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt; 
+docker build -t ${BUILDER_IMAGE} .
+docker push ${BUILDER_IMAGE} 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Do not worry, you do not have to run manually these steps every time when a new image needs to be built.
+Jenkins X can manage this for you. You just need to push your &lt;code&gt;Dockerfile&lt;/code&gt; in a repository similar with &lt;a href=&#34;https://github.com/jenkins-x/builder-go&#34; target=&#34;_blank&#34;&gt;this
+&lt;/a&gt; one. Adjust the &lt;code&gt;Jenkinsfile&lt;/code&gt; according with your organization and
+application name, and then import the repository into your Jenkins X platform with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From now on, every time you push a change, Jenkins X will build and publish automatically the image.&lt;/p&gt;
+
+&lt;h3 id=&#34;install-the-builder&#34;&gt;Install the Builder&lt;/h3&gt;
+
+&lt;p&gt;You can now install your builder either when you install Jenkins X or upgrade it.&lt;/p&gt;
+
+&lt;p&gt;Create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Agent:
+    PodTemplates:
+      MyBuilder:
+        Name: mybuilder
+        Label: jenkins-mybuilder
+        volumes:
+        - type: Secret
+          secretName: jenkins-docker-cfg
+          mountPath: /home/jenkins/.docker
+        EnvVars:
+          JENKINS_URL: http://jenkins:8080
+          GIT_COMMITTER_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_NAME: jenkins-x-bot
+          GIT_COMMITTER_NAME: jenkins-x-bot
+          XDG_CONFIG_HOME: /home/jenkins
+          DOCKER_CONFIG: /home/jenkins/.docker/
+        ServiceAccount: jenkins
+        Containers:
+          Jnlp:
+            Image: jenkinsci/jnlp-slave:3.14-1
+            RequestCpu: &amp;quot;100m&amp;quot;
+            RequestMemory: &amp;quot;128Mi&amp;quot;
+            Args: &#39;${computer.jnlpmac} ${computer.name}&#39;
+          Dlang:
+            Image: &amp;lt;YOUR_BUILDER_IMAGE&amp;gt; 
+            Privileged: true
+            RequestCpu: &amp;quot;400m&amp;quot;
+            RequestMemory: &amp;quot;512Mi&amp;quot;
+            LimitCpu: &amp;quot;1&amp;quot;
+            LimitMemory: &amp;quot;1024Mi&amp;quot;
+            Command: &amp;quot;/bin/sh -c&amp;quot;
+            Args: &amp;quot;cat&amp;quot;
+            Tty: true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Replace the builder name and image accordingly.&lt;/p&gt;
+
+&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will be automatically added to the platform.&lt;/p&gt;
+
+&lt;h3 id=&#34;use-the-builder&#34;&gt;Use the Builder&lt;/h3&gt;
+
+&lt;p&gt;Now that your builder was installed in Jenkins, you can easily reference it in a &lt;code&gt;Jenkinsfile&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-Groovy&#34;&gt;pipeline {
+    agent {
+        label &amp;quot;jenkins-mybuilder&amp;quot;
+    }
+    stages {
+      stage(&#39;Build&#39;) {
+        when {
+          branch &#39;master&#39;
+        }
+        steps {
+          container(&#39;mybuilder&#39;) {
+              // your steps
+          }
+        }
+      }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;overwrite-existing-builders&#34;&gt;Overwrite existing Builders&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X comes with a number of &lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/values.yaml&#34; target=&#34;_blank&#34;&gt;pre-installed builders&lt;/a&gt;
+which you can overwrite if required during installation or upgrade.&lt;/p&gt;
+
+&lt;p&gt;You just need to build your custom image either based on &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt;
+image or the &lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34; target=&#34;_blank&#34;&gt;builder image&lt;/a&gt; you want to overwrite. See more details above.&lt;/p&gt;
+
+&lt;p&gt;Then you can create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jenkins:
+  Agent:
+    PodTemplates:
+      Maven:
+        Containers:
+          Maven:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Nodejs:
+        Containers:
+          Nodejs:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Go:
+        Containers:
+          Go:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will  be added automatically to the platform.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Create EKS cluster on AWS</title>
+      <link>/docs/managing-jx/common-tasks/aws-terraform-install-gitops/</link>
+      <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/aws-terraform-install-gitops/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This is a short guide to setup EKS on AWS and the required resources for Jenkins X&amp;rsquo;s setup of Vault
+using Terraform. It assumes access to AWS is configured and familiarity with AWS, kubectl and Terraform.&lt;/p&gt;
+
+&lt;p&gt;This snippet of Terraform code sets EKS and up needed resources on AWS. It outputs the parameters
+you then need to add to append to &lt;code&gt;jx install&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-tf&#34;&gt;variable &amp;quot;region&amp;quot; {
+}
+
+variable &amp;quot;subnets&amp;quot; {
+    type = &amp;quot;list&amp;quot;
+}
+
+variable &amp;quot;vpc_id&amp;quot; {
+}
+
+variable &amp;quot;key_name&amp;quot; {
+    description = &amp;quot;SSH key name for worker nodes&amp;quot;
+}
+
+variable &amp;quot;bucket_domain&amp;quot; {
+    description = &amp;quot;Suffix for S3 bucket used for vault unseal operation&amp;quot;
+}
+
+provider &amp;quot;aws&amp;quot; {
+    region  = &amp;quot;${var.region}&amp;quot;
+}
+
+module &amp;quot;eks&amp;quot; {
+    source       = &amp;quot;terraform-aws-modules/eks/aws&amp;quot;
+    cluster_name = &amp;quot;${var.region}&amp;quot;
+    subnets      = &amp;quot;${var.subnets}&amp;quot;
+    vpc_id       = &amp;quot;${var.vpc_id}&amp;quot;
+    worker_groups = [
+        {
+            autoscaling_enabled   = true
+            asg_min_size          = 3
+            asg_desired_capacity  = 3
+            instance_type         = &amp;quot;t3.large&amp;quot;
+            asg_max_size          = 20
+            key_name              = &amp;quot;${var.key_name}&amp;quot;
+        }
+    ]
+    version = &amp;quot;5.0.0&amp;quot;
+}
+
+# Needed for cluster-autoscaler
+resource &amp;quot;aws_iam_role_policy_attachment&amp;quot; &amp;quot;workers_AmazonEC2ContainerRegistryPowerUser&amp;quot; {
+  policy_arn = &amp;quot;arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser&amp;quot;
+  role       = &amp;quot;${module.eks.worker_iam_role_name}&amp;quot;
+}
+
+# Create S3 bucket for KMS
+resource &amp;quot;aws_s3_bucket&amp;quot; &amp;quot;vault-unseal&amp;quot; {
+    bucket = &amp;quot;vault-unseal.${var.region}.${var.bucket_domain}&amp;quot;
+    acl    = &amp;quot;private&amp;quot;
+
+    versioning {
+        enabled = false
+    }
+}
+
+# Create KMS key
+resource &amp;quot;aws_kms_key&amp;quot; &amp;quot;bank_vault&amp;quot; {
+    description = &amp;quot;KMS Key for bank vault unseal&amp;quot;
+}
+
+# Create DynamoDB table
+resource &amp;quot;aws_dynamodb_table&amp;quot; &amp;quot;vault-data&amp;quot; {
+    name           = &amp;quot;vault-data&amp;quot;
+    read_capacity  = 2
+    write_capacity = 2
+    hash_key       = &amp;quot;Path&amp;quot;
+    range_key      = &amp;quot;Key&amp;quot;
+    attribute {
+        name = &amp;quot;Path&amp;quot;
+        type = &amp;quot;S&amp;quot;
+    }
+
+    attribute {
+        name = &amp;quot;Key&amp;quot;
+        type = &amp;quot;S&amp;quot;
+    }
+}
+
+# Create service account for vault. Should the policy
+resource &amp;quot;aws_iam_user&amp;quot; &amp;quot;vault&amp;quot; {
+  name = &amp;quot;vault_${var.region}&amp;quot;
+}
+
+data &amp;quot;aws_iam_policy_document&amp;quot; &amp;quot;vault&amp;quot; {
+    statement {
+        sid = &amp;quot;DynamoDB&amp;quot;
+        effect = &amp;quot;Allow&amp;quot;
+        actions = [
+            &amp;quot;dynamodb:DescribeLimits&amp;quot;,
+            &amp;quot;dynamodb:DescribeTimeToLive&amp;quot;,
+            &amp;quot;dynamodb:ListTagsOfResource&amp;quot;,
+            &amp;quot;dynamodb:DescribeReservedCapacityOfferings&amp;quot;,
+            &amp;quot;dynamodb:DescribeReservedCapacity&amp;quot;,
+            &amp;quot;dynamodb:ListTables&amp;quot;,
+            &amp;quot;dynamodb:BatchGetItem&amp;quot;,
+            &amp;quot;dynamodb:BatchWriteItem&amp;quot;,
+            &amp;quot;dynamodb:CreateTable&amp;quot;,
+            &amp;quot;dynamodb:DeleteItem&amp;quot;,
+            &amp;quot;dynamodb:GetItem&amp;quot;,
+            &amp;quot;dynamodb:GetRecords&amp;quot;,
+            &amp;quot;dynamodb:PutItem&amp;quot;,
+            &amp;quot;dynamodb:Query&amp;quot;,
+            &amp;quot;dynamodb:UpdateItem&amp;quot;,
+            &amp;quot;dynamodb:Scan&amp;quot;,
+            &amp;quot;dynamodb:DescribeTable&amp;quot;
+        ]
+        resources = [&amp;quot;${aws_dynamodb_table.vault-data.arn}&amp;quot;]
+    }
+    statement {
+        sid = &amp;quot;S3&amp;quot;
+        effect = &amp;quot;Allow&amp;quot;
+        actions = [
+                &amp;quot;s3:PutObject&amp;quot;,
+                &amp;quot;s3:GetObject&amp;quot;
+        ]
+        resources = [&amp;quot;${aws_s3_bucket.vault-unseal.arn}/*&amp;quot;]
+    }
+    statement {
+        sid = &amp;quot;S3List&amp;quot;
+        effect = &amp;quot;Allow&amp;quot;
+        actions = [
+            &amp;quot;s3:ListBucket&amp;quot;
+        ]
+        resources = [&amp;quot;${aws_s3_bucket.vault-unseal.arn}&amp;quot;]
+    }
+    statement {
+        sid = &amp;quot;KMS&amp;quot;
+        effect = &amp;quot;Allow&amp;quot;
+        actions = [
+            &amp;quot;kms:Encrypt&amp;quot;,
+            &amp;quot;kms:Decrypt&amp;quot;,
+            &amp;quot;kms:DescribeKey&amp;quot;
+        ]
+        resources = [&amp;quot;${aws_kms_key.bank_vault.arn}&amp;quot;]
+    }
+}
+
+resource &amp;quot;aws_iam_user_policy&amp;quot; &amp;quot;vault&amp;quot; {
+    name = &amp;quot;vault_${var.region}&amp;quot;
+    user = &amp;quot;${aws_iam_user.vault.name}&amp;quot;
+
+    policy = &amp;quot;${data.aws_iam_policy_document.vault.json}&amp;quot;
+}
+
+resource &amp;quot;aws_iam_access_key&amp;quot; &amp;quot;vault&amp;quot; {
+    user = &amp;quot;${aws_iam_user.vault.name}&amp;quot;
+}
+
+# Output KMS key id, S3 bucket name and secret name in the form of jx install options
+output &amp;quot;jx_params&amp;quot; {
+    value = &amp;quot;--provider=eks --gitops --no-tiller --vault --aws-dynamodb-region=${var.region} --aws-dynamodb-table=${aws_dynamodb_table.vault-data.name} --aws-kms-region=${var.region} --aws-kms-key-id=${aws_kms_key.bank_vault.key_id} --aws-s3-region=${var.region}  --aws-s3-bucket=${aws_s3_bucket.vault-unseal.id} --aws-access-key-id=${aws_iam_access_key.vault.id} --aws-secret-access-key=${aws_iam_access_key.vault.secret}&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Save as &lt;code&gt;eks.tf&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;The module terraform-aws-modules/eks/aws will also store a kubeconfig file as &lt;code&gt;config&lt;/code&gt;. This can be
+copied to or merged with your &lt;code&gt;~/.kube/config&lt;/code&gt;. Then &lt;code&gt;jx install&lt;/code&gt; can be run with the parameters
+output by the Terraform config above.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Custom Jenkins Servers</title>
+      <link>/docs/managing-jx/common-tasks/custom-jenkins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/custom-jenkins/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X provides automated CI/CD for your libraries and microservices you want to deploy on Kubernetes, but what about those other &lt;code&gt;Jenkinsfile&lt;/code&gt; based pipelines you have already created on a custom Jenkins Server?&lt;/p&gt;
+
+&lt;p&gt;Jenkins X now has a &lt;a href=&#34;https://github.com/jenkins-x-apps/jx-app-jenkins&#34; target=&#34;_blank&#34;&gt;Jenkins App&lt;/a&gt; that makes it easy to add one or more custom Jenkins servers to your Team and use the custom Jenkins Server to implement any custom pipelines you have developed.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; the Jenkins App is intended only for running custom &lt;code&gt;Jenkinsfile&lt;/code&gt; pipelines you&amp;rsquo;ve developed by hand - its not an execution engine for the automated CI/CD pipelines in Jenkins X for Kubernetes workloads; for that we actually recommend &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; - but you can use an embedded static Jenkins Server as well.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-custom-jenkins&#34;&gt;Why Custom Jenkins?&lt;/h2&gt;
+
+&lt;p&gt;This app lets you maintain your investment in your existing Jenkins pipelines, invoking them in a custom Jenkins Server of your own choosing and configuration while you start to use more of the automated CI/CD in Jenkins X for new libraries and microservices using either &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; or the embedded static Jenkins server in Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;You can then mix and match between the automated CI/CD in Jenkins X and your custom Jenkins pipelines - all orchestrated nicely together with Jenkins X!&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-a-custom-jenkins&#34;&gt;Installing a custom Jenkins&lt;/h2&gt;
+
+&lt;p&gt;To install the custom Jenkins server you need to run the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx add app jenkins
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will install a new Jenkins Server in your current Team. It should then show up via&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx open
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will also create an API token automatically so that the &lt;code&gt;jx&lt;/code&gt; CLI can query or start pipelines in the custom Jenkins server. It can take a minute or so for the setup job to complete.&lt;/p&gt;
+
+&lt;h2 id=&#34;getting-the-login-password&#34;&gt;Getting the login/password&lt;/h2&gt;
+
+&lt;p&gt;Unfortunately there is a limitation on the current Jenkins app that it does not prompt you with the password as you add the Jenkins App.&lt;/p&gt;
+
+&lt;p&gt;So to find the password you will need to find it by hand I&amp;rsquo;m afraid.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;download &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34; target=&#34;_blank&#34;&gt;ksd&lt;/a&gt; and add it to your $PATH&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;type the following (you may need to change the &lt;code&gt;Secret&lt;/code&gt; name if you use a different alias for your Jenkins server):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl get secret jx-jx-app-jenkins -o yaml | ksd
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Then you will see your user/pwd on the screen if you want to login to the Jenkins UI via &lt;a href=&#34;/commands/jx_console/&#34;&gt;jx console&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;using-the-custom-jenkins&#34;&gt;Using the custom Jenkins&lt;/h2&gt;
+
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; command which work with Jenkins servers can all work directly with your new custom Jenkins server; though you need to specify that you want to interact with a custom Jenkins Server as opposed to the built in execution engine in Jenkins X (e.g. &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; or the built in Jenkins server inside Jenkins X)&lt;/p&gt;
+
+&lt;p&gt;If you only have one custom Jenkins App in your Team you can use &lt;code&gt;-m&lt;/code&gt; to specify you want to work with a custom Jenkins server. Otherwise you can specify &lt;code&gt;-n myjenkinsname&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;# view the pipelines 
+jx get pipeline -m
+
+# view the log of a pipeline
+jx get build log -m
+
+# view the Jenkins console
+jx console -m
+
+# lets start a pipeline in the custom jenkins
+jx start pipeline -m
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;managing-custom-jenkins-servers-via-gitops&#34;&gt;Managing custom Jenkins Servers via GitOps&lt;/h2&gt;
+
+&lt;p&gt;We have designed the Jenkins App for Jenkins X using the &lt;a href=&#34;/docs/contributing/addons/&#34;&gt;App extension framework&lt;/a&gt; which means you can manage your custom Jenkins servers via &lt;a href=&#34;/docs/managing-jx/common-tasks/manage-via-gitops/&#34;&gt;GitOps&lt;/a&gt; - keeping all of the apps, their version and configuration in git and using the Jenkins X tooling to add/update/configure/delete apps.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: DNS</title>
+      <link>/docs/managing-jx/common-tasks/dns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/dns/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;To be able to access services hosted within your cluster we default to an &lt;a href=&#34;https://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; domain. This makes it super easy to setup and manage DNS.&lt;/p&gt;
+
+&lt;p&gt;However, for users who want services in the cluster to be available on a personal domain, we use external-dns which is just as easy.&lt;/p&gt;
+
+&lt;h2 id=&#34;external-dns&#34;&gt;external-dns&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: &lt;em&gt;Currently only supported on GKE&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/kubernetes-incubator/external-dns&#34; target=&#34;_blank&#34;&gt;ExternalDNS&lt;/a&gt; can be used to help expose Kubernetes Services and Ingresses by synchronizing with DNS providers. To setup your cluster using ExternalDNS:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider gke --tekton --external-dns
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;This will then prompt you for your domain.&lt;/em&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;🙅 developer ~/go-workspace/jx(master)$ jx install --provider gke --tekton --external-dns
+WARNING: When using tekton, only kaniko is supported as a builder
+Context &amp;quot;gke_&amp;lt;your-project-id&amp;gt;_europe-west1-b_&amp;lt;your-cluster-name&amp;gt;&amp;quot; modified.
+set exposeController Config URLTemplate &amp;quot;{{.Service}}-{{.Namespace}}.{{.Domain}}&amp;quot;
+Git configured for user: **********  and email *********@****.***
+helm installed and configured
+? Provide the domain Jenkins X should be available at: your-domain.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A CloudDNS managed zone is then created within your clusters GCP Project, the record-sets which expose your services will be created by ExternalDNS within this managed zone.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;🙅 developer ~/go-workspace()$ gcloud dns managed-zones list
+NAME                           DNS_NAME                   DESCRIPTION                       VISIBILITY
+your-domain-com-zone           your-domain.com.           managed-zone utilised by jx       public
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;delegation&#34;&gt;delegation&lt;/h3&gt;
+
+&lt;p&gt;Once the installation is complete, a list of name servers will be outputted to the terminal, please update your registrar using these name servers in order to delegate your domain onto Google CloudDNS.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
+        ********************************************************
+
+            External DNS: Please delegate your-domain.com via
+            your registrar onto the following name servers:
+                ns-cloud-d1.googledomains.com.
+                ns-cloud-d2.googledomains.com.
+                ns-cloud-d3.googledomains.com.
+                ns-cloud-d4.googledomains.com.
+
+        ********************************************************
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;google-domains-https-domains-google&#34;&gt;&lt;a href=&#34;https://domains.google&#34; target=&#34;_blank&#34;&gt;Google domains&lt;/a&gt;&lt;/h4&gt;
+
+&lt;p&gt;If you&amp;rsquo;re using Google Domains as your domain registrar please see &lt;a href=&#34;https://support.google.com/domains/answer/3290309?hl=en-GB&amp;amp;ref_topic=9018335&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt; for details on delegating to custom name servers.&lt;/p&gt;
+
+&lt;h3 id=&#34;url-template&#34;&gt;URL template&lt;/h3&gt;
+
+&lt;p&gt;All services should be available on the same domain, of which is derived as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;service&amp;gt;-&amp;lt;namespace&amp;gt;.&amp;lt;your-domain&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Docker Registry</title>
+      <link>/docs/managing-jx/common-tasks/docker-registry/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/docker-registry/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;To be able to create and publish docker images we need to use a Docker Registry.&lt;/p&gt;
+
+&lt;p&gt;By default Jenkins X ships with a Docker Registry which is included in the system namespace for Jenkins X along with Jenkins and Nexus. Since this docker registry is running inside your kubernetes cluster and is used internally inside your cluster its hard to expose it via HTTPS with self signed certificates - so we default to using insecure docker registries for the IP range of service IPs in your kubernetes cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-a-different-docker-registry&#34;&gt;Using a different Docker Registry&lt;/h2&gt;
+
+&lt;p&gt;If you are using the public cloud you may wish to take advantage of your cloud providers docker registry; or reuse your own existing docker registry.&lt;/p&gt;
+
+&lt;h3 id=&#34;if-you-are-using-static-jenkins-master&#34;&gt;If you are using Static Jenkins Master&lt;/h3&gt;
+
+&lt;p&gt;To specify the Docker Registry host/port you can use the Jenkins Console:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx console
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then navigate to &lt;code&gt;Manage Jenkins -&amp;gt; Configure System&lt;/code&gt; and change the &lt;code&gt;DOCKER_REGISTRY&lt;/code&gt; environment variable to point to your docker registry of choice.&lt;/p&gt;
+
+&lt;p&gt;Another approach is to add the following to your &lt;code&gt;values.yaml&lt;/code&gt; file for your customization of the Jenkins X platform helm charts:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Servers:
+    Global:
+      EnvVars:
+        DOCKER_REGISTRY: &amp;quot;gcr.io&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;update-the-config-json-secret&#34;&gt;Update the config.json secret&lt;/h2&gt;
+
+&lt;p&gt;Next you will need to update the &lt;code&gt;config.json&lt;/code&gt; secret for docker.&lt;/p&gt;
+
+&lt;p&gt;You can do this via the &lt;a href=&#34;/commands/jx_create_docker/&#34;&gt;jx create docker auth&lt;/a&gt; command line tool:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create docker auth --host &amp;quot;foo.private.docker.registry&amp;quot; --user &amp;quot;foo&amp;quot; --secret &amp;quot;FooDockerHubToken&amp;quot; --email &amp;quot;fakeemail@gmail.com&amp;quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you create a &lt;code&gt;config.json&lt;/code&gt; file for your docker registry provider. e.g. for GCR on Google Cloud its probably something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+    &amp;quot;credHelpers&amp;quot;: {
+        &amp;quot;gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;us.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;eu.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;asia.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;staging-k8s.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For AWS its more like&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+	&amp;quot;credsStore&amp;quot;: &amp;quot;ecr-login&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then to update the &lt;code&gt;jenkins-docker-cfg&lt;/code&gt; secret you can do the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl delete secret jenkins-docker-cfg
+kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; that the file must be called &lt;code&gt;config.json&lt;/code&gt; as the file name is used in the key of the underlying &lt;code&gt;Secret&lt;/code&gt; in kubernetes&lt;/p&gt;
+
+&lt;h2 id=&#34;using-docker-hub&#34;&gt;Using Docker Hub&lt;/h2&gt;
+
+&lt;p&gt;If you want to publish images to docker hub then you need to modify your &lt;code&gt;config.json&lt;/code&gt; as described above to something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+    &amp;quot;auths&amp;quot;: {
+        &amp;quot;https://index.docker.io/v1/&amp;quot;: {
+            &amp;quot;auth&amp;quot;: &amp;quot;MyDockerHubToken&amp;quot;,
+            &amp;quot;email&amp;quot;: &amp;quot;myemail@acme.com&amp;quot;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;using-jfrog-bintray-artifactory&#34;&gt;Using jFrog BinTray (Artifactory)&lt;/h2&gt;
+
+&lt;p&gt;Using the jFrog BinTray as a private registry is possible.  This has only been tested when creating a new cluster and passing the &lt;code&gt;--docker-registry=private-reg.bintray.io&lt;/code&gt;.  After creating your cluster, you will want to do the following:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Delete the existing &lt;code&gt;Secret&lt;/code&gt; called &lt;code&gt;jenkins-docker-cfg&lt;/code&gt; by executing&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;kubectl delete secret jenkins-docker-cfg
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Create a local file called &lt;code&gt;config.json&lt;/code&gt; and its value should be in this format (update values based on your registry user account and FQDN).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+&amp;quot;auths&amp;quot;: {
+    &amp;quot;https://private-reg.bintray.io&amp;quot;: {
+        &amp;quot;auth&amp;quot;: &amp;quot;username:password (base64 encoded)&amp;quot;,
+        &amp;quot;email&amp;quot;: &amp;quot;myemail@acme.com&amp;quot;
+    }
+}
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Create the new &lt;code&gt;jenkins-docker-cfg&lt;/code&gt; &lt;code&gt;Secret&lt;/code&gt; with the contents of the &lt;code&gt;config.json&lt;/code&gt; as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;kubectl create secret generic jenkins-docker-cfg --from-file./config.json
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;That should do it, you should now be able to run pipelines and store images in the jFrog BinTray Registry.&lt;/p&gt;
+
+&lt;h3 id=&#34;mount-a-secret-for-your-registry&#34;&gt;Mount a Secret for your registry&lt;/h3&gt;
+
+&lt;p&gt;Your docker registry will require a Secret to be mounted into the &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;Pod Templates&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Git Servers</title>
+      <link>/docs/managing-jx/common-tasks/git/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/git/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X defaults to using &lt;a href=&#34;https://github.com/&#34; target=&#34;_blank&#34;&gt;GitHub&lt;/a&gt;, the free public git hosting solution for open source projects.&lt;/p&gt;
+
+&lt;p&gt;However when working in the enterprise you may wish to use different git servers.&lt;/p&gt;
+
+&lt;p&gt;You can list the git servers configured via &lt;a href=&#34;/commands/jx_get_git&#34;&gt;jx get git&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+**NOTE:** All of the Git Providers mentioned here are supported if you are using Jenkins Static Masters.  However, if you are using **Jenkins X Serverless with Tekton**, only GitHub is supported.  This means that all other Git Providers including GitHub Enterprise are not currently supported due to how Prow communicates with the APIs.
+
+However, we are integrating [Lighthouse](https://github.com/jenkins-x/lighthouse) to ensure support for the Git Providers listed on this page in a Jenkins X Serverless environment very soon.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h2 id=&#34;using-a-different-git-provider-for-environments&#34;&gt;Using a different git provider for environments&lt;/h2&gt;
+
+&lt;p&gt;When you install Jenkins X it will create git repositories for &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; using GitHub.&lt;/p&gt;
+
+&lt;p&gt;If you wish to use a different git provider for your environments then when you install Jenkins X add the &lt;code&gt;--no-default-environments&lt;/code&gt; argument on &lt;a href=&#34;/commands/jx_create_cluster/&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install/&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;e.g. to &lt;a href=&#34;/docs/getting-started/setup/create-cluster/&#34;&gt;create a new cluster&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --no-default-environments
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or to &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install in an existing cluster&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --no-default-environments
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then once Jenkins X is installed you can then &lt;a href=&#34;#adding-a-new-git-provider&#34;&gt;add a new git provider&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then when the git provider is setup you can verify it is available and has the right &lt;code&gt;gitKind&lt;/code&gt; via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get git server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now create the &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments using whatever git provider you wish via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create env staging --git-provider-url=https://gitproviderhostname.com
+jx create env production --git-provider-url=https://gitproviderhostname.com
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;adding-a-new-git-provider&#34;&gt;Adding a new git provider&lt;/h2&gt;
+
+&lt;p&gt;If you already have a git server somewhere you can add it into Jenkins X via &lt;a href=&#34;/commands/jx_create_git_server&#34;&gt;jx create git server&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git server gitKind someURL
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Where the &lt;code&gt;gitKind&lt;/code&gt; is one of the supported git provider kinds like &lt;code&gt;github, gitea, gitlab, bitbucketcloud, bitbucketserver&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;You can verify what server URLs and &lt;code&gt;gitKind&lt;/code&gt; values are setup via&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get git server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; please make sure you set the right &lt;code&gt;gitKind&lt;/code&gt; for your git provider otherwise the wrong underlying REST API provider will be invoked!&lt;/p&gt;
+
+&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
+
+&lt;p&gt;To add a GitHub Enterprise server try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git server github https://github.foo.com -n GHE
+jx create git token -n GHE myusername
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Where &lt;code&gt;-n&lt;/code&gt; is the name for the git service.&lt;/p&gt;
+
+&lt;h2 id=&#34;bitbucket-cloud&#34;&gt;BitBucket Cloud&lt;/h2&gt;
+
+&lt;p&gt;To add BitBucket Cloud try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git server bitbucketcloud -n BitBucket https://bitbucket.org
+jx create git token -n BitBucket myusername
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Please make sure that the &lt;code&gt;gitKind&lt;/code&gt; is properly set to &lt;code&gt;bitbucketcloud&lt;/code&gt; via the following command&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get git server
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and look in the &lt;code&gt;Kind&lt;/code&gt; column.&lt;/p&gt;
+
+&lt;h2 id=&#34;bitbucket-server&#34;&gt;BitBucket Server&lt;/h2&gt;
+
+&lt;p&gt;To add BitBucket Standalone Server try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git server bitbucketserver -n BitBucket https://your_server_address
+jx create git token -n BitBucket myusername
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;gitlab&#34;&gt;Gitlab&lt;/h2&gt;
+
+&lt;p&gt;To add a git server for Gitlab and a token try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git server gitlab https://gitlab.com/ -n gitlab
+jx create git token -n gitlab myusername
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;adding-user-tokens&#34;&gt;Adding user tokens&lt;/h3&gt;
+
+&lt;p&gt;To use a git server you need to add a user name and API token via &lt;a href=&#34;/commands/jx_create_git_token&#34;&gt;jx create git token&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create git token -n myProviderName myUserName
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You will then be prompted for the API token&lt;/p&gt;
+
+&lt;h3 id=&#34;kubernetes-hosted-git-providers&#34;&gt;Kubernetes hosted git providers&lt;/h3&gt;
+
+&lt;p&gt;You can install git providers inside the kubernetes cluster running Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;e.g. there is an addon for &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt; that lets you install gitea as part of your Jenkins X installation.&lt;/p&gt;
+
+&lt;p&gt;To use &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt; with Jenkins X then you need to enable the &lt;code&gt;gitea&lt;/code&gt; addon before installing Jenkins X:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx edit addon gitea -e true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can view the enabled addons via &lt;a href=&#34;/commands/jx_get_addons&#34;&gt;jx get addons&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get addons
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now when you &lt;a href=&#34;/docs/getting-started/&#34;&gt;install Jenkins X&lt;/a&gt; it will also install the &lt;code&gt;gitea&lt;/code&gt; addon.&lt;/p&gt;
+
+&lt;p&gt;Then whenever Jenkins X needs to create a git repository for an Environment or for a new Project the gitea server will appear in the pick list.&lt;/p&gt;
+
+&lt;h4 id=&#34;known-gitea-limitations&#34;&gt;Known gitea limitations&lt;/h4&gt;
+
+&lt;p&gt;At the time of writing the &lt;a href=&#34;https://issues.jenkins-ci.org/browse/JENKINS-50459&#34; target=&#34;_blank&#34;&gt;gitea plugin for Jenkins&lt;/a&gt; does not correctly update Pull Request and git commit build statuses which breaks the GitOps promotion pipelines. Promotion can work through manual approval, but the pipeline reports a failure.&lt;/p&gt;
+
+&lt;p&gt;Another issue is new projects created by &lt;code&gt;jx&lt;/code&gt; inside &lt;code&gt;gitea&lt;/code&gt; do not get the &lt;a href=&#34;https://github.com/go-gitea/go-sdk/issues/100&#34; target=&#34;_blank&#34;&gt;merge buttons enabled on Pull Requests&lt;/a&gt;. The work around is after a project is created on github you go to the &lt;code&gt;Settings&lt;/code&gt; page for the repository inside the &lt;code&gt;gitea&lt;/code&gt; web console and enable the merge buttons there.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Helm 3</title>
+      <link>/docs/managing-jx/common-tasks/helm3/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/helm3/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X uses &lt;a href=&#34;https://www.helm.sh/&#34; target=&#34;_blank&#34;&gt;Helm&lt;/a&gt; to install both Jenkins X and to install the applications you create in each of the &lt;a href=&#34;/docs/concepts/features/#environments&#34;&gt;Environments&lt;/a&gt; (like &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt;)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; until Helm 3 is GA we highly recommend folks use &lt;a href=&#34;/news/helm-without-tiller/&#34;&gt;Helm 2.x without Tiller&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Currently Helm 3 is being developed that has a number of great improvements:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;remove the server side component, Tiller, so that &lt;code&gt;helm install&lt;/code&gt; uses the current user/ServiceAccount&amp;rsquo;s RBAC&lt;/li&gt;
+&lt;li&gt;releases become namespace aware avoiding the need to come up with globally unique release names&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;At the time of writing helm 3 is still early in its development but to improve feedback we&amp;rsquo;ve added support for Helm 2 and Helm 3 into Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;You can use either helm 2 or helm 3 to do either of these things:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;install Jenkins X itself&lt;/li&gt;
+&lt;li&gt;install your apps into your &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;e.g. you could use helm 2 to install Jenkins X then use helm 3 for your &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s how to specify which helm to use.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-helm-3-to-install-jenkins-x&#34;&gt;Using helm 3 to install Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;When installing Jenkins X via &lt;code&gt;jx create cluster ...&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt; you can specify &lt;code&gt;--helm3&lt;/code&gt; to use helm 3 instead of helm 2.x.&lt;/p&gt;
+
+&lt;p&gt;If you install with helm 2 then your team will default to using helm 2 for its releases. If you install with helm 3 then your team will default to also use helm 3.&lt;/p&gt;
+
+&lt;p&gt;To change the version of helm used by your team use &lt;a href=&#34;/commands/jx_edit_helmbin/&#34;&gt;jx edit helmbin&lt;/a&gt; :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx edit helmbin helm3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or to switch to helm 2:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx edit helmbin helm
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can view the current settings for your team via &lt;a href=&#34;/commands/jx_get_helmbin/&#34;&gt;jx get helmbin&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get helmbin
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Basically the &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod templates&lt;/a&gt; contain both the binaries:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;helm&lt;/code&gt; which is a 2.x distro of helm&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;helm3&lt;/code&gt; which is a 3.x distro of helm&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Install on Kubernetes</title>
+      <link>/docs/managing-jx/common-tasks/install-on-cluster/</link>
+      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/install-on-cluster/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X can be installed on 1.8 or later of Kubernetes. The requirements are:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;RBAC is enabled&lt;/li&gt;
+&lt;li&gt;Your Kubernetes cluster has a &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34; target=&#34;_blank&#34;&gt;default storage class&lt;/a&gt; setup so that &lt;code&gt;Persistent Volume Claims&lt;/code&gt; can be bound to &lt;code&gt;Persistent Volumes&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If not using the &lt;code&gt;aws&lt;/code&gt; or &lt;code&gt;eks&lt;/code&gt; providers, then we need to make sure that insecure Docker registries are enabled. This is so that pipelines can use a Docker registry running inside the Kubernetes cluster (which typically is not public, so no https support). You can modify your pipelines to use other registries later.&lt;/li&gt;
+&lt;li&gt;A cluster with at least 4 vCPUs in addition to the master node (e.g. 2 m4.large worker nodes + 1 m4.large master node)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;validating-cluster-conformance&#34;&gt;Validating cluster conformance&lt;/h3&gt;
+
+&lt;p&gt;You can validate that your cluster is compliant with Jenkins X by executing the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx compliance run
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It will run the Kubernetes conformance tests provided by &lt;a href=&#34;https://github.com/heptio/sonobuoy&#34; target=&#34;_blank&#34;&gt;sonobuoy&lt;/a&gt;. Typically, the execution takes up to an hour.
+You can check the status at any time with this command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx compliance status
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When the compliance tests are completed, you can see the results with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx compliance results
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ideally, you should not see any failed tests in the output.&lt;/p&gt;
+
+&lt;p&gt;All the resources created by the conformance tests can be cleaned up with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx compliance delete
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;using-aws&#34;&gt;Using AWS&lt;/h2&gt;
+
+&lt;p&gt;If you are using AWS, be sure to check out the detailed blog on &lt;a href=&#34;https://aws.amazon.com/blogs/opensource/continuous-delivery-eks-jenkins-x/&#34; target=&#34;_blank&#34;&gt;Continuous Delivery with Amazon EKS and Jenkins X&lt;/a&gt; by &lt;a href=&#34;https://twitter.com/hekonsek&#34; target=&#34;_blank&#34;&gt;Henryk Konsek&lt;/a&gt; which goes into lots of detail on how to setup AWS + EKS with Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;If you want to go further with infrastructure as code you can follow this
+&lt;a href=&#34;/docs/managing-jx/common-tasks/aws-terraform-install-gitops/&#34;&gt;guide&lt;/a&gt; about setting up an EKS cluster and other
+requirements in AWS with Terraform and then installing Jenkins X on it using GitOps for the
+installation.&lt;/p&gt;
+
+&lt;h3 id=&#34;ingress-on-aws&#34;&gt;Ingress on AWS&lt;/h3&gt;
+
+&lt;p&gt;On AWS, the ideal setup is to use a Route 53 DNS wildcard CNAME to point &lt;code&gt;*.somedomain&lt;/code&gt; at your ELB or NLB host name. Then, when prompted by &lt;code&gt;jx&lt;/code&gt;, you install &lt;code&gt;somedomain&lt;/code&gt; (where &lt;code&gt;somedomain&lt;/code&gt; is an actual DNS domain/subdomain you own).&lt;/p&gt;
+
+&lt;p&gt;Then, all the &lt;code&gt;Ingress&lt;/code&gt; resources for any exposed service in any namespace will appear as &lt;code&gt;mysvc.myns.somedomain&lt;/code&gt; - whether for things like Jenkins or Nexus or for your own microservices or Preview Environments.&lt;/p&gt;
+
+&lt;p&gt;Using wildcard DNS pointing to your ELB/NLB also means you&amp;rsquo;ll be able to use all the availability zones on AWS.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; command will ask you if you want to automate the setup fo the Route 53 wildcard CNAME. If you want to do it yourself, you need to point to the ELB host name defined via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get service -n kube-system jxing-nginx-ingress-controller  -oyaml | grep hostname
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;avoiding-dns&#34;&gt;Avoiding DNS&lt;/h4&gt;
+
+&lt;p&gt;If you want to kick the tires of Jenkins X without going to the trouble of getting a DNS domain name to use and setting up wildcard DNS, you can instead use an NLB and use one of the IP addresses of one of the availability zones as your domain via &lt;code&gt;$IP.ip&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;This is not really intended for real production installations. However, it can be a quick way to get started trying out Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;When using &lt;code&gt;jx install --provider=(aws|eks)&lt;/code&gt;, you are prompted if you want to use DNS and optionally setup a wildcard DNS CNAME record on Route 53. If not, we assume you&amp;rsquo;re going to avoid DNS to kick the tires on a single availability zone IP address by resolving the NLB host name to one of the availability zone IP addresses.&lt;/p&gt;
+
+&lt;h3 id=&#34;getting-registries-to-work-on-aws-with-cluster-set-up-with-kops&#34;&gt;Getting registries to work on AWS with cluster set up with kops&lt;/h3&gt;
+
+&lt;p&gt;The default on AWS is to use ECR as the Docker container registry. For this to work, the nodes need permission to upload images to ECR. If you instead want to use the embedded Docker registry of Jenkins X inside your Kubernetes cluster, you will need to enable insecure Docker registries.&lt;/p&gt;
+
+&lt;p&gt;Note that you may want to use the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/#using-amazon-aws&#34;&gt;jx create cluster aws&lt;/a&gt; command which automates all of this for you!&lt;/p&gt;
+
+&lt;h4 id=&#34;give-nodes-permission-to-use-ecr&#34;&gt;Give nodes permission to use ECR&lt;/h4&gt;
+
+&lt;p&gt;Do the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kops edit cluster
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then make sure the YAML has this &lt;code&gt;additionalPolicies&lt;/code&gt; entry inside the &lt;code&gt;spec&lt;/code&gt; section:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;...
+spec:
+  additionalPolicies:
+    node: |
+      [
+        {
+        &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+        &amp;quot;Action&amp;quot;: [&amp;quot;ecr:InitiateLayerUpload&amp;quot;, &amp;quot;ecr:UploadLayerPart&amp;quot;,&amp;quot;ecr:CompleteLayerUpload&amp;quot;,&amp;quot;ecr:PutImage&amp;quot;],
+        &amp;quot;Resource&amp;quot;: [&amp;quot;*&amp;quot;]
+        }
+      ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now to make this change active on your cluster type:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kops update cluster --yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should now be good to go!&lt;/p&gt;
+
+&lt;h4 id=&#34;enabling-insecure-registries-on-kops&#34;&gt;Enabling insecure registries on kops&lt;/h4&gt;
+
+&lt;p&gt;Do the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kops edit cluster
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then make sure the YAML has this &lt;code&gt;docker&lt;/code&gt; entry inside the &lt;code&gt;spec&lt;/code&gt; section:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;...
+spec:
+  docker:
+    insecureRegistry: 100.64.0.0/10
+    logDriver: &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That IP range, &lt;code&gt;100.64.0.0/10&lt;/code&gt;, works on AWS, but you may need to change it on other Kubernetes clusters. It depends on the IP range of Kubernetes services.&lt;/p&gt;
+
+&lt;p&gt;Then save the changes. You can verify your changes via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kops get cluster -oyaml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and looking for the &lt;code&gt;insecureRegistry&lt;/code&gt; section.&lt;/p&gt;
+
+&lt;p&gt;Now to make this change active on your cluster type:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kops update cluster --yes
+kops rolling-update cluster --yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You should now be good to go!&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-jenkins-x-on-a-cloud&#34;&gt;Installing Jenkins X on a cloud&lt;/h2&gt;
+
+&lt;p&gt;To install Jenkins X on an existing Kubernetes cluster, you can then use the &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt; command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you know the provider, you can specify the provider on the command line. e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=aws
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: if you wish to use a different Git provider than GitHub for your environments, see &lt;a href=&#34;/docs/managing-jx/common-tasks/git/#using-a-different-git-provider-for-environments&#34;&gt;how to use a different Git provider&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-jenkins-x-on-premises&#34;&gt;Installing Jenkins X on premises&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Prerequisits&lt;/strong&gt;
+- Kubernetes &amp;gt; 1.8
+- RBAC enabled
+- A default cluster &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/&#34; target=&#34;_blank&#34;&gt;dynamic storage class&lt;/a&gt; for provisioning persistent volumes.&lt;/p&gt;
+
+&lt;p&gt;When using an on premise Kubernetes cluster, you can use this command line:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=kubernetes --on-premise
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will default the argument for &lt;code&gt;--external-ip&lt;/code&gt; to access services inside your cluster to use the Kubernetes master IP address.&lt;/p&gt;
+
+&lt;p&gt;If you wish to use a different external IP address, you can use:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=kubernetes --external-ip 1.2.3.4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Otherwise, the &lt;code&gt;jx install&lt;/code&gt; will try and wait for the Ingress Controllers &lt;code&gt;Service.Status.LoadBalancer.Ingress&lt;/code&gt; to resolve to an IP address - which can fail on premise.&lt;/p&gt;
+
+&lt;p&gt;If you already have an ingress controller installed, then try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=kubernetes \
+--skip-ingress \
+--external-ip=10.20.30.40 \
+--domain=10.20.30.40.nip.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you do not know the domain or want it extracted from your Ingress deployment, try&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=kubernetes --external-ip 10.123.0.17 \
+--ingress-service=$(yoursvcname) \
+--ingress-deployment=$(yourdeployname) \
+--ingress-namespace=kube-system
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you want an explanation of what the &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt; command does, you can read &lt;a href=&#34;../install-on-cluster-what-happens&#34;&gt;what happens with the install&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-jenkins-x-on-ibm-cloud-private&#34;&gt;Installing Jenkins X on IBM Cloud Private&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Prerequisites&lt;/strong&gt;
+- IBM Cloud Private version 3.1.0 is compatible with Jenkins X version 1.3.572.
+- You might have to clean up with the &lt;code&gt;helm delete --purge jenkins-x&lt;/code&gt; or &lt;code&gt;jx uninstall&lt;/code&gt; commands. However, the &lt;code&gt;jx uninstall&lt;/code&gt; command might not correctly pick up Helm releases at the &lt;code&gt;default&lt;/code&gt; namespace if you point to the &lt;code&gt;kube-system&lt;/code&gt; Tiller.&lt;/p&gt;
+
+&lt;p&gt;IBM Cloud Private includes a Docker registry and ingress controller. You can install Jenkins X into IBM Cloud Private with the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx install --provider=icp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The installation process prompts for the master IP address in your Kubernetes cluster. The master IP address is the same address that you used to access the IBM Cloud Private dashboard.&lt;/p&gt;
+
+&lt;p&gt;Create &lt;code&gt;ClusterImagePolicies&lt;/code&gt; on IBM Cloud Private version 3.1.0 and set the following permissions:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;- name: docker.io/*
+- name: gcr.io/*
+- name: quay.io/*
+- name: k8s.gcr.io/*
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Specify the following two &lt;code&gt;jx install&lt;/code&gt; parameters with the command line or when prompted by the IBM Cloud Private provider:
+- The &lt;code&gt;domain=&#39;&#39;&lt;/code&gt; parameter is the domain to expose ingress endpoints, for example, &lt;code&gt;jenkinsx.io&lt;/code&gt;.
+- The &lt;code&gt;external-ip=&#39;&#39;&lt;/code&gt; parameter is the external IP that is used to access ingress endpoints from outside the Kubernetes cluster and for bare metal on premise clusters.&lt;/p&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t specify these parameters, then the &lt;code&gt;jx install --provider=icp&lt;/code&gt; command first prompts you to enter the &lt;code&gt;external-ip&lt;/code&gt; parameter. Next, it prompts you to enter the &lt;code&gt;domain&lt;/code&gt; parameter and offers you the &lt;code&gt;&amp;lt;external-ip&amp;gt;.nip.io&lt;/code&gt; default value. After you enter these values, an ingress endpoint becomes available at &lt;code&gt;http://jenkins.jx.&amp;lt;your cluster IP&amp;gt;.nip.io&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;A Tiller is set in the default namespace as part of the Jenkins X installation process. To ensure that all Helm commands point to the correct Tiller, enter the &lt;code&gt;export TILLER_NAMESPACE=default&lt;/code&gt; command when interacting with your Jenkins X installation.&lt;/p&gt;
+
+&lt;p&gt;Create registry secrets and patch the default service account in any of the namespaces that Jenkins X creates. Deployments can then pull images from the IBM Cloud Private registry.&lt;/p&gt;
+
+&lt;p&gt;If you create environments manually, you can specify &lt;code&gt;--pull-secrets &amp;lt;secret name&amp;gt;&lt;/code&gt; with the &lt;code&gt;jx create environment&lt;/code&gt; command. The created service account is automatically configured to use the pull secret that you mention. The pull secret needs to exist in the created namespace.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Lighthouse</title>
+      <link>/docs/managing-jx/common-tasks/lighthouse/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/lighthouse/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;&lt;a href=&#34;prow.html&#34; target=&#34;_blank&#34;&gt;Prow&lt;/a&gt; is a great way to do ChatOps with &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; though unfortunately its only supported for GitHub.com and is quite heavy and complex. To work around this we&amp;rsquo;ve created &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;Lighthouse&lt;/a&gt; is a lightweight ChatOps based webhook handler which can trigger &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; on webhooks from multiple git providers such as: GitHub, GitHub Enterprise, BitBucket Server, BitBucket Cloud, GitLab, Gogs and Gitea.&lt;/p&gt;
+
+&lt;p&gt;Currently Lighthouse is focussed on using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; with tekton though longer term it could be reused with tekton orchestrating Jenkins pipelines via the &lt;a href=&#34;/docs/managing-jx/common-tasks/custom-jenkins/&#34;&gt;Custom Jenkins Server App&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;features&#34;&gt;Features&lt;/h2&gt;
+
+&lt;p&gt;Currently Lighthouse supports the common &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins&#34; target=&#34;_blank&#34;&gt;prow plugins&lt;/a&gt; and handles push webhooks to branches &amp;amp; Pull Request webhooks to then trigger Jenkins X pipelines.&lt;/p&gt;
+
+&lt;p&gt;Lighthouse uses the same &lt;code&gt;config.yaml&lt;/code&gt; and &lt;code&gt;plugins.yaml&lt;/code&gt; file structure from Prow so that we can easily migrate from &lt;code&gt;prow &amp;lt;-&amp;gt; lighthouse&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;This also means we get to reuse the clean generation of Prow configuration from the &lt;code&gt;SourceRepository&lt;/code&gt;, &lt;code&gt;SourceRepositoryGroup&lt;/code&gt; and &lt;code&gt;Scheduler&lt;/code&gt; CRDs integrated into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;. e.g. here&amp;rsquo;s the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/templates/default-scheduler.yaml&#34; target=&#34;_blank&#34;&gt;default scheduler configuration&lt;/a&gt; which is used for any project imported into your Jenkins X cluster; without you having to touch the actual prow configuration files. You can create many schedulers and associate them to different &lt;code&gt;SourceRepository&lt;/code&gt; resources.&lt;/p&gt;
+
+&lt;p&gt;We can also reuse Prow&amp;rsquo;s capability of defining many separate pipelines on a repository (for PRs or releases) via having separate &lt;code&gt;contexts&lt;/code&gt;. Then on a Pull Request we can use &lt;code&gt;/test something&lt;/code&gt; or &lt;code&gt;/test all&lt;/code&gt; to trigger pipelines and use the &lt;code&gt;/ok-to-test&lt;/code&gt; and &lt;code&gt;/approve&lt;/code&gt; or &lt;code&gt;/lgtm&lt;/code&gt; commands&lt;/p&gt;
+
+&lt;h2 id=&#34;using-lighthouse-with-boot&#34;&gt;Using Lighthouse with boot&lt;/h2&gt;
+
+&lt;p&gt;We have integrated &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;lighthouse&lt;/a&gt; into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;. To switch to &lt;code&gt;lighthouse&lt;/code&gt; from &lt;code&gt;prow&lt;/code&gt; you need to add something like this to your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once you have modified your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file you just need to run &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you are using something else other than github.com as your git provider you will also require some extra YAML to configure the git provider. Here are some examples:&lt;/p&gt;
+
+&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  zone: europe-west1-c
+  environmentGitOwner: myowner
+  gitKind: github
+  gitName: ghe
+  gitServer: https://my-github.com
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;bitbucket-server&#34;&gt;BitBucket Server&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myowner
+  gitKind: bitbucketserver
+  gitName: bs
+  gitServer: https://my-bitbucket-server.com
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;gitlab&#34;&gt;GitLab&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myowner
+  gitKind: gitlab
+  gitName: gitlab
+  gitServer: https://my-gitlab-server.com
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;comparisons-to-prow&#34;&gt;Comparisons to Prow&lt;/h2&gt;
+
+&lt;p&gt;Lighthouse is very prow-like and currently reuses the Prow plugin source code and a bunch of &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins&#34; target=&#34;_blank&#34;&gt;plugins from prow&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Its got a few differences though:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;rather than be GitHub specific lighthouse uses &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; so it can support any git provider&lt;/li&gt;
+&lt;li&gt;lighthouse is mostly like &lt;code&gt;hook&lt;/code&gt; from Prow; an auto scaling webhook handler - to keep the footprint small. This also means if anything goes wrong handling webhooks you only have one pod to look into.&lt;/li&gt;
+&lt;li&gt;lighthouse is also very light. In Jenkins X we have about 10 pods related to prow; with lighthouse we have just 1 along with the tekton controller itself. That one lighthouse pod could easily be auto scaled too from 0 to many as it starts up very quickly.&lt;/li&gt;
+&lt;li&gt;lighthouse focuses purely on Tekton pipelines so it does not require a &lt;code&gt;ProwJob&lt;/code&gt; CRD; instead a push webhook to a release or pull request branch can trigger zero to many &lt;code&gt;PipelineRun&lt;/code&gt; CRDs instead&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;porting-prow-commands&#34;&gt;Porting Prow commands&lt;/h2&gt;
+
+&lt;p&gt;If there are any prow commands you want which we&amp;rsquo;ve not yet ported over, its relatively easy to port prow plugins.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ve reused the prow plugin code and configuration code; so its mostly a case of switching imports of &lt;code&gt;k8s.io/test-infra/prow&lt;/code&gt; to &lt;code&gt;github.com/jenkins-x/lighthouse/pkg/prow&lt;/code&gt; - then modifying the github client structs from, say, &lt;code&gt;github.PullRequest&lt;/code&gt; to &lt;code&gt;scm.PullRequest&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Most of the github structs map 1-1 with the &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; equivalents (e.g. Issue, Commit, PullRequest) though the go-scm API does tend to return slices to pointers to resources by default. There are some naming differences at different parts of the API though.&lt;/p&gt;
+
+&lt;p&gt;e.g. compare the &lt;code&gt;githubClient&lt;/code&gt; API for the &lt;a href=&#34;https://github.com/kubernetes/test-infra/blob/344024d30165cda6f4691cc178f25b16f1a1f5af/prow/plugins/lgtm/lgtm.go#L134-L150&#34; target=&#34;_blank&#34;&gt;prow lgtm&lt;/a&gt; versus the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/pkg/prow/plugins/lgtm/lgtm.go#L135-L150&#34; target=&#34;_blank&#34;&gt;lighthouse lgtm&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;All the prow plugin related code lives in the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow&#34; target=&#34;_blank&#34;&gt;pkg/prow&lt;/a&gt; tree of packages. Mostly all we&amp;rsquo;ve done is switch to using &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; and switch out the current prow agents and instead use a single &lt;code&gt;tekton&lt;/code&gt; agent using the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/pkg/plumber/interface.go#L3-L6&#34; target=&#34;_blank&#34;&gt;PlumberClient&lt;/a&gt; to trigger pipelines.&lt;/p&gt;
+
+&lt;h2 id=&#34;environment-variables&#34;&gt;Environment variables&lt;/h2&gt;
+
+&lt;p&gt;The following environment variables are used:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;GIT_KIND&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the kind of git server: &lt;code&gt;github, bitbucket, gitea, stash&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;GIT_SERVER&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the URL of the server if not using the public hosted git providers: &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt; or &lt;a href=&#34;https://bitbucket.org&#34; target=&#34;_blank&#34;&gt;https://bitbucket.org&lt;/a&gt; &lt;a href=&#34;https://gitlab.com&#34; target=&#34;_blank&#34;&gt;https://gitlab.com&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;GIT_USER&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the git user (bot name) to use on git operations&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;GIT_TOKEN&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the git token to perform operations on git (add comments, labels etc)&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;HMAC_TOKEN&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the token sent from the git provider in webhooks&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;JX_SERVICE_ACCOUNT&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;the service account to use for generated pipelines&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Manage by GitOps</title>
+      <link>/docs/managing-jx/common-tasks/manage-via-gitops/</link>
+      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/manage-via-gitops/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We recommend you use GitOps to manage your installation of Jenkins X, to upgrade it, configure it and add or remove extension &lt;a href=&#34;/docs/contributing/addons/&#34;&gt;Apps&lt;/a&gt; so it’s easy to audit who changes what in your installation and to easily revert bad changes.&lt;/p&gt;
+
+&lt;p&gt;Currently this only works on AWS and Google cloud as it requires our vault operator (which needs cloud storage &amp;amp; KMS) to store secrets while all other configuration is stored in the development environment git repository.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-gitops-to-manage-jenkins-x&#34;&gt;Using GitOps to manage Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;If you are creating a cluster or installing on an existing cluster there is a quick and handy way to use GitOps to manage Jenkins X itself - it’s &lt;code&gt;—ng&lt;/code&gt; for the next generation of Jenkins X. We’ll make this feature flags options the default when we release 2.x of Jenkins X later this year.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;—ng&lt;/code&gt; flag is an alias for these flags: &lt;code&gt;—gitops —vault —no-tiller —tekton&lt;/code&gt;. So it also comes with baked in support for &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; - the modern cloud native pipeline engine based on Tekton.&lt;/p&gt;
+
+&lt;p&gt;If you still want to use a Jenkins server as the execution engine for the automated CI/CD pipelines in Jenkins X then you can use &lt;code&gt;—gitops —vault&lt;/code&gt; instead. Though note that even if using &lt;code&gt;—ng&lt;/code&gt; and using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; powered by tekton - you can still create your own &lt;a href=&#34;/docs/managing-jx/common-tasks/custom-jenkins/&#34;&gt;custom Jenkins servers&lt;/a&gt; to run traditional Jenkins jobs and pipelines!&lt;/p&gt;
+
+&lt;p&gt;Once you have installed Jenkins X using GitOps to manage the dev environment- the install of Jenkins X and it’s additional Apps - you get an extra git repository for Dev, Staging and Production. It also means that if you use an upgrade command like &lt;a href=&#34;/commands/jx_upgrade_platform/&#34;&gt;jx upgrade platform&lt;/a&gt; or add, upgrade or delete Apps via &lt;a href=&#34;/commands/jx_add_app/&#34;&gt;jx add app&lt;/a&gt; then those commands will generate Pull Requests on the dev environment git repository - rather like how promotion works when you release new versions of your microservices.&lt;/p&gt;
+
+&lt;h2 id=&#34;if-things-go-bad&#34;&gt;If things go bad&lt;/h2&gt;
+
+&lt;p&gt;Generally speaking Jenkins X can upgrade itself quite easily when using tekton. However if an upgrade breaks Jenkins X from implementing CI/CD then the GitOps to revert the change won’t work ;)&lt;/p&gt;
+
+&lt;p&gt;if you hit any issues upgrading Jenkins X there is a manual way to apply the contents of the development environment’s git repository&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git clone $MY_DEV_GIT_CLONE_URL jenkins-x-dev-env
+cd jenkins-x-dev-env/env
+jx step env apply 
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Pod Templates</title>
+      <link>/docs/managing-jx/common-tasks/pod-templates/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/pod-templates/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We implement CI/CD pipelines using declarative Jenkins pipelines using a &lt;code&gt;Jenkinsfile&lt;/code&gt; in the source of each application or environment git repository.&lt;/p&gt;
+
+&lt;p&gt;We use the &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34; target=&#34;_blank&#34;&gt;kubernetes plugin&lt;/a&gt; for Jenkins to be able to spin up new pods on kubernetes for each build - giving us an elastic pool of agents to run pipelines thanks to kubernetes.&lt;/p&gt;
+
+&lt;p&gt;The Kubernetes plugin uses &lt;em&gt;pod templates&lt;/em&gt; to define the pod used to run a CI/CD pipeline which consists of:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;one or more build containers for running commands inside (e.g. your build tools like &lt;code&gt;mvn&lt;/code&gt; or &lt;code&gt;npm&lt;/code&gt; along with tools we use for other parts of the pipeline like &lt;code&gt;git, jx, helm, kubectl&lt;/code&gt; etc)&lt;/li&gt;
+&lt;li&gt;volumes for persistence&lt;/li&gt;
+&lt;li&gt;environment variables&lt;/li&gt;
+&lt;li&gt;secrets so the pipeline can write to git repositories, docker registries, maven/npm/helm repositories and so forth&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;referring-to-pod-templates&#34;&gt;Referring to Pod Templates&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X comes with a default set of pod templates for supported languages and runtimes in our &lt;a href=&#34;/architecture/build-packs&#34;&gt;build packs&lt;/a&gt; and are named something like: &lt;code&gt;jenkins-$PACKNAME&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;For example the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/&#34; target=&#34;_blank&#34;&gt;maven build pack&lt;/a&gt; uses the pod template &lt;code&gt;jenkins-maven&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;We can then &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/Jenkinsfile#L1-L4&#34; target=&#34;_blank&#34;&gt;refer to the pod template name in the Jenkinsfile&lt;/a&gt; using the &lt;code&gt;agent { label &amp;quot;jenkins-$PACKNAME&amp;quot; }&lt;/code&gt; syntax in the declarative pipeline. e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;// my declarative Jenkinsfile
+
+pipeline {
+    agent {
+      label &amp;quot;jenkins-maven&amp;quot;
+    }
+    environment {
+      ...
+    }
+    stages {
+      stage(&#39;CI Build and push snapshot&#39;) {
+        steps {
+          container(&#39;maven&#39;) {
+            sh &amp;quot;mvn deploy&amp;quot;
+          }
+          ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;submitting-new-pod-templates&#34;&gt;Submitting new Pod Templates&lt;/h2&gt;
+
+&lt;p&gt;If you are working on a new &lt;a href=&#34;/architecture/build-packs&#34;&gt;build pack&lt;/a&gt; then we&amp;rsquo;d love you to &lt;a href=&#34;/docs/contributing/&#34;&gt;submit&lt;/a&gt; a new pod template and we can include it in the Jenkins X distribution!&lt;/p&gt;
+
+&lt;p&gt;There now follows instructions on how to do this - please if anything is not clear come &lt;a href=&#34;/community/&#34;&gt;join the community and just ask&lt;/a&gt; we are happy to help!&lt;/p&gt;
+
+&lt;p&gt;To submit a new build pack:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;fork the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/&#34; target=&#34;_blank&#34;&gt;jenkins-x-platform&lt;/a&gt; repository&lt;/li&gt;
+&lt;li&gt;add your build pack to the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/values.yaml&#34; target=&#34;_blank&#34;&gt;values.yaml file in the jenkins-x-platform repository&lt;/a&gt; in the &lt;code&gt;jenkins.Agent.PodTemplates&lt;/code&gt; section of the YAML&lt;/li&gt;
+&lt;li&gt;you may want to start by copy/pasting the most similar existing pod template (e.g. copy &lt;code&gt;Maven&lt;/code&gt; if you are working on a Java based build pod) and just configuring the name, label and &lt;code&gt;Image&lt;/code&gt; etc.&lt;/li&gt;
+&lt;li&gt;now submit a Pull Request on the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/&#34; target=&#34;_blank&#34;&gt;jenkins-x-platform&lt;/a&gt; repository for your pod template&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;build-containers&#34;&gt;Build containers&lt;/h3&gt;
+
+&lt;p&gt;When using pod templates and Jenkins pipelines you could use lots of different containers for each tool. e.g. one container for &lt;code&gt;maven&lt;/code&gt; and another for &lt;code&gt;git&lt;/code&gt; etc.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ve found its much simpler to just have a single builder container with all the common tools inside. This also means you can use &lt;code&gt;kubectl exec&lt;/code&gt; or &lt;a href=&#34;/commands/jx_rsh&#34;&gt;jx rsh&lt;/a&gt; to open a shell inside the build pod and have all the tools you need available for use when debugging/diagnosing problem pipelines.&lt;/p&gt;
+
+&lt;p&gt;So we have a &lt;a href=&#34;https://github.com/jenkins-x/builder-base&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt; docker image which &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile#L21-L70&#34; target=&#34;_blank&#34;&gt;contains all the different tools&lt;/a&gt; we tend to use in CI/CD pipelines like &lt;code&gt;jx, skaffold, helm, git, updatebot&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you want to use a single builder image for your new pod template then you could use builder base as the base and then add your custom tools on top.&lt;/p&gt;
+
+&lt;p&gt;e.g. &lt;a href=&#34;https://github.com/jenkins-x/builder-maven&#34; target=&#34;_blank&#34;&gt;builder-maven&lt;/a&gt; uses a &lt;a href=&#34;https://github.com/jenkins-x/builder-maven/blob/master/Dockerfile#L1&#34; target=&#34;_blank&#34;&gt;Dockerfile&lt;/a&gt; to reference the builder base.&lt;/p&gt;
+
+&lt;p&gt;So the simplest thing could be to copy a similar builder - like &lt;a href=&#34;https://github.com/jenkins-x/builder-maven&#34; target=&#34;_blank&#34;&gt;builder-maven&lt;/a&gt; and then edit the &lt;code&gt;Dockerfile&lt;/code&gt; to add whatever build tools you need.&lt;/p&gt;
+
+&lt;p&gt;We love Pull Requests and &lt;a href=&#34;/docs/contributing/&#34;&gt;contributions&lt;/a&gt; so please submit Pull Requests for new build containers and Pod Templates and we&amp;rsquo;re more than happy to &lt;a href=&#34;/docs/contributing/&#34;&gt;help&lt;/a&gt;!&lt;/p&gt;
+
+&lt;h2 id=&#34;adding-your-own-pod-templates&#34;&gt;Adding your own Pod Templates&lt;/h2&gt;
+
+&lt;p&gt;To keep things DRY and simple we tend to define pod templates in the Jenkins configuration then refer to the by name in the &lt;code&gt;Jenkinsfile&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are attempts to make it easy to inline pod template definitions inside your &lt;code&gt;Jenkinsfile&lt;/code&gt; if you need it; though a pod template tends to have lots of developer environment specific stuff inside it, like secrets, so we&amp;rsquo;d prefer to keep most of the pod templates inside the source code of your development environment rather than copy/pasting them into each app.&lt;/p&gt;
+
+&lt;p&gt;Today the easiest way to add new Pod Templates is via the Jenkins console. e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;jx console
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That will open the Jenkins console. Then navigate to &lt;code&gt;Manage Jenkins&lt;/code&gt; (on the left hand menu) then &lt;code&gt;Configure System&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You will now be faced with a large page of configuration options ;) The pod templates are usually towards the bottom; you should see all the current pod templates for things like maven, NodeJS etc.&lt;/p&gt;
+
+&lt;p&gt;You can edit/add/remove pod templates in that page and hit Save.&lt;/p&gt;
+
+&lt;p&gt;Note though that longer term we are hoping to &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/604&#34; target=&#34;_blank&#34;&gt;maintain your development environment via GitOps like we do for Staging &amp;amp; Production&lt;/a&gt; - which means changes made via the Jenkins UI will be lost when &lt;a href=&#34;/commands/jx_upgrade_platform&#34;&gt;upgrading your development environment&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;So longer term we&amp;rsquo;re hoping to add the Pod Templates into your &lt;code&gt;values.yaml&lt;/code&gt; file in your developer environment git repository like we do for the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/values.yaml#L194-L431&#34; target=&#34;_blank&#34;&gt;jenkins-x-platform chart&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you are creating pod templates using open source build tools then it may be simpler for you to just &lt;a href=&#34;#submitting-new-pod-templates&#34;&gt;submit your pod template in a Pull Request&lt;/a&gt; and we can bake that pod template into future releases of Jenkins X?&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Security Features</title>
+      <link>/docs/managing-jx/common-tasks/security-features/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/security-features/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X has a few useful addons that can aid with ensuring the ongoing security of your deployed applications. There are static and container security, as well as dynamic security addons available.&lt;/p&gt;
+
+&lt;h3 id=&#34;static-security&#34;&gt;Static security&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://github.com/anchore/anchore-engine&#34; target=&#34;_blank&#34;&gt;Anchore Engine&lt;/a&gt; is used to provide image security, by examining contents of containers either in pull request/review state, or on running containers.&lt;/p&gt;
+
+&lt;p&gt;This was introduced &lt;a href=&#34;https://jenkins.io/blog/2018/05/08/jenkins-x-anchore/&#34; target=&#34;_blank&#34;&gt;in this blog post&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;To enable this run the following command and let it prepare the services:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create addon anchore
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will launch the require engine and services, and make it available to run on any of your teams environments, and on any running preview applications.&lt;/p&gt;
+
+&lt;p&gt;To try it out, you can use the following command to report on any problems found:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get cve --environment=staging
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here is a video &lt;a href=&#34;https://youtu.be/rB8Sw0FqCQk&#34; target=&#34;_blank&#34;&gt;showing it in action&lt;/a&gt;. To remove this addon:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx delete addon anchore
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;dynamic-security&#34;&gt;Dynamic security&lt;/h3&gt;
+
+&lt;p&gt;The Open Web Application Security Project publishes a tool called ZAP: the &lt;a href=&#34;https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project&#34; target=&#34;_blank&#34;&gt;Zed Attack Proxy&lt;/a&gt;. This provides various tools including a baseline command that can be run against an application endpoint looking for a base set of problems.&lt;/p&gt;
+
+&lt;p&gt;In Jenkins X this can be run against a Preview Application (that each application gets) by creating a post-preview hook:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create addon owasp-zap
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Any pull requests will then have their preview application run through the ZAP baseline scan, and should any failures be detected it will fail the CI pipeline automatically. The pipelines do not be changed to run this test, and they will apply to all pull requests for the team.&lt;/p&gt;
+
+&lt;p&gt;To remove the ZAP test:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx delete post preview job --name owasp-zap
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The post preview hook can also be configured with a command like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create post preview job --name owasp --image owasp/zap2docker-weekly:latest -c &amp;quot;zap-baseline.py&amp;quot; -c &amp;quot;-I&amp;quot; -c &amp;quot;-t&amp;quot; -c &amp;quot;\$(JX_PREVIEW_URL)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can have multiple hooks configured, so if you had specific containers that had probes/tests you would like to run against every preview app (ie every pull request) you could add it this way.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;/developing/preview&#34;&gt;Preview Environments&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Storage</title>
+      <link>/docs/managing-jx/common-tasks/storage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/storage/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;When we use a Static Jenkins Server with Jenkins X we inherit the usual Jenkins storage model; that build logs and test results and reports are stored on the Persistent Volume of the Jenkins server.&lt;/p&gt;
+
+&lt;p&gt;However as we move towards a more &lt;a href=&#34;/news/changes-november-26-2018/&#34;&gt;Cloud Native Jenkins&lt;/a&gt; and use &lt;a href=&#34;/news/serverless-jenkins/&#34;&gt;Serverless Jenkins&lt;/a&gt; we need a better solution for the storage of things like logs, test results, code coverage reports etc.&lt;/p&gt;
+
+&lt;h2 id=&#34;storage-extensions&#34;&gt;Storage Extensions&lt;/h2&gt;
+
+&lt;p&gt;So we&amp;rsquo;ve added a storage extension point which is used from:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;storing logs when using &lt;a href=&#34;/news/serverless-jenkins/&#34;&gt;Serverless Jenkins&lt;/a&gt; which is done by the &lt;a href=&#34;/commands/jx_controller_build/&#34;&gt;jx controller build&lt;/a&gt; command&lt;/li&gt;
+&lt;li&gt;using the &lt;a href=&#34;/commands/jx_step_stash/&#34;&gt;jx step stash&lt;/a&gt; command which stashes files from a build (test or coverage reports)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;configuring-storage&#34;&gt;Configuring Storage&lt;/h2&gt;
+
+&lt;p&gt;You can setup the default location to use for storage. We currently support:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;storing files (logs, test or coverage reports) in a branch of a git repository. e.g. they could be part of your &lt;code&gt;gh-pages&lt;/code&gt; branch for your static site.&lt;/li&gt;
+&lt;li&gt;storing files in Cloud Storage buckets like S3, GCS, Azure blobs etc&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Storage uses classifications which are used to define the folder in which the kind of resources live such as&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;logs&lt;/li&gt;
+&lt;li&gt;tests&lt;/li&gt;
+&lt;li&gt;coverage&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can also use the special classification &lt;code&gt;default&lt;/code&gt; which is used if you don&amp;rsquo;t have a configuration for the classification in question. e.g. you could define a location of &lt;code&gt;default&lt;/code&gt; and then just configure where &lt;code&gt;logs&lt;/code&gt; go if thats different.&lt;/p&gt;
+
+&lt;p&gt;Then to configure the storage location for a classification and team you use the &lt;a href=&#34;/commands/jx_edit_storage/&#34;&gt;jx edit storage&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;# Configure the tests to be stored in cloud storage (using S3 / GCS / Azure Blobs etc)
+jx edit storage -c tests --bucket-url s3://myExistingBucketName
+  
+# Configure the git URL and branch of where to store logs
+jx edit storage -c logs --git-url https://github.com/myorg/mylogs.git --git-branch cheese
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can view your teams storage settings via &lt;a href=&#34;/commands/jx_get_storage/&#34;&gt;jx get storage&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;using-stash&#34;&gt;Using Stash&lt;/h2&gt;
+
+&lt;p&gt;Inside a pipeline you can then run the &lt;a href=&#34;/commands/jx_step_stash/&#34;&gt;jx step stash&lt;/a&gt; command to stash files:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;# lets collect some files with the file names relative to the &#39;target/test-reports&#39; folder and store in a Git URL
+jx step stash -c tests -p &amp;quot;target/test-reports/*&amp;quot; --basedir target/test-reports 
+
+# lets collect some files to a specific AWS cloud storage bucket
+jx step stash -c coverage -p &amp;quot;build/coverage/*&amp;quot; --bucket-url s3://my-aws-bucket
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;specify the &lt;code&gt;classifier&lt;/code&gt; via &lt;code&gt;-c&lt;/code&gt; such as for &lt;code&gt;tests&lt;/code&gt; or &lt;code&gt;coverage&lt;/code&gt; etc.&lt;/li&gt;
+&lt;li&gt;specify the files to collect via &lt;code&gt;-p&lt;/code&gt; which supports wildcards like &lt;code&gt;*&lt;/code&gt;. files which will be stored with the relative directory path&lt;/li&gt;
+&lt;li&gt;if you want to remove a direectory prefix from the stashed files, like &lt;code&gt;target/reports&lt;/code&gt; you can use &lt;code&gt;--basedir&lt;/code&gt; to specify the directory to create relative file names from&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;By default &lt;a href=&#34;/commands/jx_step_stash/&#34;&gt;jx step stash&lt;/a&gt; will use your team&amp;rsquo;s configured location for the classification you give. If you wish you can override the location for a stash using &lt;code&gt;--git-url&lt;/code&gt; or &lt;code&gt;--bucket-url&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;unstashing&#34;&gt;Unstashing&lt;/h3&gt;
+
+&lt;p&gt;If you need to you can unstash previously stored files via &lt;a href=&#34;/commands/jx_step_unstash/&#34;&gt;jx step unstash&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you are in some Go source code and you have a URL from Jenkins X, such as a Build Log URL or Attachment from a &lt;a href=&#34;/docs/reference/components/custom-resources/&#34;&gt;PipelineActivity Custom Resource&lt;/a&gt; the URL could be in various forms such as:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;gs://anotherBucket/mydir/something.txt&lt;/code&gt; : using a GCS bucket on GCP&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;s3://nameOfBucket/mydir/something.txt&lt;/code&gt; : using S3 bucket on AWS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;azblob://thatBucket/mydir/something.txt&lt;/code&gt; : using an Azure bucket&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;http://foo/bar&lt;/code&gt; : file stored in git not using HTTPS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;https://foo/bar&lt;/code&gt; : file stored in a git repo using HTTPS
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you want to easily be able to read from the URL from Go source code you can use the &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/e5a7943dc0c3d79c27f30aea73235f18b3f5dcff/pkg/cloud/buckets/buckets.go#L44-L45&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;ReadURL&lt;/code&gt; function&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: TLS</title>
+      <link>/docs/managing-jx/common-tasks/tls/</link>
+      <pubDate>Wed, 28 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/tls/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Placeholder for TLS documentation.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Upgrading Jenkins X</title>
+      <link>/docs/managing-jx/common-tasks/upgrade-jx/</link>
+      <pubDate>Wed, 01 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/upgrade-jx/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Keeping your Jenkins X environment updated can be done by command line
+using the &lt;code&gt;jx upgrade&lt;/code&gt; command. Here are the most common resources that
+can be upgraded. A comprehensive list of upgradeable resources are
+available at &lt;a href=&#34;/commands/jx_upgrade/&#34;&gt;the Jenkins X documentation site for the
+command.&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;upgrading-the-cli-binary&#34;&gt;Upgrading the CLI binary&lt;/h2&gt;
+
+&lt;p&gt;Upgrade your Jenkins X command-line by opening a terminal and running
+&lt;code&gt;jx&lt;/code&gt; to upgrade the binary :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx upgrade cli
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Without options, the command upgrades to the latest version of the &lt;code&gt;jx&lt;/code&gt;
+binary released. If you want to install a certain version of the Jenkins
+X command-line binaries, you can add an option specifying the particular
+version of &lt;code&gt;jx&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx upgrade cli -v 2.0.46
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;upgrading-the-platform&#34;&gt;Upgrading the platform&lt;/h2&gt;
+
+&lt;p&gt;Upgrade your Jenkins X platform and any associated packages by using
+&lt;code&gt;jx&lt;/code&gt; to upgrade the resource:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx upgrade platform
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;platform&lt;/code&gt; specified in the command is Jenkins, the Helm package
+manager and its associated ChartMuseum repository service, Nexus
+artifact repository, and Monocular for browsing and searching chart
+apps. Any ChartMuseum server associated with the cluster (such as the
+&lt;a href=&#34;http://chartmuseum.jenkins-x.io&#34; target=&#34;_blank&#34;&gt;one hosted by the Jenkins X project&lt;/a&gt;)
+is also referenced by the platform.&lt;/p&gt;
+
+&lt;h2 id=&#34;upgrading-apps&#34;&gt;Upgrading apps&lt;/h2&gt;
+
+&lt;p&gt;You can upgrade any Jenkins X apps installed during the Jenkins X
+cluster creation process by using &lt;code&gt;jx&lt;/code&gt; to upgrade the resource:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ jx upgrade apps
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;apps&lt;/code&gt; specified includes &lt;em&gt;all&lt;/em&gt; installed apps in your kubernetes
+cluster if upgrades are available. If you want to upgrade only specific
+apps, you can use the &lt;code&gt;jx upgrade app&lt;/code&gt; command and the specified app:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx upgrade app cb-app-slack
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Vault</title>
+      <link>/docs/managing-jx/common-tasks/vault/</link>
+      <pubDate>Tue, 08 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/vault/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;&lt;a href=&#34;https://www.vaultproject.io&#34; target=&#34;_blank&#34;&gt;Vault&lt;/a&gt; is an open source project for securely managing secrets and is our preferred way to manage secrets across your environments in Jenkins X.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-vault-with-boot&#34;&gt;Using Vault with boot&lt;/h2&gt;
+
+&lt;p&gt;We have integrated &lt;a href=&#34;https://www.vaultproject.io&#34; target=&#34;_blank&#34;&gt;Vault&lt;/a&gt; into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To switch to &lt;code&gt;vault&lt;/code&gt; you need to add &lt;code&gt;secretStorage: vault&lt;/code&gt; in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+secretStorage: vault
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once you have modified your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file you just need to run &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;For more details see &lt;a href=&#34;/docs/reference/boot/#secrets&#34;&gt;configuring secrets with boot&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-vault-on-the-cli&#34;&gt;Using Vault on the CLI&lt;/h2&gt;
+
+&lt;p&gt;First you need to download an install the &lt;a href=&#34;https://github.com/starkandwayne/safe&#34; target=&#34;_blank&#34;&gt;safe&lt;/a&gt; CLI for Vault.&lt;/p&gt;
+
+&lt;p&gt;Once you have installed &lt;a href=&#34;https://github.com/starkandwayne/safe&#34; target=&#34;_blank&#34;&gt;safe&lt;/a&gt; you can run:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;eval `jx get vault-config`
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;you should now be able to use the &lt;a href=&#34;https://github.com/starkandwayne/safe&#34; target=&#34;_blank&#34;&gt;safe&lt;/a&gt; CLI to  access your vault.&lt;/p&gt;
+
+&lt;p&gt;You can then get a secret via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;safe get /secret/my-cluster-name/creds/my-secret
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or you can update a secret via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;safe set /secret/my-cluster-name/creds/my-secret username=myname password=mytoken
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: What happens during installation</title>
+      <link>/docs/managing-jx/common-tasks/install-on-cluster-what-happens/</link>
+      <pubDate>Tue, 10 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/install-on-cluster-what-happens/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;The Jenkins X CLI will do the following when installing the Jenkins X platform:&lt;/p&gt;
+
+&lt;h2 id=&#34;install-client-binaries-to-manage-your-cluster&#34;&gt;Install client binaries to manage your cluster&lt;/h2&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+If you are running on Mac OS X, Jenkins X is using `Homebrew` to install the various CLI. It will install it if not present.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h3 id=&#34;install-kubectl&#34;&gt;Install kubectl&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/kubectl/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; is the CLI of Kubernetes. It allows you to interact with your Kubernetes cluster via the API server.&lt;/p&gt;
+
+&lt;h3 id=&#34;install-helm&#34;&gt;Install Helm&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X will install the &lt;a href=&#34;https://github.com/kubernetes/helm&#34; target=&#34;_blank&#34;&gt;helm&lt;/a&gt; client - (either  helm &lt;em&gt;2.x&lt;/em&gt; or helm &lt;em&gt;3&lt;/em&gt;), if it does not already exist in your command shell path. Helm is used for packaging applications/resources (called charts) on Kubernetes, and is rapidly becoming the default standard for doing so.&lt;/p&gt;
+
+&lt;h3 id=&#34;install-cloud-provider-cli&#34;&gt;Install cloud provider CLI&lt;/h3&gt;
+
+&lt;p&gt;If you are using a public cloud, there will be an associated CLI for interacting with it. When install is called via the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/&#34;&gt;jx create cluster&lt;/a&gt; command, the associated binary to your cloud provider will also be installed, if not present on your command shell path.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;az&lt;/code&gt; for AKS cluster (Azure)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;gcloud&lt;/code&gt; for GKE cluster (Google Cloud)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kops&lt;/code&gt; for AWS cluster (Amazon Web Services)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;eksctl&lt;/code&gt; for &lt;a href=&#34;https://aws.amazon.com/eks/&#34; target=&#34;_blank&#34;&gt;AWS EKS&lt;/a&gt; cluster&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;oci&lt;/code&gt; for OKS cluster (Oracle Cloud)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you want to run Jenkins X locally via minikube or minishift, the following binaries are added:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;oc&lt;/code&gt; (OpenShift CLI) and &lt;code&gt;minishift&lt;/code&gt; for a local minishift cluster (OpenShift)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;minikube&lt;/code&gt; for a local minikube cluster&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Last but not least, Jenkins X will install the VM driver when required, typically &lt;code&gt;xhyve&lt;/code&gt; for Mac OS X or &lt;code&gt;hyperv&lt;/code&gt; for Windows. Other drivers (VirtualBox, VMWare&amp;hellip;) must be installed manually.&lt;/p&gt;
+
+&lt;h2 id=&#34;create-the-kubernetes-cluster&#34;&gt;Create the Kubernetes cluster&lt;/h2&gt;
+
+&lt;p&gt;The cluster is then created using the cloud provider CLI (for example &lt;code&gt;az aks create&lt;/code&gt; command  for Azure).&lt;/p&gt;
+
+&lt;h2 id=&#34;setup-the-jenkins-x-platform&#34;&gt;Setup the Jenkins X platform&lt;/h2&gt;
+
+&lt;h3 id=&#34;create-the-jenkins-x-namespace&#34;&gt;Create the Jenkins X namespace&lt;/h3&gt;
+
+&lt;p&gt;Then Jenkins X install will create a namespace for the Jenkins X platform where all the Jenkins X infrastructure components will reside. The default is &lt;em&gt;jx&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;install-tiller-optional-only-for-helm-2&#34;&gt;Install Tiller (optional, only for Helm 2)&lt;/h3&gt;
+
+&lt;p&gt;Tiller, the server part of Helm, is then deployed on the &lt;em&gt;kube-system&lt;/em&gt; namespace. &lt;a href=&#34;https://www.helm.sh/&#34; target=&#34;_blank&#34;&gt;Helm&lt;/a&gt; is THE package manager of Kubernetes and is used subsequently to deploy all other components of Jenkins X.&lt;/p&gt;
+
+&lt;h3 id=&#34;setup-the-ingress-controller&#34;&gt;Setup the Ingress controller&lt;/h3&gt;
+
+&lt;p&gt;In a Kubernetes cluster, services and pods have IPs that are only routable from by the cluster network. In order for traffic to flow into the cluster, an Ingress must be created. An ingress is a collection of rules for routing traffic to your services inside Kubernetes. The ingress rules are configured in an ingress resource held on the Kubernetes API server, and an ingress controller has to be created to fulfil those ingress rules. Jenkins X does all this for you by setting up an ingress controller and associated backend plus ingress rules for the following services (once deployed):&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;chartmuseum&lt;/li&gt;
+&lt;li&gt;docker-registry&lt;/li&gt;
+&lt;li&gt;jenkins&lt;/li&gt;
+&lt;li&gt;monocular&lt;/li&gt;
+&lt;li&gt;nexus&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+By default, Jenkins X will expose the ingress via the *nip.io* domain and generate self-signed certificates. You can easily adapt them by using our own custom domain and certificate after the installation with `jx upgrade ingress --cluster`
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;h3 id=&#34;configure-git-source-repository&#34;&gt;Configure git source repository&lt;/h3&gt;
+
+&lt;p&gt;Jenkins X requires a git repository provider to be able to create the environment repositories. It defaults to GitHub if you did not provide a &lt;em&gt;git-provider-url&lt;/em&gt; parameter. You need to provide a username and a token that would be used to interact with the git, especially Jenkins.&lt;/p&gt;
+
+&lt;h2 id=&#34;create-admin-secrets&#34;&gt;Create Admin secrets&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X generates an administration password for Monocular/Nexus/Jenkins and save it in secrets. It then retrieves git secrets for the helm install (so they can be used in the pipelines).&lt;/p&gt;
+
+&lt;h3 id=&#34;clone-the-cloud-environments-repo&#34;&gt;Clone the cloud environments repo&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/cloud-environments&#34; target=&#34;_blank&#34;&gt;cloud environment repository&lt;/a&gt; holds all the specific configuration and encrypted secrets that will be applied to the Jenkins Platform on your Kubernetes cluster. The secrets are encrypted and unencrypted by the Helm package manager.&lt;/p&gt;
+
+&lt;h2 id=&#34;install-the-jenkins-x-platform&#34;&gt;Install the Jenkins X platform&lt;/h2&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform&#34; target=&#34;_blank&#34;&gt;Jenkins X Platform&lt;/a&gt; holds the Helm charts for installing the components that provide the Jenkins X true CD solution. These include&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkinsci/jenkins&#34; target=&#34;_blank&#34;&gt;Jenkins&lt;/a&gt; a CI/CD pipeline solution&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sonatype.com/nexus-repository-oss&#34; target=&#34;_blank&#34;&gt;Nexus&lt;/a&gt; an artifact repository&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes-helm/chartmuseum&#34; target=&#34;_blank&#34;&gt;ChartMuseum&lt;/a&gt; - a Helm Chart repository&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes-helm/monocular&#34; target=&#34;_blank&#34;&gt;Monocular&lt;/a&gt; which provides a Web UI for searching and discovering charts deployed into your cluster via Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

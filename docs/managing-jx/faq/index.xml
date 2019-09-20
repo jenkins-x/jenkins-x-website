@@ -1,0 +1,445 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – FAQ</title>
+    <link>/docs/managing-jx/faq/</link>
+    <description>Recent content in FAQ on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/managing-jx/faq/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Common Problems</title>
+      <link>/docs/managing-jx/faq/issues/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/faq/issues/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We have tried to collate common issues here with work arounds. If your issue isn&amp;rsquo;t listed here please &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34; target=&#34;_blank&#34;&gt;let us know&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;jenkins-x-does-not-startup&#34;&gt;Jenkins X does not startup&lt;/h2&gt;
+
+&lt;p&gt;If your install fails to start there could be a few different reasons why the Jenkins X pods don&amp;rsquo;t start.&lt;/p&gt;
+
+&lt;p&gt;Your cluster could be out of resources. You can check the spare resources on your cluster via &lt;a href=&#34;/commands/jx_status/&#34;&gt;jx status&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx status
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We also have a diagnostic command that looks for common problems &lt;a href=&#34;/commands/jx_step_verify_install/&#34;&gt;jx step verify install&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step verify install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A common issue for pods not starting is if your cluster does not have a &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34; target=&#34;_blank&#34;&gt;default storage class&lt;/a&gt; setup so that &lt;code&gt;Persistent Volume Claims&lt;/code&gt; can be bound to &lt;code&gt;Persistent Volumes&lt;/code&gt; as described in the &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install instructions&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can check your storage class and persistent volume setup via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get pvc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If things are working you should see something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ kubectl get pvc
+NAME                        STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+jenkins                     Bound     pvc-680b39b5-94f1-11e8-b93d-42010a840238   30Gi       RWO            standard       12h
+jenkins-x-chartmuseum       Bound     pvc-6808fb5e-94f1-11e8-b93d-42010a840238   8Gi        RWO            standard       12h
+jenkins-x-docker-registry   Bound     pvc-680a415c-94f1-11e8-b93d-42010a840238   100Gi      RWO            standard       12h
+jenkins-x-mongodb           Bound     pvc-680d6fd9-94f1-11e8-b93d-42010a840238   8Gi        RWO            standard       12h
+jenkins-x-nexus             Bound     pvc-680fc692-94f1-11e8-b93d-42010a840238   8Gi        RWO            standard       12h
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you see &lt;code&gt;status&lt;/code&gt; of &lt;code&gt;Pending&lt;/code&gt; then this indicates that you have no &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34; target=&#34;_blank&#34;&gt;default storage class&lt;/a&gt; setup on your kubnernetes cluster or you have ran out of persistent volume space.&lt;/p&gt;
+
+&lt;p&gt;Please try create a &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34; target=&#34;_blank&#34;&gt;default storage class&lt;/a&gt; for your cluster or contact your operations team or cloud provider.&lt;/p&gt;
+
+&lt;p&gt;If the &lt;code&gt;Persistent Volume Claims&lt;/code&gt; are all &lt;code&gt;Bound&lt;/code&gt; and things still have not started then try&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get pod
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If a pod cannot start try&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl describe pod some-pod-name
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Maybe that gives you a clue. Is it RBAC related maybe?&lt;/p&gt;
+
+&lt;p&gt;If you are still stuck try &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34; target=&#34;_blank&#34;&gt;create an issue&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;http-server-gave-http-response-to-https-client&#34;&gt;http: server gave HTTP response to HTTPS client&lt;/h2&gt;
+
+&lt;p&gt;If your pipeline fails with something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;The push refers to a repository [100.71.203.90:5000/lgil3/jx-test-app]
+time=&amp;quot;2018-07-09T21:18:31Z&amp;quot; level=fatal msg=&amp;quot;build step: pushing [100.71.203.90:5000/lgil3/jx-test-app:0.0.2]: Get https://100.71.203.90:5000/v1/_ping: http: server gave HTTP response to HTTPS client&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then this means that you are using the internal docker registry inside Jenkins X for your images but your kubernetes cluster&amp;rsquo;s docker daemons has not been configured for &lt;code&gt;insecure-registries&lt;/code&gt; so that you can use &lt;code&gt;http&lt;/code&gt; to talk to the docker registry service &lt;code&gt;jenkins-x-docker-registry&lt;/code&gt; in your cluster.&lt;/p&gt;
+
+&lt;p&gt;By default docker wants all docker registries to be exposed over &lt;code&gt;https&lt;/code&gt; and to use TLS and certificates. This should be done for all public docker registries. However when using Jenkins X with an internal local docker registry this is hard since its not available at a public DNS name and doesn&amp;rsquo;t have HTTPS or certificates; so we default to requiring &lt;code&gt;insecure-registry&lt;/code&gt; be configured on all the docker daemons for your kubernetes worker nodes.&lt;/p&gt;
+
+&lt;p&gt;We try to automate this setting when using &lt;code&gt;jx create cluster&lt;/code&gt;  e.g. on AWS we default this value to the IP range &lt;code&gt;100.64.0.0/10&lt;/code&gt; to match most kubernetes service IP addresses.&lt;/p&gt;
+
+&lt;p&gt;On &lt;a href=&#34;/commands/jx_create_cluster_eks/&#34;&gt;EKS&lt;/a&gt; we default to using ECR to avoid this issue. Similarly we will soon default to GCR and ACR on GKE and AKS respectively.&lt;/p&gt;
+
+&lt;p&gt;So a workaround is to use a real &lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/&#34;&gt;external docker registry&lt;/a&gt; or enable &lt;code&gt;insecure-registry&lt;/code&gt; on your docker daemons on your compute nodes on your Kubernetes cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;helm-fails-with-error-upgrade-failed-incompatible-versions-client-server&#34;&gt;Helm fails with Error: UPGRADE FAILED: incompatible versions client[&amp;hellip;] server[&amp;hellip;]&amp;rsquo;&lt;/h2&gt;
+
+&lt;p&gt;Generally speaking this happens when your laptop has a different version of helm to the version used in our build pack docker images and/or the version of tiller thats running in your server.&lt;/p&gt;
+
+&lt;p&gt;The simplest fix for this is to just &lt;a href=&#34;/news/helm-without-tiller/&#34;&gt;not use tiller at all&lt;/a&gt; - which actually helps avoid this problem ever happening and solves a raft of security issues too.&lt;/p&gt;
+
+&lt;p&gt;However switching from using Tiller to No Tiller does require a re-install of Jenkins X (though you could try do that in separate set of namespaces then move projects across incrementally?).&lt;/p&gt;
+
+&lt;p&gt;The manual workaround is to install the &lt;a href=&#34;https://github.com/helm/helm/releases&#34; target=&#34;_blank&#34;&gt;exact same version of helm as used on the server&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Or you can try switch tiller to match your client version:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;run &lt;code&gt;helm init --upgrade&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Though as soon as a pipeline runs it&amp;rsquo;ll switch the tiller version again so you&amp;rsquo;ll have to keep repeating the above.&lt;/p&gt;
+
+&lt;h2 id=&#34;error-creating-jenkins-credential-jenkins-x-chartmuseum-500-server-error&#34;&gt;error creating jenkins credential jenkins-x-chartmuseum 500 Server Error&lt;/h2&gt;
+
+&lt;p&gt;This is a &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/1234&#34; target=&#34;_blank&#34;&gt;pending issue&lt;/a&gt; which we will hopefully fix soon.&lt;/p&gt;
+
+&lt;p&gt;It basically happens if you have an old API token in &lt;code&gt;~/.jx/jenkinsAuth.yaml&lt;/code&gt; for your jenkins server URL. You can either:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;remove it from that file by hand&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;run the following command &lt;a href=&#34;/commands/jx_delete_jenkins_user/&#34;&gt;jx delete jenkins token&lt;/a&gt;:&lt;/p&gt;
+
+&lt;p&gt;jx delete jenkins token admin&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;errors-with-https-chartmuseum-build-cd-jenkins-x-io&#34;&gt;errors with &lt;a href=&#34;https://chartmuseum.build.cd.jenkins-x.io&#34; target=&#34;_blank&#34;&gt;https://chartmuseum.build.cd.jenkins-x.io&lt;/a&gt;&lt;/h2&gt;
+
+&lt;p&gt;If you see errors like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;error:failed to add the repository &#39;jenkins-x&#39; with URL &#39;https://chartmuseum.build.cd.jenkins-x.io&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Looks like &amp;quot;https://chartmuseum.build.cd.jenkins-x.io&amp;quot; is not a valid chart repository or cannot be reached
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;then it looks like you have a reference to an old chart museum URL for Jenkins X charts.&lt;/p&gt;
+
+&lt;p&gt;The new URL is: &lt;a href=&#34;http://chartmuseum.jenkins-x.io&#34; target=&#34;_blank&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;It could be your helm install has an old repository URL installed. You should see&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ helm repo list
+NAME     	URL
+stable   	https://kubernetes-charts.storage.googleapis.com
+jenkins-x	http://chartmuseum.jenkins-x.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you see this&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ helm repo list
+NAME     	URL
+jenkins-x	https://chartmuseum.build.cd.jenkins-x.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;then please run&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;helm repo remove jenkins-x
+helm repo add jenkins-x	http://chartmuseum.jenkins-x.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and you should be good to go again.&lt;/p&gt;
+
+&lt;p&gt;Another possible cause is an old URL in your environment&amp;rsquo;s git repository may have old references to the URL.&lt;/p&gt;
+
+&lt;p&gt;So open your &lt;code&gt;env/requirements.yaml&lt;/code&gt; in your staging/production git repositories and modify them to use the URL &lt;a href=&#34;http://chartmuseum.jenkins-x.io&#34; target=&#34;_blank&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/a&gt; instead of &lt;a href=&#34;https://chartmuseum.build.cd.jenkins-x.io&#34; target=&#34;_blank&#34;&gt;https://chartmuseum.build.cd.jenkins-x.io&lt;/a&gt; like this &lt;a href=&#34;https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml&#34; target=&#34;_blank&#34;&gt;env/requirements file&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;git-errors-post-401-bad-credentials&#34;&gt;git errors: POST 401 Bad credentials&lt;/h2&gt;
+
+&lt;p&gt;This indicates your git API token either was input incorrectly or has been regenerated and is now incorrect.&lt;/p&gt;
+
+&lt;p&gt;To recreate it with a new API token value try the following (changing the git server name to match your git provider):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx delete git token -n GitHub admin
+jx create git token -n GitHub admin
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;More details on &lt;a href=&#34;/docs/managing-jx/common-tasks/git/&#34;&gt;using git and Jenkins X here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;invalid-git-token-to-scan-a-project&#34;&gt;Invalid git token to scan a project&lt;/h2&gt;
+
+&lt;p&gt;If you get an error in Jenkins when it tries to scan your repositories for branches something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;hudson.AbortException: Invalid scan credentials *****/****** (API Token for acccessing https://github.com git service inside pipelines) to connect to https://api.github.com, skipping
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then your git API token was probably wrong or has expired.&lt;/p&gt;
+
+&lt;p&gt;To recreate it with a new API token value try the following (changing the git server name to match your git provider):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx delete git token -n GitHub admin
+jx create git token -n GitHub admin
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;More details on &lt;a href=&#34;/docs/managing-jx/common-tasks/git/&#34;&gt;using git and Jenkins X here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;what-are-the-credentials-to-access-core-services&#34;&gt;What are the credentials to access core services?&lt;/h2&gt;
+
+&lt;p&gt;Authenticated core services of Jenkins X include Jenkins, Nexus, ChartMuseum.  The default username is &lt;code&gt;admin&lt;/code&gt;and the password by default is generated and printed out in the terminal after &lt;code&gt;jx create cluster&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;set-admin-username-and-password-values-for-core-services&#34;&gt;Set Admin Username and Password values for Core Services&lt;/h3&gt;
+
+&lt;p&gt;You can also set the admin username via the &lt;code&gt;--default-admin-username=username&lt;/code&gt; flag.&lt;/p&gt;
+
+&lt;aside class=&#34;admonition note&#34;&gt;
+    &lt;div class=&#34;note-icon&#34;&gt;
+        
+    &lt;/div&gt;
+    
+    
+    &lt;div class=&#34;admonition-content&#34;&gt;
+Perhaps you are using the  Active Directory security realm in Jenkins.  It is in this scenario that setting the Admin Username via the `--default-admin-username` based on your existing service accounts makes sense.
+
+You may also pass this value via the `myvalues.yaml`.
+&lt;/div&gt;
+&lt;/aside&gt;
+
+&lt;p&gt;If you would like to set the default password yourself then you can set the flag &lt;code&gt;--default-admin-password=foo&lt;/code&gt; to the two comamnds above.&lt;/p&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t have the terminal console output anymore you can look in the local file &lt;code&gt;~/.jx/jenkinsAuth.yaml&lt;/code&gt; and find the password that matches your Jenkins server URL for the desired cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;persistent-volume-claims-do-not-bind&#34;&gt;Persistent Volume Claims do not bind&lt;/h2&gt;
+
+&lt;p&gt;If you notice that the persistent volume claims created when installing Jenkins X don&amp;rsquo;t bind with&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get pvc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The you should check that you have a cluster default storage class for dynamic persistent volume provisioning.  See &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt; for more details.&lt;/p&gt;
+
+&lt;h2 id=&#34;i-cannot-connect-to-nodes-on-aws&#34;&gt;I cannot connect to nodes on AWS&lt;/h2&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t see any valid nodes returned by &lt;code&gt;kubectl get node&lt;/code&gt; or you get errors running &lt;code&gt;jx status&lt;/code&gt; something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Unable to connect to the server: dial tcp: lookup abc.def.regino.eks.amazonaws.com on 10.0.0.2:53: no such host
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;it could be your kube config is stale. Try&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;aws eks --region &amp;lt;CLUSTER_REGION&amp;gt; update-kubeconfig --name &amp;lt;CLUSTER_NAME&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That should regenerate your local &lt;code&gt;~/kube/config&lt;/code&gt; file and so &lt;code&gt;kubectl get node&lt;/code&gt; or &lt;code&gt;jx status&lt;/code&gt; should find your nodes&lt;/p&gt;
+
+&lt;h2 id=&#34;how-can-i-diagnose-exposecontroller-issues&#34;&gt;How can I diagnose exposecontroller issues?&lt;/h2&gt;
+
+&lt;p&gt;When you &lt;a href=&#34;/docs/managing-jx/faq/#how-does-promotion-actually-work&#34;&gt;promote a new version of your application to an environment&lt;/a&gt;, such as the Staging Environment a Pull Request is raised on the environment repository.&lt;/p&gt;
+
+&lt;p&gt;When the master pipeline runs on an environment a Kubernetes &lt;code&gt;Job&lt;/code&gt; is created for &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; which runs a pod until it terminates.&lt;/p&gt;
+
+&lt;p&gt;It can be tricky finding the log for temporary jobs since the pod is removed.&lt;/p&gt;
+
+&lt;p&gt;One way to diagnose logs in your, say, Staging environment is to &lt;a href=&#34;https://github.com/boz/kail&#34; target=&#34;_blank&#34;&gt;download and install kail&lt;/a&gt; and add it to your &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then run this command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kail -l job-name=expose -n jx-staging
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you then promote to the Staging environment or retrigger the pipeline on the &lt;code&gt;master&lt;/code&gt; branch of your Staging git repository (e.g. via &lt;a href=&#34;/commands/jx_start_pipeline/&#34;&gt;jx start pipeline&lt;/a&gt;) then you should see the output of the &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; pod.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-is-promotion-really-slow&#34;&gt;Why is promotion really slow?&lt;/h2&gt;
+
+&lt;p&gt;If you find you get lots of warnings in your pipelines like this&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;quot;Failed to query the Pull Request last commit status for https://github.com/myorg/environment-mycluster-staging/pull/1 ref xyz Could not find a status for repository myorg/environment-mycluster-staging with ref xyz
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and promotion takes 30 minutes from a release pipeline on an application starting to the change hitting &lt;code&gt;Staging&lt;/code&gt; then its mostly probably due to Webhooks.&lt;/p&gt;
+
+&lt;p&gt;When we &lt;a href=&#34;/docs/using-jx/common-tasks/import/&#34;&gt;import projects&lt;/a&gt; or &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;create quickstarts&lt;/a&gt; we automate the setup of CI/CD pipelines for the git repository. What this does is setup Webhooks on the git repository to trigger Jenkins X to trigger pipelines (either using Prow for &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; or the static jenkins server if not).&lt;/p&gt;
+
+&lt;p&gt;However sometimes your git provider (e.g. &lt;a href=&#34;https://github.com/&#34; target=&#34;_blank&#34;&gt;GitHub&lt;/a&gt; may not be able to do connect to your Jenkins X installation (e.g. due to networking / firewall issues).&lt;/p&gt;
+
+&lt;p&gt;The easiest way to diagnose this is opening the git repository (e.g. for your environment repository).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get env
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;click on the generated URL for, say, your &lt;code&gt;Staging&lt;/code&gt;  git repository&lt;/li&gt;
+&lt;li&gt;click the &lt;code&gt;Settings&lt;/code&gt; icon&lt;/li&gt;
+&lt;li&gt;select the &lt;code&gt;Webhooks&lt;/code&gt; tab on the left&lt;/li&gt;
+&lt;li&gt;select your Jenkins X webhook URL&lt;/li&gt;
+&lt;li&gt;view the last webhook - did it succeed? Try re-trigger it? That should highlight any network issues etc&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you cannot use public webhooks you could look at something like &lt;a href=&#34;http://www.ultrahook.com/&#34; target=&#34;_blank&#34;&gt;ultrahook&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;cannot-create-cluster-minikube&#34;&gt;Cannot create cluster minikube&lt;/h2&gt;
+
+&lt;p&gt;If you are using a Mac then &lt;code&gt;hyperkit&lt;/code&gt; is the best VM driver to use - but does require you to install a recent &lt;a href=&#34;https://docs.docker.com/docker-for-mac/install/&#34; target=&#34;_blank&#34;&gt;Docker for Mac&lt;/a&gt; first. Maybe try that then retry &lt;code&gt;jx create cluster minikube&lt;/code&gt;?&lt;/p&gt;
+
+&lt;p&gt;If your minikube is failing to startup then you could try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;minikube delete
+rm -rf ~/.minikube
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If the &lt;code&gt;rm&lt;/code&gt; fails you may need to do:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo rm -rf ~/.minikube
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now try &lt;code&gt;jx create cluster minikube&lt;/code&gt; again - did that help? Sometimes there are stale certs or files hanging around from old installations of minikube that can break things.&lt;/p&gt;
+
+&lt;p&gt;Sometimes a reboot can help in cases where virtualisation goes wrong ;)&lt;/p&gt;
+
+&lt;p&gt;Otherwise you could try follow the minikube instructions&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes/minikube#installation&#34; target=&#34;_blank&#34;&gt;install minikube&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes/minikube#quickstart&#34; target=&#34;_blank&#34;&gt;run minikube start&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;minkube-and-hyperkit-could-not-find-an-ip-address&#34;&gt;Minkube and hyperkit: Could not find an IP address&lt;/h2&gt;
+
+&lt;p&gt;If you are using minikube on a mac with hyperkit and find minikube fails to start with a log like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
+Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
+Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
+Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It could be you have hit &lt;a href=&#34;https://github.com/kubernetes/minikube/issues/1926#issuecomment-356378525&#34; target=&#34;_blank&#34;&gt;this issue in minikube and hyperkit&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The work around is to try the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;rm ~/.minikube/machines/minikube/hyperkit.pid
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then try again. Hopefully this time it will work!&lt;/p&gt;
+
+&lt;h2 id=&#34;cannot-access-services-on-minikube&#34;&gt;Cannot access services on minikube&lt;/h2&gt;
+
+&lt;p&gt;When running minikube locally &lt;code&gt;jx&lt;/code&gt; defaults to using &lt;a href=&#34;http://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; as a way of using nice-isn DNS names for services and working around the fact that most laptops can&amp;rsquo;t do wildcard DNS. However sometimes &lt;a href=&#34;http://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; has issues and does not work.&lt;/p&gt;
+
+&lt;p&gt;To avoid using &lt;a href=&#34;http://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; you can do the following:&lt;/p&gt;
+
+&lt;p&gt;Edit the file &lt;code&gt;~/.jx/cloud-environments/env-minikube/myvalues.yaml&lt;/code&gt; and add the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;expose:
+  Args:
+    - --exposer
+    - NodePort
+    - --http
+    - &amp;quot;true&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then re-run &lt;code&gt;jx install&lt;/code&gt; and this will switch the services to be exposed on &lt;code&gt;node ports&lt;/code&gt; instead of using ingress and DNS.&lt;/p&gt;
+
+&lt;p&gt;So if you type:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx open
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You&amp;rsquo;ll see all the URs of the form &lt;code&gt;http://$(minikube ip):somePortNumber&lt;/code&gt; which then avoids going through &lt;a href=&#34;http://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; - it just means the URLs are a little more cryptic using magic port numbers rather than simple host names.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-get-the-password-and-username-for-jenkins&#34;&gt;How do I get the Password and Username for Jenkins?&lt;/h2&gt;
+
+&lt;p&gt;Install &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34; target=&#34;_blank&#34;&gt;KSD&lt;/a&gt; by running &lt;code&gt;go get github.com/mfuentesg/ksd&lt;/code&gt; and then run &lt;code&gt;kubectl get secret jenkins -o yaml | ksd&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-see-the-log-of-exposecontroller&#34;&gt;How do I see the log of exposecontroller?&lt;/h2&gt;
+
+&lt;p&gt;Usually we run the [exposecontroller]() as a post install &lt;code&gt;Job&lt;/code&gt; when we perform promotion to &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; to expose services over Ingress and possibly inject external URLs into applications configuration.&lt;/p&gt;
+
+&lt;p&gt;So the &lt;code&gt;Job&lt;/code&gt; will trigger a short lived &lt;code&gt;Pod&lt;/code&gt; to run in the namespace of your environment, then the pod will be deleted.&lt;/p&gt;
+
+&lt;p&gt;If you want to view the logs of the &lt;code&gt;exposecontroller&lt;/code&gt; you will need to watch for the logs using a selector then trigger the promotion pipeline to capture it.&lt;/p&gt;
+
+&lt;p&gt;One way to do that is via the &lt;a href=&#34;https://github.com/boz/kail&#34; target=&#34;_blank&#34;&gt;kail&lt;/a&gt; CLI:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kail -l  job-name=expose
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will watch for exposecontroller logs and then dump them to the console. Now trigger a promotion pipeline and you should see the output within a minute or so.&lt;/p&gt;
+
+&lt;h2 id=&#34;cannot-create-tls-certificates-during-ingress-setup&#34;&gt;Cannot create TLS certificates during Ingress setup&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.cert-manager.io/en/latest/index.html&#34; target=&#34;_blank&#34;&gt;cert-manager&lt;/a&gt; cert-manager is a seperate project from &lt;em&gt;Jenkins X&lt;/em&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Newly created GKE clusters or existing cluster running &lt;em&gt;kubernetes&lt;/em&gt; &lt;strong&gt;v1.12&lt;/strong&gt; or older will encounter the following error when configuring Ingress with site-wide TLS:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Waiting for TLS certificates to be issued...
+Timeout reached while waiting for TLS certificates to be ready
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This issue is caused by the &lt;em&gt;cert-manager&lt;/em&gt; pod not having the &lt;code&gt;disable-validation&lt;/code&gt; label set, which is a known cert-manager issue which is &lt;a href=&#34;https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html&#34; target=&#34;_blank&#34;&gt;documented on their website&lt;/a&gt;. The following steps, taken from the &lt;a href=&#34;https://docs.cert-manager.io/en/latest/getting-started/troubleshooting.html#troubleshooting-installation&#34; target=&#34;_blank&#34;&gt;cert-manager/troubleshooting-installation&lt;/a&gt; webpage, should resolve the issue:&lt;/p&gt;
+
+&lt;p&gt;Check if the &lt;em&gt;disable-validation&lt;/em&gt; label exists on the &lt;em&gt;cert-manager&lt;/em&gt; pod.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl describe namespace cert-manager
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you cannot see the &lt;code&gt;certmanager.k8s.io/disable-validation=true&lt;/code&gt; label on your namespace, you should add it with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Confirm the label has been added to the &lt;em&gt;cert-manager&lt;/em&gt; pod.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl describe namespace cert-manager
+
+Name:         cert-manager
+Labels:       certmanager.k8s.io/disable-validation=true
+Annotations:  &amp;lt;none&amp;gt;
+Status:       Active
+...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now rerun &lt;em&gt;jx&lt;/em&gt; Ingress setup:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx upgrade ingress
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;While the ingress command is running, you can tail the &lt;em&gt;cert-manager&lt;/em&gt; logs in another terminal and see what is happening. You will need to find the name of your &lt;em&gt;cert-manager&lt;/em&gt; pod using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get pods --namespace cert-manager
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then tail the logs of the &lt;em&gt;cert-manager&lt;/em&gt; pod.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl logs YOUR_CERT_MNG_POD --namespace cert-manager -f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Your TLS certificates should now be set up and working, otherwise checkout the &lt;a href=&#34;https://docs.cert-manager.io/en/latest/getting-started/troubleshooting.html&#34; target=&#34;_blank&#34;&gt;official &lt;em&gt;cert-manager&lt;/em&gt; troubleshooting&lt;/a&gt; instructions.&lt;/p&gt;
+
+&lt;h2 id=&#34;other-issues&#34;&gt;Other issues&lt;/h2&gt;
+
+&lt;p&gt;Please &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34; target=&#34;_blank&#34;&gt;let us know&lt;/a&gt; and see if we can help? Good luck!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

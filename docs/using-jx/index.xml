@@ -1,0 +1,213 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Using Jenkins X</title>
+    <link>/docs/using-jx/</link>
+    <description>Recent content in Using Jenkins X on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/using-jx/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Core Tasks</title>
+      <link>/docs/using-jx/common-tasks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/common-tasks/</guid>
+      <description>
+        
+        
+        
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: FAQ</title>
+      <link>/docs/using-jx/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/faq/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;how-do-i-inject-environment-specific-configuration&#34;&gt;How do I inject environment specific configuration?&lt;/h2&gt;
+
+&lt;p&gt;Each environment in Jenkins X is defined in a git repository; we use GitOps to manage all changes in each environment such as:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;adding/removing apps&lt;/li&gt;
+&lt;li&gt;changing the version of an app (up or down)&lt;/li&gt;
+&lt;li&gt;configuring any app with environment specific values&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The first two items are defined in the &lt;code&gt;env/requirements.yaml&lt;/code&gt;  file in the git repository for your environment. the latter is defined in the &lt;code&gt;env/values.yaml&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Helm charts use a &lt;a href=&#34;https://github.com/helm/helm/blob/master/docs/chart_template_guide/values_files.md&#34; target=&#34;_blank&#34;&gt;values.yaml file&lt;/a&gt; so that you can override any configuration inside your Chart to modify settings such as labels or annotations on any resource or configurations of resources (e.g. &lt;code&gt;replicaCount&lt;/code&gt;) or to pass in things like environment variables into a &lt;code&gt;Deployment&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;So if you wish to change, say, the &lt;code&gt;replicaCount&lt;/code&gt; of an app &lt;code&gt;foo&lt;/code&gt; in &lt;code&gt;Staging&lt;/code&gt; then find the git repository for the &lt;code&gt;Staging&lt;/code&gt; environment via &lt;a href=&#34;/commands/jx_get_environments/&#34;&gt;jx get env&lt;/a&gt; to find the git URL.&lt;/p&gt;
+
+&lt;p&gt;Navigate to the &lt;code&gt;env/values.yaml&lt;/code&gt; file and add/edit a bit of YAML like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;foo:
+  replicaCount: 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Submit that change as a Pull Request so it can go through the CI tests and any peer review/approval required; then when its merged it master it will modify the &lt;code&gt;replicaCount&lt;/code&gt; of the &lt;code&gt;foo&lt;/code&gt; application (assuming there&amp;rsquo;s a chart called &lt;code&gt;foo&lt;/code&gt; in the &lt;code&gt;env/requirements.yaml&lt;/code&gt; file)&lt;/p&gt;
+
+&lt;p&gt;You can use vanilla helm to do things like injecting the current namespace if you need that.&lt;/p&gt;
+
+&lt;p&gt;To see a more complex example of how you can use a &lt;code&gt;values.yaml&lt;/code&gt; file to inject into charts, see how we use these files to &lt;a href=&#34;/docs/managing-jx/common-tasks/config/&#34;&gt;configure Jenkins X itself&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-manage-secrets-in-each-environment&#34;&gt;How do I manage secrets in each environment?&lt;/h2&gt;
+
+&lt;p&gt;We’re using sealed secrets ourselves to manage our production Jenkins X install for all of our CI/CD - so the secrets get encrypted and checked into the git repo of each environment. We use the &lt;a href=&#34;https://github.com/futuresimple/helm-secrets&#34; target=&#34;_blank&#34;&gt;helm-secrets&lt;/a&gt; plugin to do this.&lt;/p&gt;
+
+&lt;p&gt;Though a nicer approach would be using a Vault operator which we’re investigating now - which would fetch + populate secrets (and recycle them etc) via Vault.&lt;/p&gt;
+
+&lt;h2 id=&#34;when-do-preview-environments-get-removed&#34;&gt;When do Preview Environments get removed?&lt;/h2&gt;
+
+&lt;p&gt;We have a background garbage collection job which removes Preview Environments after the Pull Request is closed/merged. You can run it any time you like via the &lt;a href=&#34;/commands/jx_gc_previews/&#34;&gt;jx gc previews&lt;/a&gt; command&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx gc previews
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can also view the current previews via  &lt;a href=&#34;/commands/jx_get_previews/&#34;&gt;jx get previews&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;  jx get previews
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and delete a preview by choosing one to delete via &lt;a href=&#34;/commands/jx_delete_preview/&#34;&gt;jx delete preview&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; jx delete preview
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;how-do-i-add-other-services-into-a-preview&#34;&gt;How do I add other services into a Preview?&lt;/h2&gt;
+
+&lt;p&gt;When you create a Pull Request by default Jenkins X creates a new &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environment&lt;/a&gt;. Since this is a new dynamic namespace you may want to configure additional microservices in the namespace so you can properly test your preview build.&lt;/p&gt;
+
+&lt;p&gt;To find out more see &lt;a href=&#34;/docs/reference/preview/#adding-more-resources&#34;&gt;how to add dependent charts, services or configuration to your preview environment&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;can-i-use-my-existing-release-pipeline&#34;&gt;Can I use my existing release pipeline?&lt;/h2&gt;
+
+&lt;p&gt;With Jenkins X you are free to create your own pipeline to do the release if you wish; though doing so means you miss out on our &lt;a href=&#34;/extending/&#34;&gt;extension model&lt;/a&gt; which lets you easily enable various extension Apps like Governance, Compliance, code quality, code coverage, security scanning, vulnerability testing and various other extensions which are being added all the time through our community.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ve specifically built this extension model to minimise the work your teams have in having to edit + maintain pipelines across many separate microservices; the idea is we&amp;rsquo;re trying to automate both the pipelines and the extensions to the pipelines so teams can focus on their actual code and less on the CI/CD plumbing which is pretty much all undifferentiated heavy lifting these days.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-does-promotion-actually-work&#34;&gt;How does promotion actually work?&lt;/h2&gt;
+
+&lt;p&gt;The kubernetes resources being deployed are defined as YAML files in the source code of your application in &lt;code&gt;charts/myapp/templates/*.yaml&lt;/code&gt;. If you don&amp;rsquo;t specify anything then Jenkins X creates default resources (a &lt;code&gt;Service + Deployment&lt;/code&gt;) but you are free to add any k8s resources as YAML into that folder (&lt;code&gt;PVCs, ConfigMaps, Services&lt;/code&gt;, etc).&lt;/p&gt;
+
+&lt;p&gt;Then the Jenkins X release pipeline automatically tars up the YAML files into an immutable versioned tarball (using the same version number as the docker image, git tag and release notes) and deploys it into a chart repository of your choice (defaults to chartmuseum but you can easily switch that to cloud storage/nexus/whatever) so that the immutable release can be easily used by any promotion.&lt;/p&gt;
+
+&lt;p&gt;Promotion in Jenkins X is completely separate to Release &amp;amp; we support promoting any releases if packaged as a helm chart. Promotion via &lt;a href=&#34;/docs/using-jx/common-tasks/promote/&#34;&gt;jx promote&lt;/a&gt; CLI generates a Pull Request in the git repository for an environment (Staging, Canary, Production or whatever). This is GitOps basically - specifying which versions and configurations of which apps are in each environment using a git repository and configuration as code.&lt;/p&gt;
+
+&lt;p&gt;The PR triggers a CI pipeline to verify the changes are valid (e.g. the helm chart exists and can be downloaded, the docker images exist etc). Whenever the PR gets merged (could be automatically or may require additional reviews/+1s/JIRA/ServiceNow tickets or whatever) - then another pipeline is triggered to apply the helm charts from the master branch to the destination k8s cluster and namespace.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X automates all of the above but given both these pipelines are defined in the environments git repository in a &lt;code&gt;Jenkinsfile&lt;/code&gt; you are free to customise to add your own pre/post steps if you wish. e.g. you could analyse the YAML to pre-provision PVs for any PVCs using some custom disk snapshot tool you may have.  Or you can do that in a pre or post-install helm hook job. Though we&amp;rsquo;d prefer these tools to be created as part of the Jenkins X &lt;a href=&#34;/extending/&#34;&gt;extension model&lt;/a&gt; to avoid custom pipeline hacking which could break in future Jenkins X releases - though its not a huge biggie.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-change-the-owner-of-a-docker-image&#34;&gt;How do I change the owner of a docker image&lt;/h2&gt;
+
+&lt;p&gt;When using a docker registry like gcr.io then the docker image owner &lt;code&gt;gcr.io/owner/myname:1.2.3&lt;/code&gt; can be different to your git owner/organisation.&lt;/p&gt;
+
+&lt;p&gt;On Google&amp;rsquo;s GCR this is usually your GCP Project ID; which you can have many different projects to group images together.&lt;/p&gt;
+
+&lt;p&gt;There&amp;rsquo;s a few options for defining which docker registry owner to use:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;specify it in your &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;dockerRegistryHost: gcr.io
+dockerRegistryOwner: my-gcr-project-id
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;specify it in the &lt;a href=&#34;/docs/reference/components/custom-resources/&#34;&gt;Environment CRD&lt;/a&gt; called &lt;code&gt;dev&lt;/code&gt; at &lt;code&gt;env.spec.teamSettings.dockerRegistryOrg&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;define the environment variable &lt;code&gt;DOCKER_REGISTRY_ORG&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If none of those are found then the code defaults to the git repository owner.&lt;/p&gt;
+
+&lt;p&gt;For more details the code to resolve it is &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/65962ff5ef1a6d1c4776daee0163434c9c2cb566/pkg/cmd/opts/docker.go#L14&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;what-if-my-team-does-not-want-to-use-helm&#34;&gt;What if my team does not want to use helm?&lt;/h2&gt;
+
+&lt;p&gt;To help automate CI/CD with GitOps we assume helm charts are created as part of the automated project setup and CI/CD. e.g. just &lt;a href=&#34;/docs/using-jx/common-tasks/import/&#34;&gt;import your source code&lt;/a&gt; and a docker image + helm chart will be generated for you - the developers don&amp;rsquo;t need to know or care if they don&amp;rsquo;t want to use helm:&lt;/p&gt;
+
+&lt;p&gt;If a developer wants to specifically create a specific resource (e.g. &lt;code&gt;Secret, ConfigMap&lt;/code&gt; etc) they can just hack the YAML directly in &lt;code&gt;charts/myapp/templates/*.yaml&lt;/code&gt;. Increasingly most IDEs now have UI wizards for creating + editing kubernetes resources.&lt;/p&gt;
+
+&lt;p&gt;By default things like resource limits are put in &lt;code&gt;values.yaml&lt;/code&gt; so its easy to customise those as needed in different environments (requests/limits, liveness probe timeouts and the like).&lt;/p&gt;
+
+&lt;p&gt;If you have a developer who is fundamentally opposed to helm&amp;rsquo;s configuration management solution for environment specific configuration you can just opt out of that and just use helm as a way to version and download immutable tarballs of YAML and just stick to vanilla YAML files in, say, &lt;code&gt;charts/myapp/templates/deployment.yaml&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;Then if you wish to use another configuration management tool you can add it in - e.g. &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/2302&#34; target=&#34;_blank&#34;&gt;kustomise support&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-change-the-domain-of-serverless-apps&#34;&gt;How do I change the domain of serverless apps?&lt;/h2&gt;
+
+&lt;p&gt;If you use &lt;a href=&#34;/docs/managing-jx/tutorials/serverless-apps/&#34;&gt;serverless apps&lt;/a&gt; with Knative we don&amp;rsquo;t use thee default exposecontroller mechanism for defaulting the &lt;code&gt;Ingress&lt;/code&gt; resources since knative does not use kubernetes &lt;code&gt;Service&lt;/code&gt; resources.&lt;/p&gt;
+
+&lt;p&gt;You can work around this by manually editing the &lt;em&gt;knative&lt;/em&gt; config via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl edit cm config-domain --namespace knative-serving
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For more help see &lt;a href=&#34;https://knative.dev/docs/serving/using-a-custom-domain/&#34; target=&#34;_blank&#34;&gt;using a custom domain with knative&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;can-i-reuse-exposecontroller-for-my-apps&#34;&gt;Can I reuse exposecontroller for my apps?&lt;/h2&gt;
+
+&lt;p&gt;You should be able to use &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; directly in any app you deploy in any environment (e.g. Staging or Production) as we already trigger exposecontroller on each new release.&lt;/p&gt;
+
+&lt;p&gt;We use &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; for Jenkins X to handle the generation of &lt;code&gt;Ingress&lt;/code&gt; resources so that we can support wildcard DNS on a domain or automate the setup of HTTPS/TLS along with injecting external endpoints into applications in ConfigMaps via &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources&#34; target=&#34;_blank&#34;&gt;annotations&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To get &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; to generate the &lt;code&gt;Ingress&lt;/code&gt; for a &lt;code&gt;Service&lt;/code&gt; just &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md#label&#34; target=&#34;_blank&#34;&gt;add the label to your Service&lt;/a&gt;. e.g. add this to your &lt;code&gt;charts/myapp/templates/service.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+  annotations:
+    fabric8.io/expose: &amp;quot;true&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you want to inject the URL or host name of the external URL or your ingress just &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller/blob/master/README.md#using-the-expose-url-in-other-resources&#34; target=&#34;_blank&#34;&gt;use these annotations&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-to-add-custom-annotations-to-ingress-controller&#34;&gt;How To Add Custom Annotations to Ingress Controller?&lt;/h2&gt;
+
+&lt;p&gt;There may be times when you need to add your custom annotations to the ingress controller or &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34; target=&#34;_blank&#34;&gt;exposecontroller&lt;/a&gt; which &lt;code&gt;jx&lt;/code&gt; uses to expose services.&lt;/p&gt;
+
+&lt;p&gt;You can add a list of annotations to your application&amp;rsquo;s service Helm Chart, which is found in your app&amp;rsquo;s code repository.&lt;/p&gt;
+
+&lt;p&gt;A custom annotation may be added to the &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; and it may look as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# Default values for node projects.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  repository: draft
+  tag: dev
+  pullPolicy: IfNotPresent
+service:
+  name: node-app
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 8080
+  annotations:
+    fabric8.io/expose: &amp;quot;true&amp;quot;
+    fabric8.io/ingress.annotations: &amp;quot;kubernetes.io/ingress.class: nginx&amp;quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To see an example of where we add multiple annotations that the &lt;code&gt;exposecontroller&lt;/code&gt; adds to generated ingress rules, take a look at this &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/08a304ff03a3e19a8eb270888d320b4336237005/values.yaml#L655&#34; target=&#34;_blank&#34;&gt;values.yaml&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

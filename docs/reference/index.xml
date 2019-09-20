@@ -1,0 +1,1312 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Reference</title>
+    <link>/docs/reference/</link>
+    <description>Recent content in Reference on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/reference/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Components in Jenkins X</title>
+      <link>/docs/reference/components/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/components/</guid>
+      <description>
+        
+        
+        
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: jx commands</title>
+      <link>/docs/reference/commands/</link>
+      <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/commands/</guid>
+      <description>
+        
+        
+        
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Jenkins X Boot</title>
+      <link>/docs/reference/boot/</link>
+      <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/boot/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;We&amp;rsquo;ve learnt over the last 1-2 years that there are many different kinds of Kubernetes cluster and ways of setting up things like Ingress, DNS, domains, certificates which leads to complexity in the current &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; and &lt;a href=&#34;/commands/jx_install/&#34;&gt;jx install&lt;/a&gt; commands.&lt;/p&gt;
+
+&lt;p&gt;Plus its now recommended to use tools like Terraform to manage all of your cloud resources: creating/updating Kubernetes clusters, cloud storage buckets, service accounts, KMS etc.&lt;/p&gt;
+
+&lt;p&gt;We found we had lots of different bits of install logic spread across all kinds of different ways of installing (e.g. &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt;, &lt;a href=&#34;/commands/jx_install/&#34;&gt;jx install&lt;/a&gt;, the use of the &lt;a href=&#34;/docs/managing-jx/common-tasks/manage-via-gitops/&#34;&gt;&amp;ndash;gitops flag&lt;/a&gt; together with the different ways of managing production secrets - that were hard to test and keep solid.&lt;/p&gt;
+
+&lt;p&gt;We also hit issues that the &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; and &lt;a href=&#34;/commands/jx_install/&#34;&gt;jx install&lt;/a&gt; commands would install things like ingress controller and not give users the chance to configure/override their installation.&lt;/p&gt;
+
+&lt;p&gt;Users often struggled with understanding how to easily configure and override things; or upgrade values after things have been installed.&lt;/p&gt;
+
+&lt;p&gt;So we wanted to come up with a new cleaner approach which worked for every kind of installation and provided a standard way to extend and customise the configuration via &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; and helm style configuration.&lt;/p&gt;
+
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+
+&lt;p&gt;The new &lt;em&gt;Jenkins X Boot&lt;/em&gt; mechanism uses the following approach:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;create your kubernetes cluster however you want:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;use Terraform to create your kubernetes clusters + the associated cloud resources&lt;/li&gt;
+&lt;li&gt;use your cloud providers web console to create a new kubernetes cluster&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;use &lt;code&gt;jx create cluster --skip-installation&lt;/code&gt; e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --skip-installation
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;use some custom tool of your choice or maybe its provided to you by your operations team&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;you may want to verify you can communicate correctly with your kubernetes cluster via:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get ns
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;fork or clone the git repository for the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34; target=&#34;_blank&#34;&gt;install requirements and configuration&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;git clone https://github.com/jenkins-x/jenkins-x-boot-config.git my-jx-config
+cd my-jx-config
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;if you want to reset the existing parameters in the git repository just remove the parameters file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;rm env/parameters.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;review the configuration to see if there&amp;rsquo;s anything you want to change in the &lt;code&gt;values.yaml&lt;/code&gt; files - you can always skip this step and come back later.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;run the &lt;a href=&#34;/commands/jx_boot&#34;&gt;jx boot&lt;/a&gt; command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx boot
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You will now be prompted for any missing parameters required to install such as your admin user/password, the Pipeline git user and token etc.&lt;/p&gt;
+
+&lt;p&gt;Then Jenkins X should be installed and setup on your kubernetes cluster.&lt;/p&gt;
+
+&lt;h3 id=&#34;about-jx-boot&#34;&gt;About &amp;lsquo;jx boot&amp;rsquo;&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&#34;/commands/jx_boot&#34;&gt;jx boot&lt;/a&gt; interprets the boot pipeline using your local &lt;code&gt;jx&lt;/code&gt; binary. The underlying pipeline for booting Jenkins X can later on be ran inside kubernetes via Tekton. If ever something goes wrong with tekton you can always &lt;code&gt;jx boot&lt;/code&gt; again to get things back up and running (e.g. if someone accidentally deletes your cluster).&lt;/p&gt;
+
+&lt;h4 id=&#34;pre-and-post-validation&#34;&gt;Pre and Post Validation&lt;/h4&gt;
+
+&lt;p&gt;Before any installation is attempted it runs the &lt;a href=&#34;/commands/jx_step_verify_preinstall/&#34;&gt;jx step verify preinstall&lt;/a&gt; command to check everything looks OK. If you are using Terraform (so that your &amp;lsquo;jx-requirements.yml&amp;rsquo; file has &lt;code&gt;terraform: true&lt;/code&gt;) it will fail if Terraform has not created the required cloud resources. Otherwise they are lazily created for you if they don&amp;rsquo;t exist.&lt;/p&gt;
+
+&lt;p&gt;Once the installation has completed the &lt;a href=&#34;/commands/jx_step_verify_install/&#34;&gt;jx step verify install&lt;/a&gt; command is run to verify your installation is valid.&lt;/p&gt;
+
+&lt;h2 id=&#34;changing-your-installation&#34;&gt;Changing your installation&lt;/h2&gt;
+
+&lt;p&gt;At any time you can re-run &lt;a href=&#34;/commands/jx_boot&#34;&gt;jx boot&lt;/a&gt; to re-apply any changes in your configuration.&lt;/p&gt;
+
+&lt;p&gt;So just edit anything in the configuration you like and re-run &lt;a href=&#34;/commands/jx_boot&#34;&gt;jx boot&lt;/a&gt; - whether thats to add or remove Apps, to change parameters or configuration or upgrade or downgrade versions of dependencies.&lt;/p&gt;
+
+&lt;h2 id=&#34;requirements&#34;&gt;Requirements&lt;/h2&gt;
+
+&lt;p&gt;There is a file called &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; which is used to specify the logical requirements of your installation; such as:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;what kubernetes provider to use&lt;/li&gt;
+&lt;li&gt;whether to store secrets in the local file system or vault&lt;/li&gt;
+&lt;li&gt;if you are using Terraform to manage your cloud resources&lt;/li&gt;
+&lt;li&gt;if you wish to use kaniko for container image builds&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is the main configuration file for &lt;code&gt;jx boot&lt;/code&gt; and where you make most of your changes. You may want to review the  &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; file and make any changes you need.&lt;/p&gt;
+
+&lt;h2 id=&#34;secrets&#34;&gt;Secrets&lt;/h2&gt;
+
+&lt;p&gt;Boot currently supports the following options for managing secrets:&lt;/p&gt;
+
+&lt;h3 id=&#34;local-storage&#34;&gt;Local Storage&lt;/h3&gt;
+
+&lt;p&gt;This is the default or can be explicitly configured via &lt;code&gt;secretStorage: local&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+secretStorage: local
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If enabled secrets are loaded/saved into the folder &lt;code&gt;~/.jx/localSecrets/$clusterName&lt;/code&gt;. You can use &lt;code&gt;$JX_HOME&lt;/code&gt; to change the location of &lt;code&gt;~/.jx&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;vault&#34;&gt;Vault&lt;/h3&gt;
+
+&lt;p&gt;This is the recommended approach when using GKE or EKS providers. It can be explicitly configured via &lt;code&gt;secretStorage: vault&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+secretStorage: vault
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This configuration will cause &lt;code&gt;jx boot&lt;/code&gt;&amp;rsquo;s pipeline to install a Vault using KMS and a cloud storage bucket to load/save secrets.&lt;/p&gt;
+
+&lt;p&gt;The big advantage of Vault is it means a team of folks can then easily run &lt;code&gt;jx boot&lt;/code&gt; on the same cluster. Even if you accidentally delete your kubernetes cluster, its easy to restore from the KMS + cloud bucket.&lt;/p&gt;
+
+&lt;h2 id=&#34;webhook&#34;&gt;Webhook&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X supports a number of engines for handling webhooks and optionally supporting ChatOps.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; support webhooks and ChatOps whereas Jenkins just supports webhooks.&lt;/p&gt;
+
+&lt;h3 id=&#34;prow&#34;&gt;Prow&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; is currently the default webhook and ChatOps engine when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; and GitHub.&lt;/p&gt;
+
+&lt;p&gt;Its configured via the &lt;code&gt;webhook: prow&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+storage:
+  logs:
+    enabled: false
+  reports:
+    enabled: false
+  repository:
+    enabled: false
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;lighthouse&#34;&gt;Lighthouse&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; is currently the default webhook and ChatOps engine when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; and a git server other than &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Once Lighthouse is more stable and well tested we&amp;rsquo;ll make it the default for all installations using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Its configured via the &lt;code&gt;webhook: lighthouse&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+storage:
+  logs:
+    enabled: false
+  reports:
+    enabled: false
+  repository:
+    enabled: false
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;jenkins&#34;&gt;Jenkins&lt;/h3&gt;
+
+&lt;p&gt;To use a Jenkins server in boot for processing webhooks and pipelines configure it via &lt;code&gt;webhook: jenkins&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X supports a number of different git providers. You can specify the git provider you wish to use and the organisation to use for the git providers for each environment in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
+
+&lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
+
+&lt;p&gt;This is the default if you don&amp;rsquo;t specify anything.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  environmentGitOwner: myorg
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+storage:
+  logs:
+    enabled: false
+  reports:
+    enabled: false
+  repository:
+    enabled: false
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h3&gt;
+
+&lt;p&gt;The configuration is similar to the above but you need to specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; (if it differs from &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt;) and &lt;code&gt;gitKind: github&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myorg
+  gitKind: github
+  gitName: ghe
+  gitServer: https://github.myserver.com
+environments:
+  - key: dev
+  - key: staging
+  - key: production
+kaniko: true
+secretStorage: local
+storage:
+  logs:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  reports:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  repository:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h3&gt;
+
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myorg
+  gitKind: bitbucketserver
+  gitName: bs
+  gitServer: https://bitbucket.myserver.com
+environments:
+  - key: dev
+  - key: staging
+  - key: production
+kaniko: true
+secretStorage: local
+storage:
+  logs:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  reports:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  repository:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h3&gt;
+
+&lt;p&gt;For this specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myorg
+  gitKind: bitbucketcloud
+  gitName: bc
+environments:
+  - key: dev
+  - key: staging
+  - key: production
+kaniko: true
+secretStorage: local
+storage:
+  logs:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  reports:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  repository:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;gitlab&#34;&gt;Gitlab&lt;/h3&gt;
+
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  environmentGitOwner: myorg
+  gitKind: gitlab
+  gitName: gl
+  gitServer: https://gitlab.com
+environments:
+  - key: dev
+  - key: staging
+  - key: production
+kaniko: true
+secretStorage: local
+storage:
+  logs:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  reports:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+  repository:
+    enabled: true
+    url: &amp;quot;gs://jx-logs&amp;quot;
+webhook: lighthouse
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+
+&lt;p&gt;the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; file can configure whether you want to use long term storage for logs + reports and what cloud storage buckets to use to store the data.&lt;/p&gt;
+
+&lt;p&gt;e.g. the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file enables long term storage:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+storage:
+  logs:
+    enabled: false
+  reports:
+    enabled: false
+  repository:
+    enabled: false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section. The following URL syntax is supported&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;gs://anotherBucket/mydir/something.txt&lt;/code&gt; : using a GCS bucket on GCP&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;s3://nameOfBucket/mydir/something.txt&lt;/code&gt; : using S3 bucket on AWS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;azblob://thatBucket/mydir/something.txt&lt;/code&gt; : using an Azure bucket&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;http://foo/bar&lt;/code&gt; : file stored in git not using HTTPS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;https://foo/bar&lt;/code&gt; : file stored in a git repo using HTTPS&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+environments:
+- key: dev
+- key: staging
+- key: production
+kaniko: true
+storage:
+  logs:
+    enabled: false
+    url: gs://my-logs
+  reports:
+    enabled: false
+    url: gs://my-logs
+  repository:
+    enabled: false
+    url: gs://my-repo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For more details see the &lt;a href=&#34;/architecture/storage&#34;&gt;Storage Guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;ingress&#34;&gt;Ingress&lt;/h2&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t specify anything in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; file then boot will default to using HTTP (rathter than HTTPS) and using &lt;a href=&#34;https://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt; as the DNS mechanism.&lt;/p&gt;
+
+&lt;p&gt;After running boot your &lt;code&gt;jx-requirements.yml&lt;/code&gt; may look like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  provider: gke
+  clusterName: my-cluster-name
+  environmentGitOwner: my-git-org
+  project: my-gke-project
+  zone: europe-west1-d
+environments:
+- key: dev
+- key: staging
+- key: production
+ingress:
+  domain: 1.2.3.4.nip.io
+  externalDNS: false
+  tls:
+    email: &amp;quot;&amp;quot;
+    enabled: false
+    production: false
+kaniko: true
+secretStorage: local
+storage:
+  logs:
+    enabled: false
+  reports:
+    enabled: false
+  repository:
+    enabled: false
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;. There&amp;rsquo;s a complete example below.&lt;/p&gt;
+
+&lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.lts.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
+  clusterName: mycluster
+  environmentGitOwner: myorg
+  gitKind: github
+  gitName: github
+  gitServer: https://github.com
+  namespace: jx
+  provider: gke
+  vaultName: jx-vault-myname
+environments:
+- key: dev
+- key: staging
+- key: production
+gitops: true
+ingress:
+  domain: my.domain.com
+  externalDNS: true
+  namespaceSubDomain: -jx.
+  tls:
+    email: someone@acme.com
+    enabled: true
+    production: true
+kaniko: true
+secretStorage: vault
+storage:
+  logs:
+    enabled: true
+    url: gs://jx-prod-logs
+  reports:
+    enabled: false
+    url: &amp;quot;&amp;quot;
+  repository:
+    enabled: false
+    url: &amp;quot;&amp;quot;
+webhook: prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;source-repositories&#34;&gt;Source Repositories&lt;/h2&gt;
+
+&lt;p&gt;Boot automatically sets up any source repositories which exist in the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34; target=&#34;_blank&#34;&gt;repositories/templates&lt;/a&gt; folder as &lt;a href=&#34;/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt;  custom resources and uses any associated &lt;a href=&#34;/docs/reference/components/custom-resources/#scheduler&#34;&gt;Scheduler&lt;/a&gt; custom resources to regenerate the Prow configuration.&lt;/p&gt;
+
+&lt;p&gt;Boot also automatically creates or updates any required webhooks on the git provider for your &lt;a href=&#34;/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt; resources.&lt;/p&gt;
+
+&lt;p&gt;If you are using GitOps we hope to automate the population of the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34; target=&#34;_blank&#34;&gt;repositories/templates&lt;/a&gt; folder as you import/create projects. Until then you can manually create a Pull Request on your boot git repository via &lt;a href=&#34;/commands/jx_step_create_pullrequest_repositories/&#34;&gt;jx step create pullrequest repositories&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;pipeline&#34;&gt;Pipeline&lt;/h2&gt;
+
+&lt;p&gt;The install/upgrade process is defined in a &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline&lt;/a&gt; in a file called &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml&#34; target=&#34;_blank&#34;&gt;jenkins-x.yml&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Typically you won&amp;rsquo;t need to edit this file; though if you do see the &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/#customising-the-pipelines&#34;&gt;editing guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+
+&lt;p&gt;The boot process is configured using helm style configuration in &lt;code&gt;values.yaml&lt;/code&gt; files. Though we support a few &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4328&#34; target=&#34;_blank&#34;&gt;extensions to helm&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;parameters-file&#34;&gt;Parameters file&lt;/h3&gt;
+
+&lt;p&gt;We define a &lt;a href=&#34;https://github.com/jstrachan/environment-simple-tekton/blob/master/env/parameters.yaml&#34; target=&#34;_blank&#34;&gt;env/parameters.yaml&lt;/a&gt; file which defines all the parameters either checked in or loaded from Vault or a local file system secrets location.&lt;/p&gt;
+
+&lt;h4 id=&#34;injecting-secrets-into-the-parameters&#34;&gt;Injecting secrets into the parameters&lt;/h4&gt;
+
+&lt;p&gt;If you look at the current &lt;a href=&#34;https://github.com/jstrachan/environment-simple-tekton/blob/master/env/parameters.yaml&#34; target=&#34;_blank&#34;&gt;env/parameters.yaml&lt;/a&gt; file you will see some values inlined and others use URIs of the form &lt;code&gt;local:my-cluster-folder/nameofSecret/key&lt;/code&gt;. This currently supports 2 schemes:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;vault:&lt;/code&gt; to load from a path + key from Vault&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;local:&lt;/code&gt; to load from a key in a YAML file at &lt;code&gt;~/.jx/localSecrets/$path.yml&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This means we can populate all the Parameters we need on startup then refer to them from &lt;code&gt;values.tmpl.yaml&lt;/code&gt; to populate the tree of values to then inject those into Vault.&lt;/p&gt;
+
+&lt;h3 id=&#34;populating-the-parameters-yaml-file&#34;&gt;Populating the &lt;code&gt;parameters.yaml&lt;/code&gt; file&lt;/h3&gt;
+
+&lt;p&gt;We can then use the new step to populate the &lt;code&gt;parameters.yaml&lt;/code&gt; file in the Pipeline via this command in the &lt;code&gt;env&lt;/code&gt; folder:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step create values --name parameters
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This uses the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/parameters.schema.json&#34; target=&#34;_blank&#34;&gt;parameters.schema.json&lt;/a&gt; file which powers the UI.&lt;/p&gt;
+
+&lt;h3 id=&#34;improvements-to-values-yaml&#34;&gt;Improvements to values.yaml&lt;/h3&gt;
+
+&lt;h4 id=&#34;support-a-tree-of-values-yaml-files&#34;&gt;Support a tree of values.yaml files&lt;/h4&gt;
+
+&lt;p&gt;Rather than a huge huge deeply nested values.yaml file we can have a tree of files for each App only include the App specific configuration in each folder. e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;env/
+  values.yaml   # top level configuration
+  prow/
+    values.yaml # prow specific config
+  tekton/
+    values.yaml  # tekton specific config 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;values-tmpl-yaml-templates&#34;&gt;values.tmpl.yaml templates&lt;/h4&gt;
+
+&lt;p&gt;When using &lt;code&gt;jx step helm apply&lt;/code&gt; we now allow &lt;code&gt;values.tmpl.yaml&lt;/code&gt; files to use go/helm templates just like &lt;code&gt;templates/foo.yaml&lt;/code&gt; files support inside helm charts so that we can generate value/secret strings which can use templating to compose things from smaller secret values. e.g. creating a maven &lt;code&gt;settings.xml&lt;/code&gt; file or docker &lt;code&gt;config.json&lt;/code&gt; which includes many user/passwords for different registries.&lt;/p&gt;
+
+&lt;p&gt;We can then check in the &lt;code&gt;values.tmpl.yaml&lt;/code&gt; file which does all of this composition and reference the actual secret values via URLs (or template functions) to access vault or local vault files&lt;/p&gt;
+
+&lt;p&gt;To do this we use expressions like: &lt;code&gt;{{ .Parameter.pipelineUser.token }}&lt;/code&gt; somewhere in the &lt;code&gt;values.tmpl.yaml&lt;/code&gt; values file. So this is like injecting values into the helm templates; but it happens up front to help generate the &lt;code&gt;values.yaml&lt;/code&gt; files.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Dev Pods</title>
+      <link>/docs/reference/devpods/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/devpods/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;The initial focus of Jenkins X is around automating and improving CI/CD for kubernetes. The use of &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt; really helps to validate and approve Pull Requests before they get merged to &lt;code&gt;master&lt;/code&gt;; but how do you try things out before you are ready submit a Pull Request?&lt;/p&gt;
+
+&lt;p&gt;Jenkins X has a concept of &lt;code&gt;Dev Pods&lt;/code&gt; which are pods for developers to use as a terminal/shell which are based on the exact same operating system, docker containers and tools installed as the &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod templates&lt;/a&gt; used in the Jenkins X CI/CD pipelines.&lt;/p&gt;
+
+&lt;p&gt;This lets build, run tests or redeploy apps before you commit to git safe in the knowledge you&amp;rsquo;re using the exact same tools as the CI/CD pipelines!&lt;/p&gt;
+
+&lt;h2 id=&#34;creating-a-devpod&#34;&gt;Creating a DevPod&lt;/h2&gt;
+
+&lt;p&gt;To create your own &lt;code&gt;DevPod&lt;/code&gt; use the command &lt;a href=&#34;/commands/jx_create_devpod/&#34;&gt;jx create devpod&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;For example if you want to create a &lt;code&gt;maven&lt;/code&gt; based DevPod use:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create devpod -l maven
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will then create a new &lt;code&gt;DevPod&lt;/code&gt; based on the maven based &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and open your terminal inside that pod. You are now free to use the various tools like &lt;code&gt;git, docker, maven, skaffold, jx&lt;/code&gt; which will all be using the same exact configuration as the CI/CD pipelines will.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-web-based-vs-code&#34;&gt;Using web based VS Code&lt;/h2&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t use &lt;code&gt;--sync&lt;/code&gt; then the DevPod will embed the &lt;a href=&#34;https://github.com/cdr/code-server&#34; target=&#34;_blank&#34;&gt;web based version of VS Code&lt;/a&gt; in your DevPod so that you can open the IDE in a browser and work on the source code inside your DevPod!&lt;/p&gt;
+
+&lt;p&gt;The source code is mounted into the workspace of the DevPod in the folder &lt;code&gt;/workspace&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;To get an incremental redeploy as you edit source inside VS Code then open a &lt;code&gt;Terminal&lt;/code&gt; in VS Code and type:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;./watch.sh&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;inside the shell of the DevPod.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s a &lt;a href=&#34;/images/developing/vscode-devpod.mp4&#34;&gt;demo showing how to use web based VS Code in a DevPod&lt;/a&gt;:&lt;/p&gt;
+
+&lt;figure&gt;
+&lt;embed src=&#34;/images/developing/vscode-devpod.mp4&#34; autostart=&#34;false&#34; height=&#34;400&#34; width=&#34;600&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Use web based VS Code inside a DevPod&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h2 id=&#34;using-theia-ide&#34;&gt;Using Theia IDE&lt;/h2&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t use &lt;code&gt;--sync&lt;/code&gt; and you use &lt;code&gt;--theia&lt;/code&gt; then the DevPod will embed the &lt;a href=&#34;https://www.theia-ide.org/&#34; target=&#34;_blank&#34;&gt;Theia IDE&lt;/a&gt; so that you can open the IDE in a browser and work on the source code inside your DevPod!&lt;/p&gt;
+
+&lt;p&gt;The source code is mounted into the workspace of the DevPod in the folder &lt;code&gt;/workspace&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;To get an incremental redeploy as you edit source inside &lt;a href=&#34;https://www.theia-ide.org/&#34; target=&#34;_blank&#34;&gt;Theia IDE&lt;/a&gt; then type:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;./watch.sh&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;inside the shell of the DevPod.&lt;/p&gt;
+
+&lt;h2 id=&#34;using-a-desktop-ide&#34;&gt;Using a desktop IDE&lt;/h2&gt;
+
+&lt;p&gt;If you wish to use a desktop IDE then you need to sync your source code you can work on it there, using your preferred editor on your desktop. In this case the workflow is:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;run &lt;code&gt;jx sync&lt;/code&gt; once on your system&lt;/li&gt;
+&lt;li&gt;cd into your project dir, and run &lt;code&gt;jx create devpod --reuse --sync&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Once in the DevPod from step 2: run &lt;code&gt;./watch.sh&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This will open a shell (and create a DevPod, or re-use an existing one) and ensure the changes are synced up to the DevPod. Step 3: when  you run this then any changes you make locally will be pushed up to the DevPod, built, and then a temporary &amp;ldquo;edit&amp;rdquo; version of your application will be published.&lt;/p&gt;
+
+&lt;p&gt;When you run &lt;code&gt;jx get applications&lt;/code&gt; you will see your &amp;ldquo;edit&amp;rdquo; application listed. You can open this in a browser, and edit away, and refresh, as if you were developing locally.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;opening-a-devpod-shell&#34;&gt;Opening a DevPod shell&lt;/h2&gt;
+
+&lt;p&gt;If you have other terminals that want to connect into an existing &lt;code&gt;DevPod&lt;/code&gt; use &lt;a href=&#34;/commands/jx_rsh/&#34;&gt;jx rsh -d&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx rsh -d
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you have more than one &lt;code&gt;DevPod&lt;/code&gt; active you will be prompted for the list of available &lt;code&gt;DevPod&lt;/code&gt;s to pick from. Otherwise your shell will open in the &lt;code&gt;DevPod&lt;/code&gt; directly.&lt;/p&gt;
+
+&lt;p&gt;If you use &lt;code&gt;jx create devpod --reuse&lt;/code&gt; it will lazily create a devpod if one doesn&amp;rsquo;t exist for the project  directory you are in.&lt;/p&gt;
+
+&lt;h3 id=&#34;viewing-my-devpods&#34;&gt;Viewing my DevPods&lt;/h3&gt;
+
+&lt;p&gt;Use the &lt;a href=&#34;/commands/jx_get_devpod/&#34;&gt;jx get devpod&lt;/a&gt; command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get devpod
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;deleting-a-devpod&#34;&gt;Deleting a DevPod&lt;/h3&gt;
+
+&lt;p&gt;Use the &lt;a href=&#34;/commands/jx_delete_devpod/&#34;&gt;jx delete devpod&lt;/a&gt; command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx delete devpod
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then pick the devpod to delete and confirm. Or pass in the name of the devpod you want to delete as an argument.&lt;/p&gt;
+
+&lt;h2 id=&#34;synchronizing-source-code&#34;&gt;Synchronizing source code&lt;/h2&gt;
+
+&lt;p&gt;If you are using one of our &lt;a href=&#34;/developing/ide&#34;&gt;IDE plugins&lt;/a&gt; for your desktop IDE then synchronisation of local files to your DevPod will already be included.&lt;/p&gt;
+
+&lt;p&gt;Otherwise if you are using a desktop IDE you can synchronise your local source code into your DevPod via the &lt;a href=&#34;/commands/jx_sync/&#34;&gt;jx sync&lt;/a&gt; command.&lt;/p&gt;
+
+&lt;p&gt;This will allow you to edit source code in your preferred &lt;a href=&#34;/developing/ide&#34;&gt;IDE&lt;/a&gt; like &lt;a href=&#34;https://code.visualstudio.com/&#34; target=&#34;_blank&#34;&gt;VS Code&lt;/a&gt; or &lt;a href=&#34;https://www.jetbrains.com/idea/&#34; target=&#34;_blank&#34;&gt;IDEA&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx sync
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You just run this once on your system (if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you)&lt;/p&gt;
+
+&lt;p&gt;This command will download and install the excellent &lt;a href=&#34;https://github.com/vapor-ware/ksync&#34; target=&#34;_blank&#34;&gt;ksync&lt;/a&gt; tool if its not already installed, run &lt;code&gt;ksync init&lt;/code&gt; to add it to your cluster and then run &lt;code&gt;ksync watch&lt;/code&gt; and then use &lt;code&gt;ksync create&lt;/code&gt; to create a synchronisation spec.&lt;/p&gt;
+
+&lt;p&gt;Then by default the code with be bidirectionally synchronized between the current directory and the &lt;code&gt;/code&lt;/code&gt; folder in the &lt;code&gt;DevPod&lt;/code&gt;. You can now edit the code in your IDE and run build/test commands inside the &lt;code&gt;DevPod&lt;/code&gt;!&lt;/p&gt;
+
+&lt;p&gt;e.g. you can build your code with whatever tools you are using (&lt;code&gt;maven, gradle, make&lt;/code&gt; etc), perform &lt;code&gt;docker&lt;/code&gt; builds or run &lt;code&gt;skaffold&lt;/code&gt; in developer mode.&lt;/p&gt;
+
+&lt;p&gt;Over time we are hoping to polish this experience to make it super easy to edit code in your IDE and get fast reloading working inside the kubernetes cluster using the same kubernetes resources, manifests and services!&lt;/p&gt;
+
+&lt;h2 id=&#34;incremental-building&#34;&gt;Incremental building&lt;/h2&gt;
+
+&lt;p&gt;One of the benefits of integrating with &lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34; target=&#34;_blank&#34;&gt;skaffold&lt;/a&gt; for building docker images is that we can perform incremental rebuilds of docker images and redeploys of the associated helm charts.&lt;/p&gt;
+
+&lt;p&gt;So inside of your DevPod you can perform a regular build if your app is Java based. e.g. via maven:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;mvn install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then to trigger incremental rebuilding and deploying of the local code in the DevPod you can use:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;./watch.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will use the &lt;code&gt;dev&lt;/code&gt; profile to generate a new docker image using the generated &lt;em&gt;digest&lt;/em&gt; then use it in the helm chart to deploy.&lt;/p&gt;
+
+&lt;p&gt;When you created your DevPod it was associated with an &lt;em&gt;Edit Environment&lt;/em&gt; for your &lt;em&gt;username&lt;/em&gt; so that any apps deployed in a DevPod will appear in your &lt;em&gt;Edit Environment&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;So once the &lt;code&gt;skaffold dev -p dev&lt;/code&gt; (what &lt;code&gt;watch.sh&lt;/code&gt; does) command has built the docker image and installed the helm chart, your app will show up via  &lt;a href=&#34;/commands/applications&#34;&gt;jx get applications&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now if you edit code and trigger a docker rebuild, which for most languages is just changing the source code; though for Java apps its whenever you rebuild the jar - the image is regenerated and the helm chart updated!&lt;/p&gt;
+
+&lt;h2 id=&#34;using-an-ide&#34;&gt;Using an IDE&lt;/h2&gt;
+
+&lt;p&gt;One of the easiest ways to get started with DevPods is via an IDE such as &lt;a href=&#34;https://code.visualstudio.com/&#34; target=&#34;_blank&#34;&gt;VS Code&lt;/a&gt;. Check out the &lt;a href=&#34;/docs/using-jx/common-tasks/ide/&#34;&gt;Jenkins X plugins for IDEs&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;VS Code has support which automates all the above so you can run a shell/sync quite easily.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Multiple Clusters</title>
+      <link>/docs/reference/multi-cluster/</link>
+      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/multi-cluster/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;A common requirement for a production setup is to isolate your Development, Staging and Production environments onto separate kubernetes clusters and to isolate the clusters from each other in separate cloud accounts or VPNs etc.&lt;/p&gt;
+
+&lt;p&gt;You can do this by installing the &lt;code&gt;Environment Controller&lt;/code&gt; chart into your Staging or Production cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;goal&#34;&gt;Goal&lt;/h2&gt;
+
+&lt;p&gt;Our assumption with the Environment Controller is that we need something that:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;runs inside your Staging or Production cluster to avoid having to expose write/admin access to Staging/Production outside of your cluster&lt;/li&gt;
+&lt;li&gt;has a small with minimal RBAC footprint so it can be installed in any namespace in any Staging/Production cluster which are usually really locked down for security&lt;/li&gt;
+&lt;li&gt;makes few assumptions about the cluster (e.g. does not depend on a particular Ingress controller)&lt;/li&gt;
+&lt;li&gt;does not require access to the development cluster or anything else in Jenkins X other than the environments git repository and a docker + chart repository&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;creating-your-dev-cluster&#34;&gt;Creating your Dev cluster&lt;/h2&gt;
+
+&lt;p&gt;If you are creating a new installation then when you use &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt; then please specify &lt;code&gt;--remote-environments&lt;/code&gt; to indicate that &lt;code&gt;Staging/Production&lt;/code&gt; environments will be remote from the development cluster.&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --remote-environments --tekton
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When creating your Environments via &lt;a href=&#34;/commands/jx_create_environment&#34;&gt;jx create environment&lt;/a&gt; you can also specify the environment is remote via the &lt;code&gt;--remote&lt;/code&gt; or answering &lt;code&gt;Y&lt;/code&gt; to the question when prompted.&lt;/p&gt;
+
+&lt;p&gt;What this means is that if an environment is remote to the development cluster then we don&amp;rsquo;t register the release pipeline
+of the environment in the Dev cluster; we leave that to the Environment Controller to perform running inside the remote cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;configure-an-existing-dev-cluster&#34;&gt;Configure an existing Dev cluster&lt;/h2&gt;
+
+&lt;p&gt;If you already have a Dev cluster that was setup with &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; namespaces inside your Dev cluster then please do the following:&lt;/p&gt;
+
+&lt;p&gt;Edit the environments to mark them as remote via &lt;a href=&#34;/commands/jx_edit_environment&#34;&gt;jx edit environment&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx edit env staging --remote 
+jx edit env production --remote 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You need to manually disable the release pipeline in the Dev cluster.&lt;/p&gt;
+
+&lt;p&gt;e.g. by removing the &lt;code&gt;postsubmit&lt;/code&gt; setting in your Prow configuration if you are using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines and tekton&lt;/a&gt; - or comment out the &lt;code&gt;jx step helm apply&lt;/code&gt; command in your &lt;code&gt;Jenkinsfile&lt;/code&gt; if using static jenkins server&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-environment-controller&#34;&gt;Installing Environment Controller&lt;/h2&gt;
+
+&lt;p&gt;First you need to connect to your remote kubernetes cluster for &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; using your managed kubernetes provider&amp;rsquo;s tooling.&lt;/p&gt;
+
+&lt;p&gt;You also need to have RBAC karma to be able to &lt;a href=&#34;https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping&#34; target=&#34;_blank&#34;&gt;escalate roles&lt;/a&gt; for &lt;code&gt;Role&lt;/code&gt; and/or &lt;code&gt;ClusterRole&lt;/code&gt; permissions.&lt;/p&gt;
+
+&lt;p&gt;Then to install the Environment Controller use &lt;a href=&#34;/commands/jx_create_addon_environment/&#34;&gt;jx create addon envctl&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You need to specify the environments git repository and docker registry host and on GCP the project ID:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The installer needs a user + API token for the git repository which it will prompt you for the known values from your &lt;code&gt;~/.jx/gitAuth.yaml&lt;/code&gt; file so if you already installed Jenkins X it should be able to default those values for you.&lt;/p&gt;
+
+&lt;p&gt;If you prefer you can install the helm chart &lt;code&gt;jenkins-x/environment-controller&lt;/code&gt; directly with helm by specifying the &lt;a href=&#34;https://github.com/jenkins-x-charts/environment-controller/blob/master/environment-controller/values.yaml#L3-L19&#34; target=&#34;_blank&#34;&gt;required values from the values.yaml file&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;installing-ingress-controller&#34;&gt;Installing Ingress Controller&lt;/h2&gt;
+
+&lt;p&gt;If you don&amp;rsquo;t already have any kind of Ingress Controller in your remote &lt;code&gt;Staging&lt;/code&gt; / &lt;code&gt;Production&lt;/code&gt; cluster then it is recommend - particularly if you want to try out our &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;quickstarts&lt;/a&gt; which depend on Ingress to be able to be used from a web browser.&lt;/p&gt;
+
+&lt;p&gt;To install the default ingress controller into a remote cluster (which doesn&amp;rsquo;t have Jenkins X installed) you can use the command &lt;a href=&#34;/commands/jx_create_addon_ingress/&#34;&gt;jx create addon ingctl&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create addon ingctl
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct &lt;code&gt;domain&lt;/code&gt; value on the generated &lt;code&gt;Ingress&lt;/code&gt; resources.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
+
+&lt;p&gt;On startup the Environment Controller registers itself into the github repository as a webhook endpoint using its LoadBalancer service IP address. If you are using a custom ingress/DNS endpoint you can override this via the &lt;code&gt;webhookUrl&lt;/code&gt; chart value or &lt;a href=&#34;/commands/jx_create_addon_environment/&#34;&gt;&amp;ndash;webhook-url CLI option&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Whenever there is a push to the &lt;code&gt;master&lt;/code&gt; branch (PRs and feature branches are handled by your Development cluster) the Environment Controller triggers a new &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline&lt;/a&gt; for the Promotion. All other push events on other branches are ignored (as they are processed by the Development cluster).&lt;/p&gt;
+
+&lt;p&gt;Then the tekton controller turns this set of Pipeline resources is turned into one or more Pods which run the pipeline. By default promotion pipelines just use a single pod - but you can &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/#customising-the-pipelines&#34;&gt;customise your deployment pipeline&lt;/a&gt; which may use sequential/parallel tasks which result in multiple pods.&lt;/p&gt;
+
+&lt;p&gt;Because Environment Controller reacts purely to merges to the environment git repository and we are using canonical git source code; it works with both Static Jenkins Servers and &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines and tekton&lt;/a&gt; in the Development cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;demo&#34;&gt;Demo&lt;/h2&gt;
+
+&lt;p&gt;There was a demo of using environment controller in the &lt;a href=&#34;/community/april-18/&#34;&gt;April 19, 2019 Office Hours&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;known-limitations&#34;&gt;Known limitations&lt;/h2&gt;
+
+&lt;p&gt;The following things are not yet automatically configured for you but we hope to automate them soon:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;currently you have to manually add the &lt;code&gt;CHART_REPOSITORY&lt;/code&gt; environment variable into the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in your environment git repository. e.g. a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file like this will do the trick - using the real URL to your chartmuseum (use &lt;code&gt;jx open&lt;/code&gt; in your development cluster:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;pipelineConfig:
+env:
+- name: CHART_REPOSITORY
+value: http://chartmuseum.jx.1.2.3.4.nip.io
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can do the above via the &lt;a href=&#34;/commands/jx_create_variable/&#34;&gt;jx create var -n CHART_REPOSITORY&lt;/a&gt; command if you are inside a clone of the staging/production git repository - then git commit + merge the change.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Jenkins X Pipeline Syntax Reference</title>
+      <link>/docs/reference/pipeline-syntax-reference/</link>
+      <pubDate>Thu, 20 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/pipeline-syntax-reference/</guid>
+      <description>
+        
+        
+        
+
+&lt;h1 id=&#34;syntax-for-jenkins-x-yml-and-build-packs&#34;&gt;Syntax for &lt;code&gt;jenkins-x.yml&lt;/code&gt; and build packs&lt;/h1&gt;
+
+&lt;h2 id=&#34;where-to-define-your-pipelines&#34;&gt;Where to Define Your Pipelines&lt;/h2&gt;
+
+&lt;p&gt;Pipelines can either be defined in &lt;a href=&#34;build-packs.md&#34; target=&#34;_blank&#34;&gt;build packs&lt;/a&gt;, used for
+multiple projects, or in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in a project&amp;rsquo;s repository.
+When defining pipelines in a build pack, the top-level configuration below is
+used directly, while in &lt;code&gt;jenkins-x.yml&lt;/code&gt;, the top-level configuration is under
+the &lt;code&gt;pipelineConfig&lt;/code&gt; key.&lt;/p&gt;
+
+&lt;h2 id=&#34;top-level-configuration&#34;&gt;Top-Level Configuration&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;extends&#39;&gt;&lt;code&gt;extends&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A build pack can extend another build pack,
+inheriting its configuration and contributing its own additional behavior.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;file&lt;/code&gt;&lt;/strong&gt; - The name of the build pack to inherit from.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;import&lt;/code&gt;&lt;/strong&gt; - If the build pack to inherit from is not in the same
+repository as this build pack, specify where to import it from.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent configuration for all pipelines in the
+build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables to be made available for all
+pipelines in the build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for step
+containers for all pipelines in the build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pipelines&#39;&gt;&lt;code&gt;pipelines&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The pipeline definitions for this
+build pack or project.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;specifying-and-overriding-release-pull-request-and-feature-pipelines&#34;&gt;Specifying and Overriding Release, Pull Request, and Feature Pipelines&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pullRequest-release-feature&#39;&gt;&lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, &lt;code&gt;feature&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; -
+The configuration for the three pipeline types for this build pack or project.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setup&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The first stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setVersion&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The second stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;preBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The third stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;build&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fourth stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;postBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fifth and final stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The full definition
+of the pipeline. Mutually exclusive with &lt;code&gt;setup&lt;/code&gt;, etc.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;overrides&#39;&gt;&lt;code&gt;overrides&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of overriding changes to make
+to the inherited or default pipeline.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/strong&gt; - The name of the pipeline this override should be applied
+to (&lt;code&gt;release&lt;/code&gt;, &lt;code&gt;pullRequest&lt;/code&gt;, or &lt;code&gt;feature&lt;/code&gt;). If unspecified, this override
+will be applied to all pipelines.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;stage&lt;/code&gt;&lt;/strong&gt; - The name of the stage this override should be applied to.
+If unspecified, this override will be applied to all stages.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the step this override should be applied to. If
+unspecified, this override will be applied to all steps.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;step&lt;/code&gt;&lt;/strong&gt; - A single &lt;a href=&#34;#configuration-for-steps&#34;&gt;step&lt;/a&gt; which will be used
+to override the named step or, if no step name is given, all steps in the
+specified stage. If neither &lt;code&gt;step&lt;/code&gt; nor &lt;code&gt;steps&lt;/code&gt; is given, all steps in
+matching stages in matching pipelines will be removed.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;#configuration-for-steps&#34;&gt;steps&lt;/a&gt; which will be
+used to override the named step or, if no name is given, all steps in the
+specified stage.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;type&lt;/code&gt;&lt;/strong&gt; - Whether the &lt;code&gt;step&lt;/code&gt; or &lt;code&gt;steps&lt;/code&gt; should replace the named step,
+be prepended before the named step, or be appended after the named step.
+Possible values are &lt;code&gt;replace&lt;/code&gt;, &lt;code&gt;before&lt;/code&gt;, or &lt;code&gt;after&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An agent definition that will replace the
+existing agent definition for matching pipelines and stages. Step agents
+are not changed.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;default&#39;&gt;&lt;code&gt;default&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A full &lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;pipeline definition&lt;/a&gt;
+that will be used for the &lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, and &lt;code&gt;feature&lt;/code&gt; pipelines if
+they are not already specified.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;build-pack-stages&#34;&gt;Build pack stages&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;preSteps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run before
+the main body of steps for this stage. &lt;code&gt;preSteps&lt;/code&gt; is &lt;em&gt;not&lt;/em&gt; inherited from parent
+build packs.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The main body of steps to run for
+this stage. If inheriting from a parent build pack, these steps will be appended
+to the parent build pack&amp;rsquo;s &lt;code&gt;steps&lt;/code&gt; by default.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;replace&lt;/code&gt;&lt;/strong&gt; - An optional boolean. If true, the inherited stage definition&amp;rsquo;s
+&lt;code&gt;steps&lt;/code&gt; will be replaced, rather than appended to.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;defining-an-individual-pipeline&#34;&gt;Defining an Individual Pipeline&lt;/h2&gt;
+
+&lt;h3 id=&#34;configuration-for-the-whole-pipeline&#34;&gt;Configuration for the Whole Pipeline&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent definition to use for any
+&lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt; without their own agents specified.
+Overrides &lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; agent definition.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for the entire pipeline, which
+can be overridden in individual stages and steps.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the entire
+pipeline.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;timeout&#39;&gt;&lt;code&gt;timeout&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The maximum duration for execution
+of the pipeline, after which the build will be terminated.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;time&lt;/code&gt;&lt;/strong&gt; - How long to wait until timing out the build.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;unit&lt;/code&gt;&lt;/strong&gt; - The unit for &lt;code&gt;time&lt;/code&gt;. Can be any of &lt;code&gt;seconds&lt;/code&gt;, &lt;code&gt;minutes&lt;/code&gt;,
+or &lt;code&gt;hours&lt;/code&gt;. Defaults to &lt;code&gt;seconds&lt;/code&gt; if unspecified.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
+step containers within this pipeline, overriding any common settings with
+&lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; default configuration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
+which will be added to every stage in the pipeline, and can be mounted via
+&lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for stages and
+steps in this pipeline. Can either be relative, under the &lt;code&gt;/workspace/source&lt;/code&gt;
+directory were the project source will be checked out, or absolute.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;stages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of one or more &lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;configuration-for-stages&#34;&gt;Configuration for Stages&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The name of the stage. Required and must be
+unique.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The agent definition to use for this stage,
+overriding the agent specified for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;
+if one is specified.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the stage.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
+step containers within this stage, overriding any common settings with
+&lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt; default
+configuration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
+which will be added to this stage&amp;rsquo;s pod, and can be mounted via &lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for all steps or nested stages,
+overriding any variables defined for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;nestedstages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run sequentially
+within this stage, inheriting this stage&amp;rsquo;s configuration. Cannot be used with
+either &lt;code&gt;steps&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;parallel&#39;&gt;&lt;code&gt;parallel&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run in parallel,
+inheriting this stage&amp;rsquo;s configuration. Cannot be used with either &lt;code&gt;steps&lt;/code&gt; or
+&lt;code&gt;stages&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for steps and
+nested stages. Can either be relative under the &lt;code&gt;/workspace/source&lt;/code&gt; directory or
+absolute.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run in this stage. Cannot be used
+with either &lt;code&gt;stages&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;configuration-for-steps&#34;&gt;Configuration for Steps&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A name for the step, used in logging and for
+overrides.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;command&#39;&gt;&lt;code&gt;command&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The command to execute in this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;args&#39;&gt;&lt;code&gt;args&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An array of arguments to the command.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional working directory for this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional agent configuration for this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;loop&#39;&gt;&lt;code&gt;loop&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Repeats the nested &lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;
+for each value in the specified list.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;variable&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable to be set with the
+value for this loop iteration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;values&lt;/code&gt;&lt;/strong&gt; - A list of strings to iterate over.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more steps to run for
+each iteration of the loop.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for this step, adding to
+inherited environment variables from the stage and pipeline.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;common-directives&#34;&gt;Common Directives&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;agent&#39;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - What container image should be used.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;image&lt;/code&gt;&lt;/strong&gt; - A container image, either as a fully qualified image or a
+&lt;a href=&#34;pod-templates.md&#34; target=&#34;_blank&#34;&gt;pod template name&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;label&lt;/code&gt;&lt;/strong&gt; - Only used with static Jenkins masters - the Jenkins agent
+label to use.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;env&#39;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more environment variables.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;value&lt;/code&gt;&lt;/strong&gt; - The value of the environment variable.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;containerOptions&#39;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt;
+
+&lt;ul&gt;
+&lt;li&gt;See &lt;a href=&#34;https://kubernetes.io/docs/concepts/containers&#34; target=&#34;_blank&#34;&gt;Kubernetes container configuration&lt;/a&gt;.
+&lt;code&gt;name&lt;/code&gt;, &lt;code&gt;command&lt;/code&gt;, &lt;code&gt;args&lt;/code&gt;, &lt;code&gt;image&lt;/code&gt;, and &lt;code&gt;workingDir&lt;/code&gt; cannot be specified.&lt;/li&gt;
+&lt;li&gt;Common use cases for &lt;code&gt;containerOptions&lt;/code&gt; include resource requests and
+limits, and volume mounts.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;examples&#34;&gt;Examples&lt;/h1&gt;
+
+&lt;h2 id=&#34;full-pipeline-definition-in-jenkins-x-yml&#34;&gt;Full pipeline definition in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.
+buildPack: none
+
+pipelineConfig:
+  pipelines:
+    release:
+    # While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.
+      pipeline:
+        # Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is
+        # specified on a stage or step.
+        agent:
+          image: &amp;quot;some/image@version&amp;quot; # or &amp;quot;maven&amp;quot; - this means &amp;quot;use the maven pod template&amp;quot;
+        # Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.
+        # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core
+        # for more information on valueFrom.
+        # Environment variables defined at the top level can be overridden in stages and individual
+        # steps.
+        environment:
+          - name: SOME_VAR
+            value: A value for the env var
+          - name: SOME_OTHER_VAR
+            value: Another var
+          - name: SOME_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mysecret
+                key: apikey
+        # Options contains other configuration for the pipeline.
+        options:
+          # containerOptions allows specifying more advanced default configuration for the containers
+          # used for all stages and steps in this scope, using the standard Kubernetes syntax for
+          # containers.
+          # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.
+          # Not all fields can be configured - e.g., name, command, arguments, image, and dir are all
+          # defined via the syntax - but everything else can be.
+          # Like with environment variables, containerOptions at the top level can be overridden and
+          # added to by stages.
+          containerOptions:
+            # Here we&#39;re setting the resource requests and limits for all step containers within this
+            # pipeline.
+            resources:
+              requests:
+                cpu: 0.1
+                memory: 64Mi
+              limits:
+                cpu: 0.2
+                memory: 128Mi
+          # timeout allows you to set the maximum duration for builds of this pipeline.
+          timeout:
+            time: 15
+            unit: minutes
+        # A pipeline must contain at least one stage, and each stage must have a unique name.
+        stages:
+          - name: Stage With Steps And Options Etc
+            # agent, options, and environment are valid on stages as well. For the parents of nested
+            # sequential or parallel stages, their children inherit the parent&#39;s agent, options,
+            # and environment.
+            # options on a stage currently only can contain containerOptions.
+            options:
+              containerOptions:
+                resources:
+                  limits:
+                    cpu: 0.4
+                    memory: 256Mi
+            # A stage must contain at least one of &amp;quot;steps&amp;quot;, &amp;quot;stages&amp;quot;, or &amp;quot;parallel&amp;quot;
+            # Steps must contain at least one command to be executed or a loop.
+            steps:
+              - command: mvn
+                # args are a YAML array, so can be specified either on multiple lines or in a []
+                args:
+                  - clean
+                  - install
+                dir: foo  # Optional, allows running this step in a subdirectory of the workspace, or
+                          # a different absolute directory.
+                # Steps can have their own images specified, overriding the stage and top-level images.
+                agent:
+                  image: some-other-image
+              # A loop allows you to specify a list of potential values for an environment variable and a
+              # set of one or more steps. Those steps will be run, sequentially, for each of the
+              # potential values. Loops can also be nested for more complex combinations.
+              - loop:
+                  variable: LANGUAGE
+                  values:
+                    - maven
+                    - gradle
+                    - nodejs
+                  steps:
+                    - command: echo
+                      args:
+                        - hello
+                        - ${LANGUAGE}
+          - name: Stage with nested sequential stages
+            # Any configuration of agent, options, or environment will apply to all child stages.
+            environment:
+              - name: SPECIFIC_TO_SEQUENTIAL_PARENT
+                value: something
+            # A list of nested stages to run sequentially. This is meant to allow for avoiding
+            # copy-pasting configuration across a set of stages that need to have the same configuration
+            # but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.
+            stages:
+              # ...insert stages here. =)
+          - name: Stage with nested parallel stages
+            # Works very similarly to sequential stages, except that the stages are executed in parallel,
+            # rather than sequentially.
+            parallel:
+              # ...insert stages here. =)
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Preview Environments</title>
+      <link>/docs/reference/preview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/preview/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We highly recommend the use of &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt; to get early feedback on changes to applications before the changes are merged into master.&lt;/p&gt;
+
+&lt;p&gt;Typically the creation of preview environments is automated inside the Pipelines created by Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;However you can manually create a &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environment&lt;/a&gt; using &lt;a href=&#34;/commands/jx&#34;&gt;jx&lt;/a&gt; via the &lt;a href=&#34;/commands/jx_preview&#34;&gt;jx preview&lt;/a&gt; command.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx preview
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;what-happens-when-a-preview-environment-is-created&#34;&gt;What happens when a Preview environment is created&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;a new &lt;a href=&#34;/docs/concepts/features/#environments&#34;&gt;Environment&lt;/a&gt; of kind &lt;code&gt;Preview&lt;/code&gt; is created along with a &lt;a href=&#34;https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/&#34; target=&#34;_blank&#34;&gt;kubernetes namespace&lt;/a&gt; which shows up in the &lt;a href=&#34;/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; command along with the &lt;a href=&#34;/developing/kube-context&#34;&gt;jx environment and jx namespace commands&lt;/a&gt; so you can see which preview environments are active and switch into them to look around&lt;/li&gt;
+&lt;li&gt;the Pull Request is built as a preview docker image and chart and deployed into the preview environment&lt;/li&gt;
+&lt;li&gt;a comment is added to the Pull Request to let your team know the preview application is ready for testing with a link to open the application. So in one click your team members can try out the preview!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/pr-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;adding-more-resources&#34;&gt;Adding more resources&lt;/h2&gt;
+
+&lt;p&gt;Its common when creating, for example, a web front end to need a backend or database to work from to verify that the microservice works.&lt;/p&gt;
+
+&lt;p&gt;For each application the preview environment is defined by a helm chart at: &lt;code&gt;charts/preview/Chart.yaml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;charts&#34;&gt;Charts&lt;/h2&gt;
+
+&lt;p&gt;So you can easily add any dependent helm charts to your preview environment by adding new entries in the file &lt;code&gt;charts/preview/requirements.yaml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can find possible charts to install by searching helm. e.g. to find a &lt;code&gt;postgresql&lt;/code&gt; chart try:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;helm search postgres
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once you know the chart and the repository its in you can add it to your &lt;code&gt;charts/preview/requirements.yaml&lt;/code&gt; file (the &lt;code&gt;postgresql&lt;/code&gt; section in dependencies array):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# !! File must end with empty line !!
+dependencies:
+- alias: expose
+  name: exposecontroller
+  repository: http://chartmuseum.jenkins-x.io
+  version: 2.3.56
+- alias: cleanup
+  name: exposecontroller
+  repository: http://chartmuseum.jenkins-x.io
+  version: 2.3.56
+
+  # Ephemeral PostgeSQL created in preview environment.
+- name: postgresql
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 2.6.2
+
+  # !! &amp;quot;alias: preview&amp;quot; must be last entry in dependencies array !!
+  # !! Place custom dependencies above !!
+- alias: preview
+  name: demo179
+  repository: file://../demo179
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: &lt;code&gt;- alias: preview&lt;/code&gt; must be last entry in dependecies array and &lt;code&gt;requirements.yaml&lt;/code&gt; file must end with empty line.&lt;/p&gt;
+
+&lt;h2 id=&#34;service-linking&#34;&gt;Service Linking&lt;/h2&gt;
+
+&lt;p&gt;If you need any additional resources like &lt;code&gt;ConfigMap&lt;/code&gt;, &lt;code&gt;Secret&lt;/code&gt; or &lt;code&gt;Service&lt;/code&gt; resources you can add them to &lt;code&gt;charts/preview/templates/*.yaml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can always &lt;em&gt;service link&lt;/em&gt; from the Preview Environment namespace to other namespaces by creating a &lt;code&gt;Service&lt;/code&gt; with an &lt;code&gt;externalName&lt;/code&gt; which links to a &lt;code&gt;Service&lt;/code&gt; running in another namespace (such as Staging or Production) or to point to a service running outside of the Kubernetes cluster completely.&lt;/p&gt;
+
+&lt;p&gt;We have a command &lt;a href=&#34;/commands/jx_step_link/&#34;&gt;jx step service link&lt;/a&gt; which does this for you:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx step link services --from-namespace jx-staging --includes &amp;quot;*&amp;quot; --excludes &amp;quot;cheese*&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;configuration&#34;&gt;Configuration&lt;/h3&gt;
+
+&lt;p&gt;If you need to tweak your application when running in a Preview Environment you can add custom settings to the &lt;code&gt;charts/preview/values.yaml&lt;/code&gt;file&lt;/p&gt;
+
+&lt;h2 id=&#34;post-preview-jobs&#34;&gt;Post preview jobs&lt;/h2&gt;
+
+&lt;p&gt;One of the extension points of Jenkins X lets you put a hook in after a preview job has been deployed. This hook applies to all apps in a team even existing ones, for all new pull requests/changes. (You don&amp;rsquo;t have to add it to each pipeline by hand - it can be used to enforce best practices).&lt;/p&gt;
+
+&lt;p&gt;This means you can run a container Job against the preview app, validating it, before the CI pipeline completes. Should this Job fail, the pull request will be marked as a failure.&lt;/p&gt;
+
+&lt;p&gt;Here is an example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create post preview job --name owasp --image owasp/zap2docker-weekly:latest -c &amp;quot;zap-baseline.py&amp;quot; -c &amp;quot;-I&amp;quot; -c &amp;quot;-t&amp;quot; -c &amp;quot;\$(JX_PREVIEW_URL)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This creates a post preview job which runs the &lt;code&gt;zap-baseline.py&lt;/code&gt; command inside the specified docker image (it will pull the image and run it, and then shut it down) which scans the running preview app for any problems.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;$JX_PREVIEW_URL&lt;/code&gt; environment variable is made available in case the job needs to access the running preview app. Use &lt;code&gt;-c&lt;/code&gt; to pass commands to the container.&lt;/p&gt;
+
+&lt;p&gt;This job runs after the preview has been deployed. If it returns non zero, the PR will be marked as a failure.&lt;/p&gt;
+
+&lt;p&gt;You can also run:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx get post preview
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;to list any configured post preview jobs, and:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx delete post preview job --name=NAME_HERE
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And it will remove that post preview job (for the whole team).&lt;/p&gt;
+
+&lt;h2 id=&#34;further-reading&#34;&gt;Further reading&lt;/h2&gt;
+
+&lt;p&gt;To get more detail on using preview environments check out &lt;a href=&#34;https://medium.com/@MichalFoksa/jenkins-x-preview-environment-3bf2424a05e4&#34; target=&#34;_blank&#34;&gt;this blog post&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

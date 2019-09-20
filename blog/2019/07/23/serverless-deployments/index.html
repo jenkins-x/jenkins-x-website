@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="generator" content="Hugo 0.58.0" />
+
+<META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+
+
+
+<link rel="shortcut icon" href="/favicons/favicon.ico" >
+<link rel="apple-touch-icon" href="/favicons/apple-touch-icon-180x180.png" sizes="180x180">
+<link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/favicons/android-36x36.png" sizes="36x36">
+<link rel="icon" type="image/png" href="/favicons/android-48x48.png" sizes="48x48">
+<link rel="icon" type="image/png" href="/favicons/android-72x72.png" sizes="72x72">
+<link rel="icon" type="image/png" href="/favicons/android-96x196.png" sizes="96x196">
+<link rel="icon" type="image/png" href="/favicons/android-144x144.png" sizes="144x144">
+<link rel="icon" type="image/png" href="/favicons/android-192x192.png"sizes="192x192">
+
+<title>Using Jenkins X To Define And Run Serverless Deployments | Jenkins X</title><meta property="og:title" content="Using Jenkins X To Define And Run Serverless Deployments" />
+<meta property="og:description" content="Using Jenkins X To Define And Run Serverless Deployments
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019/07/23/serverless-deployments/" />
+<meta property="article:published_time" content="2019-07-23T12:20:42-02:00" />
+<meta property="article:modified_time" content="2019-09-20T07:45:51+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta itemprop="name" content="Using Jenkins X To Define And Run Serverless Deployments">
+<meta itemprop="description" content="Using Jenkins X To Define And Run Serverless Deployments
+">
+
+
+<meta itemprop="datePublished" content="2019-07-23T12:20:42-02:00" />
+<meta itemprop="dateModified" content="2019-09-20T07:45:51&#43;00:00" />
+<meta itemprop="wordCount" content="2723">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Using Jenkins X To Define And Run Serverless Deployments"/>
+<meta name="twitter:description" content="Using Jenkins X To Define And Run Serverless Deployments
+"/>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-4216293-7', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+<link rel="preload" href="/scss/main.min.9aeffc9e83359f1f6c567fea8e2076603d4e37a6b64417981024b11fe9769455.css" as="style">
+<link href="/scss/main.min.9aeffc9e83359f1f6c567fea8e2076603d4e37a6b64417981024b11fe9769455.css" rel="stylesheet" integrity="">
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+
+
+    <title>Using Jenkins X To Define And Run Serverless Deployments | Jenkins X</title>
+  </head>
+  <body class="td-page td-blog">
+    <header>
+      
+<nav class="js-navbar-scroll navbar navbar-expand navbar-dark flex-column flex-md-row td-navbar">
+        <a class="navbar-brand" href="/">
+		<span class="navbar-logo"><svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 994.3 711.4" style="enable-background:new 0 0 994.3 711.4"><style>.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#73c3d5}.st1{fill:#ff7f40}.st2{fill:#73c3d5}.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#ff7f40}</style><g><g><g><path class="st0" d="M342.6 292.8c30.3.0 54.9 24.5 54.9 54.8.0 30.3-24.6 54.8-54.9 54.8-30.3.0-54.8-24.5-54.8-54.8C287.8 317.3 312.3 292.8 342.6 292.8"/><path class="st1" d="M342.6 265.9c22.6.0 43 9.1 57.8 23.9 14.8 14.8 23.9 35.2 23.9 57.8.0 22.5-9.2 43-23.9 57.8-14.8 14.8-35.2 23.9-57.8 23.9-22.5.0-43-9.1-57.7-23.9-14.8-14.8-23.9-35.2-23.9-57.8.0-22.5 9.1-43 23.9-57.8C299.6 275 320 265.9 342.6 265.9M392.8 297.3c-12.9-12.9-30.6-20.8-50.3-20.8-19.6.0-37.4 7.9-50.3 20.8-12.9 12.9-20.8 30.7-20.8 50.3.0 19.6 7.9 37.4 20.8 50.3 12.9 12.9 30.7 20.8 50.3 20.8 19.7.0 37.4-7.9 50.3-20.8 12.9-12.9 20.8-30.7 20.8-50.3C413.7 328 405.7 310.2 392.8 297.3"/></g><g><path class="st0" d="M651.7 292.8c30.3.0 54.8 24.5 54.8 54.8.0 30.3-24.5 54.8-54.8 54.8-30.3.0-54.8-24.5-54.8-54.8C596.9 317.3 621.5 292.8 651.7 292.8"/><path class="st1" d="M651.7 265.9c22.5.0 43 9.1 57.7 23.9 14.8 14.8 23.9 35.2 23.9 57.8.0 22.5-9.1 43-23.9 57.8-14.8 14.8-35.2 23.9-57.7 23.9-22.6.0-43-9.1-57.8-23.9-14.8-14.8-23.9-35.2-23.9-57.8.0-22.5 9.2-43 23.9-57.8C608.7 275 629.1 265.9 651.7 265.9M702 297.3c-12.9-12.9-30.6-20.8-50.3-20.8-19.7.0-37.4 7.9-50.3 20.8-12.9 12.9-20.8 30.7-20.8 50.3.0 19.6 8 37.4 20.8 50.3 12.9 12.9 30.6 20.8 50.3 20.8 19.6.0 37.4-7.9 50.3-20.8 12.9-12.9 20.8-30.7 20.8-50.3C722.8 328 714.9 310.2 702 297.3"/></g></g><path class="st0" d="M993.3 40c-18.8 31.1-53.4 81.8-60.7 95.1l-4.9-57.9-95.2 100.5c-32.7-62.1-92.5-107.9-163.4-121.4C651.3 24.6 579.3 1.8 505.3.1 502.6.0 499.9.0 497.1.0c-2.7.0-5.5.0-8.2.1-74 1.7-146 24.5-163.8 56.2-71 13.5-130.8 59.3-163.4 121.4L66.5 77.2l-4.9 57.9C54.3 121.7 19.8 71.1 1 40-4.1 58.4 12.3 201 16.8 219.4c4.4 18.1 34.2 142.5 57 140.4 3.2-1.2 9.3-26.3 16.9-48.8l52.2 97.1C167.5 505.9 247.3 582.4 347 602c1-7.1 2.7-14.2 5.3-20.6-111.3-21.2-196.1-119.5-196.1-236.7v-58.9c0-100.7 71.1-185.6 165.7-207 .2.8.4 1.5.7 2.2l55.7 149.9c7 18.8 18.8 35.1 41.1 35.1h77.7 77.7c22.3.0 34.1-16.3 41.1-35.1l55.7-149.9c.3-.7.5-1.5.7-2.2 94.5 21.4 165.7 106.3 165.7 207v58.9c0 117.2-84.8 215.5-196.1 236.7 2.7 6.4 4.4 13.5 5.3 20.6 99.7-19.6 179.5-96 204.1-193.9l52.2-97.1c7.6 22.5 13.8 47.5 16.9 48.8 22.8 2.1 52.6-122.3 57-140.4C982 201 998.4 58.3 993.3 40zM78.4 258.7 69 320C41.5 240.6 27.1 180.7 15.8 95.5l58.3 106.7 10.7-80.7 67.2 76.9c-11 27-17.1 56.5-17.1 87.3v58.9c0 3.4.1 6.7.2 10.1L78.4 258.7zM651.7 73.5 596 223.4c-4.1 10.9-9.6 21.2-21.2 21.2h-77.5-77.5c-11.7.0-17.2-10.3-21.2-21.2L342.6 73.5C336 55.7 417.8 31.6 497.1 31 576.5 31.6 658.3 55.7 651.7 73.5zM925.3 320l-9.4-61.3-56.9 96c.1-3.4.2-6.7.2-10.1v-58.9c0-30.8-6.1-60.3-17.1-87.3l67.2-76.9 10.7 80.7 58.3-106.7C967.2 180.7 952.8 240.6 925.3 320z"/><path class="st2" d="M595.8 521.3h-98.6-98.6c-70.4.0-107.9-34.6-120.7-49.2l-10.5 8.8c14.5 16.5 55.7 54 131.2 54h98.6 98.6c75.4.0 116.7-37.5 131.2-54l-10.5-8.8C703.7 486.7 666.1 521.3 595.8 521.3z"/><path class="st3" d="M623 557.9c-11.5-6-24.2-5.5-36.1-.9-12.5 4.8-25 11.5-36.7 18-5.9 3.2-11.8 6.6-17.6 9.9-5.8-3.3-12.5-5.2-19.6-5.2h-31.6c-7.1.0-13.8 1.9-19.6 5.2-5.8-3.4-11.7-6.7-17.6-9.9-11.7-6.5-24.1-13.2-36.7-18-11.9-4.6-24.6-5-36.1.9-26.6 13.7-30.6 51.9-28.4 78.3 2.1 26.4 12.5 68.5 43.2 74.5 5.3 1 10.6.8 15.8-.6 19.9-5.3 42.3-16.5 62.5-28.9 5.2 2.4 10.9 3.9 17 3.9H513c6.1.0 11.8-1.4 17-3.8 20.1 12.4 42.6 23.5 62.4 28.9 5.2 1.4 10.5 1.6 15.8.6 30.7-6 41.1-48.1 43.2-74.5C653.5 609.8 649.6 571.6 623 557.9zM396.4 689.7c-37.4 10-51-133.8 3.5-112.9 12 4.6 27.6 13 46.4 23.7-3.2 5.7-5 12.3-5 19.3v2.6c-8.9-2.8-21-5.8-36.5-9.4 25.7 16.2 17.9 12 35.2 20.6-19.2 11.4-10.5 5.7-37.2 25.8 16.3-5.4 29.1-9.8 38.5-13.6.1 7.6 2.4 14.7 6.2 20.7C432.2 675.6 413.7 685.1 396.4 689.7zm201.5.0c-17.2-4.6-35.8-14.1-51.2-23.2 3.6-5.7 5.8-12.4 6.2-19.5 9 3.5 20.9 7.6 35.5 12.4-25.9-19.4-18.6-14.8-35.4-24.7v-2c15-7.4 8.7-4.1 33.4-19.7-13.8 3.2-24.9 6-33.4 8.5v-1.7c0-7-1.8-13.6-5-19.3 18.9-10.7 34.4-19.1 46.4-23.7C648.8 555.9 635.3 699.7 597.9 689.7z"/></g></svg></span><span class="text-uppercase font-weight-bold">Jenkins X</span>
+	</a>
+	<div class="td-navbar-nav-scroll ml-md-auto" id="main_navbar">
+		<ul class="navbar-nav mt-2 mt-lg-0">
+			
+			
+			<li class="nav-item mr-4 mb-2 mb-lg-0">
+				
+				
+				
+				
+				
+				
+				<a class="nav-link" href="/about/" ><span>About</span></a>
+			</li>
+			
+			<li class="nav-item mr-4 mb-2 mb-lg-0">
+				
+				
+				
+				
+				
+				
+				<a class="nav-link" href="/docs/" ><span>Documentation</span></a>
+			</li>
+			
+			<li class="nav-item mr-4 mb-2 mb-lg-0">
+				
+				
+				
+				
+				
+				
+				<a class="nav-link active" href="/blog/" ><span class="active">Blog</span></a>
+			</li>
+			
+			
+				<li class="nav-item dropdown d-none d-lg-block">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	Community
+</a>
+<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+	
+	<a class="dropdown-item" href="/community/">Join the community</a>
+	
+	<a class="dropdown-item" href="/community/events/">Events</a>
+	
+</div>
+				</li>
+			
+			
+			
+			<li class="nav-item dropdown d-none d-lg-block">
+				
+
+<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	English
+</a>
+<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+	
+	<a class="dropdown-item" href="/zh/">中文</a>
+	
+</div>
+			</li>
+			
+		</ul>
+	</div>
+	<div class="navbar-nav d-none d-lg-block">
+ <input type="search" class="form-control td-search-input" placeholder="&#xf002 Search this site…" aria-label="Search this site…" autocomplete="off">
+</div>
+</nav>
+
+    </header>
+    <div class="container-fluid td-outer">
+      <div class="td-main">
+        <div class="row flex-xl-nowrap">
+          <div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none">
+            
+
+
+
+
+<div id="td-sidebar-menu" class="td-sidebar__inner">
+  
+  <form class="td-sidebar__search d-flex align-items-center">
+    
+ <input type="search" class="form-control td-search-input" placeholder="&#xf002 Search this site…" aria-label="Search this site…" autocomplete="off">
+
+    <button class="btn btn-link td-sidebar__toggle d-md-none p-0 ml-3 fas fa-bars" type="button" data-toggle="collapse" data-target="#td-section-nav" aria-controls="td-docs-nav" aria-expanded="false" aria-label="Toggle section navigation">
+    </button>
+  </form>
+  
+  <nav class="collapse td-sidebar-nav pt-2 pl-4" id="td-section-nav">
+    
+    <div class="nav-item dropdown d-block d-lg-none">
+      
+
+<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	English
+</a>
+<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+	
+	<a class="dropdown-item" href="/zh/">中文</a>
+	
+</div>
+    </div>
+    
+    
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/blog/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">Blog</a>
+  </li>
+  <ul>
+    <li class="collapse show" id="blog">
+      
+      
+      
+      
+      
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/blog/news/" class="align-left pl-0 pr-2 active td-sidebar-link td-sidebar-link__section">News</a>
+  </li>
+  <ul>
+    <li class="collapse show" id="blog-news">
+      
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-09-03-jenkinsworld-2019-takeaways" href="/blog/2019/09/03/jenkinsworld-2019-takeaways/">Jenkins X Key Takeaways from Jenkins World 2019</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-07-31-new-logo-jenkins-x" href="/blog/2019/07/31/new-logo-jenkins-x/">A New Logo for Jenkins X</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-07-29-jenkins-x-observability" href="/blog/2019/07/29/jenkins-x-observability/">Increasing CI/CD Pipeline Observability in Jenkins X</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page  active" id="m-blog-2019-07-23-serverless-deployments" href="/blog/2019/07/23/serverless-deployments/">Using Jenkins X To Define And Run Serverless Deployments</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-07-18-jenkins-world-lunch-demos" href="/blog/2019/07/18/jenkins-world-lunch-demos/">DevOps World - Jenkins World 2019 San Francisco: Lunch Time Demos</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-07-16-jenkins-x-contributor-summit" href="/blog/2019/07/16/jenkins-x-contributor-summit/">Join Us at the Jenkins X Contributor Summit San Francisco, Monday August 12, 2019</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-06-17-alibaba-container-service-jenkins-x" href="/blog/2019/06/17/alibaba-container-service-jenkins-x/">Installing Jenkins X on Alibaba Cloud Container Service</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-06-06-jenkins-world-agenda" href="/blog/2019/06/06/jenkins-world-agenda/">DevOps World-Jenkins World 2019 San Francisco: Agenda is Live</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-04-17-jenkins-community-awards" href="/blog/2019/04/17/jenkins-community-awards/">Jenkins Community Awards</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-04-03-terraform-jenkins-x" href="/blog/2019/04/03/terraform-jenkins-x/">Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-03-09-jenkins-x-cdf" href="/blog/2019/03/09/jenkins-x-cdf/">Jenkins X joins the CDF</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-02-19-jenkins-x-next-gen-pipeline-engine" href="/blog/2019/02/19/jenkins-x-next-gen-pipeline-engine/">Jenkins X Pipelines integrated with Tekton</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2019-01-14-happy-first-birthday" href="/blog/2019/01/14/happy-first-birthday/">Happy 1st Birthday Jenkins X</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-10-20-serverless-jenkins" href="/blog/2018/10/20/serverless-jenkins/">Serverless Jenkins</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-10-03-helm-without-tiller" href="/blog/2018/10/03/helm-without-tiller/">Helm 2.x without Tiller</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-09-06-jenkins-x-at-jenkinsworld" href="/blog/2018/09/06/jenkins-x-at-jenkinsworld/">Jenkins X at Jenkins World</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-05-05-jenkins-x-does-kubecon" href="/blog/2018/05/05/jenkins-x-does-kubecon/">Jenkins X does KubeCon</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-03-19-introducing-jenkins-x" href="/blog/2018/03/19/introducing-jenkins-x/">Introducing Jenkins X</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-03-09-jep-400-submitted" href="/blog/2018/03/09/jep-400-submitted/">JEP 400 submitted</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
+      
+      
+      
+      
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/blog/releases/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Releases</a>
+  </li>
+  <ul>
+    <li class="collapse " id="blog-releases">
+      
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-12-20-changes-20-december-2018" href="/blog/2018/12/20/changes-20-december-2018/">Merry Jenkins X Mas!</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-11-26-changes-november-26-2018" href="/blog/2018/11/26/changes-november-26-2018/">Here comes Cloud Native Jenkins</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-08-24-changes-august-24-2018" href="/blog/2018/08/24/changes-august-24-2018/">Changes for August 24 2018</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-05-21-changes-may-21-2018" href="/blog/2018/05/21/changes-may-21-2018/">Changes for May 21 2018</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-04-27-changes-april-27-2018" href="/blog/2018/04/27/changes-april-27-2018/">Changes for April 27 2018</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-blog-2018-04-11-changes-april-11-2018" href="/blog/2018/04/11/changes-april-11-2018/">Changes for April 11 2018</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
+      
+      
+    </li>
+  </ul>
+</ul>
+
+  </nav>
+</div>
+
+
+
+
+          </div>
+          <div class="d-none d-xl-block col-xl-2 td-toc d-print-none">
+            
+
+
+
+
+<div class="td-page-meta ml-2 pb-1 pt-2 mb-0">
+
+
+
+
+
+<a href="https://github.com/jenkins-x/jx-docs/edit/master/content/en/blog/news/serverless.md" target="_blank"><i class="fa fa-edit fa-fw"></i> Edit this page</a>
+<a href="https://github.com/jenkins-x/jx-docs/issues/new?title=Using%20Jenkins%20X%20To%20Define%20And%20Run%20Serverless%20Deployments" target="_blank"><i class="fab fa-github fa-fw"></i> Create documentation issue</a>
+
+
+<a href="https://github.com/jenkins-x/jx/issues/new" target="_blank"><i class="fas fa-tasks fa-fw"></i> Create project issue</a>
+
+</div>
+
+
+
+
+
+
+<nav id="TableOfContents">
+<ul>
+<li><a href="#using-jenkins-x-to-define-and-run-serverless-deployments">Using Jenkins X To Define And Run Serverless Deployments</a>
+<ul>
+<li><a href="#what-is-serverless-computing">What is Serverless Computing?</a></li>
+<li><a href="#serverless-deployments-in-kubernetes">Serverless Deployments In Kubernetes</a></li>
+<li><a href="#which-types-of-applications-should-run-as-serverless">Which Types Of Applications Should Run As Serverless?</a></li>
+<li><a href="#why-do-we-need-jenkins-x-to-be-serverless">Why Do We Need Jenkins X To Be Serverless?</a></li>
+<li><a href="#what-is-tekton-and-how-does-it-fix-jenkins-x">What Is Tekton And How Does It Fix Jenkins X?</a></li>
+</ul></li>
+</ul>
+</nav>
+
+
+
+          </div>
+          <main class="col-12 col-md-9 col-xl-8 pl-md-5 pr-md-4" role="main">
+            <a class="btn btn-lg -bg-orange td-rss-button d-none d-lg-block" href="/blog/news/index.xml" target="_blank">
+              RSS <i class="fa fa-rss ml-2 "></i>
+            </a>
+            
+<div class="td-content">
+	<h1>Using Jenkins X To Define And Run Serverless Deployments</h1>
+	<div class="lead">Using Jenkins X To Define And Run Serverless Deployments</div>
+	<div class="td-byline mb-4">
+		By <b>Viktor Farcic</b> |
+		<time datetime="2019-07-23" class="text-muted">Tuesday, July 23, 2019</time>
+	</div>
+	
+
+<figure>
+<img src="/images/2019-dwjw-san-fran-rev.png"/>
+</figure>
+
+<h1 id="using-jenkins-x-to-define-and-run-serverless-deployments">Using Jenkins X To Define And Run Serverless Deployments</h1>
+
+<h2 id="what-is-serverless-computing">What is Serverless Computing?</h2>
+
+<p>To understand serverless computing, one needs to understand the challenges we are facing with more &ldquo;traditional&rdquo; types of deployments of our applications. A long time ago, most of us were deploying our apps directly to servers. We had to decide the size (memory and CPU) of the nodes where our applications would run, we had to create those servers, and we had to maintain them. The situation improved with the emergence of cloud computing. We still had to do all those things, but now those tasks were much easier due to the simplicity of the APIs and services cloud vendors gave us. Suddenly, we had (a perception of) infinite resources and all we had to do is run a command, and a few minutes later the servers (VMs) we needed would materialize. Things become much easier and faster. But, that did not remove the tasks of creating and maintaining servers. Instead, that made them more straightforward. Concepts like immutability become mainstream as well. As a result, we got much-needed reliability, reduced drastically lean time, and started to rip benefits of elasticity.</p>
+
+<p>Still, some important questions were left unanswered. Should we keep our servers running even when our applications are not serving any requests? If we shouldn&rsquo;t, how can we ensure that they are readily available when we do need them? Who should be responsible for the maintenance of those servers? Is it our infrastructure department, our cloud provider, or can we build a system that will do that for us without human intervention?</p>
+
+<p>Things changed with the emergence of containers and schedulers. After a few years of uncertainty created by having too many options on the table, the situation stabilized around Kubernetes that become the de-facto standard. At roughly the same time, in parallel with the rise of popularity of containers and schedulers, solutions for serverless computing concepts started to materialize. Those solutions were not related to each other or, to be more precise, they were not during the first few years. Kubernetes provided us with means to run microservices as well as more traditional types of applications, while serverless focused on running functions (often only a few lines of code).</p>
+
+<p>The name serverless is misleading by giving the impression that they are no servers involved. They are certainly still there, but the concept and the solutions implementing them allow us (users) to ignore their existence. The major cloud providers (AWS, Microsoft Azure, and Google) all came up with solutions for serverless computing. Developers could focus on writing functions with a few additional lines of code specific to our serverless computing vendor. Everything else required for running and scaling those functions become transparent.</p>
+
+<p>But not everything is excellent in the serverless world. The number of use-cases that can be fulfilled with writing functions (as opposed to applications) is limited. Even when we do have enough use-cases to make serverless computing worthwhile effort, a more significant concern is lurking just around the corner. We are likely going to be locked to a vendor given that none of them implements any type of industry standard. No matter whether we choose AWS Lambda, Azure Functions, or Google Cloud Functions, the code we write will not be portable from one vendor to another. That does not mean that there are no serverless frameworks that are not tied to a specific cloud provider. There are, but we&rsquo;d need to maintain them ourselves, be it on-prem or inside clusters running in a public cloud. That removes one of the most essential benefits of serverless concepts.</p>
+
+<p>That&rsquo;s where Kuberentes comes into play.</p>
+
+<h2 id="serverless-deployments-in-kubernetes">Serverless Deployments In Kubernetes</h2>
+
+<p>At this point, I must make an assumption that you, dear reader, might dissagree with. Most of the companies will run at least some (if not all) of their applications in Kubernetes. It is becoming (or it already is) a standard API that will be used by (almost) everyone. Why is that assumption important? If I am right, then (almost) everyone will have a Kubernetes cluster. Everyone will spend time maintaining it, and everyone will have some level of in-house knowledge of how it works. If that assumption is correct, it stands to reason that Kubernetes would be the best choice of a platform to run serverless applications as well. That would avoid vendor lock-in since Kubernetes can run (almost) anywhere.</p>
+
+<p>Kubernetes-based serverless computing would provide quite a few other benefits. We could be free to write our applications in any language, instead of being limited by those supported by function-as-a-service solutions offered by cloud vendors. Also, we would not be limited to writing only functions. A microservice or even a monolith could run as a serverless application. We just need to find a solution to make that happen. After all, proprietary cloud-specific serverless solutions use containers (of sorts) as well, and the standard mechanism for running containers is Kubernetes.</p>
+
+<p>There is an increasing number of Kubernetes platforms that allow us to run serverless applications. We won&rsquo;t go into all of those, but fastrack the conversation by me stating that Knative is likely going to become the de-facto standard how to deploy serverless load to Kubernetes.</p>
+
+<p><a href="https://knative.dev/" target="_blank">Knative</a> is an open source project that delivers components used to build and run serverless applications on Kubernetes. We can use it to scale-to-zero, to autoscale, for in-cluster builds, and as an eventing framework for applications on Kubernetes. The part of the project we&rsquo;re interested in right now is its ability to convert our applications into serverless deployments. That should allow us both to save resources (memory and CPU) when our applications are idle, as well as to scale them fast when trafic increases.</p>
+
+<p>Now that we discussed what is serverless and that I made an outlandish statement that Kubernetes is the platform where your serverless applications should be running, let&rsquo;s talk which types of scenarios are a good fit for serverless deployments.</p>
+
+<h2 id="which-types-of-applications-should-run-as-serverless">Which Types Of Applications Should Run As Serverless?</h2>
+
+<p>Initially, the idea was to have only functions running as serverless loads. Those would be single-purpose pieces of code that contain only a small number of lines of code. A typical example of a serverless application would be an image processing function that responds to a single request and can run for a limited period. Restrictions like the size of applications (functions) and their maximum duration are imposed by implementations of serverless computing in cloud providers. But, if we adopt Kubernetes as the platform to run serverless deployments, those restrictions might not be valid anymore. We can say that any application that can be packaged into a container image can run as a serverless deployment in Kubernetes. That, however, does not mean that any container is as good of a candidate as any other. The smaller the application or, to be more precise, the faster its boot-up time is, the better the candidate for serverless deployments.</p>
+
+<p>However, things are not as straight forward as they may seem. Not being a good candidate does not mean that one should not compete at all. Knative, as many other serverless frameworks do allow us to fine-tune configurations. We can, for example, specify with Knative that there should never be less than one replica of an application. That would solve the problem of slow boot-up while still maintaining some of the benefits of serverless deployments. In such a case, there would always be at least one replica to handle requests, while we would benefit from having the elasticity of serverless providers.</p>
+
+<p>The size and the booot-up time are not the only criteria we can use to decide whether an application should be serverless or not. We might want to consider traffic as well. If, for example, our app has high traffic and it receives requests throughout the whole day, we might never need to scale it down to zero replicas. Similarly, our application might not be designed in a way that every request is processed by a different replica. After all, most of the apps can handle a vast number of requests by a single replica. In such cases, serverless computing implemented by cloud vendors and based on function-as-a-service might not be the right choice. But, as we already discussed, there are other serverless platforms, and those based on Kubernetes do not follow those rules. Since we can run any container as serverless, any type of applications can be deployed as such, and that means that a single replica can handle as many requests as its design allows. Also, Knative and other platforms can be configured to have a minimum number of replicas, so they might be well suited even for the applications with a constant flow of traffic.</p>
+
+<p>All in all, if it can run in a container, it can be converted into a serverless deployment, as long as we understand that smaller applications with faster boot-up times are better candidates than others. If there is a rule we should follow when deciding whether to run an application as serverless, it is related to the state. Or, to be more precise, the luck of it. If an application is stateless, it might be the right candidate for serverless computing.</p>
+
+<p>Now, let us imagine that you have an application that is not the right candidate to be serverless. Does that mean that we cannot rip any benefit from frameworks like Knative? We can since there is still the question of deployments to different environments.</p>
+
+<p>Typically, we have permanent and temporary environments. The examples of the former would be staging and production. If we do not want our application to be serverless in production, we will probably not want it to be any different in staging. Otherwise, the behavior would be different, and we could not say that we tested precisely the same behavior as the one we expect to run in production. So, in most cases, if an application should not be serverless in production, it should not be serverless in any other permanent environment. But, that does not mean that it shouldn&rsquo;t be serverless in temporary environments.</p>
+
+<p>Let&rsquo;s take an environment in which we deploy an application as a result of making a pull request as an example. It would be a temporary environment since we&rsquo;d remove it the moment that pull request is closed. Its time span is relatively short. It could exist for a few minutes, but sometimes that could be days or even weeks. It all depends on how fast we are in closing pull requests.</p>
+
+<p>Nevertheless, there is a high chance that the application deployed in such temporary environment will have low trafic. We would typically run a set of automated tests when the pull request is created or when we make changes to it. That would certainly result in a traffic spike. But, after that, the traffic would be much lower and most of the time non-existent. We might open the application to have a look at it, we might run some manual tests, and then we would wait for the pull request to be approved or for someone to push additional changes if we found some issues or inconsistencies. That means that the deployment in question would be unused most of the time. Still, if it would be a &ldquo;traditional&rdquo; deployment, it would oocupy resources for no particular reason. That might even discourage us from making temporary environments due to high costs.</p>
+
+<p>Given that  deployments based on pull requests are not used for final validations before deploying to production (that&rsquo;s what permanent environments are for), we do not need to insist that they are the same as production. On the other hand, the applications in such environments are mostly unused. Those facts lead us to conclude that temporary (often pull-request based) environments are a great candidate for serverless deployments, no matter the deployment type we use in permanent environments (e.g., staging and production).</p>
+
+<p>Now that we saw some of the use cases for serverless computing, there is still an important one that we did not discuss.</p>
+
+<h2 id="why-do-we-need-jenkins-x-to-be-serverless">Why Do We Need Jenkins X To Be Serverless?</h2>
+
+<p>There are quite a few problems with the traditional Jenkins. Most of us already know them, so I&rsquo;ll repeat them only briefly. Jenkins (without X) does not scale, it is not fault-tolerant, it&rsquo;s resource usage is heavy, it is slow, it is not API-driven, and so on. In other words, it was not designed yesterday, but when those things were not as important as they are today. Jenkins had to go away for Jenkins X to take its place.</p>
+
+<p>Initially, Jenkins X had a stripped-down version of Jenkins but, since the release 2, not a single line of the traditional Jenkins is left in Jenkins X. Now it is fully serverless thanks to Tekton and a lot of custom code written from scratch to support the need for a modern Kubernetes-based solution. Excluding a very thin layer that mostly acts as an API gateway, Jenkins X is fully serverless. Nothing runs when there are no builds, and it scales to accommodate any load. And that might be the best example of serverless computing we can have.</p>
+
+<p>Coontinuous integration and continuous delivery flows are temporary by their nature. When we make a change to a Git repository, it notifies the cluster, and a set of processes are spun. Each Git webhook request results in a pipeline run that builds, validates, and deploys a new release and, once those processes are finished, it dissapears from the system. Nothing is executing when there are no pipeline runs, and we can have as many of them in parallel as we need. It is elastic and resource-efficient, and the heavy lifting is done by Tekton.</p>
+
+<p>Continuous integration and continuous delivery tools are probably one of the best examples of a use-case that fits well in serverless computing concepts.</p>
+
+<h2 id="what-is-tekton-and-how-does-it-fix-jenkins-x">What Is Tekton And How Does It Fix Jenkins X?</h2>
+
+<p>Those of you using serverless Jenkins X already experienced Knative, of sorts. Tekton is a spin-off project of Knative, and it is the essential component in the solution. It is in charge of creating pipeline runs (a special type of Pods) when needed and destroying them when finished. Thanks to Tekton, the total footprint of serverless Jenkins X is very small when idle. Similarly, it allows the solution to scale to almost any size when that is needed.</p>
+
+<p>Tekton is designed only for &ldquo;special&rdquo; type of processes, mostly those associated with continuous integration and continuous delivery pipelines. It is not, however, suited for long-running applications designed to handle requests. So, why am I talking about Tekton if it does not allow us to run our applications as serverless? The answer lies in Tekton&rsquo;s father.</p>
+
+<p>Tekton is a Knative spin-off. It was forked from it in hopes to provide better CI/CD capabilities. Or, to be more precise, Tekton was born out of the <a href="https://knative.dev/docs/build/" target="_blank">Knative Build</a> component, which is now considered deprecated. But, Knative still stays the most promising way to run serverless applications in Kubernetes. It is the father of Tekton, which we&rsquo;ve been using for a while now given that it is an integral part of serverless Jenkins X.</p>
+
+<p>Now, I could walk you through the details of Knative definitions, but that would be out of the scope of this subject. It&rsquo;s about Jenkins X, not about Knative and other platforms for running serverless application. But, my unwilingness to show you the ups and downs of Knative does not mean that we cannot use it. As a matter of fact, Jenkins X already provides means to select whether we want to create a quickstart or import an existing project that will be deployed as a serverless application using Knative. We just need to let Jenkins X know that&rsquo;s what we want, and it&rsquo;ll do the heavy lifing of creating the definition (YAML file) that we need.</p>
+
+<p>So, Jenkins X is an excellent example of both a set of serverless applications that constitute the solution, as well as a tool that allows us to convert our existing applications into serverless deployments. All we have to do to accomplish the latter is to express that as our desire, and Jenkins X will do all the heavy lifting of creating the correct definitions for our applications as well as to move them through their life cycles.</p>
+
+	
+
+	<ul class="list-unstyled d-flex justify-content-between align-items-center mb-0 pt-5">
+  <li>
+    <a href="/blog/2019/07/18/jenkins-world-lunch-demos/" class="btn btn-primary "><span class="mr-1">←</span> Previous</a>
+  </li>
+    <a href="/blog/2019/07/29/jenkins-x-observability/" class="btn btn-primary ">Next <span class="ml-1">→</span></a>
+  </li>
+</ul>
+
+</div>
+
+
+          </main>
+        </div>
+      </div>
+      
+<footer class="bg-dark py-5 row d-print-none">
+  <div class="container-fluid mx-sm-5">
+    <div class="row">
+      <div class="col-6 col-sm-4 text-xs-center order-sm-2">
+        
+        
+        
+<ul class="list-inline mb-0">
+  
+  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="User Slack Channel" aria-label="User Slack Channel">
+    <a class="text-white" target="_blank" href="https://kubernetes.slack.com/messages/C9MBGQJRH">
+      <i class="fab fa-slack"></i>
+    </a>
+  </li>
+  
+  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="Twitter" aria-label="Twitter">
+    <a class="text-white" target="_blank" href="https://twitter.com/jenkinsxio">
+      <i class="fab fa-twitter"></i>
+    </a>
+  </li>
+  
+  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="Newsletter" aria-label="Newsletter">
+    <a class="text-white" target="_blank" href="/community">
+      <i class="fa fa-envelope"></i>
+    </a>
+  </li>
+  
+</ul>
+
+        
+        
+      </div>
+      <div class="col-6 col-sm-4 text-right text-xs-center order-sm-3">
+        
+        
+        
+<ul class="list-inline mb-0">
+  
+  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="GitHub" aria-label="GitHub">
+    <a class="text-white" target="_blank" href="https://github.com/jenkins-x/jx">
+      <i class="fab fa-github"></i>
+    </a>
+  </li>
+  
+  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="Developer Slack Channel" aria-label="Developer Slack Channel">
+    <a class="text-white" target="_blank" href="https://kubernetes.slack.com/messages/C9LTHT2BB">
+      <i class="fab fa-slack"></i>
+    </a>
+  </li>
+  
+</ul>
+
+        
+        
+      </div>
+      <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
+        <small class="text-white">&copy; 2019 The Jenkins X Authors. All Rights Reserved</small>
+        <small class="ml-1"><a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a></small>
+	
+		<p class="mt-2"><a href="/about/">About</a></p>
+	
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    </div>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/main.min.29b0315468c00226fa6f4556a9cebc0ac4fe1ce1457a01b22c0a06b329877383.js" integrity="sha256-KbAxVGjAAib6b0VWqc68CsT&#43;HOFFegGyLAoGsymHc4M=" crossorigin="anonymous"></script>
+
+
+
+  </body>
+</html>
