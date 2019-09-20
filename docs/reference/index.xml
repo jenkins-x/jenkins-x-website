@@ -40,6 +40,353 @@
     </item>
     
     <item>
+      <title>Docs: Jenkins X Pipeline Syntax Reference</title>
+      <link>/docs/reference/pipeline-syntax-reference/</link>
+      <pubDate>Thu, 20 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/pipeline-syntax-reference/</guid>
+      <description>
+        
+        
+        
+
+&lt;h1 id=&#34;syntax-for-jenkins-x-yml-and-build-packs&#34;&gt;Syntax for &lt;code&gt;jenkins-x.yml&lt;/code&gt; and build packs&lt;/h1&gt;
+
+&lt;h2 id=&#34;where-to-define-your-pipelines&#34;&gt;Where to Define Your Pipelines&lt;/h2&gt;
+
+&lt;p&gt;Pipelines can either be defined in &lt;a href=&#34;build-packs.md&#34; target=&#34;_blank&#34;&gt;build packs&lt;/a&gt;, used for
+multiple projects, or in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in a project&amp;rsquo;s repository.
+When defining pipelines in a build pack, the top-level configuration below is
+used directly, while in &lt;code&gt;jenkins-x.yml&lt;/code&gt;, the top-level configuration is under
+the &lt;code&gt;pipelineConfig&lt;/code&gt; key.&lt;/p&gt;
+
+&lt;h2 id=&#34;top-level-configuration&#34;&gt;Top-Level Configuration&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;extends&#39;&gt;&lt;code&gt;extends&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A build pack can extend another build pack,
+inheriting its configuration and contributing its own additional behavior.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;file&lt;/code&gt;&lt;/strong&gt; - The name of the build pack to inherit from.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;import&lt;/code&gt;&lt;/strong&gt; - If the build pack to inherit from is not in the same
+repository as this build pack, specify where to import it from.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent configuration for all pipelines in the
+build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables to be made available for all
+pipelines in the build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for step
+containers for all pipelines in the build pack or project.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pipelines&#39;&gt;&lt;code&gt;pipelines&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The pipeline definitions for this
+build pack or project.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;specifying-and-overriding-release-pull-request-and-feature-pipelines&#34;&gt;Specifying and Overriding Release, Pull Request, and Feature Pipelines&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pullRequest-release-feature&#39;&gt;&lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, &lt;code&gt;feature&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; -
+The configuration for the three pipeline types for this build pack or project.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setup&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The first stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setVersion&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The second stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;preBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The third stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;build&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fourth stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;postBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fifth and final stage to run.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The full definition
+of the pipeline. Mutually exclusive with &lt;code&gt;setup&lt;/code&gt;, etc.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;overrides&#39;&gt;&lt;code&gt;overrides&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of overriding changes to make
+to the inherited or default pipeline.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/strong&gt; - The name of the pipeline this override should be applied
+to (&lt;code&gt;release&lt;/code&gt;, &lt;code&gt;pullRequest&lt;/code&gt;, or &lt;code&gt;feature&lt;/code&gt;). If unspecified, this override
+will be applied to all pipelines.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;stage&lt;/code&gt;&lt;/strong&gt; - The name of the stage this override should be applied to.
+If unspecified, this override will be applied to all stages.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the step this override should be applied to. If
+unspecified, this override will be applied to all steps.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;step&lt;/code&gt;&lt;/strong&gt; - A single &lt;a href=&#34;#configuration-for-steps&#34;&gt;step&lt;/a&gt; which will be used
+to override the named step or, if no step name is given, all steps in the
+specified stage. If neither &lt;code&gt;step&lt;/code&gt; nor &lt;code&gt;steps&lt;/code&gt; is given, all steps in
+matching stages in matching pipelines will be removed.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;#configuration-for-steps&#34;&gt;steps&lt;/a&gt; which will be
+used to override the named step or, if no name is given, all steps in the
+specified stage.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;type&lt;/code&gt;&lt;/strong&gt; - Whether the &lt;code&gt;step&lt;/code&gt; or &lt;code&gt;steps&lt;/code&gt; should replace the named step,
+be prepended before the named step, or be appended after the named step.
+Possible values are &lt;code&gt;replace&lt;/code&gt;, &lt;code&gt;before&lt;/code&gt;, or &lt;code&gt;after&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An agent definition that will replace the
+existing agent definition for matching pipelines and stages. Step agents
+are not changed.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;default&#39;&gt;&lt;code&gt;default&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A full &lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;pipeline definition&lt;/a&gt;
+that will be used for the &lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, and &lt;code&gt;feature&lt;/code&gt; pipelines if
+they are not already specified.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;build-pack-stages&#34;&gt;Build pack stages&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;preSteps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run before
+the main body of steps for this stage. &lt;code&gt;preSteps&lt;/code&gt; is &lt;em&gt;not&lt;/em&gt; inherited from parent
+build packs.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The main body of steps to run for
+this stage. If inheriting from a parent build pack, these steps will be appended
+to the parent build pack&amp;rsquo;s &lt;code&gt;steps&lt;/code&gt; by default.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;replace&lt;/code&gt;&lt;/strong&gt; - An optional boolean. If true, the inherited stage definition&amp;rsquo;s
+&lt;code&gt;steps&lt;/code&gt; will be replaced, rather than appended to.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;defining-an-individual-pipeline&#34;&gt;Defining an Individual Pipeline&lt;/h2&gt;
+
+&lt;h3 id=&#34;configuration-for-the-whole-pipeline&#34;&gt;Configuration for the Whole Pipeline&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent definition to use for any
+&lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt; without their own agents specified.
+Overrides &lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; agent definition.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for the entire pipeline, which
+can be overridden in individual stages and steps.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the entire
+pipeline.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;timeout&#39;&gt;&lt;code&gt;timeout&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The maximum duration for execution
+of the pipeline, after which the build will be terminated.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;time&lt;/code&gt;&lt;/strong&gt; - How long to wait until timing out the build.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;unit&lt;/code&gt;&lt;/strong&gt; - The unit for &lt;code&gt;time&lt;/code&gt;. Can be any of &lt;code&gt;seconds&lt;/code&gt;, &lt;code&gt;minutes&lt;/code&gt;,
+or &lt;code&gt;hours&lt;/code&gt;. Defaults to &lt;code&gt;seconds&lt;/code&gt; if unspecified.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
+step containers within this pipeline, overriding any common settings with
+&lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; default configuration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
+which will be added to every stage in the pipeline, and can be mounted via
+&lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for stages and
+steps in this pipeline. Can either be relative, under the &lt;code&gt;/workspace/source&lt;/code&gt;
+directory were the project source will be checked out, or absolute.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;stages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of one or more &lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;configuration-for-stages&#34;&gt;Configuration for Stages&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The name of the stage. Required and must be
+unique.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The agent definition to use for this stage,
+overriding the agent specified for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;
+if one is specified.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the stage.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
+step containers within this stage, overriding any common settings with
+&lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt; default
+configuration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
+which will be added to this stage&amp;rsquo;s pod, and can be mounted via &lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for all steps or nested stages,
+overriding any variables defined for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;nestedstages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run sequentially
+within this stage, inheriting this stage&amp;rsquo;s configuration. Cannot be used with
+either &lt;code&gt;steps&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;parallel&#39;&gt;&lt;code&gt;parallel&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run in parallel,
+inheriting this stage&amp;rsquo;s configuration. Cannot be used with either &lt;code&gt;steps&lt;/code&gt; or
+&lt;code&gt;stages&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for steps and
+nested stages. Can either be relative under the &lt;code&gt;/workspace/source&lt;/code&gt; directory or
+absolute.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run in this stage. Cannot be used
+with either &lt;code&gt;stages&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;configuration-for-steps&#34;&gt;Configuration for Steps&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A name for the step, used in logging and for
+overrides.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;command&#39;&gt;&lt;code&gt;command&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The command to execute in this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;args&#39;&gt;&lt;code&gt;args&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An array of arguments to the command.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional working directory for this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional agent configuration for this step.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;loop&#39;&gt;&lt;code&gt;loop&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Repeats the nested &lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;
+for each value in the specified list.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;variable&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable to be set with the
+value for this loop iteration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;values&lt;/code&gt;&lt;/strong&gt; - A list of strings to iterate over.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more steps to run for
+each iteration of the loop.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for this step, adding to
+inherited environment variables from the stage and pipeline.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;common-directives&#34;&gt;Common Directives&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;agent&#39;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - What container image should be used.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;image&lt;/code&gt;&lt;/strong&gt; - A container image, either as a fully qualified image or a
+&lt;a href=&#34;pod-templates.md&#34; target=&#34;_blank&#34;&gt;pod template name&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;label&lt;/code&gt;&lt;/strong&gt; - Only used with static Jenkins masters - the Jenkins agent
+label to use.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;env&#39;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more environment variables.
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;value&lt;/code&gt;&lt;/strong&gt; - The value of the environment variable.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;containerOptions&#39;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt;
+
+&lt;ul&gt;
+&lt;li&gt;See &lt;a href=&#34;https://kubernetes.io/docs/concepts/containers&#34; target=&#34;_blank&#34;&gt;Kubernetes container configuration&lt;/a&gt;.
+&lt;code&gt;name&lt;/code&gt;, &lt;code&gt;command&lt;/code&gt;, &lt;code&gt;args&lt;/code&gt;, &lt;code&gt;image&lt;/code&gt;, and &lt;code&gt;workingDir&lt;/code&gt; cannot be specified.&lt;/li&gt;
+&lt;li&gt;Common use cases for &lt;code&gt;containerOptions&lt;/code&gt; include resource requests and
+limits, and volume mounts.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;examples&#34;&gt;Examples&lt;/h1&gt;
+
+&lt;h2 id=&#34;full-pipeline-definition-in-jenkins-x-yml&#34;&gt;Full pipeline definition in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.
+buildPack: none
+
+pipelineConfig:
+  pipelines:
+    release:
+    # While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.
+      pipeline:
+        # Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is
+        # specified on a stage or step.
+        agent:
+          image: &amp;quot;some/image@version&amp;quot; # or &amp;quot;maven&amp;quot; - this means &amp;quot;use the maven pod template&amp;quot;
+        # Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.
+        # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core
+        # for more information on valueFrom.
+        # Environment variables defined at the top level can be overridden in stages and individual
+        # steps.
+        environment:
+          - name: SOME_VAR
+            value: A value for the env var
+          - name: SOME_OTHER_VAR
+            value: Another var
+          - name: SOME_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: mysecret
+                key: apikey
+        # Options contains other configuration for the pipeline.
+        options:
+          # containerOptions allows specifying more advanced default configuration for the containers
+          # used for all stages and steps in this scope, using the standard Kubernetes syntax for
+          # containers.
+          # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.
+          # Not all fields can be configured - e.g., name, command, arguments, image, and dir are all
+          # defined via the syntax - but everything else can be.
+          # Like with environment variables, containerOptions at the top level can be overridden and
+          # added to by stages.
+          containerOptions:
+            # Here we&#39;re setting the resource requests and limits for all step containers within this
+            # pipeline.
+            resources:
+              requests:
+                cpu: 0.1
+                memory: 64Mi
+              limits:
+                cpu: 0.2
+                memory: 128Mi
+          # timeout allows you to set the maximum duration for builds of this pipeline.
+          timeout:
+            time: 15
+            unit: minutes
+        # A pipeline must contain at least one stage, and each stage must have a unique name.
+        stages:
+          - name: Stage With Steps And Options Etc
+            # agent, options, and environment are valid on stages as well. For the parents of nested
+            # sequential or parallel stages, their children inherit the parent&#39;s agent, options,
+            # and environment.
+            # options on a stage currently only can contain containerOptions.
+            options:
+              containerOptions:
+                resources:
+                  limits:
+                    cpu: 0.4
+                    memory: 256Mi
+            # A stage must contain at least one of &amp;quot;steps&amp;quot;, &amp;quot;stages&amp;quot;, or &amp;quot;parallel&amp;quot;
+            # Steps must contain at least one command to be executed or a loop.
+            steps:
+              - command: mvn
+                # args are a YAML array, so can be specified either on multiple lines or in a []
+                args:
+                  - clean
+                  - install
+                dir: foo  # Optional, allows running this step in a subdirectory of the workspace, or
+                          # a different absolute directory.
+                # Steps can have their own images specified, overriding the stage and top-level images.
+                agent:
+                  image: some-other-image
+              # A loop allows you to specify a list of potential values for an environment variable and a
+              # set of one or more steps. Those steps will be run, sequentially, for each of the
+              # potential values. Loops can also be nested for more complex combinations.
+              - loop:
+                  variable: LANGUAGE
+                  values:
+                    - maven
+                    - gradle
+                    - nodejs
+                  steps:
+                    - command: echo
+                      args:
+                        - hello
+                        - ${LANGUAGE}
+          - name: Stage with nested sequential stages
+            # Any configuration of agent, options, or environment will apply to all child stages.
+            environment:
+              - name: SPECIFIC_TO_SEQUENTIAL_PARENT
+                value: something
+            # A list of nested stages to run sequentially. This is meant to allow for avoiding
+            # copy-pasting configuration across a set of stages that need to have the same configuration
+            # but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.
+            stages:
+              # ...insert stages here. =)
+          - name: Stage with nested parallel stages
+            # Works very similarly to sequential stages, except that the stages are executed in parallel,
+            # rather than sequentially.
+            parallel:
+              # ...insert stages here. =)
+&lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: API Documentation</title>
+      <link>/docs/reference/api/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/reference/api/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Access the api documentation on &lt;a href=&#34;/apidocs&#34;&gt;https://jenkins-x.io/apidocs&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Jenkins X Boot</title>
       <link>/docs/reference/boot/</link>
       <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
@@ -620,7 +967,7 @@ webhook: prow
 &lt;p&gt;Here&amp;rsquo;s a &lt;a href=&#34;/images/developing/vscode-devpod.mp4&#34;&gt;demo showing how to use web based VS Code in a DevPod&lt;/a&gt;:&lt;/p&gt;
 
 &lt;figure&gt;
-&lt;embed src=&#34;/images/developing/vscode-devpod.mp4&#34; autostart=&#34;false&#34; height=&#34;400&#34; width=&#34;600&#34; /&gt;
+&lt;embed src=&#34;https://jenkins-x.io/images/developing/vscode-devpod.mp4&#34; autostart=&#34;false&#34; height=&#34;400&#34; width=&#34;600&#34; /&gt;
 &lt;figcaption&gt;
 &lt;h5&gt;Use web based VS Code inside a DevPod&lt;/h5&gt;
 &lt;/figcaption&gt;
@@ -847,339 +1194,6 @@ value: http://chartmuseum.jx.1.2.3.4.nip.io
 &lt;/ul&gt;
 
 &lt;p&gt;You can do the above via the &lt;a href=&#34;/commands/jx_create_variable/&#34;&gt;jx create var -n CHART_REPOSITORY&lt;/a&gt; command if you are inside a clone of the staging/production git repository - then git commit + merge the change.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Jenkins X Pipeline Syntax Reference</title>
-      <link>/docs/reference/pipeline-syntax-reference/</link>
-      <pubDate>Thu, 20 Jun 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/reference/pipeline-syntax-reference/</guid>
-      <description>
-        
-        
-        
-
-&lt;h1 id=&#34;syntax-for-jenkins-x-yml-and-build-packs&#34;&gt;Syntax for &lt;code&gt;jenkins-x.yml&lt;/code&gt; and build packs&lt;/h1&gt;
-
-&lt;h2 id=&#34;where-to-define-your-pipelines&#34;&gt;Where to Define Your Pipelines&lt;/h2&gt;
-
-&lt;p&gt;Pipelines can either be defined in &lt;a href=&#34;build-packs.md&#34; target=&#34;_blank&#34;&gt;build packs&lt;/a&gt;, used for
-multiple projects, or in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in a project&amp;rsquo;s repository.
-When defining pipelines in a build pack, the top-level configuration below is
-used directly, while in &lt;code&gt;jenkins-x.yml&lt;/code&gt;, the top-level configuration is under
-the &lt;code&gt;pipelineConfig&lt;/code&gt; key.&lt;/p&gt;
-
-&lt;h2 id=&#34;top-level-configuration&#34;&gt;Top-Level Configuration&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;extends&#39;&gt;&lt;code&gt;extends&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A build pack can extend another build pack,
-inheriting its configuration and contributing its own additional behavior.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;file&lt;/code&gt;&lt;/strong&gt; - The name of the build pack to inherit from.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;import&lt;/code&gt;&lt;/strong&gt; - If the build pack to inherit from is not in the same
-repository as this build pack, specify where to import it from.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent configuration for all pipelines in the
-build pack or project.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables to be made available for all
-pipelines in the build pack or project.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for step
-containers for all pipelines in the build pack or project.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pipelines&#39;&gt;&lt;code&gt;pipelines&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The pipeline definitions for this
-build pack or project.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;specifying-and-overriding-release-pull-request-and-feature-pipelines&#34;&gt;Specifying and Overriding Release, Pull Request, and Feature Pipelines&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;pullRequest-release-feature&#39;&gt;&lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, &lt;code&gt;feature&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; -
-The configuration for the three pipeline types for this build pack or project.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setup&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The first stage to run.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;setVersion&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The second stage to run.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;preBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The third stage to run.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;build&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fourth stage to run.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#build-pack-stages&#34;&gt;&lt;code&gt;postBuild&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The fifth and final stage to run.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The full definition
-of the pipeline. Mutually exclusive with &lt;code&gt;setup&lt;/code&gt;, etc.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;overrides&#39;&gt;&lt;code&gt;overrides&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of overriding changes to make
-to the inherited or default pipeline.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;pipeline&lt;/code&gt;&lt;/strong&gt; - The name of the pipeline this override should be applied
-to (&lt;code&gt;release&lt;/code&gt;, &lt;code&gt;pullRequest&lt;/code&gt;, or &lt;code&gt;feature&lt;/code&gt;). If unspecified, this override
-will be applied to all pipelines.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;stage&lt;/code&gt;&lt;/strong&gt; - The name of the stage this override should be applied to.
-If unspecified, this override will be applied to all stages.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the step this override should be applied to. If
-unspecified, this override will be applied to all steps.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;step&lt;/code&gt;&lt;/strong&gt; - A single &lt;a href=&#34;#configuration-for-steps&#34;&gt;step&lt;/a&gt; which will be used
-to override the named step or, if no step name is given, all steps in the
-specified stage. If neither &lt;code&gt;step&lt;/code&gt; nor &lt;code&gt;steps&lt;/code&gt; is given, all steps in
-matching stages in matching pipelines will be removed.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;#configuration-for-steps&#34;&gt;steps&lt;/a&gt; which will be
-used to override the named step or, if no name is given, all steps in the
-specified stage.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;type&lt;/code&gt;&lt;/strong&gt; - Whether the &lt;code&gt;step&lt;/code&gt; or &lt;code&gt;steps&lt;/code&gt; should replace the named step,
-be prepended before the named step, or be appended after the named step.
-Possible values are &lt;code&gt;replace&lt;/code&gt;, &lt;code&gt;before&lt;/code&gt;, or &lt;code&gt;after&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An agent definition that will replace the
-existing agent definition for matching pipelines and stages. Step agents
-are not changed.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;default&#39;&gt;&lt;code&gt;default&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A full &lt;a href=&#34;#defining-an-individual-pipeline&#34;&gt;pipeline definition&lt;/a&gt;
-that will be used for the &lt;code&gt;pullRequest&lt;/code&gt;, &lt;code&gt;release&lt;/code&gt;, and &lt;code&gt;feature&lt;/code&gt; pipelines if
-they are not already specified.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&#34;build-pack-stages&#34;&gt;Build pack stages&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;preSteps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run before
-the main body of steps for this stage. &lt;code&gt;preSteps&lt;/code&gt; is &lt;em&gt;not&lt;/em&gt; inherited from parent
-build packs.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The main body of steps to run for
-this stage. If inheriting from a parent build pack, these steps will be appended
-to the parent build pack&amp;rsquo;s &lt;code&gt;steps&lt;/code&gt; by default.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;replace&lt;/code&gt;&lt;/strong&gt; - An optional boolean. If true, the inherited stage definition&amp;rsquo;s
-&lt;code&gt;steps&lt;/code&gt; will be replaced, rather than appended to.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;defining-an-individual-pipeline&#34;&gt;Defining an Individual Pipeline&lt;/h2&gt;
-
-&lt;h3 id=&#34;configuration-for-the-whole-pipeline&#34;&gt;Configuration for the Whole Pipeline&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A default agent definition to use for any
-&lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt; without their own agents specified.
-Overrides &lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; agent definition.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for the entire pipeline, which
-can be overridden in individual stages and steps.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the entire
-pipeline.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;timeout&#39;&gt;&lt;code&gt;timeout&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The maximum duration for execution
-of the pipeline, after which the build will be terminated.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;time&lt;/code&gt;&lt;/strong&gt; - How long to wait until timing out the build.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;unit&lt;/code&gt;&lt;/strong&gt; - The unit for &lt;code&gt;time&lt;/code&gt;. Can be any of &lt;code&gt;seconds&lt;/code&gt;, &lt;code&gt;minutes&lt;/code&gt;,
-or &lt;code&gt;hours&lt;/code&gt;. Defaults to &lt;code&gt;seconds&lt;/code&gt; if unspecified.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
-step containers within this pipeline, overriding any common settings with
-&lt;a href=&#34;#top-level-configuration&#34;&gt;build pack or project&lt;/a&gt; default configuration.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
-which will be added to every stage in the pipeline, and can be mounted via
-&lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for stages and
-steps in this pipeline. Can either be relative, under the &lt;code&gt;/workspace/source&lt;/code&gt;
-directory were the project source will be checked out, or absolute.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;stages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of one or more &lt;a href=&#34;#configuration-for-stages&#34;&gt;stages&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&#34;configuration-for-stages&#34;&gt;Configuration for Stages&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The name of the stage. Required and must be
-unique.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The agent definition to use for this stage,
-overriding the agent specified for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;
-if one is specified.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;options&#39;&gt;&lt;code&gt;options&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Additional configuration for the stage.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#containerOptions&#34;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Default configuration for
-step containers within this stage, overriding any common settings with
-&lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt; default
-configuration.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;volumes&lt;/code&gt;&lt;/strong&gt; - One or more &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/volumes/&#34; target=&#34;_blank&#34;&gt;Kubernetes volumes&lt;/a&gt;
-which will be added to this stage&amp;rsquo;s pod, and can be mounted via &lt;code&gt;containerOptions&lt;/code&gt;.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for all steps or nested stages,
-overriding any variables defined for &lt;a href=&#34;#configuration-for-the-whole-pipeline&#34;&gt;the whole pipeline&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;nestedstages&#39;&gt;&lt;code&gt;stages&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run sequentially
-within this stage, inheriting this stage&amp;rsquo;s configuration. Cannot be used with
-either &lt;code&gt;steps&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;parallel&#39;&gt;&lt;code&gt;parallel&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of stages to run in parallel,
-inheriting this stage&amp;rsquo;s configuration. Cannot be used with either &lt;code&gt;steps&lt;/code&gt; or
-&lt;code&gt;stages&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional default working directory for steps and
-nested stages. Can either be relative under the &lt;code&gt;/workspace/source&lt;/code&gt; directory or
-absolute.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A list of steps to run in this stage. Cannot be used
-with either &lt;code&gt;stages&lt;/code&gt; or &lt;code&gt;parallel&lt;/code&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&#34;configuration-for-steps&#34;&gt;Configuration for Steps&lt;/h3&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;name&#39;&gt;&lt;code&gt;name&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - A name for the step, used in logging and for
-overrides.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;command&#39;&gt;&lt;code&gt;command&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - The command to execute in this step.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;args&#39;&gt;&lt;code&gt;args&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - An array of arguments to the command.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;dir&#39;&gt;&lt;code&gt;dir&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional working directory for this step.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#agent&#34;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Optional agent configuration for this step.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;loop&#39;&gt;&lt;code&gt;loop&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Repeats the nested &lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;
-for each value in the specified list.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;variable&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable to be set with the
-value for this loop iteration.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;values&lt;/code&gt;&lt;/strong&gt; - A list of strings to iterate over.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#configuration-for-steps&#34;&gt;&lt;code&gt;steps&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more steps to run for
-each iteration of the loop.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;#env&#34;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - Environment variables set for this step, adding to
-inherited environment variables from the stage and pipeline.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;common-directives&#34;&gt;Common Directives&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;agent&#39;&gt;&lt;code&gt;agent&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - What container image should be used.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;image&lt;/code&gt;&lt;/strong&gt; - A container image, either as a fully qualified image or a
-&lt;a href=&#34;pod-templates.md&#34; target=&#34;_blank&#34;&gt;pod template name&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;label&lt;/code&gt;&lt;/strong&gt; - Only used with static Jenkins masters - the Jenkins agent
-label to use.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;env&#39;&gt;&lt;code&gt;env&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt; - One or more environment variables.
-
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;name&lt;/code&gt;&lt;/strong&gt; - The name of the environment variable.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;code&gt;value&lt;/code&gt;&lt;/strong&gt; - The value of the environment variable.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a id=&#39;containerOptions&#39;&gt;&lt;code&gt;containerOptions&lt;/code&gt;&lt;/a&gt;&lt;/strong&gt;
-
-&lt;ul&gt;
-&lt;li&gt;See &lt;a href=&#34;https://kubernetes.io/docs/concepts/containers&#34; target=&#34;_blank&#34;&gt;Kubernetes container configuration&lt;/a&gt;.
-&lt;code&gt;name&lt;/code&gt;, &lt;code&gt;command&lt;/code&gt;, &lt;code&gt;args&lt;/code&gt;, &lt;code&gt;image&lt;/code&gt;, and &lt;code&gt;workingDir&lt;/code&gt; cannot be specified.&lt;/li&gt;
-&lt;li&gt;Common use cases for &lt;code&gt;containerOptions&lt;/code&gt; include resource requests and
-limits, and volume mounts.&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&#34;examples&#34;&gt;Examples&lt;/h1&gt;
-
-&lt;h2 id=&#34;full-pipeline-definition-in-jenkins-x-yml&#34;&gt;Full pipeline definition in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;# If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.
-buildPack: none
-
-pipelineConfig:
-  pipelines:
-    release:
-    # While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.
-      pipeline:
-        # Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is
-        # specified on a stage or step.
-        agent:
-          image: &amp;quot;some/image@version&amp;quot; # or &amp;quot;maven&amp;quot; - this means &amp;quot;use the maven pod template&amp;quot;
-        # Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.
-        # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core
-        # for more information on valueFrom.
-        # Environment variables defined at the top level can be overridden in stages and individual
-        # steps.
-        environment:
-          - name: SOME_VAR
-            value: A value for the env var
-          - name: SOME_OTHER_VAR
-            value: Another var
-          - name: SOME_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: mysecret
-                key: apikey
-        # Options contains other configuration for the pipeline.
-        options:
-          # containerOptions allows specifying more advanced default configuration for the containers
-          # used for all stages and steps in this scope, using the standard Kubernetes syntax for
-          # containers.
-          # See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.
-          # Not all fields can be configured - e.g., name, command, arguments, image, and dir are all
-          # defined via the syntax - but everything else can be.
-          # Like with environment variables, containerOptions at the top level can be overridden and
-          # added to by stages.
-          containerOptions:
-            # Here we&#39;re setting the resource requests and limits for all step containers within this
-            # pipeline.
-            resources:
-              requests:
-                cpu: 0.1
-                memory: 64Mi
-              limits:
-                cpu: 0.2
-                memory: 128Mi
-          # timeout allows you to set the maximum duration for builds of this pipeline.
-          timeout:
-            time: 15
-            unit: minutes
-        # A pipeline must contain at least one stage, and each stage must have a unique name.
-        stages:
-          - name: Stage With Steps And Options Etc
-            # agent, options, and environment are valid on stages as well. For the parents of nested
-            # sequential or parallel stages, their children inherit the parent&#39;s agent, options,
-            # and environment.
-            # options on a stage currently only can contain containerOptions.
-            options:
-              containerOptions:
-                resources:
-                  limits:
-                    cpu: 0.4
-                    memory: 256Mi
-            # A stage must contain at least one of &amp;quot;steps&amp;quot;, &amp;quot;stages&amp;quot;, or &amp;quot;parallel&amp;quot;
-            # Steps must contain at least one command to be executed or a loop.
-            steps:
-              - command: mvn
-                # args are a YAML array, so can be specified either on multiple lines or in a []
-                args:
-                  - clean
-                  - install
-                dir: foo  # Optional, allows running this step in a subdirectory of the workspace, or
-                          # a different absolute directory.
-                # Steps can have their own images specified, overriding the stage and top-level images.
-                agent:
-                  image: some-other-image
-              # A loop allows you to specify a list of potential values for an environment variable and a
-              # set of one or more steps. Those steps will be run, sequentially, for each of the
-              # potential values. Loops can also be nested for more complex combinations.
-              - loop:
-                  variable: LANGUAGE
-                  values:
-                    - maven
-                    - gradle
-                    - nodejs
-                  steps:
-                    - command: echo
-                      args:
-                        - hello
-                        - ${LANGUAGE}
-          - name: Stage with nested sequential stages
-            # Any configuration of agent, options, or environment will apply to all child stages.
-            environment:
-              - name: SPECIFIC_TO_SEQUENTIAL_PARENT
-                value: something
-            # A list of nested stages to run sequentially. This is meant to allow for avoiding
-            # copy-pasting configuration across a set of stages that need to have the same configuration
-            # but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.
-            stages:
-              # ...insert stages here. =)
-          - name: Stage with nested parallel stages
-            # Works very similarly to sequential stages, except that the stages are executed in parallel,
-            # rather than sequentially.
-            parallel:
-              # ...insert stages here. =)
-&lt;/code&gt;&lt;/pre&gt;
 
       </description>
     </item>
