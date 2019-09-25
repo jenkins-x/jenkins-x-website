@@ -264,6 +264,56 @@ improve the coverage&lt;/li&gt;
     </item>
     
     <item>
+      <title>Docs: Continuous Integrating JX itself</title>
+      <link>/docs/contributing/code/continuous-integrating-jx-itself/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/contributing/code/continuous-integrating-jx-itself/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;You may be wondering how Jenkins X introduce changes to Jenkins X. Of course, Jenkins X is built using Jenkins X itself! That means that new changes to the project go through a CI process, and are built and tested using pipelines that run on a Jenkins X Kubernetes cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;pipelines&#34;&gt;Pipelines&lt;/h2&gt;
+
+&lt;p&gt;A Pull Request in the &lt;a href=&#34;https://github.com/jenkins-x/jx&#34; target=&#34;_blank&#34;&gt;jx repository&lt;/a&gt; will automatically trigger some jobs to do CI. The jobs are triggered &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;by Prow&lt;/a&gt;, and we can &lt;a href=&#34;https://github.com/jenkins-x/prow-config-tekton/blob/f1a74a38c2936722f8507769e5a30b56ca96fe45/prow/config.yaml#L902-L932&#34; target=&#34;_blank&#34;&gt;configure which jobs to execute&lt;/a&gt;. The jobs with always_run configured to be true, will be ran when the PR is opened. All jobs (independently of having always_run set to true or false) can be manually triggered writing a comment in the PR. The comment needed to trigger the job is also in the configuration, in the trigger key. For example, to trigger the end-to-end tests manually, you may write a new comment in the PR containing &amp;ldquo;/test bdd&amp;rdquo;, and the bdd job will be triggered.&lt;/p&gt;
+
+&lt;p&gt;The jobs all have a name and a context &lt;a href=&#34;https://github.com/jenkins-x/prow-config-tekton/blob/f1a74a38c2936722f8507769e5a30b56ca96fe45/prow/config.yaml#L902-L932&#34; target=&#34;_blank&#34;&gt;in the configuration&lt;/a&gt;. The name is the name what will show up on GitHub, and the context is the Jenkins X pipeline to execute.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/contribute/ci-jobs.png&#34; alt=&#34;Jobs executed during CI&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;These pipelines are defined in the root of the jx repository. For example, &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/jenkins-x-bdd.yml&#34; target=&#34;_blank&#34;&gt;here you can see the bdd pipeline&lt;/a&gt; that executes the end-to-end (e2e) tests that will get triggered when we tell Prow to execute the bdd job.&lt;/p&gt;
+
+&lt;p&gt;The pipelines that are executed are &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X pipelines&lt;/a&gt;, that underneath use &lt;a href=&#34;https://cloud.google.com/tekton/&#34; target=&#34;_blank&#34;&gt;Tekton pipelines&lt;/a&gt;. These pipelines execute tests to make sure everything still works. Typically, they execute unit tests and functional e2e tests.&lt;/p&gt;
+
+&lt;p&gt;Following our bdd pipeline example, here are the steps executed as part of &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/jenkins-x-bdd.yml&#34; target=&#34;_blank&#34;&gt;the bdd pipeline&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/contribute/bdd-pipeline.png&#34; alt=&#34;BDD Pipeline&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;end-to-end-tests&#34;&gt;End to end tests&lt;/h2&gt;
+
+&lt;p&gt;For the e2e tests, the application binary is compiled with the changes on the pull request so that the tests use these changes. Docker images are also published to Google Cloud Registry (GCR) with the changes on the pull request, so testing locally is easier.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/bdd-jx&#34; target=&#34;_blank&#34;&gt;The e2e tests live on a different repository&lt;/a&gt;, and they are ran using &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/jx/scripts/ci.sh&#34; target=&#34;_blank&#34;&gt;a bash script&lt;/a&gt;, that will be executed inside a container (like all the other steps in all the other pipelines). The bash script reads some secrets from the Kubernetes cluster where this job is running, and prepares the container where the step is being ran to run the tests configuring the Git client locally, creating a valid kubeconfig file to be able to talk to a Kubernetes cluster, etc.&lt;/p&gt;
+
+&lt;p&gt;One of the most common e2e test is to create a new application, push it to a new GitHub repository, and deploy it using jx. These repositories created for testing are created on &lt;a href=&#34;https://github.beescloud.com/&#34; target=&#34;_blank&#34;&gt;a GitHub Enterprise instance called beescloud&lt;/a&gt;. Credentials to do that are read from the Kubernetes cluster, and passed as parameters while invoking the tests.&lt;/p&gt;
+
+&lt;p&gt;The last command on the bash script is actually running the tests using the jx step bdd command, that basically clones &lt;a href=&#34;https://github.com/jenkins-x/bdd-jx&#34; target=&#34;_blank&#34;&gt;the tests repository&lt;/a&gt; and runs a &lt;a href=&#34;https://github.com/jenkins-x/bdd-jx/blob/master/Makefile&#34; target=&#34;_blank&#34;&gt;Makefile target in that repository&lt;/a&gt;. Some of the logic executed by Jenkins X during the e2e tests is executed using the jx binary that we compiled on the first step of the pipeline. But not all. Other parts of the logic is executed inside the containers used on the steps of the pipeline.&lt;/p&gt;
+
+&lt;p&gt;The containers used as part of the Jenkins X pipelines are called builders. If we want our pull request changes to be used in the builder containers too, we need to tell Jenkins X to use the container images published on a previous step of the pipeline, which contain the pull request changes. Fortunately, &lt;a href=&#34;/docs/managing-jx/common-tasks/config&#34;&gt;Jenkins X allows you to pass a file that will override the &amp;ldquo;values.yaml&amp;rdquo; file used to install Helm charts as part of the Jenkins X installation&lt;/a&gt;. If you don&amp;rsquo;t use a custom values file, &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/values.yaml&#34; target=&#34;_blank&#34;&gt;this is the default used when installing Jenkins X&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The jx step bdd command allows you to create a new jx cluster to run the e2e tests, or use an existing one. When creating a new cluster, the different components that make up a Jenkins X cluster are installed. By default latest versions for those components would be installed, so two consecutive installations could yield different behaviors because a change on some component between the two. That&amp;rsquo;s not suited for testing, where deterministic scenarios are preferred. That&amp;rsquo;s why the jx step bdd command uses &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions&#34; target=&#34;_blank&#34;&gt;a versions repository&lt;/a&gt; which specifies which version to use for every Jenkins X cluster component. The jx step bdd command may receive a &amp;ldquo;config&amp;rdquo; parameter pointing to &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/blob/master/jx/bdd/tekton/cluster.yaml&#34; target=&#34;_blank&#34;&gt;a configuration file&lt;/a&gt; that specifies how the cluster will be created. If no config parameter is passed, then the Kubernetes cluster referenced in the kubeconfig file that was created before executing the jx step bdd command will be used.&lt;/p&gt;
+
+&lt;h2 id=&#34;release&#34;&gt;Release&lt;/h2&gt;
+
+&lt;p&gt;If all tests pass and the pull request is merged, a new version of jx &lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34; target=&#34;_blank&#34;&gt;will be released&lt;/a&gt;. Not everyone can approve pull requests, only people whose names appear on &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/OWNERS&#34; target=&#34;_blank&#34;&gt;the OWNERS file&lt;/a&gt; can approve them. Remember, every merged pull request generates a new jx version. By default, new versions increment the patch part of the version string. This is done automatically, so when merging a pull request if jx is currently at version 1.3.152, after merging the pull request, the version 1.3.53 will be released. But when breaking changes are merged, the minor or major parts of the version string may be manually increased.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Triaging issues</title>
       <link>/docs/contributing/code/triage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
