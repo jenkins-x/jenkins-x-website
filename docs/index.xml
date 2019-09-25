@@ -2331,10 +2331,40 @@ Have some tasty brie
 
 &lt;p&gt;Some features and issues require DNS to be configured. The domain name &lt;code&gt;jenkins-x.rocks&lt;/code&gt; is available for
 use. Jenkins X can either manage your DNS for you or you can manage the DNS manually. Read more about how
-&lt;a href=&#34;../../architecture/dns&#34;&gt;Jenkins X manages your DNS for you&lt;/a&gt;.&lt;/p&gt;
+&lt;a href=&#34;../../managing-jx/common-tasks/dns/&#34;&gt;Jenkins X manages your DNS for you&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;In both scenarios you can reuse the domain name if you delete the old cluster that was using it and create a new one. If
 you run both clusters at the same time you will need a domain name for each.&lt;/p&gt;
+
+&lt;p&gt;We cover both scenarios here as you may be debugging an issue that requires a particular setup - check the issue to find out what the user did! If you are unsure or it doesn&amp;rsquo;t seem relevant to the issue then the External DNS setup is easier to manage and we recommend you follow that.&lt;/p&gt;
+
+&lt;h2 id=&#34;with-external-dns&#34;&gt;With External DNS&lt;/h2&gt;
+
+&lt;p&gt;To add records, visit &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones/jenkins-x-rocks?project=jenkins-x-rocks&amp;amp;organizationId=41792434410&#34; target=&#34;_blank&#34;&gt;the Cloud DNS dashboard&lt;/a&gt;.
+If you need access please contact one of the project maintainers.&lt;/p&gt;
+
+&lt;p&gt;Once you have access, you can use the &lt;code&gt;Add record set&lt;/code&gt; button to add entries. External DNS will automatically update the
+records if you reuse the domain name, so if you delete the old cluster and create a new one there is no need to go through
+this process again.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Choose a unique DNS name; you can use nested domains (e.g. &lt;code&gt;demo.example.pmuir.jenkins-x.rocks&lt;/code&gt;). We recommend using
+&lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; so you can easily identify domains created by you. Enter this in the
+&lt;code&gt;DNS Name&lt;/code&gt; field using the format &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x-rocks.&lt;/code&gt; (note that you can&amp;rsquo;t change the
+the &lt;code&gt;jenkins-x.rocks&lt;/code&gt; suffix and it is prefilled for you).&lt;/li&gt;
+&lt;li&gt;Run &lt;code&gt;jx create domain gke --domain &amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt;. Make a note of the nameservers printed out.&lt;/li&gt;
+&lt;li&gt;Change the &lt;code&gt;Resource Record Type&lt;/code&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default values for &lt;code&gt;TTL&lt;/code&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;code&gt;TTL Unit&lt;/code&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Add the first nameserver to the &lt;code&gt;Name server&lt;/code&gt; field&lt;/li&gt;
+&lt;li&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add the second nameserver. Do the same for rest of the nameservers&lt;/li&gt;
+&lt;li&gt;Click &lt;code&gt;Create&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Tell Jenkins X about the name.
+
+&lt;ul&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx install --external-dns&lt;/code&gt; then paste &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; into the prompt where you paused earlier&lt;/li&gt;
+&lt;li&gt;If you are using &lt;code&gt;jx boot&lt;/code&gt; then edit &lt;code&gt;jx-requirements.yaml&lt;/code&gt;, and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;)
+to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; and run &lt;code&gt;jx boot&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
 &lt;h2 id=&#34;without-external-dns&#34;&gt;Without External DNS&lt;/h2&gt;
 
@@ -2374,34 +2404,6 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 &lt;blockquote&gt;
 &lt;p&gt;If you prefer to use the gcloud CLI you can find instructions for usage on the &amp;ldquo;Create record set&amp;rdquo; screen.&lt;/p&gt;
 &lt;/blockquote&gt;
-
-&lt;h2 id=&#34;with-external-dns&#34;&gt;With External DNS&lt;/h2&gt;
-
-&lt;p&gt;To add records, visit &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones/jenkins-x-rocks?project=jenkins-x-rocks&amp;amp;organizationId=41792434410&#34; target=&#34;_blank&#34;&gt;the Cloud DNS dashboard&lt;/a&gt;.
-If you need access please contact one of the project maintainers.&lt;/p&gt;
-
-&lt;p&gt;Once you have access, you can use the &lt;code&gt;Add record set&lt;/code&gt; button to add entries. External DNS will automatically update the
-records if you reuse the domain name, so if you delete the old cluster and create a new one there is no need to go through
-this process again.&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Choose a unique DNS name; you can use nested domains (e.g. &lt;code&gt;demo.example.pmuir.jenkins-x.rocks&lt;/code&gt;). We recommend using
-&lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; so you can easily identify domains created by you. Enter this in the
-&lt;code&gt;DNS Name&lt;/code&gt; field using the format &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x-rocks.&lt;/code&gt; (note that you can&amp;rsquo;t change the
-the &lt;code&gt;jenkins-x.rocks&lt;/code&gt; suffix and it is prefilled for you).&lt;/li&gt;
-&lt;li&gt;Run &lt;code&gt;jx create domain gke --domain &amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt;. Make a note of the nameservers printed out.&lt;/li&gt;
-&lt;li&gt;Change the &lt;code&gt;Resource Record Type&lt;/code&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default values for &lt;code&gt;TTL&lt;/code&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;code&gt;TTL Unit&lt;/code&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/li&gt;
-&lt;li&gt;Add the first nameserver to the &lt;code&gt;Name server&lt;/code&gt; field&lt;/li&gt;
-&lt;li&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add the second nameserver. Do the same for rest of the nameservers&lt;/li&gt;
-&lt;li&gt;Click &lt;code&gt;Create&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Tell Jenkins X about the name.
-
-&lt;ul&gt;
-&lt;li&gt;If you are using &lt;code&gt;jx install --external-dns&lt;/code&gt; then paste &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; into the prompt where you paused earlier&lt;/li&gt;
-&lt;li&gt;If you are using &lt;code&gt;jx boot&lt;/code&gt; then edit &lt;code&gt;jx-requirements.yaml&lt;/code&gt;, and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;)
-to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins-x.rocks&lt;/code&gt; and run &lt;code&gt;jx boot&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ol&gt;
 
       </description>
     </item>
