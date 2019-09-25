@@ -272,20 +272,90 @@ if (!doNotTrack) {
       
       
       
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/docs/getting-started/setup/create-cluster/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Create cluster</a>
+  </li>
+  <ul>
+    <li class="collapse " id="docs-getting-started-setup-create-cluster">
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-create-cluster" href="/docs/getting-started/setup/create-cluster/">Create new Cluster</a>
       
       
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-boot" href="/docs/getting-started/setup/boot/">Jenkins X Boot</a>
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-create-cluster-amazon" href="/docs/getting-started/setup/create-cluster/amazon/">Amazon</a>
       
       
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-install" href="/docs/getting-started/setup/install/">Install Jenkins X</a>
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-create-cluster-azure" href="/docs/getting-started/setup/create-cluster/azure/">Azure</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-create-cluster-google" href="/docs/getting-started/setup/create-cluster/google/">Google</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-install" href="/docs/getting-started/setup/install/">Install jx</a>
+      
+      
+      
+      
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/docs/getting-started/setup/boot/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Jenkins X Boot</a>
+  </li>
+  <ul>
+    <li class="collapse " id="docs-getting-started-setup-boot">
+      
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-boot-background" href="/docs/getting-started/setup/boot/background/">Background</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-boot-how-it-works" href="/docs/getting-started/setup/boot/how-it-works/">How it works</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docs-getting-started-setup-old-create-cluster" href="/docs/getting-started/setup/old-create-cluster/">Old instructions</a>
       
       
     </li>
@@ -1566,6 +1636,7 @@ if (!doNotTrack) {
 <li><a href="#when-do-preview-environments-get-removed">When do Preview Environments get removed?</a></li>
 <li><a href="#how-do-i-add-other-services-into-a-preview">How do I add other services into a Preview?</a></li>
 <li><a href="#can-i-use-my-existing-release-pipeline">Can I use my existing release pipeline?</a></li>
+<li><a href="#how-can-i-handle-custom-branches-with-tekton">How can I handle custom branches with tekton</a></li>
 <li><a href="#how-does-promotion-actually-work">How does promotion actually work?</a></li>
 <li><a href="#how-do-i-change-the-owner-of-a-docker-image">How do I change the owner of a docker image</a></li>
 <li><a href="#what-if-my-team-does-not-want-to-use-helm">What if my team does not want to use helm?</a></li>
@@ -1684,6 +1755,28 @@ if (!doNotTrack) {
 <p>With Jenkins X you are free to create your own pipeline to do the release if you wish; though doing so means you miss out on our <a href="/extending/">extension model</a> which lets you easily enable various extension Apps like Governance, Compliance, code quality, code coverage, security scanning, vulnerability testing and various other extensions which are being added all the time through our community.</p>
 
 <p>We&rsquo;ve specifically built this extension model to minimise the work your teams have in having to edit + maintain pipelines across many separate microservices; the idea is we&rsquo;re trying to automate both the pipelines and the extensions to the pipelines so teams can focus on their actual code and less on the CI/CD plumbing which is pretty much all undifferentiated heavy lifting these days.</p>
+
+<h2 id="how-can-i-handle-custom-branches-with-tekton">How can I handle custom branches with tekton</h2>
+
+<p>We don&rsquo;t use <code>branch patterns</code> with tekton; they are a jenkins specific configuration.</p>
+
+<p>For Tekton we use the <a href="/docs/reference/components/prow/">prow</a> / <a href="/docs/reference/components/lighthouse/">lighthouse</a> configuration to specify which branches trigger which pipeline contexts.</p>
+
+<p>If you are using <a href="/docs/getting-started/setup/boot/">boot</a> to install Jenkins X then you can create your own custom <code>Scheduler</code> custom resource in <code>env/templates/myscheduler.yaml</code> based on the <a href="https://github.com/jenkins-x-charts/jxboot-resources/blob/master/jxboot-resources/templates/default-scheduler.yaml" target="_blank">default one that is included</a>.</p>
+
+<p>e.g. here is how we specify the <a href="https://github.com/jenkins-x-charts/jxboot-resources/blob/master/jxboot-resources/templates/default-scheduler.yaml#L48" target="_blank">branches used to create releases</a>.</p>
+
+<p>You can also create additional pipeline contexts; e.g. here&rsquo;s how we add multiple parallel testing pipelines on the <a href="/docs/concepts/version-stream/">version stream</a> via a <a href="https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/templates/jx-versions-scheduler.yaml#L21" target="_blank">custom Scheduler</a> so that we can have many integration tests run in parallel on a single PR. Then each named context listed has an associated <code>jenkins-x-$context.yml</code> file in the source repository to define the pipeline to run <a href="https://github.com/jenkins-x/jenkins-x-versions/blob/master/jenkins-x-boot-lh.yml" target="_blank">like this example which defines the <code>boot-lh</code> context</a></p>
+
+<p>You can then associate your <code>SourceRepository</code> resources with your custom scheduler by:</p>
+
+<ul>
+<li>specifying the scheduler name on the <code>spec.scheduler.name</code> property of your <code>SourceRepository</code> via <code>kubectl edit sr my-repo-name</code>)</li>
+<li>specifying the scheduler name when you import a project via <code>jx import --scheduler myname</code></li>
+<li>specifying the default scheduler name in your <code>dev</code> <code>Environment</code> at <code>spec.teamSettings.defaultScheduler.name</code> before you import projects</li>
+</ul>
+
+<p>If you are not using <a href="/docs/getting-started/setup/boot/">boot</a> then you can use <code>kubectl edit cm config</code> and modify the prow configuration by hand - though we highly recommend using <a href="/docs/getting-started/setup/boot/">boot</a> and GitOps instead; the prow configuration is easy to break if changing it by hand.</p>
 
 <h2 id="how-does-promotion-actually-work">How does promotion actually work?</h2>
 
@@ -1813,6 +1906,8 @@ service:
     
     
     <hr class="panel-line">
+        
+            
         
             
         
@@ -2841,6 +2936,16 @@ service:
         
             
         
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
     
 </div>
 
@@ -2906,7 +3011,7 @@ service:
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified September 25, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/a79ad8fb525d1802edc4fd90f545ab750d8a1fc3">release 0.0.1034 (a79ad8f)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified September 25, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/4c8764bf0fe81b7db18bc17fc72b5a0359c06ec2">release 0.0.1035 (4c8764b)</a>
 </div>
 </div>
 

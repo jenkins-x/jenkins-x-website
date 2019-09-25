@@ -113,6 +113,28 @@
 
 &lt;p&gt;We&amp;rsquo;ve specifically built this extension model to minimise the work your teams have in having to edit + maintain pipelines across many separate microservices; the idea is we&amp;rsquo;re trying to automate both the pipelines and the extensions to the pipelines so teams can focus on their actual code and less on the CI/CD plumbing which is pretty much all undifferentiated heavy lifting these days.&lt;/p&gt;
 
+&lt;h2 id=&#34;how-can-i-handle-custom-branches-with-tekton&#34;&gt;How can I handle custom branches with tekton&lt;/h2&gt;
+
+&lt;p&gt;We don&amp;rsquo;t use &lt;code&gt;branch patterns&lt;/code&gt; with tekton; they are a jenkins specific configuration.&lt;/p&gt;
+
+&lt;p&gt;For Tekton we use the &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;prow&lt;/a&gt; / &lt;a href=&#34;/docs/reference/components/lighthouse/&#34;&gt;lighthouse&lt;/a&gt; configuration to specify which branches trigger which pipeline contexts.&lt;/p&gt;
+
+&lt;p&gt;If you are using &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; to install Jenkins X then you can create your own custom &lt;code&gt;Scheduler&lt;/code&gt; custom resource in &lt;code&gt;env/templates/myscheduler.yaml&lt;/code&gt; based on the &lt;a href=&#34;https://github.com/jenkins-x-charts/jxboot-resources/blob/master/jxboot-resources/templates/default-scheduler.yaml&#34; target=&#34;_blank&#34;&gt;default one that is included&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;e.g. here is how we specify the &lt;a href=&#34;https://github.com/jenkins-x-charts/jxboot-resources/blob/master/jxboot-resources/templates/default-scheduler.yaml#L48&#34; target=&#34;_blank&#34;&gt;branches used to create releases&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can also create additional pipeline contexts; e.g. here&amp;rsquo;s how we add multiple parallel testing pipelines on the &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; via a &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/templates/jx-versions-scheduler.yaml#L21&#34; target=&#34;_blank&#34;&gt;custom Scheduler&lt;/a&gt; so that we can have many integration tests run in parallel on a single PR. Then each named context listed has an associated &lt;code&gt;jenkins-x-$context.yml&lt;/code&gt; file in the source repository to define the pipeline to run &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/blob/master/jenkins-x-boot-lh.yml&#34; target=&#34;_blank&#34;&gt;like this example which defines the &lt;code&gt;boot-lh&lt;/code&gt; context&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;You can then associate your &lt;code&gt;SourceRepository&lt;/code&gt; resources with your custom scheduler by:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;specifying the scheduler name on the &lt;code&gt;spec.scheduler.name&lt;/code&gt; property of your &lt;code&gt;SourceRepository&lt;/code&gt; via &lt;code&gt;kubectl edit sr my-repo-name&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;specifying the scheduler name when you import a project via &lt;code&gt;jx import --scheduler myname&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;specifying the default scheduler name in your &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; at &lt;code&gt;spec.teamSettings.defaultScheduler.name&lt;/code&gt; before you import projects&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you are not using &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; then you can use &lt;code&gt;kubectl edit cm config&lt;/code&gt; and modify the prow configuration by hand - though we highly recommend using &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; and GitOps instead; the prow configuration is easy to break if changing it by hand.&lt;/p&gt;
+
 &lt;h2 id=&#34;how-does-promotion-actually-work&#34;&gt;How does promotion actually work?&lt;/h2&gt;
 
 &lt;p&gt;The kubernetes resources being deployed are defined as YAML files in the source code of your application in &lt;code&gt;charts/myapp/templates/*.yaml&lt;/code&gt;. If you don&amp;rsquo;t specify anything then Jenkins X creates default resources (a &lt;code&gt;Service + Deployment&lt;/code&gt;) but you are free to add any k8s resources as YAML into that folder (&lt;code&gt;PVCs, ConfigMaps, Services&lt;/code&gt;, etc).&lt;/p&gt;
