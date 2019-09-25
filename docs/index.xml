@@ -5397,47 +5397,6 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
     </item>
     
     <item>
-      <title>Docs: Amazon</title>
-      <link>/docs/getting-started/setup/create-cluster/amazon/</link>
-      <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/getting-started/setup/create-cluster/amazon/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;There are a few ways to setup clusters on Amazon:&lt;/p&gt;
-
-&lt;h2 id=&#34;using-eks-and-eksctl&#34;&gt;Using EKS and eksctl&lt;/h2&gt;
-
-&lt;p&gt;If you wish to use EKS on AWS then the preferred tool is &lt;a href=&#34;https://eksctl.io&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;First you will need to &lt;a href=&#34;https://eksctl.io/introduction/installation/&#34; target=&#34;_blank&#34;&gt;install the elsctl CLI&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Then follow the instructions to &lt;a href=&#34;https://eksctl.io/usage/creating-and-managing-clusters/&#34; target=&#34;_blank&#34;&gt;create an EKS cluster with eksctl&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;using-ec2-and-kops&#34;&gt;Using EC2 and kops&lt;/h2&gt;
-
-&lt;p&gt;If you wish to use EC2 and kops then you will need to download a &lt;a href=&#34;https://github.com/kubernetes/kops/releases&#34; target=&#34;_blank&#34;&gt;kops release&lt;/a&gt;
-Then follow the instructions to &lt;a href=&#34;https://kubernetes.io/docs/setup/production-environment/tools/kops/&#34; target=&#34;_blank&#34;&gt;create a cluster on AWS with kops&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;using-the-jx-cli&#34;&gt;Using the jx CLI&lt;/h2&gt;
-
-&lt;p&gt;Ensure you &lt;a href=&#34;/docs/getting-started/setup/install/&#34;&gt;have installed the jx CLI&lt;/a&gt; then for kops use:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster aws --skip-installation
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;or for EKS use:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster eks --skip-installation
-&lt;/code&gt;&lt;/pre&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: Azure</title>
       <link>/docs/getting-started/setup/create-cluster/azure/</link>
       <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
@@ -6015,6 +5974,100 @@ webhook: lighthouse
 
 &lt;pre&gt;&lt;code&gt;kubectl get node
 &lt;/code&gt;&lt;/pre&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Configuration</title>
+      <link>/docs/managing-jx/old/config/</link>
+      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/old/config/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;Jenkins X should work out of the box with smart defaults for your cloud provider. e.g. Jenkins X automatically uses ECR if you are using AWS or EKS.&lt;/p&gt;
+
+&lt;p&gt;However you can configure values in the underlying helm charts used by Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;To do this you need to create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in the current directory you are in when you run either &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Then this YAML file can be used to override any of the underlying &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/values.yaml&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;values.yaml&lt;/code&gt;&lt;/a&gt; in any of the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/requirements.yaml&#34; target=&#34;_blank&#34;&gt;charts&lt;/a&gt; in Jenkins X.&lt;/p&gt;
+
+&lt;h2 id=&#34;making-changes-after-the-install&#34;&gt;Making changes after the install&lt;/h2&gt;
+
+&lt;p&gt;Once you have installed you can make more changes via &lt;a href=&#34;/commands/jx_upgrade_platform/&#34;&gt;jx upgrade platform&lt;/a&gt; which will reuse your &lt;code&gt;myvalues.yaml&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Or if you use &lt;a href=&#34;/docs/managing-jx/common-tasks/manage-via-gitops/&#34;&gt;GitOps management&lt;/a&gt; you can just create a Pull Request on your Development environment git repository.&lt;/p&gt;
+
+&lt;h2 id=&#34;nexus&#34;&gt;Nexus&lt;/h2&gt;
+
+&lt;p&gt;e.g. if you wish to disable Nexus being installed and instead service link to a separate nexus at a different host name you can use this &lt;code&gt;myvalues.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;nexus:
+  enabled: false
+nexusServiceLink:
+  enabled: true
+  externalName: &amp;quot;nexus.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;chartmuseum&#34;&gt;ChartMuseum&lt;/h2&gt;
+
+&lt;p&gt;To disable and service link chart museum add:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;chartmuseum:
+  enabled: false
+chartmuseumServiceLink:
+  enabled: true
+  externalName: &amp;quot;jenkins-x-chartmuseum.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;jenkins-image&#34;&gt;Jenkins Image&lt;/h2&gt;
+
+&lt;p&gt;We ship with a default Jenkins docker image &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/jenkinsx/&#34; target=&#34;_blank&#34;&gt;jenkinsxio/jenkinsx&lt;/a&gt; with Jenkins X which has all of our required plugins inside.&lt;/p&gt;
+
+&lt;p&gt;If you wish to add your own plugins you can create your own &lt;code&gt;Dockerfile&lt;/code&gt; and image using our base image like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# Dockerfile for adding plugins to Jenkins X 
+FROM jenkinsxio/jenkinsx:latest
+
+COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
+RUN /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then add your custom plugins to &lt;code&gt;plugins.txt&lt;/code&gt; locally of the form:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;myplugin:1.2.3
+anotherplugin:4.5.6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once you have built and released your image via CI/CD you can then use it in your Jenkins X installation.&lt;/p&gt;
+
+&lt;p&gt;To configure Jenkins X to use your custom image you can specify your own Jenkins image via a &lt;code&gt;myvalues.yaml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Master:
+    Image: &amp;quot;acme/my-jenkinsx&amp;quot;
+    ImageTag: &amp;quot;1.2.3&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There is an example OSS project &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-openshift-image&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-openshift-image&lt;/a&gt; you could use as a template which creates a new Jenkins image to add OpenShift specific plugins and configuration for using Jenkins X on OpenShift.&lt;/p&gt;
+
+&lt;h2 id=&#34;docker-registry&#34;&gt;Docker Registry&lt;/h2&gt;
+
+&lt;p&gt;We try and use the best defaults for each platform for the Docker Registry; e.g. using ECR on AWS.&lt;/p&gt;
+
+&lt;p&gt;However you can also specify this via the &lt;code&gt;--docker-registry&lt;/code&gt; option when running  &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create cluster gke --docker-registry eu.gcr.io
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Though if you use a different Docker Registry you will probably need to &lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/#update-the-config-json-secret&#34;&gt;also modify the secret for connecting to docker&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
