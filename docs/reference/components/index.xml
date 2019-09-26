@@ -1268,30 +1268,82 @@ pipeline {
         
         
 
+
+
+&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
+&lt;p&gt;Note that currently Vault only works on Google Cloud Platform (GCP) with Google Kubernetes Engine (GKE). We&amp;rsquo;re working on expanding support to other cloud providers.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h1 id=&#34;what-is-vault&#34;&gt;What is Vault?&lt;/h1&gt;
+
 &lt;p&gt;&lt;a href=&#34;https://www.vaultproject.io&#34; target=&#34;_blank&#34;&gt;Vault&lt;/a&gt; is an open source project for securely managing secrets and is our preferred way to manage secrets across your environments in Jenkins X.&lt;/p&gt;
 
-&lt;h2 id=&#34;using-vault-with-boot&#34;&gt;Using Vault with boot&lt;/h2&gt;
+&lt;p&gt;In traditional computing infrastructures, all of the resources and
+components (hardware, networking, availability, security and deployment)
+as well as associated labor costs are locally managed. Third-party
+computing environments such as cloud service providers and Git hosts
+offer decentralized solutions with distinct advantages in service
+reliability and costs over the traditional solutions.&lt;/p&gt;
 
-&lt;p&gt;We have integrated &lt;a href=&#34;https://www.vaultproject.io&#34; target=&#34;_blank&#34;&gt;Vault&lt;/a&gt; into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However, one issue with using cloud services, distributed storage, and
+remote repositories is the lack of trusted networks, vetted hardware,
+and other closely observed security measures practiced in locally-hosted
+infrastructure. For the sake of convenience, users often store sensitive
+information like authentication credentials in open, public
+repositories, exposed to potential malicious activity.&lt;/p&gt;
 
-&lt;p&gt;To switch to &lt;code&gt;vault&lt;/code&gt; you need to add &lt;code&gt;secretStorage: vault&lt;/code&gt; in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.vaultproject.io/&#34; target=&#34;_blank&#34;&gt;Hashicorp &lt;em&gt;Vault&lt;/em&gt;&lt;/a&gt; is one tool that
+centralizes the management of &lt;em&gt;secrets&lt;/em&gt;: resources that provide
+authentication to your computing environment such as tokens, keys,
+passwords, and certificates.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
-  provider: gke
-environments:
-- key: dev
-- key: staging
-- key: production
-kaniko: true
-secretStorage: vault
-webhook: prow
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Jenkins X handles security and authentication
+resources through the integration of Vault. Users can deploy Vault to
+securely store and manage all aspects of their development platform.&lt;/p&gt;
 
-&lt;p&gt;Once you have modified your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file you just need to run &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Jenkins X installs and configures Vault for your
+cluster by default through the cluster creation process.&lt;/p&gt;
 
-&lt;p&gt;For more details see &lt;a href=&#34;/docs/reference/boot/#secrets&#34;&gt;configuring secrets with boot&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;vault-features&#34;&gt;Vault features&lt;/h2&gt;
 
-&lt;h2 id=&#34;using-vault-on-the-cli&#34;&gt;Using Vault on the CLI&lt;/h2&gt;
+&lt;p&gt;Vault is a tool for accessing and storing user secrets. It manages the
+complexity of secure resource access:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Storing secrets - Vault places secrets in an encrypted format in a
+remote storage bucket.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Secret creation and deletion - Vault creates secrets for dynamic
+access to storage buckets, ephemeral access that are
+created/destroyed as needed for temporary data access, and
+generating keys for database authentication.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Encrypting data - Vault stores secrets in a remote storage bucket in
+secure directories using strong encryption.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Jenkins X interacts with Vault via the &lt;code&gt;jx&lt;/code&gt;
+command line program. There are commands for creating, deleting, and
+managing secrets and vaults.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X uses Vault to store all Jenkins X
+secrets, such as the GitHub personal access token generated for the
+pipeline bot when &lt;a href=&#34;/docs/cloudbees-jenkins-x-distribution/boot/&#34;&gt;creating a Jenkins X
+cluster&lt;/a&gt;. It also stores
+any GitOps secrets, such as passwords for storage buckets, and keys for
+secure server access.&lt;/p&gt;
+
+&lt;p&gt;Secrets can be retrieved by the pipeline or via command-line if logged
+into the account associated with the kubernetes service as well as any
+secrets stored in the &lt;code&gt;jx&lt;/code&gt; namespace for the pipeline.&lt;/p&gt;
+
+&lt;p&gt;Vaults are provisioned in kubernetes using &lt;code&gt;vault-operator&lt;/code&gt;, an
+open-source Kubernetes controller installed when Vault is configured
+during cluster creation and Jenkins X installation on the cluster.&lt;/p&gt;
+
+&lt;h1 id=&#34;using-vault-on-the-cli&#34;&gt;Using Vault on the CLI&lt;/h1&gt;
 
 &lt;p&gt;First you need to download an install the &lt;a href=&#34;https://github.com/starkandwayne/safe&#34; target=&#34;_blank&#34;&gt;safe&lt;/a&gt; CLI for Vault.&lt;/p&gt;
 
@@ -1311,6 +1363,162 @@ webhook: prow
 
 &lt;pre&gt;&lt;code&gt;safe set /secret/my-cluster-name/creds/my-secret username=myname password=mytoken
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;configuring-dns-and-tls-settings-for-vault&#34;&gt;Configuring DNS and TLS settings for Vault&lt;/h1&gt;
+
+&lt;p&gt;For a secure Jenkins X installation, you must
+enable TLS when interacting with the vault service. To configure TLS,
+you must first configure Zone DNS settings within Google Cloud Platform,
+and then configure external DNS settings for Ingress and TLS in the
+&lt;code&gt;jx-requirements.yaml&lt;/code&gt; configuration file.&lt;/p&gt;
+
+&lt;h2 id=&#34;configuring-google-cloud-dns&#34;&gt;Configuring Google Cloud DNS&lt;/h2&gt;
+
+&lt;p&gt;In order to configure Vault for the proper DNS and TLS access, you must
+configure Google Cloud DNS settings appropriately.&lt;/p&gt;
+
+&lt;p&gt;You should have a domain name registered with a name
+registrar, for example &lt;code&gt;www.acmecorp.example&lt;/code&gt; before configuring DNS
+Zone settings. For more information, refer to &lt;a href=&#34;https://cloud.google.com/dns/docs/quickstart#create_a_managed_public_zone&#34; target=&#34;_blank&#34;&gt;Creating a managed public
+zone&lt;/a&gt;
+from the Google documentation.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Navigate via browser to the &lt;a href=&#34;https://console.cloud.google.com/projectselector2/home/dashboard&#34; target=&#34;_blank&#34;&gt;Project
+Selector&lt;/a&gt;
+page. and choose your Google Cloud Platform project.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://console.cloud.google.com/networking/dns/zones/~new&#34; target=&#34;_blank&#34;&gt;Create a DNS
+zone&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Choose Public as your &lt;em&gt;Zone Type&lt;/em&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Type a &lt;em&gt;Zone Name&lt;/em&gt; for your zone.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Input a DNS suffix in &lt;em&gt;DNS name&lt;/em&gt;, for example
+&lt;code&gt;acmecorp.example&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Choose your &lt;em&gt;DNSSEC&lt;/em&gt; or DNS Security state, which should be set
+to &lt;code&gt;Off&lt;/code&gt; for this configuration.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;(Optional) Input a &lt;em&gt;Description&lt;/em&gt; for your DNS zone.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Click &lt;code&gt;Create&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Once created, the &lt;em&gt;Zone Details&lt;/em&gt; page loads. &lt;em&gt;NS&lt;/em&gt; (Name server) and
+&lt;em&gt;SOA&lt;/em&gt; (Start of autority) records are automatically created for your
+domain (for example &lt;code&gt;acmecorp.example&lt;/code&gt;)&lt;/p&gt;
+
+&lt;h2 id=&#34;configuring-external-dns-in-jenkins-x&#34;&gt;Configuring External DNS in Jenkins X&lt;/h2&gt;
+
+&lt;p&gt;Once you have configured Google Cloud DNS, you can use browse the
+&lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34; target=&#34;_blank&#34;&gt;Zones&lt;/a&gt; page in
+your Google Cloud Platform project to setup your external domain.&lt;/p&gt;
+
+&lt;p&gt;NOTE: External DNS will automatically updates DNS records if you reuse the
+ domain name, so if you delete an old cluster and create a new one it
+ will preserve the same domain configuration for the new cluster.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Choose a unique DNS name; you can use nested domains (for example,
+ &lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;). Enter the name in the &lt;code&gt;DNS Name&lt;/code&gt;
+field&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Run the &lt;code&gt;jx create domain&lt;/code&gt; command against your domain name:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx create domain gke --domain cluster1.acmecorp.example
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;The program prompts you to choose your Google Cloud Platform
+project from the available list.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program prompts you to update your existing managed servers
+to use the displayed list of Cloud DNS nameservers. Copy the
+list for use in the next steps.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;From the Google Cloud Platform
+&lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34; target=&#34;_blank&#34;&gt;Zones&lt;/a&gt;
+page, change the &lt;em&gt;Resource Record Type&lt;/em&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default
+values for your domain for for &lt;em&gt;TTL&lt;/em&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;em&gt;TTL Unit&lt;/em&gt;
+(&lt;code&gt;minutes&lt;/code&gt;).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add the first nameserver to the &lt;em&gt;Name server&lt;/em&gt; field&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add any subsequent nameservers.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Click &lt;code&gt;Create&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Configure Jenkins X for the new domain names:&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Edit the &lt;code&gt;jx-requirements.yaml&lt;/code&gt; file and update the &lt;code&gt;domain&lt;/code&gt;
+field (in &lt;code&gt;ingress&lt;/code&gt;) to your domain name, for example
+&lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;In the &lt;em&gt;tls&lt;/em&gt; setting, enable TLS with &lt;code&gt;enabled: true&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The resulting &lt;code&gt;jx-requirements.yaml&lt;/code&gt; entries for these settings
+should look similar to the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;gitops: true
+ingress:
+domain: cluster1.acmecorp.example
+externalDNS: true
+namespaceSubDomain: -jx.
+tls:
+email: certifiable@acmecorp.example
+enabled: true
+production: true
+secretStorage: vault
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Run &lt;code&gt;jx boot&lt;/code&gt; for the changes to take effect in your
+environment.&lt;/p&gt;
+
+&lt;h1 id=&#34;creating-a-vault&#34;&gt;Creating a Vault&lt;/h1&gt;
+
+&lt;p&gt;A vault is created by default using &lt;a href=&#34;/getting-started/boot/&#34;&gt;jx boot&lt;/a&gt; to create your cluster, unless you specified during the cluster configuration not to create the vault. In this case, you can create one post-installation
+with the &lt;code&gt;jx create&lt;/code&gt; command-line interface:&lt;/p&gt;
+
+&lt;p&gt;jx create vault&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;The program will ask you the name you want for your vault (for
+example, &lt;code&gt;acmevault&lt;/code&gt;)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program will ask you for your Google Cloud Zone of choice. Refer
+to &lt;a href=&#34;https://cloud.google.com/compute/docs/regions-zones/&#34; target=&#34;_blank&#34;&gt;Regions and
+Zones&lt;/a&gt; in the
+Google Cloud documentation for more information. In this example,
+&lt;code&gt;us-east1-c&lt;/code&gt; is chosen for proximity to Acme Headquarters.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;If you have a storage bucket account configured from creating a
+cluster with &lt;code&gt;jx boot&lt;/code&gt;, then the &lt;code&gt;jx create vault&lt;/code&gt; command will scan
+your installation for Vault-related storage buckets and, if found,
+prompt you to approve deleting and recreating the Vault from
+scratch.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program will ask you the &lt;em&gt;Expose type&lt;/em&gt; for your vault in order
+to create rules and routes for cluster load balancer and other
+services. Default is &lt;code&gt;Ingress&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program will ask for a cluster domain. Default is the one
+created in &lt;a href=&#34;/docs/cloudbees-jenkins-x-distribution/boot/&#34;&gt;the Cluster creation
+process&lt;/a&gt; such as
+&lt;code&gt;192.168.1.100.nip.io&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program will ask for an &lt;code&gt;URLTemplate&lt;/code&gt;. Press &lt;code&gt;Enter&lt;/code&gt; to
+use the default value.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program will verify your answers to the previous questions in
+summary and prompt you to approve the Vault creation (default is
+&lt;code&gt;Yes&lt;/code&gt;).&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
       </description>
     </item>
