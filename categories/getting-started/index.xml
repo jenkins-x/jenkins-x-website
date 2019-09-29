@@ -224,159 +224,6 @@ anotherplugin:4.5.6
     </item>
     
     <item>
-      <title>Docs: Create custom Builder</title>
-      <link>/docs/managing-jx/common-tasks/create-custom-builder/</link>
-      <pubDate>Mon, 01 Jul 2013 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/managing-jx/common-tasks/create-custom-builder/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;In Jenkins X, it is possible to create your custom Builders (aka &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34; target=&#34;_blank&#34;&gt;POD templates&lt;/a&gt;) or overwrite existing onces. You just need to base your Docker
-image on this &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt; image or on its &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.slim&#34; target=&#34;_blank&#34;&gt;slim&lt;/a&gt; version.
-These images contain a number of pre-installed tools which get constantly updated and published to &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/builder-base/&#34; target=&#34;_blank&#34;&gt;Docker Hub&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;create-a-custom-builder-from-scratch&#34;&gt;Create a custom Builder from scratch&lt;/h2&gt;
-
-&lt;h3 id=&#34;builder-image&#34;&gt;Builder image&lt;/h3&gt;
-
-&lt;p&gt;First you need to create a docker image for your builder. For instance a starting &lt;code&gt;Dockerfile&lt;/code&gt; can look like this:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM jenkinsxio/builder-base:latest
-
-# Install your tools and libraries
-RUN yum install -y gcc openssl-devel
-
-CMD [&amp;quot;gcc&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Now you can build the image and publish it to your registry:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;export BUILDER_IMAGE=&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt; 
-docker build -t ${BUILDER_IMAGE} .
-docker push ${BUILDER_IMAGE} 
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Do not worry, you do not have to run manually these steps every time when a new image needs to be built.
-Jenkins X can manage this for you. You just need to push your &lt;code&gt;Dockerfile&lt;/code&gt; in a repository similar with &lt;a href=&#34;https://github.com/jenkins-x/builder-go&#34; target=&#34;_blank&#34;&gt;this
-&lt;/a&gt; one. Adjust the &lt;code&gt;Jenkinsfile&lt;/code&gt; according with your organization and
-application name, and then import the repository into your Jenkins X platform with:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;From now on, every time you push a change, Jenkins X will build and publish automatically the image.&lt;/p&gt;
-
-&lt;h3 id=&#34;install-the-builder&#34;&gt;Install the Builder&lt;/h3&gt;
-
-&lt;p&gt;You can now install your builder either when you install Jenkins X or upgrade it.&lt;/p&gt;
-
-&lt;p&gt;Create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
-  Agent:
-    PodTemplates:
-      MyBuilder:
-        Name: mybuilder
-        Label: jenkins-mybuilder
-        volumes:
-        - type: Secret
-          secretName: jenkins-docker-cfg
-          mountPath: /home/jenkins/.docker
-        EnvVars:
-          JENKINS_URL: http://jenkins:8080
-          GIT_COMMITTER_EMAIL: jenkins-x@googlegroups.com
-          GIT_AUTHOR_EMAIL: jenkins-x@googlegroups.com
-          GIT_AUTHOR_NAME: jenkins-x-bot
-          GIT_COMMITTER_NAME: jenkins-x-bot
-          XDG_CONFIG_HOME: /home/jenkins
-          DOCKER_CONFIG: /home/jenkins/.docker/
-        ServiceAccount: jenkins
-        Containers:
-          Jnlp:
-            Image: jenkinsci/jnlp-slave:3.14-1
-            RequestCpu: &amp;quot;100m&amp;quot;
-            RequestMemory: &amp;quot;128Mi&amp;quot;
-            Args: &#39;${computer.jnlpmac} ${computer.name}&#39;
-          Dlang:
-            Image: &amp;lt;YOUR_BUILDER_IMAGE&amp;gt; 
-            Privileged: true
-            RequestCpu: &amp;quot;400m&amp;quot;
-            RequestMemory: &amp;quot;512Mi&amp;quot;
-            LimitCpu: &amp;quot;1&amp;quot;
-            LimitMemory: &amp;quot;1024Mi&amp;quot;
-            Command: &amp;quot;/bin/sh -c&amp;quot;
-            Args: &amp;quot;cat&amp;quot;
-            Tty: true
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Replace the builder name and image accordingly.&lt;/p&gt;
-
-&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will be automatically added to the platform.&lt;/p&gt;
-
-&lt;h3 id=&#34;use-the-builder&#34;&gt;Use the Builder&lt;/h3&gt;
-
-&lt;p&gt;Now that your builder was installed in Jenkins, you can easily reference it in a &lt;code&gt;Jenkinsfile&lt;/code&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-Groovy&#34;&gt;pipeline {
-    agent {
-        label &amp;quot;jenkins-mybuilder&amp;quot;
-    }
-    stages {
-      stage(&#39;Build&#39;) {
-        when {
-          branch &#39;master&#39;
-        }
-        steps {
-          container(&#39;mybuilder&#39;) {
-              // your steps
-          }
-        }
-      }
-    }
-    post {
-        always {
-            cleanWs()
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;overwrite-existing-builders&#34;&gt;Overwrite existing Builders&lt;/h2&gt;
-
-&lt;p&gt;Jenkins X comes with a number of &lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/values.yaml&#34; target=&#34;_blank&#34;&gt;pre-installed builders&lt;/a&gt;
-which you can overwrite if required during installation or upgrade.&lt;/p&gt;
-
-&lt;p&gt;You just need to build your custom image either based on &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt;
-image or the &lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34; target=&#34;_blank&#34;&gt;builder image&lt;/a&gt; you want to overwrite. See more details above.&lt;/p&gt;
-
-&lt;p&gt;Then you can create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jenkins:
-  Agent:
-    PodTemplates:
-      Maven:
-        Containers:
-          Maven:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-      Nodejs:
-        Containers:
-          Nodejs:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-      Go:
-        Containers:
-          Go:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will  be added automatically to the platform.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: Create EKS cluster with Terraform</title>
       <link>/docs/getting-started/setup/create-cluster/amazon/terraform/</link>
       <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
@@ -934,6 +781,159 @@ By default, Jenkins X will expose the ingress via the &lt;em&gt;nip.io&lt;/em&gt
 &lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes-helm/chartmuseum&#34; target=&#34;_blank&#34;&gt;ChartMuseum&lt;/a&gt; - a Helm Chart repository&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes-helm/monocular&#34; target=&#34;_blank&#34;&gt;Monocular&lt;/a&gt; which provides a Web UI for searching and discovering charts deployed into your cluster via Jenkins X.&lt;/li&gt;
 &lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Create custom Builder</title>
+      <link>/docs/managing-jx/common-tasks/create-custom-builder/</link>
+      <pubDate>Mon, 01 Jul 2013 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/common-tasks/create-custom-builder/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;In Jenkins X, it is possible to create your custom Builders (aka &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34; target=&#34;_blank&#34;&gt;POD templates&lt;/a&gt;) or overwrite existing onces. You just need to base your Docker
+image on this &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt; image or on its &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.slim&#34; target=&#34;_blank&#34;&gt;slim&lt;/a&gt; version.
+These images contain a number of pre-installed tools which get constantly updated and published to &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/builder-base/&#34; target=&#34;_blank&#34;&gt;Docker Hub&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;create-a-custom-builder-from-scratch&#34;&gt;Create a custom Builder from scratch&lt;/h2&gt;
+
+&lt;h3 id=&#34;builder-image&#34;&gt;Builder image&lt;/h3&gt;
+
+&lt;p&gt;First you need to create a docker image for your builder. For instance a starting &lt;code&gt;Dockerfile&lt;/code&gt; can look like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM jenkinsxio/builder-base:latest
+
+# Install your tools and libraries
+RUN yum install -y gcc openssl-devel
+
+CMD [&amp;quot;gcc&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now you can build the image and publish it to your registry:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;export BUILDER_IMAGE=&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt; 
+docker build -t ${BUILDER_IMAGE} .
+docker push ${BUILDER_IMAGE} 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Do not worry, you do not have to run manually these steps every time when a new image needs to be built.
+Jenkins X can manage this for you. You just need to push your &lt;code&gt;Dockerfile&lt;/code&gt; in a repository similar with &lt;a href=&#34;https://github.com/jenkins-x/builder-go&#34; target=&#34;_blank&#34;&gt;this
+&lt;/a&gt; one. Adjust the &lt;code&gt;Jenkinsfile&lt;/code&gt; according with your organization and
+application name, and then import the repository into your Jenkins X platform with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;From now on, every time you push a change, Jenkins X will build and publish automatically the image.&lt;/p&gt;
+
+&lt;h3 id=&#34;install-the-builder&#34;&gt;Install the Builder&lt;/h3&gt;
+
+&lt;p&gt;You can now install your builder either when you install Jenkins X or upgrade it.&lt;/p&gt;
+
+&lt;p&gt;Create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Agent:
+    PodTemplates:
+      MyBuilder:
+        Name: mybuilder
+        Label: jenkins-mybuilder
+        volumes:
+        - type: Secret
+          secretName: jenkins-docker-cfg
+          mountPath: /home/jenkins/.docker
+        EnvVars:
+          JENKINS_URL: http://jenkins:8080
+          GIT_COMMITTER_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_NAME: jenkins-x-bot
+          GIT_COMMITTER_NAME: jenkins-x-bot
+          XDG_CONFIG_HOME: /home/jenkins
+          DOCKER_CONFIG: /home/jenkins/.docker/
+        ServiceAccount: jenkins
+        Containers:
+          Jnlp:
+            Image: jenkinsci/jnlp-slave:3.14-1
+            RequestCpu: &amp;quot;100m&amp;quot;
+            RequestMemory: &amp;quot;128Mi&amp;quot;
+            Args: &#39;${computer.jnlpmac} ${computer.name}&#39;
+          Dlang:
+            Image: &amp;lt;YOUR_BUILDER_IMAGE&amp;gt; 
+            Privileged: true
+            RequestCpu: &amp;quot;400m&amp;quot;
+            RequestMemory: &amp;quot;512Mi&amp;quot;
+            LimitCpu: &amp;quot;1&amp;quot;
+            LimitMemory: &amp;quot;1024Mi&amp;quot;
+            Command: &amp;quot;/bin/sh -c&amp;quot;
+            Args: &amp;quot;cat&amp;quot;
+            Tty: true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Replace the builder name and image accordingly.&lt;/p&gt;
+
+&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will be automatically added to the platform.&lt;/p&gt;
+
+&lt;h3 id=&#34;use-the-builder&#34;&gt;Use the Builder&lt;/h3&gt;
+
+&lt;p&gt;Now that your builder was installed in Jenkins, you can easily reference it in a &lt;code&gt;Jenkinsfile&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-Groovy&#34;&gt;pipeline {
+    agent {
+        label &amp;quot;jenkins-mybuilder&amp;quot;
+    }
+    stages {
+      stage(&#39;Build&#39;) {
+        when {
+          branch &#39;master&#39;
+        }
+        steps {
+          container(&#39;mybuilder&#39;) {
+              // your steps
+          }
+        }
+      }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;overwrite-existing-builders&#34;&gt;Overwrite existing Builders&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X comes with a number of &lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/values.yaml&#34; target=&#34;_blank&#34;&gt;pre-installed builders&lt;/a&gt;
+which you can overwrite if required during installation or upgrade.&lt;/p&gt;
+
+&lt;p&gt;You just need to build your custom image either based on &lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;builder-base&lt;/a&gt;
+image or the &lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34; target=&#34;_blank&#34;&gt;builder image&lt;/a&gt; you want to overwrite. See more details above.&lt;/p&gt;
+
+&lt;p&gt;Then you can create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;jenkins:
+  Agent:
+    PodTemplates:
+      Maven:
+        Containers:
+          Maven:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Nodejs:
+        Containers:
+          Nodejs:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Go:
+        Containers:
+          Go:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can proceed now with the Jenkins X installation, the builder will  be added automatically to the platform.&lt;/p&gt;
 
       </description>
     </item>

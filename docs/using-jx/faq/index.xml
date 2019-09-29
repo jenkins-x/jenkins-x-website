@@ -14,7 +14,7 @@
     
     
     <item>
-      <title>Docs: Jenkins X Pipelines Questions</title>
+      <title>Docs: Pipelines Questions</title>
       <link>/docs/using-jx/faq/pipelines/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -63,6 +63,93 @@
 &lt;p&gt;You can also do things like use Nexus as a network cache for fetching maven dependencies (which happens OOTB with Maven builds in Jenkins X) or add the Athens proxy for Go.&lt;/p&gt;
 
 &lt;p&gt;Hopefully the Tekton community will figure out some even better caching solutions to speed up builds.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: ChatOps Questions</title>
+      <link>/docs/using-jx/faq/chatops/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/faq/chatops/</guid>
+      <description>
+        
+        
+        
+
+&lt;h2 id=&#34;what-is-chatops&#34;&gt;What is ChatOps?&lt;/h2&gt;
+
+&lt;p&gt;We use the phrase &lt;em&gt;ChatOps&lt;/em&gt; to mean operating code changes and GitOPs promotion via chat. More specifically this usually is done via commenting on Pull Requests on your git providers website; though in the future this could be via Slack or web consoles too.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-are-the-benefits-of-chatops&#34;&gt;What are the benefits of ChatOps?&lt;/h2&gt;
+
+&lt;p&gt;ChatOps helps developers collaborate on Pull Requests and speeds up merging of Pull Requests. We want to be able to merge changes as quickly as possible into master so that we continuously integrate code which minimises the downsides of long term feature branching and merge hell.&lt;/p&gt;
+
+&lt;p&gt;ChatOps (and &lt;a href=&#34;#what-does-hook-do&#34;&gt;tide in particular&lt;/a&gt;) also helps automate and speeds up tasks e.g.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;developers don&amp;rsquo;t have to keep hitting reload on a Pull Request page waiting for all the tests to pass so that they can click &lt;code&gt;Merge&lt;/code&gt;. Just add a &lt;code&gt;/lgtm&lt;/code&gt; comment or approve the code review and the Pull Request will automatically get merged once its tests go green. This also avoids developers accidentally hitting &lt;code&gt;Merge&lt;/code&gt; before all the test pass!&lt;/li&gt;
+&lt;li&gt;all Pull Request are automatically rebased and tested against master before merging - further ensuring we don&amp;rsquo;t accidentally break master&lt;/li&gt;
+&lt;li&gt;batch merging of Pull Request is supported to speed up merging Pull Requests.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For more detail see &lt;a href=&#34;#what-does-hook-do&#34;&gt;what does tide do&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;which-kinds-of-webhook-support-chatops&#34;&gt;Which kinds of webhook support ChatOps?&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; support both webhooks and &lt;a href=&#34;/docs/using-jx/faq/chatops&#34;&gt;ChatOps&lt;/a&gt; whereas Jenkins just supports webhooks only.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-does-hook-do&#34;&gt;What does hook do?&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;hook&lt;/code&gt; is the name of the microservice in &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and the http endpoint in &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; which listens to webhooks coming in from your git provider which then gets processed as either a ChatOps command or a trigger of a pipeline.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-does-tide-do&#34;&gt;What does tide do?&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;tide&lt;/code&gt; is a microservice in  &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; which periodically queries open pull requests on the repositories you have imported into Jenkins X. Then it performs the following logic:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;if a Pull Request has passed all of its review + CI tests (e.g. its got the &lt;code&gt;approved&lt;/code&gt; and/or &lt;code&gt;lgtm&lt;/code&gt; labels applied or has passed a github code review) and is green and is based off of master it is automatically merged.&lt;/li&gt;
+&lt;li&gt;if a Pull Request has passed all of its review + CI tests but is not based off of master its pipelines are re-triggered based off of master to ensure the Pull Request will be valid if it were merged.&lt;/li&gt;
+&lt;li&gt;if batching is enabled and there are multiple pending Pull Requests which are approved and green, a batch pipeline is triggered which combines multiple Pull Requests together into a single change - if all those pipelines go green then all the PRs are merged together at once and closed. This greatly speeds up getting multiple Pull Requests merged together (as it avoids re-triggering each PR&amp;rsquo;s tests after each one is merged).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;how-can-i-make-chatops-ha&#34;&gt;How can I make ChatOps HA?&lt;/h2&gt;
+
+&lt;p&gt;To make ChatOps highly avialable scale up the deployments which listen for http requests to, say, 3 replicas.&lt;/p&gt;
+
+&lt;p&gt;When using &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; that just means modifying the replicas for the &lt;code&gt;lighthouse&lt;/code&gt; deployment. e.g. in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; git repository try changing &lt;code&gt;env/lighthouse/values.tmpl.yaml&lt;/code&gt; to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;replicaCount: 3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When using &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; you need to scale up &lt;code&gt;hook&lt;/code&gt; and &lt;code&gt;pipelinerunner&lt;/code&gt;. e.g. in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; git repository try changing &lt;code&gt;env/prow/values.tmpl.yaml&lt;/code&gt; to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;hook:
+  replicaCount: 3
+pipelinerunner:
+  replicaCount: 3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;should-i-use-prow-or-lighthouse&#34;&gt;Should I use prow or lighthouse?&lt;/h2&gt;
+
+&lt;p&gt;If you are using a git server other than &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt; then we recommend &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you are using &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt; then for your git server then for now we recommend &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; as it has had more testing than &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Though &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; is our strategic direction. We are starting to incrementally move our open source repositories over to &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;. At some point in the future once we&amp;rsquo;ve been using &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; in production for all of our open source and commercial repositories &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; will become our recommended solution for all git providers so that we can have a single, simpler &amp;amp; smaller codebase to maintain.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-to-handle-a-flaky-broken-pipeline&#34;&gt;How to handle a flaky/broken pipeline&lt;/h2&gt;
+
+&lt;p&gt;If you have a pending Pull Request which is blocked on a flaky test or an incorrectly failing lint or code review; you can use ChatOps to override its status via the ChatOps command: &lt;code&gt;/override nameOfPipeline&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;why-did-a-pullrequest-have-no-pipeline-triggered&#34;&gt;Why did a PullRequest have no pipeline triggered?&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; use an &lt;code&gt;OWNERS&lt;/code&gt; file stored in each git repository to define which developers are allowed to review and approve changes. You can even limit those roles to different folders.&lt;/p&gt;
+
+&lt;p&gt;If a non-reviewer submits a Pull Request it won&amp;rsquo;t trigger CI pipelines by default until a reviewer adds an &lt;code&gt;/ok-to-test&lt;/code&gt; comment on the Pull Request.&lt;/p&gt;
+
+&lt;p&gt;If you have public git repositories this also avoids the security issue of a non-approver submitting a Pull Request to change the pipeline to email them your security credentials in the CI pipeline ;)&lt;/p&gt;
 
       </description>
     </item>
