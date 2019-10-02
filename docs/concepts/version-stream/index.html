@@ -24,13 +24,13 @@
 <meta property="og:description" content="How we improve stability of Jenkins X and its Apps" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/concepts/version-stream/" />
-<meta property="article:modified_time" content="2019-10-02T07:22:32+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2019-10-02T14:48:15+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Version Stream">
 <meta itemprop="description" content="How we improve stability of Jenkins X and its Apps">
 
 
-<meta itemprop="dateModified" content="2019-10-02T07:22:32&#43;00:00" />
-<meta itemprop="wordCount" content="580">
+<meta itemprop="dateModified" content="2019-10-02T14:48:15&#43;00:00" />
+<meta itemprop="wordCount" content="657">
 
 
 
@@ -1706,7 +1706,6 @@ if (!doNotTrack) {
 <li><a href="#periodic-updates">Periodic updates</a></li>
 </ul></li>
 <li><a href="#running-the-bdd-tests">Running the BDD tests</a></li>
-<li><a href="#proposed-improvements-to-the-version-stream">Proposed Improvements to the Version Stream</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -1759,11 +1758,20 @@ if (!doNotTrack) {
 
 <p>To improve the stability of Jenkins X when lots of packages and charts are changing all the time we have introduced the Jenkins X <code>Version Stream</code></p>
 
+<figure>
+<img src="/images/jx-version-stream-v1.png"/>
+<figcaption>
+<h5>Diagram depicts how a new JX version will be propagated through the components.</h5>
+</figcaption>
+</figure>
+
 <h2 id="how-it-works">How it works</h2>
 
 <p>The version stream is stored in the <a href="https://github.com/jenkins-x/jenkins-x-versions" target="_blank">jenkins-x/jenkins-x-versions</a> git repository and stores the stable version of all packages and charts used by Jenkins X.</p>
 
 <p>When you run a command, such as to <a href="/docs/getting-started/setup/create-cluster/">create a cluster</a>, <a href="/docs/managing-jx/common-tasks/install-on-cluster/">install on an existing cluster</a> or run a <a href="/commands/jx_upgrade/">jx upgrade</a> command the <code>jx</code> command will ensure you have a local clone of the  <a href="https://github.com/jenkins-x/jenkins-x-versions" target="_blank">jenkins-x/jenkins-x-versions</a> git repository and it will then pull the stable version of any chart or package from that source - or log a warning if a version is not yet being maintained.</p>
+
+<p>The <a href="https://github.com/jenkins-x/jx" target="_blank">jx</a> release now defaults to being released as a <a href="https://help.github.com/en/articles/creating-releases" target="_blank">prerelease</a>. Each release of jx is only updated to a full release so long as that released version successfully makes its way to the jenkins-x-versions repository where it also needs to pass another round of BDD tests (<em>see diagram above for more information</em>).</p>
 
 <h2 id="how-we-upgrade-the-version-stream">How we upgrade the Version Stream</h2>
 
@@ -1772,6 +1780,8 @@ if (!doNotTrack) {
 <p>As new packages or charts are released we generate Pull Requests on the <a href="https://github.com/jenkins-x/jenkins-x-versions" target="_blank">jenkins-x/jenkins-x-versions</a> git repository. We then trigger our <a href="https://github.com/jenkins-x/bdd-jx" target="_blank">BDD tests</a> via <a href="/commands/jx_step_bdd/">jx step bdd</a> and verify the new chart/package version works before merging changes. Currently we manually trigger the BDD tests via a comment of <code>/test this</code> - but we hope to move to periodic triggering of the BDD tests (e.g. once per day).</p>
 
 <p>Pull Request approvers can also choose to run their own manual tests on Pull Requests if they want.</p>
+
+<p>Upon the successful completion of all BDD tests executed on the PR it will merge the change and execute an update to all jx dependencies (homebrew-jx, jx-docs, jx-tutorial and dev-env-base).</p>
 
 <h2 id="creating-pull-requests">Creating Pull Requests</h2>
 
@@ -1815,15 +1825,6 @@ jx step bdd --dir . --config jx/bdd/staticjenkins.yaml --gopath /tmp --git-provi
 </code></pre>
 
 <p>The various YAML files in the <a href="https://github.com/jenkins-x/jenkins-x-versions/tree/master/jx/bdd" target="_blank">jx/bdd folder</a> contains a selection of different cluster configurations that can be used</p>
-
-<h2 id="proposed-improvements-to-the-version-stream">Proposed Improvements to the Version Stream</h2>
-
-<figure>
-<img src="/images/ProposedJXVersionStream.png"/>
-<figcaption>
-<h5>Diagram depicts how a new JX version will be propagated through the components.</h5>
-</figcaption>
-</figure>
 
 	
 		<style>
@@ -1887,7 +1888,7 @@ jx step bdd --dir . --config jx/bdd/staticjenkins.yaml --gopath /tmp --git-provi
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/4c2e6b485f0a443288dbd6888bef7d7c377c2f1e">release 0.0.1088 (4c2e6b4)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/4de8c89b9df14b860d506abda0a30192eff82f97">release 0.0.1089 (4de8c89)</a>
 </div>
 </div>
 

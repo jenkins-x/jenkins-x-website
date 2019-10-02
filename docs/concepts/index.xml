@@ -485,11 +485,20 @@
 
 &lt;p&gt;To improve the stability of Jenkins X when lots of packages and charts are changing all the time we have introduced the Jenkins X &lt;code&gt;Version Stream&lt;/code&gt;&lt;/p&gt;
 
+&lt;figure&gt;
+&lt;img src=&#34;/images/jx-version-stream-v1.png&#34;/&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Diagram depicts how a new JX version will be propagated through the components.&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
 &lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
 
 &lt;p&gt;The version stream is stored in the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-versions&lt;/a&gt; git repository and stores the stable version of all packages and charts used by Jenkins X.&lt;/p&gt;
 
 &lt;p&gt;When you run a command, such as to &lt;a href=&#34;/docs/getting-started/setup/create-cluster/&#34;&gt;create a cluster&lt;/a&gt;, &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install on an existing cluster&lt;/a&gt; or run a &lt;a href=&#34;/commands/jx_upgrade/&#34;&gt;jx upgrade&lt;/a&gt; command the &lt;code&gt;jx&lt;/code&gt; command will ensure you have a local clone of the  &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-versions&lt;/a&gt; git repository and it will then pull the stable version of any chart or package from that source - or log a warning if a version is not yet being maintained.&lt;/p&gt;
+
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/jx&#34; target=&#34;_blank&#34;&gt;jx&lt;/a&gt; release now defaults to being released as a &lt;a href=&#34;https://help.github.com/en/articles/creating-releases&#34; target=&#34;_blank&#34;&gt;prerelease&lt;/a&gt;. Each release of jx is only updated to a full release so long as that released version successfully makes its way to the jenkins-x-versions repository where it also needs to pass another round of BDD tests (&lt;em&gt;see diagram above for more information&lt;/em&gt;).&lt;/p&gt;
 
 &lt;h2 id=&#34;how-we-upgrade-the-version-stream&#34;&gt;How we upgrade the Version Stream&lt;/h2&gt;
 
@@ -498,6 +507,8 @@
 &lt;p&gt;As new packages or charts are released we generate Pull Requests on the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-versions&lt;/a&gt; git repository. We then trigger our &lt;a href=&#34;https://github.com/jenkins-x/bdd-jx&#34; target=&#34;_blank&#34;&gt;BDD tests&lt;/a&gt; via &lt;a href=&#34;/commands/jx_step_bdd/&#34;&gt;jx step bdd&lt;/a&gt; and verify the new chart/package version works before merging changes. Currently we manually trigger the BDD tests via a comment of &lt;code&gt;/test this&lt;/code&gt; - but we hope to move to periodic triggering of the BDD tests (e.g. once per day).&lt;/p&gt;
 
 &lt;p&gt;Pull Request approvers can also choose to run their own manual tests on Pull Requests if they want.&lt;/p&gt;
+
+&lt;p&gt;Upon the successful completion of all BDD tests executed on the PR it will merge the change and execute an update to all jx dependencies (homebrew-jx, jx-docs, jx-tutorial and dev-env-base).&lt;/p&gt;
 
 &lt;h2 id=&#34;creating-pull-requests&#34;&gt;Creating Pull Requests&lt;/h2&gt;
 
@@ -541,15 +552,6 @@ jx step bdd --dir . --config jx/bdd/staticjenkins.yaml --gopath /tmp --git-provi
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The various YAML files in the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/jx/bdd&#34; target=&#34;_blank&#34;&gt;jx/bdd folder&lt;/a&gt; contains a selection of different cluster configurations that can be used&lt;/p&gt;
-
-&lt;h2 id=&#34;proposed-improvements-to-the-version-stream&#34;&gt;Proposed Improvements to the Version Stream&lt;/h2&gt;
-
-&lt;figure&gt;
-&lt;img src=&#34;/images/ProposedJXVersionStream.png&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Diagram depicts how a new JX version will be propagated through the components.&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
 
       </description>
     </item>
