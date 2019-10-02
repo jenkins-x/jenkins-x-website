@@ -1673,6 +1673,12 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;p&gt;Hopefully the Tekton community will figure out some even better caching solutions to speed up builds.&lt;/p&gt;
 
+&lt;h2 id=&#34;how-do-i-define-an-environment-variable-inside-a-step-for-other-steps-to-use&#34;&gt;How do I define an environment variable inside a step for other steps to use?&lt;/h2&gt;
+
+&lt;p&gt;Files are the easiest approach as the &lt;code&gt;/workspace&lt;/code&gt; directory is shared with all steps. So write in one step and use the value from other steps etc.&lt;/p&gt;
+
+&lt;p&gt;The other option is mounting a &lt;code&gt;ConfigMap&lt;/code&gt; as environment variables into each step and modifying that on one step; but files are easier really.&lt;/p&gt;
+
       </description>
     </item>
     
@@ -2704,6 +2710,56 @@ jx-testapp2        0.0.2   1/1  http://testapp2.jx-staging.sharepointoscar.com
 &lt;p&gt;&lt;a href=&#34;/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; are another feature which enables developers to edit source code in their local IDE, behind the scenes it is then synced to the cloud and rapidly built and redeployed.&lt;/p&gt;
 
 &lt;p&gt;Jenkins X believes providing developers automation that helps them experiment in the cloud, with different technologies and  feedback empowers them to make the best decisions - faster.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Boot Questions</title>
+      <link>/docs/managing-jx/faq/boot/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/managing-jx/faq/boot/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;For more detail check out how to use &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-upgrade-boot&#34;&gt;How do I upgrade boot?&lt;/h2&gt;
+
+&lt;p&gt;If you are using &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; you can enable &lt;a href=&#34;/docs/getting-started/setup/boot/#auto-upgrades&#34;&gt;automatic upgrades&lt;/a&gt; or &lt;a href=&#34;/docs/getting-started/setup/boot/#manual-upgrades&#34;&gt;manually trigger them yourself&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If anything ever goes wrong (e.g. your cluster, namespace or tekton gets deleted), you can always re-run &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; on your laptop to restore your cluster.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-add-more-resources&#34;&gt;How do I add more resources?&lt;/h2&gt;
+
+&lt;p&gt;Add more resources (e.g. &lt;code&gt;Ingress, ConfigMap, Secret&lt;/code&gt;) to your development environment by adding YAML files to the boot &lt;code&gt;env/templates&lt;/code&gt; directory.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-add-new-environments&#34;&gt;How do I add new Environments?&lt;/h2&gt;
+
+&lt;p&gt;Add a new &lt;code&gt;SourceRepository&lt;/code&gt; and &lt;code&gt;Environment&lt;/code&gt; resource to the &lt;code&gt;env/templates&lt;/code&gt; folder for each new environment you want tto create. We’ve only added &lt;code&gt;dev, staging, production&lt;/code&gt; currently.&lt;/p&gt;
+
+&lt;p&gt;From your running cluster you can always grab the staging &lt;code&gt;SourceRepository&lt;/code&gt; and &lt;code&gt;Environment&lt;/code&gt; resource via the following (where XXX is the name of the staging repository returned via &lt;code&gt;kubectl get sr&lt;/code&gt;):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;kubectl get env staging -oyaml &amp;gt; env/templates/myenv.yaml
+kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;then modify the YAML to suit, changing the names of the resources to avoid clashing with your staging repository.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-to-to-manage-sourcerepository-resources&#34;&gt;How to to manage SourceRepository resources?&lt;/h2&gt;
+
+&lt;p&gt;See how to update your &lt;a href=&#34;/docs/getting-started/setup/boot/how-it-works/#source-repositories&#34;&gt;boot configuration with the latest SourceRepository resources&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-add-more-charts-to-jenkins-x&#34;&gt;How do I add more charts to Jenkins X?&lt;/h2&gt;
+
+&lt;p&gt;It depends on which namespace you want the charts to be installed.&lt;/p&gt;
+
+&lt;p&gt;If its in the development environment (the &lt;code&gt;jx&lt;/code&gt; namespace by default) then &lt;code&gt;env/requirements.yaml&lt;/code&gt; is where to add the chart and for a chart &lt;code&gt;foo&lt;/code&gt; you can add &lt;code&gt;env/foo/values.yaml&lt;/code&gt; to configure it. (or &lt;code&gt;env/foo/values.tmpl.yaml&lt;/code&gt; if you want to use some &lt;a href=&#34;docs/getting-started/setup/boot/how-it-works/#improvements-to-values-yaml&#34; target=&#34;_blank&#34;&gt;templating&lt;/a&gt; of the &lt;code&gt;values.yaml&lt;/code&gt;)&lt;/p&gt;
+
+&lt;p&gt;Though if you want our chart to be in another namespace then we use the convention of adding a folder in the &lt;code&gt;system&lt;/code&gt; directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in &lt;code&gt;system&lt;/code&gt; and add the &lt;code&gt;jx step helm apply&lt;/code&gt; step in the pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt; like we do for &lt;code&gt;cert-manager&lt;/code&gt;, &lt;code&gt;nginx&lt;/code&gt;, &lt;code&gt;velero&lt;/code&gt; etc.&lt;/p&gt;
 
       </description>
     </item>
@@ -6016,100 +6072,6 @@ webhook: lighthouse
 
 &lt;pre&gt;&lt;code&gt;kubectl get node
 &lt;/code&gt;&lt;/pre&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Configuration</title>
-      <link>/docs/managing-jx/old/config/</link>
-      <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/managing-jx/old/config/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;Jenkins X should work out of the box with smart defaults for your cloud provider. e.g. Jenkins X automatically uses ECR if you are using AWS or EKS.&lt;/p&gt;
-
-&lt;p&gt;However you can configure values in the underlying helm charts used by Jenkins X.&lt;/p&gt;
-
-&lt;p&gt;To do this you need to create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in the current directory you are in when you run either &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Then this YAML file can be used to override any of the underlying &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/values.yaml&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;values.yaml&lt;/code&gt;&lt;/a&gt; in any of the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/requirements.yaml&#34; target=&#34;_blank&#34;&gt;charts&lt;/a&gt; in Jenkins X.&lt;/p&gt;
-
-&lt;h2 id=&#34;making-changes-after-the-install&#34;&gt;Making changes after the install&lt;/h2&gt;
-
-&lt;p&gt;Once you have installed you can make more changes via &lt;a href=&#34;/commands/jx_upgrade_platform/&#34;&gt;jx upgrade platform&lt;/a&gt; which will reuse your &lt;code&gt;myvalues.yaml&lt;/code&gt; file.&lt;/p&gt;
-
-&lt;p&gt;Or if you use &lt;a href=&#34;/docs/managing-jx/common-tasks/manage-via-gitops/&#34;&gt;GitOps management&lt;/a&gt; you can just create a Pull Request on your Development environment git repository.&lt;/p&gt;
-
-&lt;h2 id=&#34;nexus&#34;&gt;Nexus&lt;/h2&gt;
-
-&lt;p&gt;e.g. if you wish to disable Nexus being installed and instead service link to a separate nexus at a different host name you can use this &lt;code&gt;myvalues.yaml&lt;/code&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;nexus:
-  enabled: false
-nexusServiceLink:
-  enabled: true
-  externalName: &amp;quot;nexus.jx.svc.cluster.local&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;chartmuseum&#34;&gt;ChartMuseum&lt;/h2&gt;
-
-&lt;p&gt;To disable and service link chart museum add:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;chartmuseum:
-  enabled: false
-chartmuseumServiceLink:
-  enabled: true
-  externalName: &amp;quot;jenkins-x-chartmuseum.jx.svc.cluster.local&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;jenkins-image&#34;&gt;Jenkins Image&lt;/h2&gt;
-
-&lt;p&gt;We ship with a default Jenkins docker image &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/jenkinsx/&#34; target=&#34;_blank&#34;&gt;jenkinsxio/jenkinsx&lt;/a&gt; with Jenkins X which has all of our required plugins inside.&lt;/p&gt;
-
-&lt;p&gt;If you wish to add your own plugins you can create your own &lt;code&gt;Dockerfile&lt;/code&gt; and image using our base image like this:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# Dockerfile for adding plugins to Jenkins X 
-FROM jenkinsxio/jenkinsx:latest
-
-COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
-RUN /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Then add your custom plugins to &lt;code&gt;plugins.txt&lt;/code&gt; locally of the form:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;myplugin:1.2.3
-anotherplugin:4.5.6
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Once you have built and released your image via CI/CD you can then use it in your Jenkins X installation.&lt;/p&gt;
-
-&lt;p&gt;To configure Jenkins X to use your custom image you can specify your own Jenkins image via a &lt;code&gt;myvalues.yaml&lt;/code&gt; file:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
-  Master:
-    Image: &amp;quot;acme/my-jenkinsx&amp;quot;
-    ImageTag: &amp;quot;1.2.3&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;There is an example OSS project &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-openshift-image&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-openshift-image&lt;/a&gt; you could use as a template which creates a new Jenkins image to add OpenShift specific plugins and configuration for using Jenkins X on OpenShift.&lt;/p&gt;
-
-&lt;h2 id=&#34;docker-registry&#34;&gt;Docker Registry&lt;/h2&gt;
-
-&lt;p&gt;We try and use the best defaults for each platform for the Docker Registry; e.g. using ECR on AWS.&lt;/p&gt;
-
-&lt;p&gt;However you can also specify this via the &lt;code&gt;--docker-registry&lt;/code&gt; option when running  &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;e.g.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster gke --docker-registry eu.gcr.io
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Though if you use a different Docker Registry you will probably need to &lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/#update-the-config-json-secret&#34;&gt;also modify the secret for connecting to docker&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
