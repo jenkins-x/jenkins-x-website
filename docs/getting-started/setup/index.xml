@@ -390,6 +390,16 @@ webhook: lighthouse
 
 &lt;p&gt;Jenkins X supports a number of different git providers. You can specify the git provider you wish to use and the organisation to use for the git providers for each environment in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34; target=&#34;_blank&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
 
+
+
+&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Jenkins X creates repositories per default as private. This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub &lt;em&gt;organisation&lt;/em&gt; to hold the various created (environment) repositories as free organization accounts do not have access to private repos. Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.&lt;/p&gt;
+
+&lt;p&gt;For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&amp;rsquo;re ready to go all in. Alternatively, you can enable public environment repositories by setting &lt;code&gt;environmentGitPublic&lt;/code&gt; to true in your jx boot configuration. In case you&amp;rsquo;re using &lt;code&gt;jx create&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt;, you&amp;rsquo;ll need to add the &lt;code&gt;--git-public&lt;/code&gt; option as part of the command to enable public repo&lt;/p&gt;
+
+&lt;/div&gt;
+
+
 &lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
 
 &lt;p&gt;This is the default if you don&amp;rsquo;t specify anything.&lt;/p&gt;
@@ -657,6 +667,31 @@ storage:
     url: &amp;quot;&amp;quot;
 webhook: prow
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;upgrading&#34;&gt;Upgrading&lt;/h2&gt;
+
+&lt;p&gt;With &lt;code&gt;jx boot&lt;/code&gt; all of the versions and configuration is in git so its easy to manage change via GitOps either automatically or manually.&lt;/p&gt;
+
+&lt;h3 id=&#34;auto-upgrades&#34;&gt;Auto Upgrades&lt;/h3&gt;
+
+&lt;p&gt;You can enable auto upgrades in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; via the following (where &lt;code&gt;schedule&lt;/code&gt; is a cron expression)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;autoUpdate:
+  enabled: true
+  schedule: &amp;quot;0 0 23 1/1 * ? *&amp;quot;  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When auto upgrades are enabled a &lt;code&gt;CronJob&lt;/code&gt; is run which periodically checks for changes in the &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; or &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34; target=&#34;_blank&#34;&gt;boot configuration&lt;/a&gt;. If changes are detected the &lt;a href=&#34;/commands/jx_step_boot_upgrade/&#34;&gt;jx step boot upgrade&lt;/a&gt; will create a Pull Request on your development git repository. Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.&lt;/p&gt;
+
+&lt;h3 id=&#34;manual-upgrades&#34;&gt;Manual upgrades&lt;/h3&gt;
+
+&lt;p&gt;You can manually run the &lt;a href=&#34;/commands/jx_step_boot_upgrade/&#34;&gt;jx step boot upgrade&lt;/a&gt; command at any time which if there have been changes in &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; or &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34; target=&#34;_blank&#34;&gt;boot configuration&lt;/a&gt; will create a Pull Request on your development git repository.&lt;/p&gt;
+
+&lt;p&gt;Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.&lt;/p&gt;
+
+&lt;h3 id=&#34;recovering&#34;&gt;Recovering&lt;/h3&gt;
+
+&lt;p&gt;If anything ever goes wrong (e.g. your cluster, namespace or tekton gets deleted) and your installation is incabable of running tekton pipelines you can always re-run &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; on your laptop to restore your cluster.&lt;/p&gt;
 
       </description>
     </item>

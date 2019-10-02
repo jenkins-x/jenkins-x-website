@@ -1718,6 +1718,12 @@ if (!doNotTrack) {
 </ul></li>
 <li><a href="#storage">Storage</a></li>
 <li><a href="#ingress">Ingress</a></li>
+<li><a href="#upgrading">Upgrading</a>
+<ul>
+<li><a href="#auto-upgrades">Auto Upgrades</a></li>
+<li><a href="#manual-upgrades">Manual upgrades</a></li>
+<li><a href="#recovering">Recovering</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -1940,6 +1946,16 @@ webhook: lighthouse
 <h2 id="git">Git</h2>
 
 <p>Jenkins X supports a number of different git providers. You can specify the git provider you wish to use and the organisation to use for the git providers for each environment in your <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml" target="_blank">jx-requirements.yml</a> file.</p>
+
+
+
+<div class="pageinfo pageinfo-primary">
+<p><strong>NOTE</strong> Jenkins X creates repositories per default as private. This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub <em>organisation</em> to hold the various created (environment) repositories as free organization accounts do not have access to private repos. Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.</p>
+
+<p>For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&rsquo;re ready to go all in. Alternatively, you can enable public environment repositories by setting <code>environmentGitPublic</code> to true in your jx boot configuration. In case you&rsquo;re using <code>jx create</code> or <code>jx install</code>, you&rsquo;ll need to add the <code>--git-public</code> option as part of the command to enable public repo</p>
+
+</div>
+
 
 <h3 id="github">GitHub</h3>
 
@@ -2208,6 +2224,31 @@ storage:
     url: &quot;&quot;
 webhook: prow
 </code></pre>
+
+<h2 id="upgrading">Upgrading</h2>
+
+<p>With <code>jx boot</code> all of the versions and configuration is in git so its easy to manage change via GitOps either automatically or manually.</p>
+
+<h3 id="auto-upgrades">Auto Upgrades</h3>
+
+<p>You can enable auto upgrades in the <code>jx-requirements.yml</code> via the following (where <code>schedule</code> is a cron expression)</p>
+
+<pre><code class="language-yaml">autoUpdate:
+  enabled: true
+  schedule: &quot;0 0 23 1/1 * ? *&quot;  
+</code></pre>
+
+<p>When auto upgrades are enabled a <code>CronJob</code> is run which periodically checks for changes in the <a href="/docs/concepts/version-stream/">version stream</a> or <a href="https://github.com/jenkins-x/jenkins-x-boot-config" target="_blank">boot configuration</a>. If changes are detected the <a href="/commands/jx_step_boot_upgrade/">jx step boot upgrade</a> will create a Pull Request on your development git repository. Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.</p>
+
+<h3 id="manual-upgrades">Manual upgrades</h3>
+
+<p>You can manually run the <a href="/commands/jx_step_boot_upgrade/">jx step boot upgrade</a> command at any time which if there have been changes in <a href="/docs/concepts/version-stream/">version stream</a> or <a href="https://github.com/jenkins-x/jenkins-x-boot-config" target="_blank">boot configuration</a> will create a Pull Request on your development git repository.</p>
+
+<p>Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.</p>
+
+<h3 id="recovering">Recovering</h3>
+
+<p>If anything ever goes wrong (e.g. your cluster, namespace or tekton gets deleted) and your installation is incabable of running tekton pipelines you can always re-run <a href="/docs/getting-started/setup/boot/">jx boot</a> on your laptop to restore your cluster.</p>
 
         <div class="section-index">
     
@@ -3331,7 +3372,7 @@ webhook: prow
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/259a8684c0e1299ddfc308145dbebd54e56560bc">release 0.0.1084 (259a868)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/49dee87a3c753f4583a5afe135d1f01e53d112d4">release 0.0.1087 (49dee87)</a>
 </div>
 </div>
 
