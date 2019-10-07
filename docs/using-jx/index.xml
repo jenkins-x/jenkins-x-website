@@ -263,6 +263,88 @@ service:
 
 &lt;p&gt;See how to &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/#customizing-the-pipelines&#34;&gt;add a custom step to your pipeline&lt;/a&gt;.&lt;/p&gt;
 
+&lt;h2 id=&#34;how-do-i-inject-vault-secrets-into-staging-production-preview-environments&#34;&gt;How do I inject Vault secrets into staging/production/preview environments?&lt;/h2&gt;
+
+&lt;h3 id=&#34;staging-production&#34;&gt;Staging/Production&lt;/h3&gt;
+
+&lt;p&gt;By default, &lt;a href=&#34;/docs/getting-started/setup/boot/#vault&#34;&gt;enabling Vault&lt;/a&gt; via &lt;code&gt;jx boot&lt;/code&gt;&amp;rsquo;s &lt;code&gt;jx-requirements.yaml&lt;/code&gt; will only activate it in your pipeline and preview environments, not in staging and production. To also activate it in those environments, simply add a &lt;code&gt;jx-requirements.yaml&lt;/code&gt; file to the root of their repo, with at least the following content:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;secretStorage: vault
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then, assuming you have a secret in Vault with path &lt;code&gt;secret/path/to/mysecret&lt;/code&gt; containing key &lt;code&gt;password&lt;/code&gt;, you can inject it into service &lt;code&gt;myapp&lt;/code&gt; (for instance, as a &lt;code&gt;PASSWORD&lt;/code&gt; environment variable) by adding the following to your staging repo&amp;rsquo;s &lt;code&gt;/env/values.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;myapp:
+  env:
+    PASSWORD: vault:path/to/mysecret:password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice the prefixing with &lt;code&gt;vault:&lt;/code&gt; URL scheme and also that we omit first path component (&lt;code&gt;secret/&lt;/code&gt;), as it gets added automatically. Finally, the key name is separated from path by a colon (&lt;code&gt;:&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;If your secret is not environment-specific, you can also inject it directly into your app&amp;rsquo;s &lt;code&gt;/charts/myapp/values.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;env:
+  PASSWORD: vault:path/to/mysecret:password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;However, note that this value would be overriden at the environment level if the same key is also present there.&lt;/p&gt;
+
+&lt;h3 id=&#34;preview&#34;&gt;Preview&lt;/h3&gt;
+
+&lt;p&gt;Vault does not need to be explicitly enabled for preview environment. To inject same secret as above into your preview, simply add the following to your app&amp;rsquo;s &lt;code&gt;/charts/preview/values.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;preview:
+  env:
+    PASSWORD: vault:path/to/mysecret:password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;how-do-i-inject-a-vault-secret-via-a-kubernetes-secret&#34;&gt;How do I inject a Vault secret via a Kubernetes Secret?&lt;/h2&gt;
+
+&lt;p&gt;When you inject secrets directly into environment variables, they appear in Deployment yaml as plain text, which is not advisable. It is recommended to rather inject them into a Secret yaml that will itself be mounted as environment variables.&lt;/p&gt;
+
+&lt;p&gt;For example, start by injecting the secret into your staging repo&amp;rsquo;s &lt;code&gt;/env/values.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;myapp
+  mysecrets:
+    password: vault:path/to/mysecret:password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then, in your app&amp;rsquo;s &lt;code&gt;/charts/myapp/templates&lt;/code&gt;, create a &lt;code&gt;mysecrets.yaml&lt;/code&gt; file, in which you refer to the secret you just added:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecrets
+data:
+  PASSWORD: {{ .Values.mysecrets.password | b64enc }}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice how we encode the secret value in Base64, as this is the format expected in a Secret yaml.&lt;/p&gt;
+
+&lt;p&gt;Also, make sure to add a default value for the same key in your app&amp;rsquo;s &lt;code&gt;/charts/myapp/values.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mysecrets:
+  password: &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That allows Helm to resolve to some value during linting of your &lt;code&gt;mysecrets.yaml&lt;/code&gt;, as linting seems not to consider values from the environment. Otherwise, you might get something like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;error: failed to build dependencies for chart from directory &#39;.&#39;: failed to lint the chart &#39;.&#39;: failed to run &#39;helm lint --values values.yaml&#39; command in directory &#39;.&#39;, output: &#39;==&amp;gt; Linting .
+[ERROR] templates/: render error in &amp;quot;myapp/templates/secrets.yaml&amp;quot;: template: myapp/templates/secrets.yaml:6:21: executing &amp;quot;myapp/templates/secrets.yaml&amp;quot; at &amp;lt;.Values.mysecrets.password&amp;gt;: nil pointer evaluating interface {}.password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally, mount the Secret yaml as environment variables in your app&amp;rsquo;s &lt;code&gt;/charts/myapp/templates/deployment.yaml&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;...
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        envFrom:
+        - secretRef:
+            name: mysecrets
+...
+&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
