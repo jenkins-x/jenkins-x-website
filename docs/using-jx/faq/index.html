@@ -54,6 +54,7 @@ if (!doNotTrack) {
 <link href="/scss/main.min.4cdf832c07542cd9c325a85a7aa83ac6c333b819d5e6d9a2b8189293f3d93b16.css" rel="stylesheet" integrity="">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -1806,17 +1807,17 @@ if (!doNotTrack) {
 
 <p>We have a background garbage collection job which removes Preview Environments after the Pull Request is closed/merged. You can run it any time you like via the <a href="/commands/jx_gc_previews/">jx gc previews</a> command</p>
 
-<pre><code>jx gc previews
+<pre><code class="language-sh">jx gc previews
 </code></pre>
 
 <p>You can also view the current previews via  <a href="/commands/jx_get_previews/">jx get previews</a>:</p>
 
-<pre><code>  jx get previews
+<pre><code class="language-sh">jx get previews
 </code></pre>
 
 <p>and delete a preview by choosing one to delete via <a href="/commands/jx_delete_preview/">jx delete preview</a>:</p>
 
-<pre><code> jx delete preview
+<pre><code class="language-sh">jx delete preview
 </code></pre>
 
 <h2 id="how-do-i-add-other-services-into-a-preview">How do I add other services into a Preview?</h2>
@@ -1907,7 +1908,7 @@ dockerRegistryOwner: my-gcr-project-id
 
 <p>You can work around this by manually editing the <em>knative</em> config via:</p>
 
-<pre><code>kubectl edit cm config-domain --namespace knative-serving
+<pre><code class="language-sh">kubectl edit cm config-domain --namespace knative-serving
 </code></pre>
 
 <p>For more help see <a href="https://knative.dev/docs/serving/using-a-custom-domain/" target="_blank">using a custom domain with knative</a></p>
@@ -1981,12 +1982,12 @@ service:
 
 <p>By default, <a href="/docs/getting-started/setup/boot/#vault">enabling Vault</a> via <code>jx boot</code>&rsquo;s <code>jx-requirements.yaml</code> will only activate it in your pipeline and preview environments, not in staging and production. To also activate it in those environments, simply add a <code>jx-requirements.yaml</code> file to the root of their repo, with at least the following content:</p>
 
-<pre><code>secretStorage: vault
+<pre><code class="language-yaml">secretStorage: vault
 </code></pre>
 
 <p>Then, assuming you have a secret in Vault with path <code>secret/path/to/mysecret</code> containing key <code>password</code>, you can inject it into service <code>myapp</code> (for instance, as a <code>PASSWORD</code> environment variable) by adding the following to your staging repo&rsquo;s <code>/env/values.yaml</code>:</p>
 
-<pre><code>myapp:
+<pre><code class="language-yaml">myapp:
   env:
     PASSWORD: vault:path/to/mysecret:password
 </code></pre>
@@ -1995,7 +1996,7 @@ service:
 
 <p>If your secret is not environment-specific, you can also inject it directly into your app&rsquo;s <code>/charts/myapp/values.yaml</code>:</p>
 
-<pre><code>env:
+<pre><code class="language-yaml">env:
   PASSWORD: vault:path/to/mysecret:password
 </code></pre>
 
@@ -2005,7 +2006,7 @@ service:
 
 <p>Vault does not need to be explicitly enabled for preview environment. To inject same secret as above into your preview, simply add the following to your app&rsquo;s <code>/charts/preview/values.yaml</code>:</p>
 
-<pre><code>preview:
+<pre><code class="language-yaml">preview:
   env:
     PASSWORD: vault:path/to/mysecret:password
 </code></pre>
@@ -2016,14 +2017,14 @@ service:
 
 <p>For example, start by injecting the secret into your staging repo&rsquo;s <code>/env/values.yaml</code>:</p>
 
-<pre><code>myapp
+<pre><code class="language-yaml">myapp
   mysecrets:
     password: vault:path/to/mysecret:password
 </code></pre>
 
 <p>Then, in your app&rsquo;s <code>/charts/myapp/templates</code>, create a <code>mysecrets.yaml</code> file, in which you refer to the secret you just added:</p>
 
-<pre><code>apiVersion: v1
+<pre><code class="language-yaml">apiVersion: v1
 kind: Secret
 metadata:
   name: mysecrets
@@ -2035,19 +2036,19 @@ data:
 
 <p>Also, make sure to add a default value for the same key in your app&rsquo;s <code>/charts/myapp/values.yaml</code>:</p>
 
-<pre><code>mysecrets:
+<pre><code class="language-yaml">mysecrets:
   password: &quot;&quot;
 </code></pre>
 
 <p>That allows Helm to resolve to some value during linting of your <code>mysecrets.yaml</code>, as linting seems not to consider values from the environment. Otherwise, you might get something like:</p>
 
-<pre><code>error: failed to build dependencies for chart from directory '.': failed to lint the chart '.': failed to run 'helm lint --values values.yaml' command in directory '.', output: '==&gt; Linting .
+<pre><code class="language-sh">error: failed to build dependencies for chart from directory '.': failed to lint the chart '.': failed to run 'helm lint --values values.yaml' command in directory '.', output: '==&gt; Linting .
 [ERROR] templates/: render error in &quot;myapp/templates/secrets.yaml&quot;: template: myapp/templates/secrets.yaml:6:21: executing &quot;myapp/templates/secrets.yaml&quot; at &lt;.Values.mysecrets.password&gt;: nil pointer evaluating interface {}.password
 </code></pre>
 
 <p>Finally, mount the Secret yaml as environment variables in your app&rsquo;s <code>/charts/myapp/templates/deployment.yaml</code>:</p>
 
-<pre><code>...
+<pre><code class="language-yaml">...
     spec:
       containers:
       - name: {{ .Chart.Name }}
@@ -3185,7 +3186,7 @@ data:
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/e1a7e3dd6918e80a175430ba2b6fbb91d4b39a6a">release 0.0.1113 (e1a7e3d)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/32a6a79d6770cc65ea6783a1669eda703b6fc6f7">release 0.0.1114 (32a6a79)</a>
 </div>
 </div>
 
@@ -3271,6 +3272,7 @@ data:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 
 
 
@@ -3287,7 +3289,7 @@ data:
     debug: false
   });
 </script>
-
+<script>hljs.initHighlightingOnLoad();</script>
 
   </body>
 </html>

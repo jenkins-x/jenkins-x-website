@@ -197,24 +197,18 @@ limitations under the License.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;builder-镜像&#34;&gt;Builder 镜像&lt;/h3&gt;
 
 &lt;p&gt;首先，您需要为 Builder 创建一个 docker 镜像。从 &lt;code&gt;Dockerfile&lt;/code&gt; 开始的一个实例可能类似于：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM jenkinsxio/builder-base:latest
-
-# Install your tools and libraries
-RUN yum install -y gcc openssl-devel
-
-CMD [&amp;quot;gcc&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-dockerfile&#34; data-lang=&#34;dockerfile&#34;&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; jenkinsxio/builder-base:latest&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Install your tools and libraries&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;RUN&lt;/span&gt; yum install -y gcc openssl-devel&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;CMD&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; [&amp;#34;gcc&amp;#34;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在，您可以构建并发布这个镜像到您的 registry：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt; 
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
 docker build -t &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt; .
-docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt; &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;别担心，当新的镜像需要构建时，您无需每次手动执行这些步骤。Jenkins X 可以为您管理这些。您只需要把 &lt;code&gt;Dockerfile&lt;/code&gt; 推送到类似于&lt;a href=&#34;https://github.com/jenkins-x/builder-go&#34; target=&#34;_blank&#34;&gt;这个&lt;/a&gt;代码仓库中。然后，根据您的组织名称来调整 &lt;code&gt;Jenkinsfile&lt;/code&gt; ，并使用下面的命令导入 Jenkins X 平台：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;之后，您每次推送一个变更，Jenkins X 将会自动地构建和发布镜像。&lt;/p&gt;
 
 &lt;h3 id=&#34;安装-builder&#34;&gt;安装 Builder&lt;/h3&gt;
@@ -248,7 +242,7 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestMemory&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;128Mi&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Args&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;${computer.jnlpmac} ${computer.name}&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Dlang&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_BUILDER_IMAGE&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt; 
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_BUILDER_IMAGE&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
 &lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;            Privileged: true&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestCpu&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;400m&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestMemory&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;512Mi&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
@@ -293,24 +287,21 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;p&gt;您只需要基于&lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;基础 Builder&lt;/a&gt; 镜像或者&lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34; target=&#34;_blank&#34;&gt;Builder 镜像&lt;/a&gt; 自定义。在上面查看细节。&lt;/p&gt;
 
 &lt;p&gt;然后，您可以在目录 &lt;code&gt;~/.jx/&lt;/code&gt; 中创建文件 &lt;code&gt;myvalues.yaml&lt;/code&gt; ，并写入一下内容：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jenkins:
-  Agent:
-    PodTemplates:
-      Maven:
-        Containers:
-          Maven:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-      Nodejs:
-        Containers:
-          Nodejs:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-      Go:
-        Containers:
-          Go:
-            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;Agent&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;PodTemplates&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;      &lt;/span&gt;Maven&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Maven&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;      Nodejs:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Nodejs&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;      Go:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Go&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;您可以继续安装 Jenkins X，这些 Builder 将会自动地添加到平台。&lt;/p&gt;
 
       </description>
@@ -354,20 +345,14 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;p&gt;Jenkins X 中我们提供了一个默认的 Jenkins docker 镜像 &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/jenkinsx/&#34; target=&#34;_blank&#34;&gt;jenkinsxio/jenkinsx&lt;/a&gt;，把我们所需要的所有插件包含在里面。&lt;/p&gt;
 
 &lt;p&gt;如果你想添加自己的插件，你可以使用我们的基础镜像创建一个你自己的 Dockerfile 和镜像，如下所示：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# Dockerfile for adding plugins to Jenkins X 
-FROM jenkinsxio/jenkinsx:latest
-
-COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
-RUN /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-dockerfile&#34; data-lang=&#34;dockerfile&#34;&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Dockerfile for adding plugins to Jenkins X&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; jenkinsxio/jenkinsx:latest&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt&lt;span style=&#34;color:#a40000&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;RUN&lt;/span&gt; /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后以下面的形式将你所有自定义插件放到 &lt;code&gt;plugins.txt&lt;/code&gt;：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;myplugin:1.2.3
-anotherplugin:4.5.6
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;myplugin:1.2.3
+anotherplugin:4.5.6&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;一旦你通过 CI/CD 构建和发布了你的镜像，你就可以在安装 Jenkins X 时使用它：&lt;/p&gt;
 
 &lt;p&gt;为了用你自定义的镜像配置 Jenkins X ，你可以在 &lt;code&gt;myvalues.yaml&lt;/code&gt; 文件中指定你的 Jenkins 镜像：&lt;/p&gt;
@@ -384,10 +369,7 @@ anotherplugin:4.5.6
 &lt;p&gt;然而，你也可以在执行命令 &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; 或 &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt; 时，通过选项 &lt;code&gt;--docker-registry&lt;/code&gt; 来指定。&lt;/p&gt;
 
 &lt;p&gt;例如：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster gke --docker-registry eu.gcr.io
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster gke --docker-registry eu.gcr.io&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;但是，如果你使用了不同的 Docker Registry 的话，你可能需要&lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/#update-the-config-json-secret&#34;&gt;修改 secret 才能连接到 docker&lt;/a&gt;。&lt;/p&gt;
 
       </description>
@@ -540,16 +522,13 @@ anotherplugin:4.5.6
 &lt;h3 id=&#34;使用亚马逊-aws&#34;&gt;使用亚马逊 (AWS)&lt;/h3&gt;
 
 &lt;p&gt;使用命令 &lt;a href=&#34;/commands/x_create_cluster_aws&#34;&gt;jx create cluster aws&lt;/a&gt; ：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster aws
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这会通过你的亚马逊账户，使用命令 &lt;a href=&#34;https://github.com/kubernetes/kops&#34; target=&#34;_blank&#34;&gt;kops&lt;/a&gt; 创建一个新的 Kubernetes 集群并安装 Jenkins X。&lt;/p&gt;
 
 &lt;p&gt;来试试这个，我们建议你参照 &lt;a href=&#34;https://github.com/aws-samples/aws-workshop-for-kubernetes/tree/master/01-path-basics/101-start-here#create-aws-cloud9-environment&#34; target=&#34;_blank&#34;&gt;AWS Workshop for Kubernetes&lt;/a&gt;  设置 AWS Cloud9 IDE。&lt;/p&gt;
 
 &lt;p&gt;然后，在 Cloud9 中打开一个新的终端，试试这些命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{{&lt;/span&gt;.Site.Params.release&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}}&lt;/span&gt;/jx-linux-amd64.tar.gz &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;|&lt;/span&gt; tar xzv
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{{&lt;/span&gt;.Site.Params.release&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}}&lt;/span&gt;/jx-linux-amd64.tar.gz &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;|&lt;/span&gt; tar xzv
 sudo mv jx /usr/local/bin
 jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在 &lt;strong&gt;&lt;a href=&#34;/zh/docs/getting-started/next/&#34;&gt;使用 Jenkins X 更快速地开发应用&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
@@ -557,10 +536,7 @@ jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;使用-azure-aks&#34;&gt;使用 Azure (AKS)&lt;/h3&gt;
 
 &lt;p&gt;使用命令 &lt;a href=&#34;/commands/jx_create_cluster_aks&#34;&gt;jx create cluster aks&lt;/a&gt; ：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster aks
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster aks&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在 &lt;strong&gt;&lt;a href=&#34;/zh/docs/getting-started/next/&#34;&gt;使用 Jenkins X 更快速地开发应用&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 
 &lt;h3 id=&#34;使用-minikube-local&#34;&gt;使用 Minikube (local)&lt;/h3&gt;
@@ -575,10 +551,7 @@ jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;因此，我们&lt;strong&gt;强烈&lt;/strong&gt;建议使用上面的公有云来尝试 Jenkins X。他们都有免费体验，所以应该不会花费你的任何现金，而且还给了你体验云的机会。&lt;/p&gt;
 
 &lt;p&gt;如果你还是想尝试 minikube，那么，我们建议从头开始，并让 jx 帮你创建&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create cluster minikube
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在 &lt;strong&gt;&lt;a href=&#34;/zh/docs/getting-started/next/&#34;&gt;使用 Jenkins X 更快速地开发应用&lt;/a&gt;&lt;/strong&gt;。&lt;/p&gt;
 
 &lt;h3 id=&#34;故障排除&#34;&gt;故障排除&lt;/h3&gt;
@@ -611,10 +584,7 @@ jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;注意，如果你是在 AWS 环境中，你可能会想使用 &lt;a href=&#34;/zh/docs/getting-started/setup/create-cluster/&#34;&gt;jx create aws&lt;/a&gt; 命令来帮你自动化完成所有步骤！&lt;/p&gt;
 
 &lt;p&gt;如果你是通过 &lt;a href=&#34;https://github.com/kubernetes/kops&#34; target=&#34;_blank&#34;&gt;kops&lt;/a&gt; 创建的 kubernetes 集群，那么你可以这么做：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;kops edit cluster 
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops edit cluster&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，确保在 YAML 文件的章节 &lt;code&gt;spec&lt;/code&gt; 中有 &lt;code&gt;docker&lt;/code&gt; 配置：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;...&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
 &lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;&lt;/span&gt;spec&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
@@ -624,18 +594,12 @@ jx create cluster aws&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;上面的 IP 范围 &lt;code&gt;100.64.0.0/10&lt;/code&gt; 是 AWS 上的，但你需要修改为其他 Kubernetes 集群的；它依赖于 Kubernetes 服务的 IP 范围。&lt;/p&gt;
 
 &lt;p&gt;保存后，你可以参考下面的命令进行验证：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;kops get cluster -oyaml
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops get cluster -oyaml&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后查找 &lt;code&gt;insecureRegistry&lt;/code&gt; 章节。&lt;/p&gt;
 
 &lt;p&gt;现在，确保这些修改在你的集群类型上是激活的：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;kops update cluster --yes
-kops rolling-update cluster --yes
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops update cluster --yes
+kops rolling-update cluster --yes&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你现在可以继续了！&lt;/p&gt;
 
 &lt;h3 id=&#34;安装-jenkins-x&#34;&gt;安装 Jenkins X&lt;/h3&gt;
@@ -730,10 +694,7 @@ kops rolling-update cluster --yes
 &lt;p&gt;部分应用是内置的；例如：Nexus、ChartMuseum、Monocular。其他的则是作为“插件”提供的。&lt;/p&gt;
 
 &lt;p&gt;要安装插件的话，使用命令&lt;a href=&#34;/commands/jx_create_addon/&#34;&gt;jx create addon&lt;/a&gt;。例如：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create addon grafana
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon grafana&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -753,13 +714,13 @@ kops rolling-update cluster --yes
 &lt;h3 id=&#34;macos&#34;&gt;macOS&lt;/h3&gt;
 
 &lt;p&gt;在 Mac 上你可以使用 &lt;a href=&#34;https://brew.sh/&#34; target=&#34;_blank&#34;&gt;brew&lt;/a&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;brew tap jenkins-x/jx
-brew install jx &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;brew tap jenkins-x/jx
+brew install jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者，如果您尚未安装 &lt;a href=&#34;https://brew.sh/&#34; target=&#34;_blank&#34;&gt;brew&lt;/a&gt; ，并且喜欢手动安装的话，请执行如下指令安装:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{{&lt;/span&gt;.Site.Params.release&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}}&lt;/span&gt;/jx-darwin-amd64.tar.gz &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;|&lt;/span&gt; tar xzv 
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{{&lt;/span&gt;.Site.Params.release&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}}&lt;/span&gt;/jx-darwin-amd64.tar.gz &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;|&lt;/span&gt; tar xzv
 sudo mv jx /usr/local/bin&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;linux&#34;&gt;Linux&lt;/h3&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;mkdir -p ~/.jx/bin
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;mkdir -p ~/.jx/bin
 curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{{&lt;/span&gt;.Site.Params.release&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}}&lt;/span&gt;/jx-linux-amd64.tar.gz &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;|&lt;/span&gt; tar xzv -C ~/.jx/bin
 &lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;PATH&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;$PATH&lt;/span&gt;:~/.jx/bin
 &lt;span style=&#34;color:#204a87&#34;&gt;echo&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;export PATH=$PATH:~/.jx/bin&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt; ~/.bashrc&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
@@ -770,17 +731,17 @@ curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;c
 &lt;/ul&gt;
 
 &lt;p&gt;要安装 &lt;code&gt;jx&lt;/code&gt; 二进制请运行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cmd&#34; data-lang=&#34;cmd&#34;&gt;  choco install jenkins-x&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;choco install jenkins-x&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;要升级 &lt;code&gt;jx&lt;/code&gt; 二进制请运行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cmd&#34; data-lang=&#34;cmd&#34;&gt;  choco upgrade jenkins-x&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;choco upgrade jenkins-x&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;ul&gt;
 &lt;li&gt;如果你使用 &lt;a href=&#34;https://scoop.sh&#34; target=&#34;_blank&#34;&gt;scoop&lt;/a&gt;，那么这里有一个 &lt;a href=&#34;https://github.com/lukesampson/scoop/blob/master/bucket/jx.json&#34; target=&#34;_blank&#34;&gt;可用的清单&lt;/a&gt;。&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;要安装 &lt;code&gt;jx&lt;/code&gt; 二进制请运行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cmd&#34; data-lang=&#34;cmd&#34;&gt;  scoop install jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;scoop install jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;要升级 &lt;code&gt;jx&lt;/code&gt; 二进制请运行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-cmd&#34; data-lang=&#34;cmd&#34;&gt;  scoop update jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;scoop update jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;其他平台&#34;&gt;其他平台&lt;/h3&gt;
 
 &lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34; target=&#34;_blank&#34;&gt;下载二进制包&lt;/a&gt; &lt;code&gt;jx&lt;/code&gt; 然后加到环境变量 &lt;code&gt;$PATH&lt;/code&gt; 中&lt;/p&gt;
@@ -790,15 +751,9 @@ curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;c
 &lt;h2 id=&#34;获得帮助&#34;&gt;获得帮助&lt;/h2&gt;
 
 &lt;p&gt;查找可用的命令类型：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者，获取指定命令的帮助，例如： &lt;code&gt;create&lt;/code&gt; 命令，可以输入：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx help create
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx &lt;span style=&#34;color:#204a87&#34;&gt;help&lt;/span&gt; create&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你也可以浏览 &lt;a href=&#34;/commands/jx&#34;&gt;jx 命令参考文档&lt;/a&gt;&lt;/p&gt;
 
       </description>
@@ -834,12 +789,9 @@ curl -L https://github.com/jenkins-x/jx/releases/download/v&lt;span style=&#34;c
 &lt;p&gt;一般来说，当使用 Tekton 时，Jenkins X 可以很容易地自我升级。但是，如果升级让 Jenkins X 无法实施 CI/CD ，那么使用 GitOps 回退更改将不起作用；）&lt;/p&gt;
 
 &lt;p&gt;如果你在升级 Jenkins X 过程中遇到任何问题，这里有一种手动方法可以应用开发环境的 git 存储库的内容：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;git clone $MY_DEV_GIT_CLONE_URL jenkins-x-dev-env
-cd jenkins-x-dev-env/env
-jx step env apply 
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;git clone &lt;span style=&#34;color:#000&#34;&gt;$MY_DEV_GIT_CLONE_URL&lt;/span&gt; jenkins-x-dev-env
+&lt;span style=&#34;color:#204a87&#34;&gt;cd&lt;/span&gt; jenkins-x-dev-env/env
+jx step env apply&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -870,7 +822,7 @@ resources&lt;/a&gt; 上的注释以及融合了 &lt;a href=&#34;https://github.c
 &lt;p&gt;自定义资源文档是由与 Kubernetes &lt;a href=&#34;https://kubernetes.io/docs/contribute/generate-ref-docs/kubernetes-api/&#34; target=&#34;_blank&#34;&gt;同样的工具链&lt;/a&gt;而生成的，但是一系列的 &lt;code&gt;jx&lt;/code&gt; 的命令将其包装了起来，因此你不需要下载以及配置这些不同的工具。&lt;/p&gt;
 
 &lt;p&gt;HTML 文档是由 &lt;a href=&#34;https://github.com/jenkins-x/jx/tree/master/docs/apidocs/openapi-spec&#34; target=&#34;_blank&#34;&gt;OpenAPI 说明&lt;/a&gt; 生成的，依次的由 &lt;a href=&#34;https://github.com/jenkins-x/jx/tree/master/pkg/client/openapi&#34; target=&#34;_blank&#34;&gt;Go 结构体&lt;/a&gt; 生成，而这些结构体是由代码的注释生成的。想要生成结构体和 OpenAPI 说明执行命令：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; $ make generate-openapi&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt; make generate-openapi&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
@@ -880,7 +832,7 @@ resources&lt;/a&gt; 上的注释以及融合了 &lt;a href=&#34;https://github.c
 
 
 &lt;p&gt;生成 HTML 运行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; make generate-docs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt; make generate-docs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
@@ -985,10 +937,7 @@ resources&lt;/a&gt; 上的注释以及融合了 &lt;a href=&#34;https://github.c
 &lt;p&gt;如果你使用公有云的话，可能希望利用你的云服务商的 Docker Registry；或者复用你已有的 Docker Registry。&lt;/p&gt;
 
 &lt;p&gt;为了指定 Docker Registry 的主机、端口，你可以使用 Jenkins 控制台：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx console
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，定位到 &lt;code&gt;管理 Jenkins -&amp;gt; 系统配置&lt;/code&gt;，并修改环境变量 &lt;code&gt;DOCKER_REGISTRY&lt;/code&gt; 指向你选择的 Docker Registry。&lt;/p&gt;
 
 &lt;p&gt;另一种方法是，把下面的内容添加到你的自定义 Jenkins X 平台 helm charts 的&lt;code&gt;values.yaml&lt;/code&gt; 文件中：&lt;/p&gt;
@@ -1016,11 +965,8 @@ resources&lt;/a&gt; 上的注释以及融合了 &lt;a href=&#34;https://github.c
 	&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;credsStore&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;ecr-login&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后需要更新凭据 &lt;code&gt;jenkins-docker-cfg&lt;/code&gt; ，你可以执行以下操作:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;kubectl delete secret jenkins-docker-cfg
-kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl delete secret jenkins-docker-cfg
+kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;./config.json&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2 id=&#34;使用-docker-hub&#34;&gt;使用 Docker Hub&lt;/h2&gt;
 
 &lt;p&gt;如果你想要发布你的镜像到 Docker Hub 当中 ，则需要修改你的 &lt;code&gt;config.json&lt;/code&gt; 像下面那样:&lt;/p&gt;
@@ -1102,42 +1048,27 @@ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 &lt;p&gt;然而，在企业中工作时，你可能希望使用不同的 git 服务器。&lt;/p&gt;
 
 &lt;p&gt;你可以通过 &lt;a href=&#34;/commands/jx_get_git&#34;&gt;jx get git&lt;/a&gt; 列出配置好的 git 服务器。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx get git
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get git&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2 id=&#34;添加一个新的-git-服务商&#34;&gt;添加一个新的 git 服务商&lt;/h2&gt;
 
 &lt;p&gt;如果你在某个地方已经有了一个 git 服务，你可以通过 &lt;a href=&#34;/commands/jx_create_git_server&#34;&gt;jx create git server&lt;/a&gt; 把它添加到 Jenkins X中：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create git server gitKind someURL
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server gitKind someURL&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这里 &lt;code&gt;gitKind&lt;/code&gt; 是某个 git 服务商，像 &lt;code&gt;github, gitea, gitlab, bitbucket&lt;/code&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;企业-github&#34;&gt;企业 GitHub&lt;/h2&gt;
 
 &lt;p&gt;要添加一个企业 GitHub 服务，尝试：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create git server github https://github.foo.com -n GHE
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server github https://github.foo.com -n GHE&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这里 &lt;code&gt;-n&lt;/code&gt; 是 git 服务的名称。&lt;/p&gt;
 
 &lt;h2 id=&#34;bitbucket&#34;&gt;BitBucket&lt;/h2&gt;
 
 &lt;p&gt;要添加 BitBucket ，尝试：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create git server bitbucket -n BitBucket https://bitbucket.org
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server bitbucket -n BitBucket https://bitbucket.org&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;添加用户-tokens&#34;&gt;添加用户 tokens&lt;/h3&gt;
 
 &lt;p&gt;为了添加一个 git 服务，你需要通过 &lt;a href=&#34;/commands/jx_create_git_token&#34;&gt;jx create git token&lt;/a&gt; 添加一个用户名和 API token：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create git token -n myProviderName myUserName
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git token -n myProviderName myUserName&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，就会提示你输入 API token&lt;/p&gt;
 
 &lt;h3 id=&#34;kubernetes-托管的-git-服务&#34;&gt;Kubernetes 托管的 git 服务&lt;/h3&gt;
@@ -1147,15 +1078,9 @@ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 &lt;p&gt;例如：有一个 &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt; 的插件，可以让你把 gitea 作为 Jenkins X 安装的一部分。&lt;/p&gt;
 
 &lt;p&gt;要在 Jenkins X 中使用 &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt;，你需要在安装 Jenkins X 之前启用 &lt;code&gt;gitea&lt;/code&gt; 插件：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx edit addon gitea -e true
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit addon gitea -e true&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以通过 &lt;a href=&#34;/commands/jx_get_addons&#34;&gt;jx get addons&lt;/a&gt; 查看启用的插件：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx get addons
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get addons&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在，当你 &lt;a href=&#34;/zh/docs/getting-started/&#34;&gt;安装 Jenkins X&lt;/a&gt; 时，也会安装 &lt;code&gt;gitea&lt;/code&gt; 插件。&lt;/p&gt;
 
 &lt;p&gt;无论什么时候，Jenkins X 需要为一个环境或者新项目创建一个 git 库时，gitea 服务都会出现在选择列表中。&lt;/p&gt;
@@ -1257,20 +1182,14 @@ rm -rf ~/.minikube
 &lt;h3 id=&#34;minkube-和-hyperkit-无法找到-ip-地址&#34;&gt;Minkube 和 hyperkit: 无法找到 IP 地址&lt;/h3&gt;
 
 &lt;p&gt;如果你在 Mac 上通过 hyperkit 使用 minikube，并发现 minikube 启动失败的日志如下：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;Temporary Error: Could not find an IP address &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;46&lt;/span&gt;:0:41:86:41:6e
+Temporary Error: Could not find an IP address &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;46&lt;/span&gt;:0:41:86:41:6e
+Temporary Error: Could not find an IP address &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;46&lt;/span&gt;:0:41:86:41:6e
+Temporary Error: Could not find an IP address &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;46&lt;/span&gt;:0:41:86:41:6e&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这里可能会给你提示，&lt;a href=&#34;https://github.com/kubernetes/minikube/issues/1926#issuecomment-356378525&#34; target=&#34;_blank&#34;&gt;minikube 和 hyperkit 相关问题&lt;/a&gt;。&lt;/p&gt;
 
 &lt;p&gt;解决的办法是请尝试下面的操作：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;rm ~/.minikube/machines/minikube/hyperkit.pid
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;rm ~/.minikube/machines/minikube/hyperkit.pid&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，再试一次。希望这次能够成功！&lt;/p&gt;
 
 &lt;h3 id=&#34;无法访问-minikube-上的服务&#34;&gt;无法访问 minikube 上的服务&lt;/h3&gt;
@@ -1289,10 +1208,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 &lt;p&gt;然后，再次运行 &lt;code&gt;jx install&lt;/code&gt; ，这将会把把服务暴露在 &lt;code&gt;node ports&lt;/code&gt;，不再使用 ingress 和 DNS。&lt;/p&gt;
 
 &lt;p&gt;因此，如果你输入：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx open
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx open&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你将会看到所有的 UR 格式 &lt;code&gt;http://$(minikube ip):somePortNumber&lt;/code&gt;，不再通过 &lt;a href=&#34;http://nip.io/&#34; target=&#34;_blank&#34;&gt;nip.io&lt;/a&gt;。这就意味着 URL 使用难记忆的数字格式而不是简单的主机名。&lt;/p&gt;
 
 &lt;h3 id=&#34;其他问题&#34;&gt;其他问题&lt;/h3&gt;
@@ -1334,33 +1250,33 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 &lt;p&gt;Kubernetes 命令行工具 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; 通过本地文件 &lt;code&gt;~/.kube/config&lt;/code&gt;（会在 &lt;code&gt;$KUBECONFIG&lt;/code&gt; 的文件） 记录你使用的 Kubernetes 集群和命名空间。&lt;/p&gt;
 
 &lt;p&gt;如果你想要改变命名空间，你可以使用 kubectl 命令行：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl config set-context&lt;span style=&#34;color:#4e9a06&#34;&gt;`&lt;/span&gt;kubectl config current-context&lt;span style=&#34;color:#4e9a06&#34;&gt;`&lt;/span&gt; --namespace&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;foo&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl config set-context&lt;span style=&#34;color:#4e9a06&#34;&gt;`&lt;/span&gt;kubectl config current-context&lt;span style=&#34;color:#4e9a06&#34;&gt;`&lt;/span&gt; --namespace&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;foo&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然而 &lt;a href=&#34;/commands/jx&#34;&gt;jx&lt;/a&gt; 还提供了很多有用的命令，用来改变集群、命名空间或环境：&lt;/p&gt;
 
 &lt;h3 id=&#34;切换环境&#34;&gt;切换环境&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;a href=&#34;/commands/jx_environment&#34;&gt;jx environment&lt;/a&gt; 来切换 &lt;a href=&#34;/zh/docs/concepts/features/#environments&#34;&gt;环境&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx environment&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx environment&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你将会看到当前团队的环境列表。使用方向键和回车来选择你想要切换的环境。或者按下 &lt;code&gt;Ctrl+C&lt;/code&gt; 终止，不切换环境。&lt;/p&gt;
 
 &lt;p&gt;或者，如果你知道想要切换的环境，可以直接把它作为参数：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx env staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx env staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;切换命名空间&#34;&gt;切换命名空间&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;a href=&#34;/commands/jx_namespace&#34;&gt;jx namespace&lt;/a&gt; 在 Kubernetes 不同的命名空间之间进行切换。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx namespace&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx namespace&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你会看到 Kubernetes 集群中所有命名空间的列表。使用方向键和回车选择你想要切换的。或者，按下 &lt;code&gt;Ctrl+C&lt;/code&gt; 中断，不切换命名空间。&lt;/p&gt;
 
 &lt;p&gt;或者，如果你知道想要切换的 Kubernetes 命名空间，可以直接把它作为参数：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx ns jx-production&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx ns jx-production&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;切换集群&#34;&gt;切换集群&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;a href=&#34;/commands/jx_context&#34;&gt;jx context&lt;/a&gt; 在不同的 Kubernetes 集群（或者上下文）之间切换。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx context&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx context&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你会得到当前机器上所有上下文的列表。使用方向键或者回车选择你想要切换的。或者，按下 &lt;code&gt;Ctrl+C&lt;/code&gt; 中断，不切换集群。&lt;/p&gt;
 
 &lt;p&gt;或者，如果你知道想要切换的 Kubernetes 集群，可以直接把它作为参数：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx ctx gke_jenkinsx-dev_europe-west2-a_myuserid-foo
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx ctx gke_jenkinsx-dev_europe-west2-a_myuserid-foo
 jx ctx minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;本地变化&#34;&gt;本地变化&lt;/h3&gt;
 
@@ -1468,7 +1384,7 @@ jx ctx minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;尽管一个 pod 模板倾向于有很多开发环境定义在里面，像 secrets；如果需要的话，你可以尝试在 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中用内联的形式定义 pod 模板，使变得简单。但我们更喜欢把大多数 pod 模板保留在你的开发环境源码中，而不是在每个应用中拷贝、粘贴。&lt;/p&gt;
 
 &lt;p&gt;现在，添加新的 Pod 模板最简单的方式就是通过 Jenkins 控制台。例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这样就会打开 Jenkins 控制台。然后，导航到&lt;code&gt;管理 Jenkins&lt;/code&gt;（在左侧菜单），然后&lt;code&gt;系统配置&lt;/code&gt;。&lt;/p&gt;
 
 &lt;p&gt;你将会面临大量的页面配置选项，Pod 模板通常在底部；你应该看到了当前所有的 pod 模板，像 maven、NodeJS 等等。&lt;/p&gt;
@@ -1506,12 +1422,9 @@ jx ctx minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;当对问题进行分类时，来自 Jenkins X 团队的某个成员将分配标签用来描述问题的 &lt;strong&gt;area&lt;/strong&gt; 和 &lt;strong&gt;kind&lt;/strong&gt; 。有可能，他们还将增加一个 priority ，但是，在进一步分析或更广泛的可见性之后，这些 priority 可能会发生变化。&lt;/p&gt;
 
 &lt;p&gt;标签通过 prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34; target=&#34;_blank&#34;&gt;label&lt;/a&gt; 插件使用 GitHub 评论被添加。例如：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;/kind bug
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;/kind bug
 /area prow
-/priority important-soon
-&lt;/code&gt;&lt;/pre&gt;
-
+/priority important-soon&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;&lt;img src=&#34;/images/contribute/triage.png&#34; alt=&#34;Triage&#34; /&gt;&lt;/p&gt;
 
 &lt;h1 id=&#34;分配问题&#34;&gt;分配问题&lt;/h1&gt;
@@ -1579,7 +1492,7 @@ jx ctx minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以利用&lt;a href=&#34;http://start.spring.io/&#34; target=&#34;_blank&#34;&gt;Spring Boot Initializr&lt;/a&gt;创建Spring Boot应用，然后通过执行命令 &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; 来&lt;a href=&#34;/developing/import&#34;&gt;导入Jenkins X&lt;/a&gt;。&lt;/p&gt;
 
 &lt;p&gt;然而，另外一个快速自动化的方式，是通过执行 &lt;a href=&#34;/commands/jx_create_spring&#34;&gt;jx create spring&lt;/a&gt; 命令实现：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ jx create spring -d web -d actuator&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create spring -d web -d actuator&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;参数 &lt;code&gt;-d&lt;/code&gt; 允许你指定希望添加到 Spring Boot 应用中的依赖。&lt;/p&gt;
 
 &lt;p&gt;我们强烈建议你总是包括依赖 &lt;strong&gt;actuator&lt;/strong&gt; 到你的 Spring Boot 应用中，它可以为 &lt;a href=&#34;https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/&#34; target=&#34;_blank&#34;&gt;Liveness and Readiness probes&lt;/a&gt; 提供健康检查。&lt;/p&gt;
@@ -1642,11 +1555,11 @@ jx ctx minikube&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Jenkins X 的升级策略配置为 &lt;code&gt;Auto&lt;/code&gt; 时，持续部署流水线通过配置好的&lt;a href=&#34;/zh/docs/concepts/features/#promotion&#34;&gt;环境&lt;/a&gt;来自动化&lt;a href=&#34;/zh/docs/concepts/features/#promotion&#34;&gt;升级&lt;/a&gt;版本。默认情况下，&lt;code&gt;Staging&lt;/code&gt; 环境使用自动升级，&lt;code&gt;生产&lt;/code&gt;环境使用&lt;code&gt;手动&lt;/code&gt;升级。&lt;/p&gt;
 
 &lt;p&gt;要手动升级应用的一个版本到特定环境上，可以使用命令 &lt;a href=&#34;/commands/jx_promote&#34;&gt;jx promote&lt;/a&gt;。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx promote myapp --version &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;1&lt;/span&gt;.2.3 --env production&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote myapp --version &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;1&lt;/span&gt;.2.3 --env production&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;该命令会等待升级完成，并记录过程的详细信息。你可以通过参数 &lt;code&gt;--timeeout&lt;/code&gt; 为升级等待设置超时时间。&lt;/p&gt;
 
 &lt;p&gt;例如：等待5小时&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx promote myapp --version &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;1&lt;/span&gt;.2.3 --env production --timeout 5h&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote myapp --version &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;1&lt;/span&gt;.2.3 --env production --timeout 5h&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以使用类似 &lt;code&gt;20m&lt;/code&gt; 或 &lt;code&gt;10h30m&lt;/code&gt; 这样的时间表达式。&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;/images/overview.png&#34; class=&#34;img-thumbnail&#34;&gt;&lt;/p&gt;
@@ -1719,8 +1632,8 @@ jx open
         
 
 &lt;p&gt;如果你已经有一些源码，希望导入 Jenkins X，你可以使用 &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; 命令。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ &lt;span style=&#34;color:#204a87&#34;&gt;cd&lt;/span&gt; my-cool-app
-$ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;cd&lt;/span&gt; my-cool-app
+jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;导入将会执行下面的动作（提示你按照这个方法来）：&lt;/p&gt;
 
 &lt;ul&gt;
@@ -1746,17 +1659,17 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;通过-url-导入&#34;&gt;通过 URL 导入&lt;/h3&gt;
 
 &lt;p&gt;如果你希望导入的工程已经在 git 远程库中，那么，你可以使用参数 &lt;code&gt;--url&lt;/code&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;    jx import --url https://github.com/jenkins-x/spring-boot-web-example.git&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --url https://github.com/jenkins-x/spring-boot-web-example.git&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;导入-github-项目&#34;&gt;导入 GitHub 项目&lt;/h3&gt;
 
 &lt;p&gt;如果你希望从 GitHub 组织中导入，可以使用：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;    jx import --github --org myname&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --github --org myname&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;将会提示你需要导入的库。使用光标和空格键来选择（取消）要导入的库。&lt;/p&gt;
 
 &lt;p&gt;如果你希望默认导入所有的库（那么反选你不想要的）添加 &lt;code&gt;--all&lt;/code&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;    jx import --github --org myname --all&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --github --org myname --all&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;为了过滤列表，你可以添加参数 &lt;code&gt;--filter&lt;/code&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;    jx import --github --org myname --all --filter foo&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --github --org myname --all --filter foo&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -1819,13 +1732,13 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以由预制的应用开始一个项目，而不是从头开始。&lt;/p&gt;
 
 &lt;p&gt;你可以通过命令 &lt;a href=&#34;/commands/jx_create_quickstart&#34;&gt;jx create quickstart&lt;/a&gt; ，从我们预制的快速应用列表中创建一个新的应用。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ jx create quickstart&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，根据列表选择一个。&lt;/p&gt;
 
 &lt;p&gt;如果你清楚列表中你所需要的语言，可以进行如下过滤：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ jx create quickstart  -l go&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart  -l go&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者使用文本过滤器对项目名称做过滤：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ jx create quickstart  -f http&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart  -f http&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;当你选择快速开始时的细节&#34;&gt;当你选择快速开始时的细节&lt;/h3&gt;
 
 &lt;p&gt;一旦你选择项目并命名后，下面的步骤会自动完成：&lt;/p&gt;
@@ -1858,7 +1771,7 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;当你使用 &lt;a href=&#34;/zh/docs/getting-started/setup/create-cluster/&#34;&gt;jx create&lt;/a&gt;， &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;jx install&lt;/a&gt; 或者 &lt;a href=&#34;/commands/jx_init/&#34;&gt;jx init&lt;/a&gt; 时，&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;Jenkins X build packs&lt;/a&gt; 会克隆到目录 &lt;code&gt;~/.jx/draft/packs&lt;/code&gt; 中。&lt;/p&gt;
 
 &lt;p&gt;例如：你可以通过下面命令查看支持的所有语言：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以使用 &lt;a href=&#34;/zh/docs/using-jx/common-tasks/create-spring/&#34;&gt;jx create spring&lt;/a&gt; 或 &lt;a href=&#34;developing/import/&#34; target=&#34;_blank&#34;&gt;jx import&lt;/a&gt; 来快速创建，这时 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;Jenkins X build packs&lt;/a&gt; 会进行下面的步骤：&lt;/p&gt;
 
 &lt;ul&gt;
@@ -1868,8 +1781,7 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; 将程序打包为 docker 镜像&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; 使用申明式流水线（pipeline）实现持续构建、持续部署&lt;/li&gt;
-&lt;li&gt;Helm Charts 在 Kubernetes 上部署程序，并且实现 &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;预发环境&lt;/a&gt;
-&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Helm Charts 在 Kubernetes 上部署程序，并且实现 &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;预发环境&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -1880,7 +1792,7 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者，你是开源项目的一份子，希望管理一套你们项目的快速开始；你可以&lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new?labels=quickstart&amp;amp;title=Add%20quickstart&amp;amp;body=Please%20add%20this%20github%20quickstart:&#34; target=&#34;_blank&#34;&gt;提交问题&lt;/a&gt;，把你们的GitHub组织详细信息给我们，然后我们会它作为默认的组织添加到命令 &lt;a href=&#34;/commands/jx_create_quickstart&#34;&gt;jx create quickstart&lt;/a&gt; 中。如果你把快速开始作为一个单独的 GitHub 组织来维护的话，对于 &lt;a href=&#34;/commands/jx_create_quickstart&#34;&gt;jx create quickstart&lt;/a&gt; 会更容易些。&lt;/p&gt;
 
 &lt;p&gt;在我们完成这些事情之前，你还是可以在命令 &lt;code&gt;jx create quickstart&lt;/code&gt; 中通过参数 &lt;code&gt;-g&lt;/code&gt; or &lt;code&gt;--organisations&lt;/code&gt; 来实现。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;$ jx create quickstart  -l go --organisations my-github-org&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart  -l go --organisations my-github-org&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;在 &lt;code&gt;my-github-org&lt;/code&gt;中可以找到所有 Jenkins X 需要的快速开始。&lt;/p&gt;
 
       </description>
@@ -2011,7 +1923,7 @@ $ jx import&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以通过把他们添加到构建包的本地库 &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt; 中来尝试。&lt;/p&gt;
 
 &lt;p&gt;例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;PACK&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;PACK&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
 mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;span style=&#34;color:#000&#34;&gt;$PACK&lt;/span&gt;
 cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;span style=&#34;color:#000&#34;&gt;$PACK&lt;/span&gt;
 
@@ -2036,51 +1948,51 @@ cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&l
         
 
 &lt;p&gt;如果你之前用过 Kubernetes，你可能使用过 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; 命令查看 Kubernetes 资源：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl get pods&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get pods&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;Jenkins X 的命令行工具，&lt;a href=&#34;/commands/jx&#34;&gt;jx&lt;/a&gt;，和 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; 看起来相似，并且可以让你看到所有的 Jenkins X 资源。&lt;/p&gt;
 
 &lt;h3 id=&#34;查看-jenkins-控制台&#34;&gt;查看 Jenkins 控制台&lt;/h3&gt;
 
 &lt;p&gt;如果你熟悉 Jenkins 控制台，那么你可以使用 &lt;a href=&#34;/commands/jx_console&#34;&gt;jx console&lt;/a&gt; ：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;就会打开一个浏览器。&lt;/p&gt;
 
 &lt;h3 id=&#34;流水线&#34;&gt;流水线&lt;/h3&gt;
 
 &lt;p&gt;要查看当前流水线使用 &lt;a href=&#34;/commands/jx_get_pipelines&#34;&gt;jx get pipelines&lt;/a&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get pipelines&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get pipelines&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;流水线构建日志&#34;&gt;流水线构建日志&lt;/h3&gt;
 
 &lt;p&gt;通过 &lt;a href=&#34;/commands/jx_get_build_logs&#34;&gt;jx get build logs&lt;/a&gt; 查看当前流水线构建日志：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get build logs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get build logs&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你当前看到的是所有能看到的流水线。&lt;/p&gt;
 
 &lt;p&gt;你可以通过下面快速过滤&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get build logs -f myapp&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get build logs -f myapp&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者，你希望指定&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get build logs myorg/myapp/master&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get build logs myorg/myapp/master&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;流水线活动&#34;&gt;流水线活动&lt;/h3&gt;
 
 &lt;p&gt;为了查看当前流水线的活动 &lt;a href=&#34;/commands/jx_get_activities&#34;&gt;jx get activities&lt;/a&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get activities&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get activities&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;如果你想要观察你的应用 &lt;code&gt;myapp&lt;/code&gt;，你可以使用：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get activities -f myapp -w&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get activities -f myapp -w&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这样将会观察流水线的活动，并无论任何重要的改变发生（例如：发版完成，一个 PR 被创建开始&lt;a href=&#34;/zh/developing/promote&#34;&gt;升级&lt;/a&gt; 等等）都会更新屏幕。&lt;/p&gt;
 
 &lt;h3 id=&#34;应用程序&#34;&gt;应用程序&lt;/h3&gt;
 
 &lt;p&gt;为了查看你的团队所有环境的所有应用的URL和 pod 数量，使用 &lt;a href=&#34;/commands/applications&#34;&gt;jx get applications&lt;/a&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get applications&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;如果你想要隐藏 URL 或者 pod 数量，你可以使用 &lt;code&gt;u&lt;/code&gt; 或 &lt;code&gt;-p&lt;/code&gt;。例如：为了隐藏 URL：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get applications -u&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications -u&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者隐藏 pod 数量：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get applications -p&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications -p&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你还可以根据环境来过滤应用：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get applications -e staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications -e staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;环境&#34;&gt;环境&lt;/h3&gt;
 
 &lt;p&gt;为了查看你们团队中的 &lt;a href=&#34;/zh/docs/concepts/features/#environments&#34;&gt;环境&lt;/a&gt;，使用 &lt;a href=&#34;/commands/jx_get_environments&#34;&gt;jx get environments&lt;/a&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你还可以&lt;/p&gt;
 
 &lt;ul&gt;
@@ -2243,13 +2155,13 @@ cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&l
 &lt;h3 id=&#34;环境&#34;&gt;环境&lt;/h3&gt;
 
 &lt;p&gt;Jenkins X 原生地支持&lt;a href=&#34;/zh/docs/concepts/features/#environments&#34;&gt;环境&lt;/a&gt;，允许为你们团队定义环境，并通过 &lt;a href=&#34;/commands/jx_get_environments&#34;&gt;jx get environments&lt;/a&gt; 查询：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;以下的命令都使用 Kubernetes 自定义资源&lt;code&gt;环境&lt;/code&gt;。&lt;/p&gt;
 
 &lt;p&gt;因此，你还可以通过 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; 查询环境：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get environments&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;或者你想要通过 &lt;code&gt;YAML&lt;/code&gt; 直接编辑它们的话：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl edit env staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl edit env staging&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;尽管，你使用命令 &lt;a href=&#34;/commands/jx_edit_environment&#34;&gt;jx edit environment&lt;/a&gt; 会更容易。&lt;/p&gt;
 
 &lt;h3 id=&#34;发版&#34;&gt;发版&lt;/h3&gt;
@@ -2285,43 +2197,25 @@ cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&l
 &lt;p&gt;Jenkins X 默认使用你的 git 提供商中的问题跟踪系统来创建和浏览问题。&lt;/p&gt;
 
 &lt;p&gt;例如：如果你在 GitHub 项目中的源码中，那么你可以输入 &lt;a href=&#34;/commands/jx_create_issue&#34;&gt;jx create issue&lt;/a&gt;：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create issue -t &amp;quot;lets make things more awesome&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create issue -t &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;lets make things more awesome&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;一个新的问题就会在 GitHub 上被创建。&lt;/p&gt;
 
 &lt;p&gt;你可以在你的项目上通过 &lt;a href=&#34;/commands/jx_get_issues&#34;&gt;jx get issues&lt;/a&gt; 列出打开的问题：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx get issues
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get issues&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;使用不同的问题跟踪&#34;&gt;使用不同的问题跟踪&lt;/h3&gt;
 
 &lt;p&gt;如果你希望在项目中使用 JIRA，你首先需要添加一个 JIRA 服务。&lt;/p&gt;
 
 &lt;p&gt;你可以通过 &lt;a href=&#34;/commands/jx_create_tracker_server&#34;&gt;jx create tracker server&lt;/a&gt; 注册你的 JIRA服务：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create tracker server jira https://mycompany.atlassian.net/
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create tracker server jira https://mycompany.atlassian.net/&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，你就可以通过 &lt;a href=&#34;/commands/jx_get_tracker&#34;&gt;jx get tracker&lt;/a&gt; 来查看你的问题追踪了：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx get tracker
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get tracker&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后，通过下面添加一个用户和 token：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx create tracker token -n jira  myEmailAddress
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create tracker token -n jira  myEmailAddress&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;配置项目的问题跟踪&#34;&gt;配置项目的问题跟踪&lt;/h3&gt;
 
 &lt;p&gt;在你项目的源码中使用 &lt;a href=&#34;/commands/jx_edit_config&#34;&gt;jx edit config&lt;/a&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;jx edit config -k issues
-&lt;/code&gt;&lt;/pre&gt;
-
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit config -k issues&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后&lt;/p&gt;
 
 &lt;ul&gt;
@@ -2350,7 +2244,7 @@ cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&l
 &lt;p&gt;通常，预览环境是由 Jenkins X 的流水线中自动创建的。&lt;/p&gt;
 
 &lt;p&gt;然而，你可以使用 &lt;a href=&#34;/commands/jx&#34;&gt;jx&lt;/a&gt; 通过命令 &lt;a href=&#34;/commands/jx_preview&#34;&gt;jx preview&lt;/a&gt; 手动创建一个&lt;a href=&#34;/zh/docs/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt;。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;jx preview&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx preview&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3 id=&#34;创建预览环境时都做了什么&#34;&gt;创建预览环境时都做了什么&lt;/h3&gt;
 
 &lt;ul&gt;

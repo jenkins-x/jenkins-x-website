@@ -572,7 +572,7 @@ pipelineConfig:
 
 &lt;p&gt;So a quick workaround to the problem is to scale down your monocular deployment&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;kubectl scale deploy jenkins-x-monocular-api --replicas=0
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl scale deploy jenkins-x-monocular-api --replicas=0
 kubectl scale deploy jenkins-x-monocular-prerender --replicas=0
 kubectl scale deploy jenkins-x-monocular-ui --replicas=0
 &lt;/code&gt;&lt;/pre&gt;
@@ -600,7 +600,7 @@ kubectl scale deploy jenkins-x-monocular-ui --replicas=0
 
 &lt;p&gt;In the &lt;code&gt;dev&lt;/code&gt; profile, remove the following section:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;    artifacts:	
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    artifacts:
     - docker: {}
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -623,7 +623,7 @@ kubectl scale deploy jenkins-x-monocular-ui --replicas=0
 
 &lt;p&gt;To work around this, we have added some logic into &lt;code&gt;jx upgrade platform&lt;/code&gt; to detect the invalid secret and attempt to fix.  This feature is included in jx version &lt;code&gt;1.3.842&lt;/code&gt;.  An extract of a running upgrade is shown below:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;Creating /Users/garethjevans/.jx/adminSecrets.yaml from jx-install-config
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;Creating /Users/garethjevans/.jx/adminSecrets.yaml from jx-install-config
 Creating /Users/garethjevans/.jx/extraValues.yaml from jx-install-config
 We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an invalid format
 ? Would you like to repair the file? Yes
@@ -635,14 +635,14 @@ We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an 
 
 &lt;p&gt;This can be done automatically using:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx upgrade platform --update-secrets
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx upgrade platform --update-secrets
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;NOTE: this will regenerate the settings.xml from a defined template.&lt;/p&gt;
 
 &lt;p&gt;If you would prefer to apply this changes manually, edit the secret &lt;code&gt;jenkins-maven-settings&lt;/code&gt;, duplicating the server block for &lt;code&gt;local-nexus&lt;/code&gt;, changing the server id to &lt;code&gt;nexus&lt;/code&gt; e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;&amp;lt;server&amp;gt;
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;server&amp;gt;
     &amp;lt;id&amp;gt;local-nexus&amp;lt;/id&amp;gt;
     &amp;lt;username&amp;gt;admin&amp;lt;/username&amp;gt;
     &amp;lt;password&amp;gt;%s&amp;lt;/password&amp;gt;
@@ -663,17 +663,17 @@ We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an 
 
 &lt;p&gt;The fixes involve upgrading to a newer version of Prow and Knative Build, the latter caused an issue when performing a traditional &lt;code&gt;jx upgrade addon&lt;/code&gt; so we recommend uninstalling Knative Build first (removes Knative Build related Custom Resource Definitions) and install the latest release.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx delete addon knative-build
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx delete addon knative-build
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;And to be extra sure it’s gone maybe do an extra:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;helm del --purge knative-build
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;helm del --purge knative-build
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;then:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx upgrade cli
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx upgrade cli
 jx upgrade addon prow
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -731,26 +731,26 @@ Instead of granting non-admin users access to the &lt;code&gt;jx&lt;/code&gt; na
 
 &lt;p&gt;To add users use the &lt;a href=&#34;/commands/jx_create_user/&#34;&gt;jx create user&lt;/a&gt; command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create user --email &amp;quot;joe@example.com&amp;quot; --login joe --name &amp;quot;Joe Bloggs&amp;quot;
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create user --email &amp;quot;joe@example.com&amp;quot; --login joe --name &amp;quot;Joe Bloggs&amp;quot;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h2 id=&#34;changing-user-roles&#34;&gt;Changing User Roles&lt;/h2&gt;
 
 &lt;p&gt;To modify the roles for a user, use &lt;a href=&#34;/commands/jx_edit_userroles/&#34;&gt;jx edit userroles&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit userrole --login joe
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you omit the &lt;code&gt;--login&lt;/code&gt; (&lt;code&gt;-l&lt;/code&gt;) flag, you will be prompted to pick the user to edit.&lt;/p&gt;
 
 &lt;p&gt;For example, to make a user &lt;code&gt;joe&lt;/code&gt; have the &lt;code&gt;committer&lt;/code&gt; Role (and remove any existing roles):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe --role committer
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit userrole --login joe --role committer
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you have fine-grained roles and want to grant multiple roles to a user, you can specify the roles as a comma-separated list:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx edit userrole --login joe --role committer,viewer
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit userrole --login joe --role committer,viewer
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Modifying a user&amp;rsquo;s roles changes the &lt;code&gt;EnvironmentRoleBinding&lt;/code&gt;. The &lt;a href=&#34;/commands/jx_controller_role/#jx-controller-role&#34;&gt;role controller&lt;/a&gt; will replicate these changes to all the underlying Environment namespaces.&lt;/p&gt;
@@ -788,7 +788,7 @@ to get set up.&lt;/p&gt;
 &lt;p&gt;The HTML docs are generated via an &lt;a href=&#34;https://github.com/jenkins-x/jx/tree/master/docs/apidocs/openapi-spec&#34; target=&#34;_blank&#34;&gt;OpenAPI specification&lt;/a&gt; which in turn is generated from &lt;a href=&#34;https://github.com/jenkins-x/jx/tree/master/pkg/client/openapi&#34; target=&#34;_blank&#34;&gt;Go Structs&lt;/a&gt; which are generated from the code comments.
 To generate the structs and the OpenAPI specification run:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt; $ make generate-openapi
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt; make generate-openapi
 &lt;/code&gt;&lt;/pre&gt;
 
 
@@ -802,7 +802,7 @@ To generate the structs and the OpenAPI specification run:&lt;/p&gt;
 
 &lt;p&gt;and to generate the HTML run:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt; make generate-docs
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt; make generate-docs
 &lt;/code&gt;&lt;/pre&gt;
 
 
@@ -985,15 +985,17 @@ quickly create a new Cobra based plugin.&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Build a binary&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-$&#34;&gt;2. Add it to your path
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;go build -o jx-brie brie.go
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
-&lt;/code&gt;&lt;/pre&gt;
+&lt;li&gt;&lt;p&gt;Add it to your path&lt;/p&gt;
 
-&lt;p&gt;$ sudo mv ./jx-brie /usr/local/bin```&lt;/p&gt;&lt;/li&gt;
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;sudo mv ./jx-brie /usr/local/bin
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;You can now use the plugin&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ jx brie
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;$ jx brie
 Have some tasty brie
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;
@@ -1028,7 +1030,7 @@ Have some tasty brie
 
 &lt;p&gt;If you have used kubernetes before you&amp;rsquo;re probably used the &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; command line to view kubernetes resources:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl get pods
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get pods
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The Jenkins X command line tool, &lt;a href=&#34;/commands/jx&#34;&gt;jx&lt;/a&gt;, has a similar look and feel to &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; and lets you get the status of all the Jenkins X resources.&lt;/p&gt;
@@ -1037,7 +1039,7 @@ Have some tasty brie
 
 &lt;p&gt;If you are familiar with the Jenkins console then you can use &lt;a href=&#34;/commands/jx_console&#34;&gt;jx console&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx console
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx console
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;to open it in a browser.&lt;/p&gt;
@@ -1046,12 +1048,12 @@ Have some tasty brie
 
 &lt;p&gt;To view the current pipeline activity &lt;a href=&#34;/commands/jx_get_activities&#34;&gt;jx get activities&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get activities
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get activities
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you want to watch whats going on with your app &lt;code&gt;myapp&lt;/code&gt;  you can use:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get activities -f myapp -w
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get activities -f myapp -w
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Which will watch the pipeline activities and update the screen whenever a significant change happens (e.g. a release completes, a PR is created to start &lt;a href=&#34;/developing/promote&#34;&gt;promotion&lt;/a&gt; etc).&lt;/p&gt;
@@ -1060,55 +1062,55 @@ Have some tasty brie
 
 &lt;p&gt;To view the current pipeline build logs via &lt;a href=&#34;/commands/jx_get_build_logs&#34;&gt;jx get build logs&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get build logs
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get build logs
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You are then presented with all the possible pipelines to watch.&lt;/p&gt;
 
 &lt;p&gt;You can quickly filter that via&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get build logs -f myapp
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get build logs -f myapp
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;or if you wish to be explicit&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get build logs myorg/myapp/master
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get build logs myorg/myapp/master
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;pipelines&#34;&gt;Pipelines&lt;/h3&gt;
 
 &lt;p&gt;To view the current configured pipelines use &lt;a href=&#34;/commands/jx_get_pipelines&#34;&gt;jx get pipelines&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get pipelines
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get pipelines
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;applications&#34;&gt;Applications&lt;/h3&gt;
 
 &lt;p&gt;To view all the applications in your team across all your environments with URLs and pod counts use  &lt;a href=&#34;/commands/jx_get_applications&#34;&gt;jx get applications&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get applications
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you want to hide the URLs or the pod counts you can use &lt;code&gt;u&lt;/code&gt; or &lt;code&gt;-p&lt;/code&gt;. e.g. to hide the URLs:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications -u
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get applications -u
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or hide the pod counts:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications -p
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get applications -p
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You can also filter the apps by an environment:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications -e staging
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get applications -e staging
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;environments&#34;&gt;Environments&lt;/h3&gt;
 
 &lt;p&gt;To view the &lt;a href=&#34;/docs/concepts/features/#environments&#34;&gt;environments&lt;/a&gt; defined for your team use &lt;a href=&#34;/commands/jx_get_environments&#34;&gt;jx get environments&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get environments
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get environments
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You can also&lt;/p&gt;
@@ -1204,19 +1206,19 @@ Have some tasty brie
 
 &lt;p&gt;You can create new applications from our list of curated Quickstart applications via the &lt;a href=&#34;/commands/jx_create_quickstart&#34;&gt;jx create quickstart&lt;/a&gt; command.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstart
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstart
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You are then prompted for a list of quickstarts to choose from.&lt;/p&gt;
 
 &lt;p&gt;If you know the language you wish to use you can filter the list of quickstarts shown via:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstart -l go
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstart -l go
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or use a text filter to filter on the project names:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstart -f http
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstart -f http
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;what-happens-when-you-create-a-quickstart&#34;&gt;What happens when you create a quickstart&lt;/h3&gt;
@@ -1252,12 +1254,12 @@ Have some tasty brie
 
 &lt;p&gt;&lt;em&gt;Serverless Jenkins&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/packs
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/packs
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;&lt;em&gt;Static Master Jenkins&lt;/em&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-classic/packs
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-classic/packs
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then when you create a quickstart, use &lt;a href=&#34;/docs/using-jx/common-tasks/create-spring/&#34;&gt;jx create spring&lt;/a&gt; or &lt;a href=&#34;developing/import/&#34; target=&#34;_blank&#34;&gt;jx import&lt;/a&gt; the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;Jenkins X build packs&lt;/a&gt; are used to:&lt;/p&gt;
@@ -1269,8 +1271,7 @@ Have some tasty brie
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to package the application as a docker image&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to implement the CI / CD pipelines using declarative pipeline as code&lt;/li&gt;
-&lt;li&gt;Helm Charts to deploy the application on Kubernetes and to implement &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt;
-&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Helm Charts to deploy the application on Kubernetes and to implement &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -1282,7 +1283,7 @@ Have some tasty brie
 
 &lt;p&gt;Until we do that you can still use your own Quickstarts in the &lt;code&gt;jx create quickstart&lt;/code&gt; command via the &lt;code&gt;-g&lt;/code&gt; or &lt;code&gt;--organisations&lt;/code&gt; command line argument. e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstart  -l go --organisations my-github-org
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstart  -l go --organisations my-github-org
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then all quickstarts found in &lt;code&gt;my-github-org&lt;/code&gt; will be listed in addition to the Jenkins X quickstarts.&lt;/p&gt;
@@ -1293,7 +1294,7 @@ Have some tasty brie
 
 &lt;p&gt;To add the location of a set of quickstarts you can use the &lt;a href=&#34;/commands/jx_create_quickstartlocation/&#34;&gt;jx create quickstartlocation&lt;/a&gt; command.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstartlocation --url https://mygit.server.com --owner my-quickstarts
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstartlocation --url https://mygit.server.com --owner my-quickstarts
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you omit the &lt;code&gt;--url&lt;/code&gt; argument the command will assume its a &lt;a href=&#34;https://github.com/&#34; target=&#34;_blank&#34;&gt;GitHub&lt;/a&gt; repository. Note that both public and private repositories are supported.&lt;/p&gt;
@@ -1306,12 +1307,12 @@ Have some tasty brie
 
 &lt;p&gt;You can then view the current quickstart locations for your team via the &lt;a href=&#34;/commands/jx_get_quickstartlocations/&#34;&gt;jx get quickstartlocations&lt;/a&gt; command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx get quickstartlocations
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get quickstartlocations
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or using an abbreviation&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx get qsloc
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get qsloc
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;There is also &lt;a href=&#34;/commands/jx_delete_quickstartlocation/&#34;&gt;jx delete quickstartlocation&lt;/a&gt; if you need to remove a git organisation.&lt;/p&gt;
@@ -1340,19 +1341,19 @@ Have some tasty brie
 
 &lt;p&gt;Jenkins X natively supports &lt;a href=&#34;/docs/concepts/features/#environments&#34;&gt;environments&lt;/a&gt; allowing them to be defined for your team and then queried via &lt;a href=&#34;/commands/jx_get_environments&#34;&gt;jx get environments&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get environments
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get environments
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Under the covers that command uses the custom Kubernetes resource &lt;code&gt;Environments&lt;/code&gt;.&lt;/p&gt;
 
 &lt;p&gt;So you can also query the environments via &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34; target=&#34;_blank&#34;&gt;kubectl&lt;/a&gt; as well:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl get environments
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get environments
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or edit them via &lt;code&gt;YAML&lt;/code&gt; directly if you want:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl edit env staging
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl edit env staging
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;though you may prefer the easier to use &lt;a href=&#34;/commands/jx_edit_environment&#34;&gt;jx edit environment&lt;/a&gt; command.&lt;/p&gt;
@@ -1695,7 +1696,7 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt; This tutorial is based on the following jx version&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-cmd&#34;&gt;    NAME               VERSION
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;    NAME               VERSION
     jx                 2.0.33
     jenkins x platform 2.0.108
     Kubernetes cluster v1.11.8-gke.6
@@ -1760,7 +1761,7 @@ Lastly, clean up after yourself!  If you&amp;rsquo;ve tried multiple installs, b
 
 &lt;p&gt;The first step we need to take, is execute the command which simultaneously will provision a cluster and install Jenkins X.  The following command should be issued on the terminal.  Change placeholders accordingly.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;&amp;gt; $ jx create cluster gke --default-admin-password=&amp;lt;YOURPASSWORD&amp;gt; -n &amp;lt;CLUSTERNAME&amp;gt; --ng=true
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster gke --default-admin-password=&amp;lt;YOURPASSWORD&amp;gt; -n &amp;lt;CLUSTERNAME&amp;gt; --ng=true
 &lt;/code&gt;&lt;/pre&gt;
 
 
@@ -1775,7 +1776,7 @@ Lastly, clean up after yourself!  If you&amp;rsquo;ve tried multiple installs, b
 
 &lt;p&gt;The output below is quite insightful, we include it here for you to see all of what happens as the install is happening.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;
 Using the only Google Cloud Project jenkinsx-dev to create the cluster
 Updated property [core/project].
 Let&#39;s ensure we have container and compute enabled on your project
@@ -1791,8 +1792,8 @@ No apis to enable
 Creating cluster...
 Initialising cluster ...
 Setting the dev namespace to: jx
-Namespace jx created 
- 
+Namespace jx created
+
 Using helmBinary helm with feature flag: none
 Context &amp;quot;gke_jenkinsx-dev_us-west1-a_sposcar&amp;quot; modified.
 Storing the kubernetes provider gke in the TeamSettings
@@ -1808,19 +1809,18 @@ Skipping tiller
 &lt;h3 id=&#34;key-things-happened-above&#34;&gt;Key Things happened above&amp;hellip;&lt;/h3&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Basic cluster configuration such as max and min nodes are configured.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Basic cluster configuration such as max and min nodes are configured.&lt;/li&gt;
 &lt;li&gt;Kubectl context is set to new cluster so you can access cluster via both &lt;code&gt;kubectl&lt;/code&gt; and &lt;code&gt;jx&lt;/code&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Sets cluster admin via ClusterRoleBinding created&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;
-Using helmBinary helm with feature flag: template-mode
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;Using helmBinary helm with feature flag: template-mode
 Initialising Helm &#39;init --client-only&#39;
 helm installed and configured
 ? No existing ingress controller found in the kube-system namespace, shall we install one? Yes
 
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -1830,7 +1830,7 @@ Total 1096 (delta 109), reused 185 (delta 101), pack-reused 890
 using stable version 1.3.1 from charts of stable/nginx-ingress from /Users/omedina/.jx/jenkins-x-versions
 Installing using helm binary: helm
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -1873,7 +1873,7 @@ At this point, we have already set our DNS settings to point to the IP listed ab
 &lt;/div&gt;
 
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;If you don&#39;t have a wildcard DNS setup then setup a DNS (A) record and point it at: 34.83.54.46 then use the DNS domain in the next input...
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;If you don&#39;t have a wildcard DNS setup then setup a DNS (A) record and point it at: 34.83.54.46 then use the DNS domain in the next input...
 ? Domain sharepointoscar.com
 nginx ingress controller installed and configured
 Lets set up a Git user name and API token to be able to perform CI/CD
@@ -1884,7 +1884,7 @@ Select the CI/CD pipelines Git server and user
 Setting the pipelines Git server https://github.com and user name jenkinsx-bot-sposcar.
 Saving the Git authentication configuration
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -1903,7 +1903,6 @@ Cloning the Jenkins X cloud environments repo to /Users/omedina/.jx/cloud-enviro
 Enumerating objects: 1382, done.
 Total 1382 (delta 0), reused 0 (delta 0), pack-reused 1382
 ? Select Jenkins installation type: Serverless Jenkins X Pipelines with Tekton
-
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;key-things-happened-above-1&#34;&gt;Key Things happened above&amp;hellip;&lt;/h3&gt;
@@ -1915,7 +1914,7 @@ Total 1382 (delta 0), reused 0 (delta 0), pack-reused 1382
 
 &lt;li&gt;&lt;p&gt;Jenkins Installation Type is set to &lt;strong&gt;Serverless Jenkins X Pipelines with Tekton&lt;/strong&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;Configuring Kaniko service account jxkaniko-sposcar for project jenkinsx-dev
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;Configuring Kaniko service account jxkaniko-sposcar for project jenkinsx-dev
 Unable to find service account jxkaniko-sposcar, checking if we have enough permission to create
 Creating service account jxkaniko-sposcar
 Assigning role roles/storage.admin
@@ -1931,7 +1930,7 @@ Setting the current namespace to: jx
 
 Installing knative into namespace jx
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -1972,7 +1971,7 @@ Removing Kubernetes resources from older releases using selector: jenkins.io/cha
 
 Installing Prow into namespace jx
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -2044,7 +2043,7 @@ Adding values file /Users/omedina/.jx/adminSecrets.yaml
 Adding values file /Users/omedina/.jx/extraValues.yaml
 Adding values file /Users/omedina/.jx/cloud-environments/env-gke/secrets.yaml
 Current configuration dir: /Users/omedina/.jx
-versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref: 
+versionRepository: https://github.com/jenkins-x/jenkins-x-versions.git git ref:
 Deleting and cloning the Jenkins X versions repo
 Cloning the Jenkins X versions repo https://github.com/jenkins-x/jenkins-x-versions.git with ref refs/heads/master to /Users/omedina/.jx/jenkins-x-versions
 Enumerating objects: 206, done.
@@ -2195,7 +2194,7 @@ Configuring the TeamSettings for ImportMode YAML
 
 	********************************************************
 
-	
+
 Creating default staging and production environments
 ? Select the organization where you want to create the environment repository: jenkins-oscar
 Using Git provider GitHub at https://github.com
@@ -2210,8 +2209,8 @@ Pushed Git repository to https://github.com/jenkins-oscar/environment-sposcar-st
 
 Creating staging Environment in namespace jx
 Created environment staging
-Namespace jx-staging created 
- 
+Namespace jx-staging created
+
 Creating GitHub webhook for jenkins-oscar/environment-sposcar-staging for url http://hook.jx.sharepointoscar.com/hook
 Using Git provider GitHub at https://github.com
 
@@ -2225,8 +2224,8 @@ Pushed Git repository to https://github.com/jenkins-oscar/environment-sposcar-pr
 
 Creating production Environment in namespace jx
 Created environment production
-Namespace jx-production created 
- 
+Namespace jx-production created
+
 Creating GitHub webhook for jenkins-oscar/environment-sposcar-production for url http://hook.jx.sharepointoscar.com/hook
 
 Jenkins X installation completed successfully
@@ -2238,9 +2237,9 @@ Jenkins X installation completed successfully
 
 	********************************************************
 
-	
 
-Your Kubernetes context is now set to the namespace: jx 
+
+Your Kubernetes context is now set to the namespace: jx
 To switch back to your original namespace use: jx namespace default
 Or to use this context/namespace in just one terminal use: jx shell
 For help on switching contexts see: https://jenkins-x.io/docs/using/tasks/kube-context/
@@ -2277,7 +2276,7 @@ tide              tide.jx.sharepointoscar.com              34.83.54.46   80     
 
 &lt;p&gt;We are ready to try out the entire CI/CD process, which includes seeing the Bot work properly.  To get started, we will create a &lt;code&gt;quickstart&lt;/code&gt; based on the &lt;code&gt;NodeJS&lt;/code&gt; language.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;&amp;gt; $ omedina$ jx create quickstart
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;&amp;gt; $ omedina$ jx create quickstart
 Using Git provider GitHub at https://github.com
 ? Git user name?  [Use arrows to move, space to select, type to filter]
 &amp;gt; sharepointoscar
@@ -2302,7 +2301,7 @@ You can verify that the bot account is setup by checking the values of the secre
 &lt;/div&gt;
 
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;About to create repository  on server https://github.com with user sharepointoscar
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;About to create repository  on server https://github.com with user sharepointoscar
 ? Which organisation do you want to use?  [Use arrows to move, space to select, type to filter]
   SPRWD
   SharePointAce
@@ -2313,7 +2312,7 @@ You can verify that the bot account is setup by checking the values of the secre
 
 &lt;p&gt;Select the Github Organization.  In this scenario, it is &lt;code&gt;jenkins-oscar&lt;/code&gt; where the bot account and the personal github accounts are members.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;Creating repository jenkins-oscar/node-widget-app
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;Creating repository jenkins-oscar/node-widget-app
 ? select the quickstart you wish to create  [Use arrows to move, space to select, type to filter]
   golang-http
   jenkins-cwp-quickstart
@@ -2326,13 +2325,11 @@ You can verify that the bot account is setup by checking the values of the secre
 The directory /Users/omedina/git-repos/node-widget-app is not yet using git
 ? Would you like to initialise git now? Yes
 ? Commit message:  Initial import
-
-
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Select &lt;code&gt;node-http&lt;/code&gt; for the quickstart builder type. Hit enter for both of the following questions.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;replacing placeholders in directory /Users/omedina/git-repos/node-widget-app
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;replacing placeholders in directory /Users/omedina/git-repos/node-widget-app
 app name: node-widget-app, git server: github.com, org: jenkins-oscar, Docker registry org: jenkins-oscar
 skipping directory &amp;quot;/Users/omedina/git-repos/node-widget-app/.git&amp;quot;
 Pushed Git repository to https://github.com/jenkins-oscar/node-widget-app
@@ -2349,7 +2346,6 @@ When the pipeline is complete:  jx get applications
 For more help on available commands see: https://jenkins-x.io/docs/using/tasks/browsing/
 
 Note that your first pipeline may take a few minutes to start while the necessary images get downloaded!
-
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Final output from creating the Quickstart should look like above.&lt;/p&gt;
@@ -2362,7 +2358,7 @@ Note that your first pipeline may take a few minutes to start while the necessar
 
 &lt;p&gt;We can also check what applications are deployed, we should have version &lt;code&gt;0.0.1&lt;/code&gt; in our staging environment.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;APPLICATION        STAGING PODS URL
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;APPLICATION        STAGING PODS URL
 jx-node-widget-app 0.0.1   1/1  http://node-widget-app.jx-staging.sharepointoscar.com
 jx-testapp2        0.0.2   1/1  http://testapp2.jx-staging.sharepointoscar.com
 &lt;/code&gt;&lt;/pre&gt;
@@ -2743,7 +2739,7 @@ jx-testapp2        0.0.2   1/1  http://testapp2.jx-staging.sharepointoscar.com
 
 &lt;p&gt;From your running cluster you can always grab the staging &lt;code&gt;SourceRepository&lt;/code&gt; and &lt;code&gt;Environment&lt;/code&gt; resource via the following (where XXX is the name of the staging repository returned via &lt;code&gt;kubectl get sr&lt;/code&gt;):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;kubectl get env staging -oyaml &amp;gt; env/templates/myenv.yaml
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get env staging -oyaml &amp;gt; env/templates/myenv.yaml
 kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -2888,14 +2884,14 @@ pipelinerunner:
 
 &lt;p&gt;If you want to create a new Spring Boot based microservice using &lt;a href=&#34;http://camel.apache.org/&#34; target=&#34;_blank&#34;&gt;Apache Camel&lt;/a&gt; you can use the &lt;a href=&#34;/commands/jx_create_camel&#34;&gt;jx create camel&lt;/a&gt; command.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create camel
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create camel
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You are then prompted for the project name.&lt;/p&gt;
 
 &lt;p&gt;If you want you can specify this on the command line:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create camel -a myapp
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create camel -a myapp
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;what-happens-when-you-create-a-camel-microservice&#34;&gt;What happens when you create a camel microservice&lt;/h3&gt;
@@ -3051,7 +3047,7 @@ pipelinerunner:
 
 &lt;p&gt;For example if you want to create a &lt;code&gt;maven&lt;/code&gt; based DevPod use:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create devpod -l maven
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create devpod -l maven
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This will then create a new &lt;code&gt;DevPod&lt;/code&gt; based on the maven based &lt;a href=&#34;/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and open your terminal inside that pod. You are now free to use the various tools like &lt;code&gt;git, docker, maven, skaffold, jx&lt;/code&gt; which will all be using the same exact configuration as the CI/CD pipelines will.&lt;/p&gt;
@@ -3109,7 +3105,7 @@ pipelinerunner:
 
 &lt;p&gt;If you have other terminals that want to connect into an existing &lt;code&gt;DevPod&lt;/code&gt; use &lt;a href=&#34;/commands/jx_rsh/&#34;&gt;jx rsh -d&lt;/a&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx rsh -d
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx rsh -d
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;If you have more than one &lt;code&gt;DevPod&lt;/code&gt; active you will be prompted for the list of available &lt;code&gt;DevPod&lt;/code&gt;s to pick from. Otherwise your shell will open in the &lt;code&gt;DevPod&lt;/code&gt; directly.&lt;/p&gt;
@@ -3120,14 +3116,14 @@ pipelinerunner:
 
 &lt;p&gt;Use the &lt;a href=&#34;/commands/jx_get_devpod/&#34;&gt;jx get devpod&lt;/a&gt; command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get devpod
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get devpod
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;deleting-a-devpod&#34;&gt;Deleting a DevPod&lt;/h3&gt;
 
 &lt;p&gt;Use the &lt;a href=&#34;/commands/jx_delete_devpod/&#34;&gt;jx delete devpod&lt;/a&gt; command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx delete devpod
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx delete devpod
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then pick the devpod to delete and confirm. Or pass in the name of the devpod you want to delete as an argument.&lt;/p&gt;
@@ -3140,7 +3136,7 @@ pipelinerunner:
 
 &lt;p&gt;This will allow you to edit source code in your preferred &lt;a href=&#34;/developing/ide&#34;&gt;IDE&lt;/a&gt; like &lt;a href=&#34;https://code.visualstudio.com/&#34; target=&#34;_blank&#34;&gt;VS Code&lt;/a&gt; or &lt;a href=&#34;https://www.jetbrains.com/idea/&#34; target=&#34;_blank&#34;&gt;IDEA&lt;/a&gt;.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx sync
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx sync
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You just run this once on your system (if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you)&lt;/p&gt;
@@ -3159,12 +3155,12 @@ pipelinerunner:
 
 &lt;p&gt;So inside of your DevPod you can perform a regular build if your app is Java based. e.g. via maven:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;mvn install
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;mvn install
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then to trigger incremental rebuilding and deploying of the local code in the DevPod you can use:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;./watch.sh
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;./watch.sh
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This will use the &lt;code&gt;dev&lt;/code&gt; profile to generate a new docker image using the generated &lt;em&gt;digest&lt;/em&gt; then use it in the helm chart to deploy.&lt;/p&gt;
@@ -3173,7 +3169,7 @@ pipelinerunner:
 
 &lt;p&gt;So once the &lt;code&gt;skaffold dev -p dev&lt;/code&gt; (what &lt;code&gt;watch.sh&lt;/code&gt; does) command has built the docker image and installed the helm chart, your app will show up via  &lt;a href=&#34;/commands/applications&#34;&gt;jx get applications&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx get applications
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get applications
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Now if you edit code and trigger a docker rebuild, which for most languages is just changing the source code; though for Java apps its whenever you rebuild the jar - the image is regenerated and the helm chart updated!&lt;/p&gt;
@@ -3814,11 +3810,11 @@ function update_cm() {
 
 &lt;li&gt;&lt;p&gt;Create a mapping for the JUnit XML format in Kibana by pasting this code into the Kibana console:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;PUT tests 
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;PUT tests
 {
     &amp;quot;mappings&amp;quot;: {
-      &amp;quot;junit&amp;quot;: { 
-        &amp;quot;properties&amp;quot;: { 
+      &amp;quot;junit&amp;quot;: {
+        &amp;quot;properties&amp;quot;: {
         &amp;quot;errors&amp;quot;: { &amp;quot;type&amp;quot;: &amp;quot;integer&amp;quot; },
         &amp;quot;failures&amp;quot;: { &amp;quot;type&amp;quot;: &amp;quot;integer&amp;quot; },
         &amp;quot;name&amp;quot;: { &amp;quot;type&amp;quot;: &amp;quot;keyword&amp;quot; },
@@ -4083,7 +4079,7 @@ Just above where we write the success message to the HTTP stream, add this code 
 if version == &amp;quot;&amp;quot; {
   renderError(w, &amp;quot;MUST_PROVIDE_X-VERSION_HEADER&amp;quot;, http.StatusInternalServerError)
   log.Println(&amp;quot;No X-VERSION HEADER provided&amp;quot;)
-}   
+}
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;And add just above the success message:&lt;/p&gt;
@@ -4340,7 +4336,7 @@ limitations under the License.
 
 &lt;p&gt;e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create cluster gke --remote-environments --tekton
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster gke --remote-environments --tekton
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;When creating your Environments via &lt;a href=&#34;/commands/jx_create_environment&#34;&gt;jx create environment&lt;/a&gt; you can also specify the environment is remote via the &lt;code&gt;--remote&lt;/code&gt; or answering &lt;code&gt;Y&lt;/code&gt; to the question when prompted.&lt;/p&gt;
@@ -4354,8 +4350,8 @@ of the environment in the Dev cluster; we leave that to the Environment Controll
 
 &lt;p&gt;Edit the environments to mark them as remote via &lt;a href=&#34;/commands/jx_edit_environment&#34;&gt;jx edit environment&lt;/a&gt;:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx edit env staging --remote 
-jx edit env production --remote 
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit env staging --remote
+jx edit env production --remote
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You need to manually disable the release pipeline in the Dev cluster.&lt;/p&gt;
@@ -4372,7 +4368,7 @@ jx edit env production --remote
 
 &lt;p&gt;You need to specify the environments git repository and docker registry host and on GCP the project ID:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The installer needs a user + API token for the git repository which it will prompt you for the known values from your &lt;code&gt;~/.jx/gitAuth.yaml&lt;/code&gt; file so if you already installed Jenkins X it should be able to default those values for you.&lt;/p&gt;
@@ -4385,7 +4381,7 @@ jx edit env production --remote
 
 &lt;p&gt;To install the default ingress controller into a remote cluster (which doesn&amp;rsquo;t have Jenkins X installed) you can use the command &lt;a href=&#34;/commands/jx_create_addon_ingress/&#34;&gt;jx create addon ingctl&lt;/a&gt;&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create addon ingctl
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon ingctl
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct &lt;code&gt;domain&lt;/code&gt; value on the generated &lt;code&gt;Ingress&lt;/code&gt; resources.&lt;/p&gt;
@@ -4442,7 +4438,7 @@ value: http://chartmuseum.jx.1.2.3.4.nip.io
 &lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to turn the code into an immutable docker image for running on kubernetes&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to define the declarative Jenkins pipeline to define the CI/CD steps for the application&lt;/li&gt;
 &lt;li&gt;helm chart in the &lt;code&gt;charts&lt;/code&gt; folder to generate the kubernetes resources to run the application on kubernetes&lt;/li&gt;
-&lt;li&gt;a &lt;em&gt;preview chart&lt;/em&gt; in the &lt;code&gt;charts/preview&lt;/code&gt; folder to define any dependencies for deploying a &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;preview environment&lt;/a&gt; on a Pull Request&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;a &lt;em&gt;preview chart&lt;/em&gt; in the &lt;code&gt;charts/preview&lt;/code&gt; folder to define any dependencies for deploying a &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;preview environment&lt;/a&gt; on a Pull Request&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;The default build packs are at &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&lt;/a&gt; with a folder for each language or build tool.&lt;/p&gt;
@@ -4550,7 +4546,7 @@ pipeline {
 
 &lt;p&gt;e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;export PACK=&amp;quot;foo&amp;quot;
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;export PACK=&amp;quot;foo&amp;quot;
 mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
 cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
 
@@ -4657,14 +4653,14 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;You can create new applications from our list of curated machine learning quickstart applications via the &lt;a href=&#34;/commands/jx_create_mlquickstart&#34;&gt;jx create mlquickstart&lt;/a&gt; command.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create mlquickstart
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create mlquickstart
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;You are then prompted for a list of quickstarts to choose from.&lt;/p&gt;
 
 &lt;p&gt;You will see that these come in groups of three:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;? select the quickstart you wish to create  [Use arrows to move, space to select, type to filter]
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;? select the quickstart you wish to create  [Use arrows to move, space to select, type to filter]
 &amp;gt; machine-learning-quickstarts/ML-python-pytorch-cpu
   machine-learning-quickstarts/ML-python-pytorch-cpu-service
   machine-learning-quickstarts/ML-python-pytorch-cpu-training
@@ -4686,7 +4682,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;You can use a text filter to filter on the project names:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create mlquickstart -f gpu
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create mlquickstart -f gpu
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;what-happens-when-you-create-a-quickstart&#34;&gt;What happens when you create a quickstart&lt;/h3&gt;
@@ -4715,7 +4711,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;You can restart training with the command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx start pipeline
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx start pipeline
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;and then select the name of the training project you wish to run again, or you may edit your training script, commit your changes and push them to automatically trigger another training run.&lt;/p&gt;
@@ -4745,8 +4741,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to package the application as a docker image&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;jenkins-x.yml&lt;/code&gt; to implement the CI / CD pipelines using declarative pipeline as code&lt;/li&gt;
-&lt;li&gt;Helm Charts to deploy the application on Kubernetes and to implement &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt;
-&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;Helm Charts to deploy the application on Kubernetes and to implement &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -4758,7 +4753,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;Until we do that you can still use your own Quickstarts in the &lt;code&gt;jx create mlquickstart&lt;/code&gt; command via the &lt;code&gt;-g&lt;/code&gt; or &lt;code&gt;--organisations&lt;/code&gt; command line argument. e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create mlquickstart  --organisations my-github-org
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create mlquickstart  --organisations my-github-org
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then all machine learning quickstarts found in &lt;code&gt;my-github-org&lt;/code&gt; will be listed in addition to the defaults.&lt;/p&gt;
@@ -4778,7 +4773,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;Inside your project set repository, create a single file named &lt;code&gt;projectset&lt;/code&gt; which has the following format:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;[
    {
       &amp;quot;Repo&amp;quot;:&amp;quot;ML-python-pytorch-cpu-service&amp;quot;,
       &amp;quot;Tail&amp;quot;:&amp;quot;-service&amp;quot;
@@ -4796,7 +4791,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;To add the location of a set of machine learning quickstarts you can use the &lt;a href=&#34;/commands/jx_create_quickstartlocation/&#34;&gt;jx create quickstartlocation&lt;/a&gt; command.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create quickstartlocation --url https://mygit.server.com --owner my-mlquickstarts --includes=[ML-*]
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstartlocation --url https://mygit.server.com --owner my-mlquickstarts --includes=[ML-*]
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Note that you MUST specify the &lt;code&gt;--includes=[ML-*]&lt;/code&gt; option or your quickstarts will be added to the conventional quickstart list rather than the machine learning list.&lt;/p&gt;
@@ -4811,12 +4806,12 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;You can then view the current quickstart locations for your team via the &lt;a href=&#34;/commands/jx_get_quickstartlocations/&#34;&gt;jx get quickstartlocations&lt;/a&gt; command:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx get quickstartlocations
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get quickstartlocations
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or using an abbreviation&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx get qsloc
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get qsloc
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;There is also &lt;a href=&#34;/commands/jx_delete_quickstartlocation/&#34;&gt;jx delete quickstartlocation&lt;/a&gt; if you need to remove a git organisation.&lt;/p&gt;
@@ -4916,7 +4911,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;To install an addon then use the &lt;a href=&#34;/commands/jx_create_addon/&#34;&gt;jx create addon&lt;/a&gt; command. e.g.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create addon grafana
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon grafana
 &lt;/code&gt;&lt;/pre&gt;
 
       </description>
@@ -4964,7 +4959,7 @@ For example, we have some custom logic for handling &lt;a href=&#34;https://gith
 
 &lt;p&gt;The addons can be installed with&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create addon istio --version 1.1.7
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon istio --version 1.1.7
 jx create addon flagger
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -4972,7 +4967,7 @@ jx create addon flagger
 
 &lt;p&gt;Now get the ip of the Istio ingress and point a wildcard domain to it (e.g. &lt;code&gt;*.example.com&lt;/code&gt;), so we can use it to route multiple services based on host names. The Istio ingress provides the routing capabilities needed for Canary releases (traffic shifting) that the traditional Kubernetes ingress objects do not support.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl -n istio-system get service istio-ingressgateway \
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl -n istio-system get service istio-ingressgateway \
 -o jsonpath=&#39;{.status.loadBalancer.ingress[0].ip}&#39;
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -5063,7 +5058,7 @@ spec:
 
 &lt;p&gt;To get the Canary events run&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ kubectl -n jx-production get events --watch \
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;$ kubectl -n jx-production get events --watch \
   --field-selector involvedObject.kind=Canary
 LAST SEEN   FIRST SEEN   COUNT   NAME                                                  KIND     SUBOBJECT   TYPE     REASON   SOURCE    MESSAGE
 23m         10d          7       jx-production-myapp.1584d8fbf5c306ee   Canary               Normal   Synced   flagger   New revision detected! Scaling up jx-production-myapp.jx-production
@@ -5081,7 +5076,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;Flagger includes a Grafana dashboard for visualization purposes as it is not needed for the Canary releases. It can be accessed locally using Kubernetes port forwarding&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;kubectl --namespace istio-system port-forward deploy/flagger-grafana 3000
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl --namespace istio-system port-forward deploy/flagger-grafana 3000
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Then accessing &lt;a href=&#34;http://localhost:3000&#34; target=&#34;_blank&#34;&gt;http://localhost:3000&lt;/a&gt; using admin/admin, selecting the canary-analysis dashboard and&lt;/p&gt;
@@ -5128,7 +5123,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;Labels are added via the prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34; target=&#34;_blank&#34;&gt;label&lt;/a&gt; plugin using GitHub comments.  For example:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;/kind bug
+&lt;pre&gt;&lt;code class=&#34;language-text&#34;&gt;/kind bug
 /area prow
 /priority important-soon
 &lt;/code&gt;&lt;/pre&gt;
@@ -5181,7 +5176,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;When you &lt;a href=&#34;getting-started/create-cluster/&#34; target=&#34;_blank&#34;&gt;create a cluster&lt;/a&gt; or &lt;a href=&#34;/docs/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install Jenkins X&lt;/a&gt; you are prompted to pick between the available build packs.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;? Pick workload build pack:   [Use arrows to move, type to filter]
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;? Pick workload build pack:   [Use arrows to move, type to filter]
 &amp;gt; Kubernetes Workloads: Automated CI+CD with GitOps Promotion
   Library Workloads: CI+Release but no CD
 &lt;/code&gt;&lt;/pre&gt;
@@ -5229,12 +5224,12 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;Right now to enable a Tekton based install you can create a new cluster using &lt;code&gt;jx&lt;/code&gt; along with these flags:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create cluster gke --tekton 
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster gke --tekton
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Or if you want to go all in on the next generation of Jenkins X with built-in GitOps for your development environment, using Tekton and using Vault for storage of Secrets then use the following (only works on GCP and AWS right now):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create cluster gke --ng
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster gke --ng
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The general developer experience, CLI and IDE plugins should work as before - but using &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton Pipelines&lt;/a&gt; Custom Resources under the covers instead of creating a Jenkins Server per team!&lt;/p&gt;
@@ -5243,7 +5238,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;Once your cluster is started you can create a new quickstart, we&amp;rsquo;ve been using the NodeJS one reliably.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create quickstart
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create quickstart
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;A &lt;code&gt;prowjob&lt;/code&gt; is created, a new prow pipeline controller watches for these jobs and when it receives an event it will check if it has a &lt;code&gt;pipelinerun&lt;/code&gt; spec present, if not it will post the &lt;code&gt;prowjob&lt;/code&gt; to a new &lt;code&gt;pipelinerunner&lt;/code&gt; service from Jenkins X which in turn clones the repo and revision then translates its &lt;code&gt;jenkins-x.yml&lt;/code&gt; into vanilla Tekton Pipeline resources.  Once they are created the &lt;code&gt;tekton-pipeline-controller&lt;/code&gt; executes the builds.&lt;/p&gt;
@@ -5419,7 +5414,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;Otherwise ensure you &lt;a href=&#34;/docs/getting-started/setup/install/&#34;&gt;have installed the jx CLI&lt;/a&gt; then run:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create cluster aks --skip-installation
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster aks --skip-installation
 &lt;/code&gt;&lt;/pre&gt;
 
       </description>
@@ -5492,12 +5487,12 @@ chart for running as a package in Kubernetes.&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Change into your Spring Boot project directory:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd my-springapp/
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;cd my-springapp/
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Run the import from a command-line:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx import
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx import
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;The application asks for your Git username (such as &lt;code&gt;myuser&lt;/code&gt;).&lt;/p&gt;&lt;/li&gt;
@@ -5522,7 +5517,7 @@ process pull requests and create &lt;a href=&#34;/developing/preview&#34;&gt;pre
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Run the Spring Boot creation via command-line:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jx create spring
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create spring
 &lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;The application asks for your Git username (such as &lt;code&gt;myuser&lt;/code&gt;)&lt;/p&gt;&lt;/li&gt;
@@ -5553,7 +5548,7 @@ prompts you to initialize Git&lt;/p&gt;&lt;/li&gt;
 
 &lt;p&gt;You can also pass certain options to the &lt;code&gt;jx create&lt;/code&gt; command, such as specifying Spring Boot dependencies:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ jx create spring -d web -d actuator
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create spring -d web -d actuator
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;The &lt;code&gt;-d&lt;/code&gt; argument lets you specify the Spring Boot dependencies you wish to add to your spring boot application. In the above example, the command calls the &lt;code&gt;web&lt;/code&gt; argument, which passes in the Web Starter dependency to create RESTful web applications; the &lt;code&gt;actuator&lt;/code&gt; dependency for monitoring the health and metrics your application.  When you omit the &lt;code&gt;-d&lt;/code&gt; arguments and let the &lt;code&gt;jx&lt;/code&gt; command prompt you to pick the dependencies via a CLI wizard&lt;/p&gt;
@@ -5808,7 +5803,7 @@ By restricting access to this potentially sensitive information, we can work on 
 
 &lt;h2 id=&#34;enabling-serverless-apps&#34;&gt;Enabling serverless apps&lt;/h2&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create addon gloo
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon gloo
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;And you are then good to go. Any new projects you create will be created in this serverless style.&lt;/p&gt;
@@ -5819,7 +5814,7 @@ By restricting access to this potentially sensitive information, we can work on 
 
 &lt;p&gt;If your application was imported recently into Jenkins X but before you installed and enabled Knative Serve you can use &lt;a href=&#34;/commands/jx_edit_deploy&#34;&gt;jx edit deploy&lt;/a&gt; to switch between the &lt;code&gt;default&lt;/code&gt; deployment kind (using kubernetes &lt;code&gt;Deployment&lt;/code&gt; and &lt;code&gt;Service&lt;/code&gt; resources) and the &lt;code&gt;knative&lt;/code&gt; kind (using Knative &lt;code&gt;Service&lt;/code&gt; resource)&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx edit deploy
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit deploy
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This command will modify the &lt;code&gt;knativeDeploy&lt;/code&gt; flag in your helm &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; file to enable / disable Knative Serve. Once you have committed that code change and merged to master your application will be released to staging using Knative Serve by the automated CI/CD pipeline in Jenkins X.&lt;/p&gt;
@@ -5828,7 +5823,7 @@ By restricting access to this potentially sensitive information, we can work on 
 
 &lt;p&gt;You can edit the default deployment kind for your team which is used when’re you create a QuickStart or import a repository via the &lt;a href=&#34;/commands/jx_edit_deploy&#34;&gt;jx edit deploy&lt;/a&gt; command with the &lt;code&gt;-t&lt;/code&gt; argument:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx edit deploy -t
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit deploy -t
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
@@ -5847,12 +5842,12 @@ By restricting access to this potentially sensitive information, we can work on 
 
 &lt;p&gt;We have a simple command &lt;a href=&#34;/commands/jx_create_addon_gloo/&#34;&gt;jx create addon gloo&lt;/a&gt; to install Gloo and Knative Serve on Jenkins X:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;jx create addon gloo
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon gloo
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This command will install Knative Serve into the &lt;code&gt;knative-serving&lt;/code&gt; namespace and Gloo into the &lt;code&gt;gloo-system&lt;/code&gt; namespace. You can check it’s all installed and working via:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;kubectl get pod -n knative-serving
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get pod -n knative-serving
 kubectl get pod -n gloo-system
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -5864,7 +5859,7 @@ kubectl get pod -n gloo-system
 
 &lt;p&gt;You can check if Knative Serve is being used on your application by doing:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;kubectl get ksvc -n jx-staging 
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get ksvc -n jx-staging
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Which should show all of the Knative Service resources in your Staging environment.&lt;/p&gt;
@@ -6094,7 +6089,7 @@ webhook: lighthouse
 
 &lt;p&gt;You should now be able to use the &lt;code&gt;kubectl&lt;/code&gt; and &lt;code&gt;jx&lt;/code&gt; CLI tools on your laptop to talk to the GKE cluster. e.g. this command should list the nodes in your cluster:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;kubectl get node
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get node
 &lt;/code&gt;&lt;/pre&gt;
 
       </description>

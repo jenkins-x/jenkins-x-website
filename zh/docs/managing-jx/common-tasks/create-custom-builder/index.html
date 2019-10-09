@@ -25,14 +25,14 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/zh/docs/managing-jx/common-tasks/create-custom-builder/" />
 <meta property="article:published_time" content="2018-09-22T00:00:00+00:00" />
-<meta property="article:modified_time" content="2019-10-09T07:38:12+00:00" />
+<meta property="article:modified_time" content="2019-10-09T07:47:14+00:00" />
 <meta itemprop="name" content="创建自定义 Builder">
 <meta itemprop="description" content="如何为 Jenkins X 创建一个自定义 Builder">
 
 
 <meta itemprop="datePublished" content="2018-09-22T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-10-09T07:38:12&#43;00:00" />
-<meta itemprop="wordCount" content="178">
+<meta itemprop="dateModified" content="2019-10-09T07:47:14&#43;00:00" />
+<meta itemprop="wordCount" content="158">
 
 
 
@@ -62,6 +62,7 @@ if (!doNotTrack) {
 <link href="/scss/main.min.4cdf832c07542cd9c325a85a7aa83ac6c333b819d5e6d9a2b8189293f3d93b16.css" rel="stylesheet" integrity="">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -843,24 +844,18 @@ if (!doNotTrack) {
 <h3 id="builder-镜像">Builder 镜像</h3>
 
 <p>首先，您需要为 Builder 创建一个 docker 镜像。从 <code>Dockerfile</code> 开始的一个实例可能类似于：</p>
-
-<pre><code>FROM jenkinsxio/builder-base:latest
-
-# Install your tools and libraries
-RUN yum install -y gcc openssl-devel
-
-CMD [&quot;gcc&quot;]
-</code></pre>
-
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#204a87;font-weight:bold">FROM</span><span style="color:#4e9a06"> jenkinsxio/builder-base:latest</span><span style="color:#a40000">
+</span><span style="color:#a40000">
+</span><span style="color:#a40000"></span><span style="color:#8f5902;font-style:italic"># Install your tools and libraries</span><span style="color:#a40000">
+</span><span style="color:#a40000"></span><span style="color:#204a87;font-weight:bold">RUN</span> yum install -y gcc openssl-devel<span style="color:#a40000">
+</span><span style="color:#a40000">
+</span><span style="color:#a40000"></span><span style="color:#204a87;font-weight:bold">CMD</span><span style="color:#4e9a06"> [&#34;gcc&#34;]</span></code></pre></div>
 <p>现在，您可以构建并发布这个镜像到您的 registry：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#204a87">export</span> <span style="color:#000">BUILDER_IMAGE</span><span style="color:#ce5c00;font-weight:bold">=</span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_BUILDER_IMAGE&gt;:&lt;VERSION&gt; 
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#204a87">export</span> <span style="color:#000">BUILDER_IMAGE</span><span style="color:#ce5c00;font-weight:bold">=</span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
 docker build -t <span style="color:#4e9a06">${</span><span style="color:#000">BUILDER_IMAGE</span><span style="color:#4e9a06">}</span> .
-docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDER_IMAGE</span><span style="color:#4e9a06">}</span> </code></pre></div>
+docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDER_IMAGE</span><span style="color:#4e9a06">}</span></code></pre></div>
 <p>别担心，当新的镜像需要构建时，您无需每次手动执行这些步骤。Jenkins X 可以为您管理这些。您只需要把 <code>Dockerfile</code> 推送到类似于<a href="https://github.com/jenkins-x/builder-go" target="_blank">这个</a>代码仓库中。然后，根据您的组织名称来调整 <code>Jenkinsfile</code> ，并使用下面的命令导入 Jenkins X 平台：</p>
-
-<pre><code>jx import --url &lt;REPOSITORY_URL&gt;
-</code></pre>
-
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx import --url &lt;REPOSITORY_URL&gt;</code></pre></div>
 <p>之后，您每次推送一个变更，Jenkins X 将会自动地构建和发布镜像。</p>
 
 <h3 id="安装-builder">安装 Builder</h3>
@@ -894,7 +889,7 @@ docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDE
 </span><span style="color:#f8f8f8;text-decoration:underline">            </span>RequestMemory<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span><span style="color:#4e9a06">&#34;128Mi&#34;</span><span style="color:#f8f8f8;text-decoration:underline">
 </span><span style="color:#f8f8f8;text-decoration:underline">            </span>Args<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span><span style="color:#4e9a06">&#39;${computer.jnlpmac} ${computer.name}&#39;</span><span style="color:#f8f8f8;text-decoration:underline">
 </span><span style="color:#f8f8f8;text-decoration:underline">          </span>Dlang<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
-</span><span style="color:#f8f8f8;text-decoration:underline">            </span>Image<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span>&lt;YOUR_BUILDER_IMAGE<span style="color:#8f5902;font-style:italic">&gt; 
+</span><span style="color:#f8f8f8;text-decoration:underline">            </span>Image<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span>&lt;YOUR_BUILDER_IMAGE<span style="color:#8f5902;font-style:italic">&gt;
 </span><span style="color:#8f5902;font-style:italic">            Privileged: true</span><span style="color:#f8f8f8;text-decoration:underline">
 </span><span style="color:#f8f8f8;text-decoration:underline">            </span>RequestCpu<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span><span style="color:#4e9a06">&#34;400m&#34;</span><span style="color:#f8f8f8;text-decoration:underline">
 </span><span style="color:#f8f8f8;text-decoration:underline">            </span>RequestMemory<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span><span style="color:#4e9a06">&#34;512Mi&#34;</span><span style="color:#f8f8f8;text-decoration:underline">
@@ -939,24 +934,21 @@ docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDE
 <p>您只需要基于<a href="https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common" target="_blank">基础 Builder</a> 镜像或者<a href="https://hub.docker.com/u/jenkinsxio/" target="_blank">Builder 镜像</a> 自定义。在上面查看细节。</p>
 
 <p>然后，您可以在目录 <code>~/.jx/</code> 中创建文件 <code>myvalues.yaml</code> ，并写入一下内容：</p>
-
-<pre><code>jenkins:
-  Agent:
-    PodTemplates:
-      Maven:
-        Containers:
-          Maven:
-            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_MAVEN_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
-      Nodejs:
-        Containers:
-          Nodejs:
-            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_NODEJS_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
-      Go:
-        Containers:
-          Go:
-            Image: &lt;YOUR_REGISTRY&gt;/&lt;YOUR_GO_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
-</code></pre>
-
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">jenkins<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">  </span>Agent<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">    </span>PodTemplates<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">      </span>Maven<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">        </span>Containers<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">          </span>Maven<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">            </span>Image<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_MAVEN_BUILDER_IMAGE&gt;<span style="color:#000;font-weight:bold">:</span>&lt;VERSION<span style="color:#8f5902;font-style:italic">&gt;
+</span><span style="color:#8f5902;font-style:italic">      Nodejs:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">        </span>Containers<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">          </span>Nodejs<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">            </span>Image<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_NODEJS_BUILDER_IMAGE&gt;<span style="color:#000;font-weight:bold">:</span>&lt;VERSION<span style="color:#8f5902;font-style:italic">&gt;
+</span><span style="color:#8f5902;font-style:italic">      Go:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">        </span>Containers<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">          </span>Go<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
+</span><span style="color:#f8f8f8;text-decoration:underline">            </span>Image<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_GO_BUILDER_IMAGE&gt;<span style="color:#000;font-weight:bold">:</span>&lt;VERSION&gt;</code></pre></div>
 <p>您可以继续安装 Jenkins X，这些 Builder 将会自动地添加到平台。</p>
 
 	
@@ -1021,7 +1013,7 @@ docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDE
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/e1a7e3dd6918e80a175430ba2b6fbb91d4b39a6a">release 0.0.1113 (e1a7e3d)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/32a6a79d6770cc65ea6783a1669eda703b6fc6f7">release 0.0.1114 (32a6a79)</a>
 </div>
 </div>
 
@@ -1108,6 +1100,7 @@ docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDE
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 
 
 
@@ -1124,7 +1117,7 @@ docker push <span style="color:#4e9a06">${</span><span style="color:#000">BUILDE
     debug: false
   });
 </script>
-
+<script>hljs.initHighlightingOnLoad();</script>
 
   </body>
 </html>

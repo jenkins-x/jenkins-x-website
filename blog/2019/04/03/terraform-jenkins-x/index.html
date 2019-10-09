@@ -21,27 +21,27 @@
 <link rel="icon" type="image/png" href="/favicons/android-192x192.png"sizes="192x192">
 
 <title>Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform | Jenkins X</title><meta property="og:title" content="Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform" />
-<meta property="og:description" content="Use Infrastructure as Code to provision Jenkins X clusters. 
+<meta property="og:description" content="Use Infrastructure as Code to provision Jenkins X clusters.
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/blog/2019/04/03/terraform-jenkins-x/" />
 <meta property="article:published_time" content="2019-04-03T07:36:00+02:00" />
-<meta property="article:modified_time" content="2019-10-09T07:38:12+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2019-10-09T07:47:14+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform">
-<meta itemprop="description" content="Use Infrastructure as Code to provision Jenkins X clusters. 
+<meta itemprop="description" content="Use Infrastructure as Code to provision Jenkins X clusters.
 ">
 
 
 <meta itemprop="datePublished" content="2019-04-03T07:36:00&#43;02:00" />
-<meta itemprop="dateModified" content="2019-10-09T07:38:12&#43;00:00" />
-<meta itemprop="wordCount" content="1834">
+<meta itemprop="dateModified" content="2019-10-09T07:47:14&#43;00:00" />
+<meta itemprop="wordCount" content="1835">
 
 
 
 <meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Managing Jenkins X Kubernetes Clusters Using Infrastructure as Code With Terraform"/>
-<meta name="twitter:description" content="Use Infrastructure as Code to provision Jenkins X clusters. 
+<meta name="twitter:description" content="Use Infrastructure as Code to provision Jenkins X clusters.
 "/>
 
 
@@ -65,6 +65,7 @@ if (!doNotTrack) {
 <link href="/scss/main.min.4cdf832c07542cd9c325a85a7aa83ac6c333b819d5e6d9a2b8189293f3d93b16.css" rel="stylesheet" integrity="">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -530,7 +531,7 @@ CAUTION: Do not make updates to the cluster that require recreating the cluster 
 <p>To get started, you must have the following items installed on your machine.</p>
 
 <ul>
-<li>The <code>jx</code> CLI installed.<br /></li>
+<li>The <code>jx</code> CLI installed.</li>
 <li>Terraform - can be installed using <code>brew install terraform</code></li>
 <li>GCP account with proper rights to create resources</li>
 <li>The Google Cloud CLI <code>gcloud</code>
@@ -549,7 +550,7 @@ CAUTION: Do not make updates to the cluster that require recreating the cluster 
 
 <p>Running the previous command, outputs the following folder structure wherever we executed the command locally.</p>
 
-<pre><code>├── README.md
+<pre><code class="language-txt">├── README.md
 ├── build.sh
 ├── ci-demo-206601-121d21dc79ac.json
 └── clusters
@@ -612,7 +613,7 @@ as follows: <code>jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com</cod
 
 <p>We now add a reference within the <code>terraform.tf</code> as shown below.</p>
 
-<pre><code>terraform {
+<pre><code class="language-tf">terraform {
     required_version = &quot;&gt;= 0.11.0&quot;
     backend &quot;gcs&quot; {
         bucket      = &quot;ci-demo-206601-questerring-terraform-state&quot;
@@ -628,7 +629,7 @@ as follows: <code>jx-questerring-dev@ci-demo-206601.iam.gserviceaccount.com</cod
 
 <p>We are now ready to initiate Terraform backend.  Terraform backends are used to save the Terraform State remotely.  This is great for when a team needs to collaborate on making infrastructure changes, because the Terraform State is stored in the GCP Bucket that was also created when we executed our initial command to create the cluster.</p>
 
-<pre><code>$ terraform init                                                                                                               
+<pre><code class="language-tf">$ terraform init
 Initializing the backend...
 
 Successfully configured the backend &quot;gcs&quot;! Terraform will automatically
@@ -649,7 +650,7 @@ Terraform has been successfully initialized!
 
 <p>For example, you may have an existing network that you wish to deploy the cluster in.  You may also wish to enable the an add-on, or you can specify the cluster_ipv4_cidr_block and many other things (see <a href="https://www.terraform.io/docs/providers/google/r/container_cluster.html" target="_blank">https://www.terraform.io/docs/providers/google/r/container_cluster.html</a>) for details.</p>
 
-<pre><code>$ terraform plan                                                                                 
+<pre><code class="language-sh">$ terraform plan
 
 Refreshing Terraform state in-memory prior to plan...
 The refreshed state will be used to calculate this plan, but will not be
@@ -751,7 +752,7 @@ can't guarantee that exactly these actions will be performed if
 
 <p>Now that we&rsquo;ve seen what will be created and using the default terraform code generated, let us create said resources!</p>
 
-<pre><code>$ terraform apply
+<pre><code class="language-sh">$ terraform apply
 .....trimmed for brevity
 Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 
@@ -767,8 +768,8 @@ cluster_master_version = 1.11.7-gke.12
 
 <p>Let us access the cluster using kubectl.  In order to do that, we need to get credentials.  We execute the following command (which you can get from the UI on GCP right from the cluster connect window)</p>
 
-<pre><code>$ gcloud container clusters get-credentials questerring-dev --zone us-west1-a --project ci-demo-206601 
-                        
+<pre><code class="language-sh">$ gcloud container clusters get-credentials questerring-dev --zone us-west1-a --project ci-demo-206601
+
 Fetching cluster endpoint and auth data.
 kubeconfig entry generated for questerring-dev.
 </code></pre>
@@ -777,7 +778,7 @@ kubeconfig entry generated for questerring-dev.
 
 <p>Executing the following command, we see our new cluster (in bold)</p>
 
-<pre><code>$ jx context                                                                                                                      
+<pre><code class="language-sh">$ jx context
 BigDaddyO
 arn:aws:eks:us-west-2:653931956080:cluster/jxcluster
 gke_ci-demo-206601_europe-west1-b_sirjenkinsgke
@@ -810,7 +811,7 @@ NOTE that can pass additional flags as per your prefernces.  For example set the
 
 <p>To do that we change the following within the cluster declaration in main.tf and add the following (in bold):</p>
 
-<pre><code>resource &quot;google_container_cluster&quot; &quot;jx-cluster&quot; {
+<pre><code class="language-tf">resource &quot;google_container_cluster&quot; &quot;jx-cluster&quot; {
     name                     = &quot;${var.cluster_name}&quot;
     description              = &quot;jx k8s cluster provisioned and managed via Terraform.&quot;
     zone                     = &quot;${var.gcp_zone}&quot;
@@ -842,7 +843,7 @@ NOTE that can pass additional flags as per your prefernces.  For example set the
 
 <p>Then we run the terraform plan, output shows a change to the cluster as expected.</p>
 
-<pre><code>terraform plan                                                                                                             
+<pre><code class="language-sh">$ terraform plan
 
 Refreshing Terraform state in-memory prior to plan...
 The refreshed state will be used to calculate this plan, but will not be
@@ -880,7 +881,7 @@ NOTE: This dashboard is deprecated, and we are only showing you in the context o
 
 <h3 id="get-access-token">Get Access token</h3>
 
-<pre><code>gcloud config config-helper --format=json | jq -r '.credential.access_token'
+<pre><code class="language-sh">gcloud config config-helper --format=json | jq -r '.credential.access_token'
 </code></pre>
 
 <p>Copy the token from the output of that command.</p>
@@ -998,6 +999,7 @@ NOTE: This dashboard is deprecated, and we are only showing you in the context o
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 
 
 
@@ -1014,7 +1016,7 @@ NOTE: This dashboard is deprecated, and we are only showing you in the context o
     debug: false
   });
 </script>
-
+<script>hljs.initHighlightingOnLoad();</script>
 
   </body>
 </html>

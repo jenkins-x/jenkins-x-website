@@ -24,12 +24,12 @@
 <meta property="og:description" content="Questions on common issues setting up Jenkins X." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/managing-jx/faq/issues/" />
-<meta property="article:modified_time" content="2019-10-09T07:38:12+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2019-10-09T07:47:14+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Common Problems">
 <meta itemprop="description" content="Questions on common issues setting up Jenkins X.">
 
 
-<meta itemprop="dateModified" content="2019-10-09T07:38:12&#43;00:00" />
+<meta itemprop="dateModified" content="2019-10-09T07:47:14&#43;00:00" />
 <meta itemprop="wordCount" content="2470">
 
 
@@ -60,6 +60,7 @@ if (!doNotTrack) {
 <link href="/scss/main.min.4cdf832c07542cd9c325a85a7aa83ac6c333b819d5e6d9a2b8189293f3d93b16.css" rel="stylesheet" integrity="">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -1787,24 +1788,24 @@ if (!doNotTrack) {
 
 <p>Your cluster could be out of resources. You can check the spare resources on your cluster via <a href="/commands/jx_status/">jx status</a>:</p>
 
-<pre><code>jx status
+<pre><code class="language-sh">jx status
 </code></pre>
 
 <p>We also have a diagnostic command that looks for common problems <a href="/commands/jx_step_verify_install/">jx step verify install</a>:</p>
 
-<pre><code>jx step verify install
+<pre><code class="language-sh">jx step verify install
 </code></pre>
 
 <p>A common issue for pods not starting is if your cluster does not have a <a href="https://kubernetes.io/docs/concepts/storage/storage-classes/" target="_blank">default storage class</a> setup so that <code>Persistent Volume Claims</code> can be bound to <code>Persistent Volumes</code> as described in the <a href="/docs/managing-jx/common-tasks/install-on-cluster/">install instructions</a>.</p>
 
 <p>You can check your storage class and persistent volume setup via:</p>
 
-<pre><code>kubectl get pvc
+<pre><code class="language-sh">kubectl get pvc
 </code></pre>
 
 <p>If things are working you should see something like:</p>
 
-<pre><code>$ kubectl get pvc
+<pre><code class="language-sh">$ kubectl get pvc
 NAME                        STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 jenkins                     Bound     pvc-680b39b5-94f1-11e8-b93d-42010a840238   30Gi       RWO            standard       12h
 jenkins-x-chartmuseum       Bound     pvc-6808fb5e-94f1-11e8-b93d-42010a840238   8Gi        RWO            standard       12h
@@ -1819,12 +1820,12 @@ jenkins-x-nexus             Bound     pvc-680fc692-94f1-11e8-b93d-42010a840238  
 
 <p>If the <code>Persistent Volume Claims</code> are all <code>Bound</code> and things still have not started then try</p>
 
-<pre><code>kubectl get pod
+<pre><code class="language-sh">kubectl get pod
 </code></pre>
 
 <p>If a pod cannot start try</p>
 
-<pre><code>kubectl describe pod some-pod-name
+<pre><code class="language-sh">kubectl describe pod some-pod-name
 </code></pre>
 
 <p>Maybe that gives you a clue. Is it RBAC related maybe?</p>
@@ -1835,7 +1836,7 @@ jenkins-x-nexus             Bound     pvc-680fc692-94f1-11e8-b93d-42010a840238  
 
 <p>If your pipeline fails with something like this:</p>
 
-<pre><code>The push refers to a repository [100.71.203.90:5000/lgil3/jx-test-app]
+<pre><code class="language-sh">The push refers to a repository [100.71.203.90:5000/lgil3/jx-test-app]
 time=&quot;2018-07-09T21:18:31Z&quot; level=fatal msg=&quot;build step: pushing [100.71.203.90:5000/lgil3/jx-test-app:0.0.2]: Get https://100.71.203.90:5000/v1/_ping: http: server gave HTTP response to HTTPS client&quot;
 </code></pre>
 
@@ -1885,12 +1886,12 @@ time=&quot;2018-07-09T21:18:31Z&quot; level=fatal msg=&quot;build step: pushing 
 
 <p>If you see errors like:</p>
 
-<pre><code>error:failed to add the repository 'jenkins-x' with URL 'https://chartmuseum.build.cd.jenkins-x.io'
+<pre><code class="language-sh">error:failed to add the repository 'jenkins-x' with URL 'https://chartmuseum.build.cd.jenkins-x.io'
 </code></pre>
 
 <p>or</p>
 
-<pre><code>Looks like &quot;https://chartmuseum.build.cd.jenkins-x.io&quot; is not a valid chart repository or cannot be reached
+<pre><code class="language-sh">Looks like &quot;https://chartmuseum.build.cd.jenkins-x.io&quot; is not a valid chart repository or cannot be reached
 </code></pre>
 
 <p>then it looks like you have a reference to an old chart museum URL for Jenkins X charts.</p>
@@ -1899,7 +1900,7 @@ time=&quot;2018-07-09T21:18:31Z&quot; level=fatal msg=&quot;build step: pushing 
 
 <p>It could be your helm install has an old repository URL installed. You should see&hellip;</p>
 
-<pre><code>$ helm repo list
+<pre><code class="language-sh">$ helm repo list
 NAME     	URL
 stable   	https://kubernetes-charts.storage.googleapis.com
 jenkins-x	http://chartmuseum.jenkins-x.io
@@ -1907,14 +1908,14 @@ jenkins-x	http://chartmuseum.jenkins-x.io
 
 <p>If you see this&hellip;</p>
 
-<pre><code>$ helm repo list
+<pre><code class="language-sh">$ helm repo list
 NAME     	URL
 jenkins-x	https://chartmuseum.build.cd.jenkins-x.io
 </code></pre>
 
 <p>then please run&hellip;</p>
 
-<pre><code>helm repo remove jenkins-x
+<pre><code class="language-sh">helm repo remove jenkins-x
 helm repo add jenkins-x	http://chartmuseum.jenkins-x.io
 </code></pre>
 
@@ -1930,7 +1931,7 @@ helm repo add jenkins-x	http://chartmuseum.jenkins-x.io
 
 <p>To recreate it with a new API token value try the following (changing the git server name to match your git provider):</p>
 
-<pre><code>jx delete git token -n GitHub admin
+<pre><code class="language-sh">jx delete git token -n GitHub admin
 jx create git token -n GitHub admin
 </code></pre>
 
@@ -1940,14 +1941,14 @@ jx create git token -n GitHub admin
 
 <p>If you get an error in Jenkins when it tries to scan your repositories for branches something like:</p>
 
-<pre><code>hudson.AbortException: Invalid scan credentials *****/****** (API Token for acccessing https://github.com git service inside pipelines) to connect to https://api.github.com, skipping
+<pre><code class="language-sh">hudson.AbortException: Invalid scan credentials *****/****** (API Token for acccessing https://github.com git service inside pipelines) to connect to https://api.github.com, skipping
 </code></pre>
 
 <p>Then your git API token was probably wrong or has expired.</p>
 
 <p>To recreate it with a new API token value try the following (changing the git server name to match your git provider):</p>
 
-<pre><code>jx delete git token -n GitHub admin
+<pre><code class="language-sh">jx delete git token -n GitHub admin
 jx create git token -n GitHub admin
 </code></pre>
 
@@ -1989,12 +1990,12 @@ jx create git token -n GitHub admin
 
 <p>If you don&rsquo;t see any valid nodes returned by <code>kubectl get node</code> or you get errors running <code>jx status</code> something like:</p>
 
-<pre><code>Unable to connect to the server: dial tcp: lookup abc.def.regino.eks.amazonaws.com on 10.0.0.2:53: no such host
+<pre><code class="language-sh">Unable to connect to the server: dial tcp: lookup abc.def.regino.eks.amazonaws.com on 10.0.0.2:53: no such host
 </code></pre>
 
 <p>it could be your kube config is stale. Try</p>
 
-<pre><code>aws eks --region &lt;CLUSTER_REGION&gt; update-kubeconfig --name &lt;CLUSTER_NAME&gt;
+<pre><code class="language-sh">aws eks --region &lt;CLUSTER_REGION&gt; update-kubeconfig --name &lt;CLUSTER_NAME&gt;
 </code></pre>
 
 <p>That should regenerate your local <code>~/kube/config</code> file and so <code>kubectl get node</code> or <code>jx status</code> should find your nodes</p>
@@ -2011,7 +2012,7 @@ jx create git token -n GitHub admin
 
 <p>Then run this command:</p>
 
-<pre><code class="language-shell">kail -l job-name=expose -n jx-staging
+<pre><code class="language-sh">kail -l job-name=expose -n jx-staging
 </code></pre>
 
 <p>If you then promote to the Staging environment or retrigger the pipeline on the <code>master</code> branch of your Staging git repository (e.g. via <a href="/commands/jx_start_pipeline/">jx start pipeline</a>) then you should see the output of the <a href="https://github.com/jenkins-x/exposecontroller" target="_blank">exposecontroller</a> pod.</p>
@@ -2020,7 +2021,7 @@ jx create git token -n GitHub admin
 
 <p>If you find you get lots of warnings in your pipelines like this&hellip;</p>
 
-<pre><code>&quot;Failed to query the Pull Request last commit status for https://github.com/myorg/environment-mycluster-staging/pull/1 ref xyz Could not find a status for repository myorg/environment-mycluster-staging with ref xyz
+<pre><code class="language-sh">&quot;Failed to query the Pull Request last commit status for https://github.com/myorg/environment-mycluster-staging/pull/1 ref xyz Could not find a status for repository myorg/environment-mycluster-staging with ref xyz
 </code></pre>
 
 <p>and promotion takes 30 minutes from a release pipeline on an application starting to the change hitting <code>Staging</code> then its mostly probably due to Webhooks.</p>
@@ -2031,7 +2032,7 @@ jx create git token -n GitHub admin
 
 <p>The easiest way to diagnose this is opening the git repository (e.g. for your environment repository).</p>
 
-<pre><code>jx get env
+<pre><code class="language-sh">jx get env
 </code></pre>
 
 <p>Then:</p>
@@ -2052,13 +2053,13 @@ jx create git token -n GitHub admin
 
 <p>If your minikube is failing to startup then you could try:</p>
 
-<pre><code>minikube delete
+<pre><code class="language-sh">minikube delete
 rm -rf ~/.minikube
 </code></pre>
 
 <p>If the <code>rm</code> fails you may need to do:</p>
 
-<pre><code>sudo rm -rf ~/.minikube
+<pre><code class="language-sh">sudo rm -rf ~/.minikube
 </code></pre>
 
 <p>Now try <code>jx create cluster minikube</code> again - did that help? Sometimes there are stale certs or files hanging around from old installations of minikube that can break things.</p>
@@ -2076,7 +2077,7 @@ rm -rf ~/.minikube
 
 <p>If you are using minikube on a mac with hyperkit and find minikube fails to start with a log like:</p>
 
-<pre><code>Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
+<pre><code class="language-sh">Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
@@ -2086,7 +2087,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 
 <p>The work around is to try the following:</p>
 
-<pre><code>rm ~/.minikube/machines/minikube/hyperkit.pid
+<pre><code class="language-sh">rm ~/.minikube/machines/minikube/hyperkit.pid
 </code></pre>
 
 <p>Then try again. Hopefully this time it will work!</p>
@@ -2111,7 +2112,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 
 <p>So if you type:</p>
 
-<pre><code>jx open
+<pre><code class="language-sh">jx open
 </code></pre>
 
 <p>You&rsquo;ll see all the URs of the form <code>http://$(minikube ip):somePortNumber</code> which then avoids going through <a href="http://nip.io/" target="_blank">nip.io</a> - it just means the URLs are a little more cryptic using magic port numbers rather than simple host names.</p>
@@ -2130,7 +2131,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 
 <p>One way to do that is via the <a href="https://github.com/boz/kail" target="_blank">kail</a> CLI:</p>
 
-<pre><code>kail -l  job-name=expose
+<pre><code class="language-sh">kail -l  job-name=expose
 </code></pre>
 
 <p>This will watch for exposecontroller logs and then dump them to the console. Now trigger a promotion pipeline and you should see the output within a minute or so.</p>
@@ -2143,7 +2144,7 @@ Temporary Error: Could not find an IP address for 46:0:41:86:41:6e
 
 <p>Newly created GKE clusters or existing cluster running <em>kubernetes</em> <strong>v1.12</strong> or older will encounter the following error when configuring Ingress with site-wide TLS:</p>
 
-<pre><code>Waiting for TLS certificates to be issued...
+<pre><code class="language-sh">Waiting for TLS certificates to be issued...
 Timeout reached while waiting for TLS certificates to be ready
 </code></pre>
 
@@ -2151,17 +2152,17 @@ Timeout reached while waiting for TLS certificates to be ready
 
 <p>Check if the <em>disable-validation</em> label exists on the <em>cert-manager</em> pod.</p>
 
-<pre><code>kubectl describe namespace cert-manager
+<pre><code class="language-sh">kubectl describe namespace cert-manager
 </code></pre>
 
 <p>If you cannot see the <code>certmanager.k8s.io/disable-validation=true</code> label on your namespace, you should add it with:</p>
 
-<pre><code>kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+<pre><code class="language-sh">kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 </code></pre>
 
 <p>Confirm the label has been added to the <em>cert-manager</em> pod.</p>
 
-<pre><code>kubectl describe namespace cert-manager
+<pre><code class="language-sh">kubectl describe namespace cert-manager
 
 Name:         cert-manager
 Labels:       certmanager.k8s.io/disable-validation=true
@@ -2172,17 +2173,17 @@ Status:       Active
 
 <p>Now rerun <em>jx</em> Ingress setup:</p>
 
-<pre><code>jx upgrade ingress
+<pre><code class="language-sh">jx upgrade ingress
 </code></pre>
 
 <p>While the ingress command is running, you can tail the <em>cert-manager</em> logs in another terminal and see what is happening. You will need to find the name of your <em>cert-manager</em> pod using:</p>
 
-<pre><code>kubectl get pods --namespace cert-manager
+<pre><code class="language-sh">kubectl get pods --namespace cert-manager
 </code></pre>
 
 <p>Then tail the logs of the <em>cert-manager</em> pod.</p>
 
-<pre><code>kubectl logs YOUR_CERT_MNG_POD --namespace cert-manager -f
+<pre><code class="language-sh">kubectl logs YOUR_CERT_MNG_POD --namespace cert-manager -f
 </code></pre>
 
 <p>Your TLS certificates should now be set up and working, otherwise checkout the <a href="https://docs.cert-manager.io/en/latest/getting-started/troubleshooting.html" target="_blank">official <em>cert-manager</em> troubleshooting</a> instructions.</p>
@@ -2253,7 +2254,7 @@ Status:       Active
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/e1a7e3dd6918e80a175430ba2b6fbb91d4b39a6a">release 0.0.1113 (e1a7e3d)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/32a6a79d6770cc65ea6783a1669eda703b6fc6f7">release 0.0.1114 (32a6a79)</a>
 </div>
 </div>
 
@@ -2340,6 +2341,7 @@ Status:       Active
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 
 
 
@@ -2356,7 +2358,7 @@ Status:       Active
     debug: false
   });
 </script>
-
+<script>hljs.initHighlightingOnLoad();</script>
 
   </body>
 </html>
