@@ -24,13 +24,13 @@
 <meta property="og:description" content="Questions on using ChatOps with Jenkins X" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/using-jx/faq/chatops/" />
-<meta property="article:modified_time" content="2019-10-09T04:51:11+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2019-10-09T07:38:12+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="ChatOps Questions">
 <meta itemprop="description" content="Questions on using ChatOps with Jenkins X">
 
 
-<meta itemprop="dateModified" content="2019-10-09T04:51:11&#43;00:00" />
-<meta itemprop="wordCount" content="788">
+<meta itemprop="dateModified" content="2019-10-09T07:38:12&#43;00:00" />
+<meta itemprop="wordCount" content="1024">
 
 
 
@@ -1702,6 +1702,8 @@ if (!doNotTrack) {
 <li><a href="#what-is-chatops">What is ChatOps?</a></li>
 <li><a href="#what-are-the-benefits-of-chatops">What are the benefits of ChatOps?</a></li>
 <li><a href="#which-kinds-of-webhook-support-chatops">Which kinds of webhook support ChatOps?</a></li>
+<li><a href="#how-do-i-re-trigger-a-pr-pipeline">How do I re-trigger a PR pipeline?</a></li>
+<li><a href="#how-do-i-add-multiple-parallel-pipelines-to-a-project">How do I add multiple parallel pipelines to a project?</a></li>
 <li><a href="#what-does-hook-do">What does hook do?</a></li>
 <li><a href="#what-does-tide-do">What does tide do?</a></li>
 <li><a href="#how-can-i-make-chatops-ha">How can I make ChatOps HA?</a></li>
@@ -1787,6 +1789,30 @@ if (!doNotTrack) {
 <h2 id="which-kinds-of-webhook-support-chatops">Which kinds of webhook support ChatOps?</h2>
 
 <p><a href="/docs/reference/components/prow/">Prow</a> and <a href="/architecture/lighthouse/">Lighthouse</a> support both webhooks and <a href="/docs/using-jx/faq/chatops">ChatOps</a> whereas Jenkins just supports webhooks only.</p>
+
+<h2 id="how-do-i-re-trigger-a-pr-pipeline">How do I re-trigger a PR pipeline?</h2>
+
+<p>If a pipeline fails due to some compile error or failing test - fix the code and push your changes and the Pull Request pipeline will rerun.</p>
+
+<p>If you think the pipeline failed due to some temporary infrastructure reason then you can use ChatOps to re-trigger the pipeline via commenting on the Pull Request:</p>
+
+<ul>
+<li><code>/retest</code> reruns only failed pipelines</li>
+<li><code>/test all</code> reruns all failed pipelines.</li>
+<li><code>/test foo</code> reruns the pipeline called <code>foo</code> only</li>
+</ul>
+
+<p>Note that you need to be in the <code>OWNERS</code> file as an approver for this to work.</p>
+
+<h2 id="how-do-i-add-multiple-parallel-pipelines-to-a-project">How do I add multiple parallel pipelines to a project?</h2>
+
+<p>It can be useful to have multiple pipelines to perform different kinds of long running tests on Pull Requests. e.g. running the same test suite using different databases, microsevice configurations or underlying infrastructure.</p>
+
+<p>In Jenkins X you can create a custom <code>Scheduler</code> resource in your <a href="/docs/getting-started/setup/boot/">jx boot</a> configuration (in <code>env/templates/myscheduler.yaml</code>) which you can add multiple named contexts in the <code>presubmits</code> section. Then for each context name make sure you have a file called <code>jenkins-x-${context}.yml</code> in your project.</p>
+
+<p>Then Jenkins X will invoke each context on demand via <code>/test mycontext</code> or automatically if you enable <code>alwaysRun: true</code>.</p>
+
+<p>You can see how we define lots of <a href="https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/f377a72498282de9ee49b807b4d5ba74321a4fab/env/templates/jx-versions-scheduler.yaml#L18" target="_blank">parallel testing contexts in the version stream here</a> which all run in parallel and report their status on each pull request on the <a href="/docs/concepts/version-stream/">version stream</a></p>
 
 <h2 id="what-does-hook-do">What does hook do?</h2>
 
@@ -1901,7 +1927,7 @@ pipelinerunner:
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/dbbeb34eeed5e1a6eaf526eb577d9feaaa642f14">release 0.0.1112 (dbbeb34)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 9, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/e1a7e3dd6918e80a175430ba2b6fbb91d4b39a6a">release 0.0.1113 (e1a7e3d)</a>
 </div>
 </div>
 

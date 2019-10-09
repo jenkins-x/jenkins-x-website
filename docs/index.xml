@@ -2797,6 +2797,30 @@ kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 
 &lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; support both webhooks and &lt;a href=&#34;/docs/using-jx/faq/chatops&#34;&gt;ChatOps&lt;/a&gt; whereas Jenkins just supports webhooks only.&lt;/p&gt;
 
+&lt;h2 id=&#34;how-do-i-re-trigger-a-pr-pipeline&#34;&gt;How do I re-trigger a PR pipeline?&lt;/h2&gt;
+
+&lt;p&gt;If a pipeline fails due to some compile error or failing test - fix the code and push your changes and the Pull Request pipeline will rerun.&lt;/p&gt;
+
+&lt;p&gt;If you think the pipeline failed due to some temporary infrastructure reason then you can use ChatOps to re-trigger the pipeline via commenting on the Pull Request:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/retest&lt;/code&gt; reruns only failed pipelines&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test all&lt;/code&gt; reruns all failed pipelines.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test foo&lt;/code&gt; reruns the pipeline called &lt;code&gt;foo&lt;/code&gt; only&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that you need to be in the &lt;code&gt;OWNERS&lt;/code&gt; file as an approver for this to work.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-add-multiple-parallel-pipelines-to-a-project&#34;&gt;How do I add multiple parallel pipelines to a project?&lt;/h2&gt;
+
+&lt;p&gt;It can be useful to have multiple pipelines to perform different kinds of long running tests on Pull Requests. e.g. running the same test suite using different databases, microsevice configurations or underlying infrastructure.&lt;/p&gt;
+
+&lt;p&gt;In Jenkins X you can create a custom &lt;code&gt;Scheduler&lt;/code&gt; resource in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; configuration (in &lt;code&gt;env/templates/myscheduler.yaml&lt;/code&gt;) which you can add multiple named contexts in the &lt;code&gt;presubmits&lt;/code&gt; section. Then for each context name make sure you have a file called &lt;code&gt;jenkins-x-${context}.yml&lt;/code&gt; in your project.&lt;/p&gt;
+
+&lt;p&gt;Then Jenkins X will invoke each context on demand via &lt;code&gt;/test mycontext&lt;/code&gt; or automatically if you enable &lt;code&gt;alwaysRun: true&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can see how we define lots of &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/f377a72498282de9ee49b807b4d5ba74321a4fab/env/templates/jx-versions-scheduler.yaml#L18&#34; target=&#34;_blank&#34;&gt;parallel testing contexts in the version stream here&lt;/a&gt; which all run in parallel and report their status on each pull request on the &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt;&lt;/p&gt;
+
 &lt;h2 id=&#34;what-does-hook-do&#34;&gt;What does hook do?&lt;/h2&gt;
 
 &lt;p&gt;&lt;code&gt;hook&lt;/code&gt; is the name of the microservice in &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and the http endpoint in &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; which listens to webhooks coming in from your git provider which then gets processed as either a ChatOps command or a trigger of a pipeline.&lt;/p&gt;
