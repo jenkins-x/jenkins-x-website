@@ -1,0 +1,194 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Amazon</title>
+    <link>/es/docs/getting-started/setup/create-cluster/amazon/</link>
+    <description>Recent content in Amazon on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>es-ES</language>
+    
+	  <atom:link href="/es/docs/getting-started/setup/create-cluster/amazon/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Create EKS cluster with Terraform</title>
+      <link>/es/docs/getting-started/setup/create-cluster/amazon/terraform/</link>
+      <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/es/docs/getting-started/setup/create-cluster/amazon/terraform/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This is a short guide to setup EKS on AWS and the required resources for Jenkins X&amp;rsquo;s setup of Vault
+using Terraform. It assumes access to AWS is configured and familiarity with AWS, kubectl and Terraform.&lt;/p&gt;
+
+&lt;p&gt;This snippet of Terraform code sets EKS and up needed resources on AWS. It outputs the parameters
+you then need to add to append to &lt;code&gt;jx install&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-tf&#34; data-lang=&#34;tf&#34;&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;region&amp;#34;&lt;/span&gt; {
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;subnets&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    type&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;list&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;vpc_id&amp;#34;&lt;/span&gt; {
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;key_name&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;SSH key name for worker nodes&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;bucket_domain&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Suffix for S3 bucket used for vault unseal operation&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;provider&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    region&lt;/span&gt;  &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${var.region}&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;module&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;eks&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    source&lt;/span&gt;       &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;terraform-aws-modules/eks/aws&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    cluster_name&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${var.region}&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    subnets&lt;/span&gt;      &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${var.subnets}&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    vpc_id&lt;/span&gt;       &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${var.vpc_id}&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    worker_groups&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;
+        {
+&lt;span style=&#34;color:#c4a000&#34;&gt;            autoscaling_enabled&lt;/span&gt;   &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;            asg_min_size&lt;/span&gt;          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;3&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;            asg_desired_capacity&lt;/span&gt;  &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;3&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;            instance_type&lt;/span&gt;         &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;t3.large&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;            asg_max_size&lt;/span&gt;          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;20&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;            key_name&lt;/span&gt;              &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${var.key_name}&amp;#34;&lt;/span&gt;
+        }
+    &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    version&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;5.0.0&amp;#34;&lt;/span&gt;
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Needed for cluster-autoscaler
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_iam_role_policy_attachment&amp;#34; &amp;#34;workers_AmazonEC2ContainerRegistryPowerUser&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;  policy_arn&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;  role&lt;/span&gt;       &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${module.eks.worker_iam_role_name}&amp;#34;&lt;/span&gt;
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Create S3 bucket for KMS
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_s3_bucket&amp;#34; &amp;#34;vault-unseal&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    bucket&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;vault-unseal.${var.region}.${var.bucket_domain}&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    acl&lt;/span&gt;    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;private&amp;#34;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#a40000&#34;&gt;versioning&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        enabled&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;false&lt;/span&gt;
+    }
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Create KMS key
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_kms_key&amp;#34; &amp;#34;bank_vault&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;KMS Key for bank vault unseal&amp;#34;&lt;/span&gt;
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Create DynamoDB table
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_dynamodb_table&amp;#34; &amp;#34;vault-data&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    name&lt;/span&gt;           &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;vault-data&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    read_capacity&lt;/span&gt;  &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;2&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    write_capacity&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;2&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    hash_key&lt;/span&gt;       &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Path&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    range_key&lt;/span&gt;      &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Key&amp;#34;&lt;/span&gt;
+    &lt;span style=&#34;color:#a40000&#34;&gt;attribute&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        name&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Path&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        type&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;S&amp;#34;&lt;/span&gt;
+    }
+
+    &lt;span style=&#34;color:#a40000&#34;&gt;attribute&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        name&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Key&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        type&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;S&amp;#34;&lt;/span&gt;
+    }
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Create service account for vault. Should the policy
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_iam_user&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;  name&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;vault_${var.region}&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#a40000&#34;&gt;data&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_iam_policy_document&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
+    &lt;span style=&#34;color:#a40000&#34;&gt;statement&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;DynamoDB&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DescribeLimits&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DescribeTimeToLive&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:ListTagsOfResource&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DescribeReservedCapacityOfferings&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DescribeReservedCapacity&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:ListTables&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:BatchGetItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:BatchWriteItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:CreateTable&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DeleteItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:GetItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:GetRecords&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:PutItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:Query&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:UpdateItem&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:Scan&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;dynamodb:DescribeTable&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_dynamodb_table.vault-data.arn}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+    }
+    &lt;span style=&#34;color:#a40000&#34;&gt;statement&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;S3&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;
+                &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;s3:PutObject&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+                &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;s3:GetObject&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_s3_bucket.vault-unseal.arn}/*&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+    }
+    &lt;span style=&#34;color:#a40000&#34;&gt;statement&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;S3List&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;s3:ListBucket&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_s3_bucket.vault-unseal.arn}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+    }
+    &lt;span style=&#34;color:#a40000&#34;&gt;statement&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;KMS&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;kms:Encrypt&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;kms:Decrypt&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
+            &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;kms:DescribeKey&amp;#34;&lt;/span&gt;
+        &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_kms_key.bank_vault.arn}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;]&lt;/span&gt;
+    }
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_iam_user_policy&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    name&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;vault_${var.region}&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#c4a000&#34;&gt;    user&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_iam_user.vault.name}&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#c4a000&#34;&gt;    policy&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${data.aws_iam_policy_document.vault.json}&amp;#34;&lt;/span&gt;
+}
+
+&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;aws_iam_access_key&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    user&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;${aws_iam_user.vault.name}&amp;#34;&lt;/span&gt;
+}&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Output KMS key id, S3 bucket name and secret name in the form of jx install options
+&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;output&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;jx_params&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#c4a000&#34;&gt;    value&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt; &amp;#34;--provider&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;eks --gitops --no-tiller --vault --aws-dynamodb-region&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${var.region} --aws-dynamodb-table&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${aws_dynamodb_table.vault-data.name} --aws-kms-region&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${var.region} --aws-kms-key-id&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${aws_kms_key.bank_vault.key_id} --aws-s3-region&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${var.region}  --aws-s3-bucket&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${aws_s3_bucket.vault-unseal.id} --aws-access-key-id&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#c4a000&#34;&gt;${aws_iam_access_key.vault.id} --aws-secret-access-key&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;aws_iam_access_key&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;vault&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;secret&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&amp;#34;&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Save as &lt;code&gt;eks.tf&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;The module terraform-aws-modules/eks/aws will also store a kubeconfig file as &lt;code&gt;config&lt;/code&gt;. This can be
+copied to or merged with your &lt;code&gt;~/.kube/config&lt;/code&gt;. Then &lt;code&gt;jx install&lt;/code&gt; can be run with the parameters
+output by the Terraform config above.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

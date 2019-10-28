@@ -32,18 +32,27 @@
 &lt;h3 id=&#34;builder-镜像&#34;&gt;Builder 镜像&lt;/h3&gt;
 
 &lt;p&gt;首先，您需要为 Builder 创建一个 docker 镜像。从 &lt;code&gt;Dockerfile&lt;/code&gt; 开始的一个实例可能类似于：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-dockerfile&#34; data-lang=&#34;dockerfile&#34;&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; jenkinsxio/builder-base:latest&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Install your tools and libraries&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;RUN&lt;/span&gt; yum install -y gcc openssl-devel&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;CMD&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; [&amp;#34;gcc&amp;#34;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-dockerfile&#34;&gt;FROM jenkinsxio/builder-base:latest
+
+# Install your tools and libraries
+RUN yum install -y gcc openssl-devel
+
+CMD [&amp;quot;gcc&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;现在，您可以构建并发布这个镜像到您的 registry：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
-docker build -t &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt; .
-docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#000&#34;&gt;BUILDER_IMAGE&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;export BUILDER_IMAGE=&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+docker build -t ${BUILDER_IMAGE} .
+docker push ${BUILDER_IMAGE}
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;别担心，当新的镜像需要构建时，您无需每次手动执行这些步骤。Jenkins X 可以为您管理这些。您只需要把 &lt;code&gt;Dockerfile&lt;/code&gt; 推送到类似于&lt;a href=&#34;https://github.com/jenkins-x/builder-go&#34; target=&#34;_blank&#34;&gt;这个&lt;/a&gt;代码仓库中。然后，根据您的组织名称来调整 &lt;code&gt;Jenkinsfile&lt;/code&gt; ，并使用下面的命令导入 Jenkins X 平台：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;之后，您每次推送一个变更，Jenkins X 将会自动地构建和发布镜像。&lt;/p&gt;
 
 &lt;h3 id=&#34;安装-builder&#34;&gt;安装 Builder&lt;/h3&gt;
@@ -51,41 +60,44 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;p&gt;当您安装或者升级 Jenkins X 时就可以安装您的 Builder 了。&lt;/p&gt;
 
 &lt;p&gt;在您的 &lt;code&gt;~/.jx/&lt;/code&gt; 目录下创建文件  &lt;code&gt;myvalues.yaml&lt;/code&gt; 并写入下面内容：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;Agent&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;PodTemplates&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;      &lt;/span&gt;MyBuilder&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Name&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;mybuilder&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Label&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-mybuilder&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;volumes&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;-&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;type&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;Secret&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;secretName&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-docker-cfg&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;mountPath&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;/home/jenkins/.docker&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;EnvVars&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;JENKINS_URL&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;http&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;//jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;8080&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;GIT_COMMITTER_EMAIL&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-x@googlegroups.com&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;GIT_AUTHOR_EMAIL&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-x@googlegroups.com&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;GIT_AUTHOR_NAME&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-x-bot&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;GIT_COMMITTER_NAME&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins-x-bot&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;XDG_CONFIG_HOME&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;/home/jenkins&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;DOCKER_CONFIG&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;/home/jenkins/.docker/&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;ServiceAccount&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkins&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Jnlp&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;jenkinsci/jnlp-slave&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;3.14-1&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestCpu&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;100m&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestMemory&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;128Mi&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Args&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;${computer.jnlpmac} ${computer.name}&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Dlang&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_BUILDER_IMAGE&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;            Privileged: true&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestCpu&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;400m&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;RequestMemory&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;512Mi&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;LimitCpu&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;1&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;LimitMemory&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;1024Mi&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Command&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;/bin/sh -c&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Args&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;cat&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Tty&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Agent:
+    PodTemplates:
+      MyBuilder:
+        Name: mybuilder
+        Label: jenkins-mybuilder
+        volumes:
+        - type: Secret
+          secretName: jenkins-docker-cfg
+          mountPath: /home/jenkins/.docker
+        EnvVars:
+          JENKINS_URL: http://jenkins:8080
+          GIT_COMMITTER_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_EMAIL: jenkins-x@googlegroups.com
+          GIT_AUTHOR_NAME: jenkins-x-bot
+          GIT_COMMITTER_NAME: jenkins-x-bot
+          XDG_CONFIG_HOME: /home/jenkins
+          DOCKER_CONFIG: /home/jenkins/.docker/
+        ServiceAccount: jenkins
+        Containers:
+          Jnlp:
+            Image: jenkinsci/jnlp-slave:3.14-1
+            RequestCpu: &amp;quot;100m&amp;quot;
+            RequestMemory: &amp;quot;128Mi&amp;quot;
+            Args: &#39;${computer.jnlpmac} ${computer.name}&#39;
+          Dlang:
+            Image: &amp;lt;YOUR_BUILDER_IMAGE&amp;gt;
+            Privileged: true
+            RequestCpu: &amp;quot;400m&amp;quot;
+            RequestMemory: &amp;quot;512Mi&amp;quot;
+            LimitCpu: &amp;quot;1&amp;quot;
+            LimitMemory: &amp;quot;1024Mi&amp;quot;
+            Command: &amp;quot;/bin/sh -c&amp;quot;
+            Args: &amp;quot;cat&amp;quot;
+            Tty: true
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;根据需要替换 Builder 名称和镜像。&lt;/p&gt;
 
 &lt;p&gt;您可以继续安装 Jenkins X ，然后 Builder 将会自动添加到平台。&lt;/p&gt;
@@ -93,28 +105,31 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;h3 id=&#34;使用-builder&#34;&gt;使用 Builder&lt;/h3&gt;
 
 &lt;p&gt;现在，您的 Builder 已经在 Jenkins 中安装了，您可以在 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中轻松地引用：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-Groovy&#34; data-lang=&#34;Groovy&#34;&gt;&lt;span style=&#34;color:#000&#34;&gt;pipeline&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;agent&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;label&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;jenkins-mybuilder&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;stages&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#000&#34;&gt;stage&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;Build&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;when&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-          &lt;span style=&#34;color:#000&#34;&gt;branch&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;master&amp;#39;&lt;/span&gt;
-        &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;steps&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-          &lt;span style=&#34;color:#000&#34;&gt;container&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;mybuilder&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-              &lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;// your steps
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-        &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-      &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;post&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;always&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-            &lt;span style=&#34;color:#000&#34;&gt;cleanWs&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;()&lt;/span&gt;
-        &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-Groovy&#34;&gt;pipeline {
+    agent {
+        label &amp;quot;jenkins-mybuilder&amp;quot;
+    }
+    stages {
+      stage(&#39;Build&#39;) {
+        when {
+          branch &#39;master&#39;
+        }
+        steps {
+          container(&#39;mybuilder&#39;) {
+              // your steps
+          }
+        }
+      }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;覆盖已有的-builder&#34;&gt;覆盖已有的 Builder&lt;/h2&gt;
 
 &lt;p&gt;Jenkins X 自带了很多&lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/values.yaml&#34; target=&#34;_blank&#34;&gt;预安装的 Builder&lt;/a&gt;，在安装或升级过程中可以根据需要覆盖。&lt;/p&gt;
@@ -122,21 +137,24 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;p&gt;您只需要基于&lt;a href=&#34;https://github.com/jenkins-x/builder-base/blob/master/Dockerfile.common&#34; target=&#34;_blank&#34;&gt;基础 Builder&lt;/a&gt; 镜像或者&lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34; target=&#34;_blank&#34;&gt;Builder 镜像&lt;/a&gt; 自定义。在上面查看细节。&lt;/p&gt;
 
 &lt;p&gt;然后，您可以在目录 &lt;code&gt;~/.jx/&lt;/code&gt; 中创建文件 &lt;code&gt;myvalues.yaml&lt;/code&gt; ，并写入一下内容：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;Agent&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;PodTemplates&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;      &lt;/span&gt;Maven&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Maven&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;      Nodejs:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Nodejs&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&amp;gt;
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;      Go:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;Containers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;          &lt;/span&gt;Go&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;            &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&amp;lt;VERSION&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Agent:
+    PodTemplates:
+      Maven:
+        Containers:
+          Maven:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_MAVEN_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Nodejs:
+        Containers:
+          Nodejs:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_NODEJS_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+      Go:
+        Containers:
+          Go:
+            Image: &amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_GO_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;您可以继续安装 Jenkins X，这些 Builder 将会自动地添加到平台。&lt;/p&gt;
 
       </description>
@@ -164,37 +182,52 @@ docker push &lt;span style=&#34;color:#4e9a06&#34;&gt;${&lt;/span&gt;&lt;span st
 &lt;h2 id=&#34;nexus&#34;&gt;Nexus&lt;/h2&gt;
 
 &lt;p&gt;例如：如果你希望在安装过程中禁用 Nexus，而使用不同主机上的一个独立的 Nexus，那么，你可以使用 &lt;code&gt;myvalues.yaml&lt;/code&gt; 中的服务链接来替代：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;nexus&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;enabled&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;&lt;/span&gt;nexusServiceLink&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;enabled&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;externalName&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;nexus.jx.svc.cluster.local&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;nexus:
+  enabled: false
+nexusServiceLink:
+  enabled: true
+  externalName: &amp;quot;nexus.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;要禁用并使用 chart museum 的服务链接的话添加：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;chartmuseum&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;enabled&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;&lt;/span&gt;chartmuseumServiceLink&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;enabled&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;externalName&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;jenkins-x-chartmuseum.jx.svc.cluster.local&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;chartmuseum:
+  enabled: false
+chartmuseumServiceLink:
+  enabled: true
+  externalName: &amp;quot;jenkins-x-chartmuseum.jx.svc.cluster.local&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;jenkins-镜像&#34;&gt;Jenkins 镜像&lt;/h2&gt;
 
 &lt;p&gt;Jenkins X 中我们提供了一个默认的 Jenkins docker 镜像 &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/jenkinsx/&#34; target=&#34;_blank&#34;&gt;jenkinsxio/jenkinsx&lt;/a&gt;，把我们所需要的所有插件包含在里面。&lt;/p&gt;
 
 &lt;p&gt;如果你想添加自己的插件，你可以使用我们的基础镜像创建一个你自己的 Dockerfile 和镜像，如下所示：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-dockerfile&#34; data-lang=&#34;dockerfile&#34;&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# Dockerfile for adding plugins to Jenkins X&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt; jenkinsxio/jenkinsx:latest&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt&lt;span style=&#34;color:#a40000&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#a40000&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;RUN&lt;/span&gt; /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-dockerfile&#34;&gt;# Dockerfile for adding plugins to Jenkins X
+FROM jenkinsxio/jenkinsx:latest
+
+COPY plugins.txt /usr/share/jenkins/ref/openshift-plugins.txt
+RUN /usr/local/bin/install-plugins.sh &amp;lt; /usr/share/jenkins/ref/openshift-plugins.txt
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后以下面的形式将你所有自定义插件放到 &lt;code&gt;plugins.txt&lt;/code&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;myplugin:1.2.3
-anotherplugin:4.5.6&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-text&#34;&gt;myplugin:1.2.3
+anotherplugin:4.5.6
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;一旦你通过 CI/CD 构建和发布了你的镜像，你就可以在安装 Jenkins X 时使用它：&lt;/p&gt;
 
 &lt;p&gt;为了用你自定义的镜像配置 Jenkins X ，你可以在 &lt;code&gt;myvalues.yaml&lt;/code&gt; 文件中指定你的 Jenkins 镜像：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;Master&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;Image&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;acme/my-jenkinsx&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;ImageTag&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;1.2.3&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Master:
+    Image: &amp;quot;acme/my-jenkinsx&amp;quot;
+    ImageTag: &amp;quot;1.2.3&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;这里有一个开源项目的例子 &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-openshift-image&#34; target=&#34;_blank&#34;&gt;jenkins-x/jenkins-x-openshift-image&lt;/a&gt;，你可以以它为模板创建一个新的 Jenkins 镜像用来在 OpenShift 上使用 Jenkins X 时增加 OpenShift 特定的插件和配置。&lt;/p&gt;
 
 &lt;h2 id=&#34;docker-registry&#34;&gt;Docker Registry&lt;/h2&gt;
@@ -204,7 +237,10 @@ anotherplugin:4.5.6&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然而，你也可以在执行命令 &lt;a href=&#34;/commands/jx_create_cluster&#34;&gt;jx create cluster&lt;/a&gt; 或 &lt;a href=&#34;/commands/jx_install&#34;&gt;jx install&lt;/a&gt; 时，通过选项 &lt;code&gt;--docker-registry&lt;/code&gt; 来指定。&lt;/p&gt;
 
 &lt;p&gt;例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster gke --docker-registry eu.gcr.io&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create cluster gke --docker-registry eu.gcr.io
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;但是，如果你使用了不同的 Docker Registry 的话，你可能需要&lt;a href=&#34;/docs/managing-jx/common-tasks/docker-registry/#update-the-config-json-secret&#34;&gt;修改 secret 才能连接到 docker&lt;/a&gt;。&lt;/p&gt;
 
       </description>
@@ -345,22 +381,34 @@ anotherplugin:4.5.6&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;注意，如果你是在 AWS 环境中，你可能会想使用 &lt;a href=&#34;/zh/docs/getting-started/setup/create-cluster/&#34;&gt;jx create aws&lt;/a&gt; 命令来帮你自动化完成所有步骤！&lt;/p&gt;
 
 &lt;p&gt;如果你是通过 &lt;a href=&#34;https://github.com/kubernetes/kops&#34; target=&#34;_blank&#34;&gt;kops&lt;/a&gt; 创建的 kubernetes 集群，那么你可以这么做：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops edit cluster&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kops edit cluster
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后，确保在 YAML 文件的章节 &lt;code&gt;spec&lt;/code&gt; 中有 &lt;code&gt;docker&lt;/code&gt; 配置：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;...&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;&lt;/span&gt;spec&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;docker&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;insecureRegistry&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;100.64.0.0&lt;/span&gt;/&lt;span style=&#34;color:#0000cf;font-weight:bold&#34;&gt;10&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;logDriver&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;...
+spec:
+  docker:
+    insecureRegistry: 100.64.0.0/10
+    logDriver: &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;上面的 IP 范围 &lt;code&gt;100.64.0.0/10&lt;/code&gt; 是 AWS 上的，但你需要修改为其他 Kubernetes 集群的；它依赖于 Kubernetes 服务的 IP 范围。&lt;/p&gt;
 
 &lt;p&gt;保存后，你可以参考下面的命令进行验证：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops get cluster -oyaml&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kops get cluster -oyaml
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后查找 &lt;code&gt;insecureRegistry&lt;/code&gt; 章节。&lt;/p&gt;
 
 &lt;p&gt;现在，确保这些修改在你的集群类型上是激活的：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops update cluster --yes
-kops rolling-update cluster --yes&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kops update cluster --yes
+kops rolling-update cluster --yes
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;你现在可以继续了！&lt;/p&gt;
 
 &lt;h3 id=&#34;安装-jenkins-x&#34;&gt;安装 Jenkins X&lt;/h3&gt;
@@ -408,9 +456,12 @@ kops rolling-update cluster --yes&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;一般来说，当使用 Tekton 时，Jenkins X 可以很容易地自我升级。但是，如果升级让 Jenkins X 无法实施 CI/CD ，那么使用 GitOps 回退更改将不起作用；）&lt;/p&gt;
 
 &lt;p&gt;如果你在升级 Jenkins X 过程中遇到任何问题，这里有一种手动方法可以应用开发环境的 git 存储库的内容：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;git clone &lt;span style=&#34;color:#000&#34;&gt;$MY_DEV_GIT_CLONE_URL&lt;/span&gt; jenkins-x-dev-env
-&lt;span style=&#34;color:#204a87&#34;&gt;cd&lt;/span&gt; jenkins-x-dev-env/env
-jx step env apply&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;git clone $MY_DEV_GIT_CLONE_URL jenkins-x-dev-env
+cd jenkins-x-dev-env/env
+jx step env apply
+&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
@@ -434,47 +485,65 @@ jx step env apply&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;如果你使用公有云的话，可能希望利用你的云服务商的 Docker Registry；或者复用你已有的 Docker Registry。&lt;/p&gt;
 
 &lt;p&gt;为了指定 Docker Registry 的主机、端口，你可以使用 Jenkins 控制台：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx console
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后，定位到 &lt;code&gt;管理 Jenkins -&amp;gt; 系统配置&lt;/code&gt;，并修改环境变量 &lt;code&gt;DOCKER_REGISTRY&lt;/code&gt; 指向你选择的 Docker Registry。&lt;/p&gt;
 
 &lt;p&gt;另一种方法是，把下面的内容添加到你的自定义 Jenkins X 平台 helm charts 的&lt;code&gt;values.yaml&lt;/code&gt; 文件中：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;jenkins&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;  &lt;/span&gt;Servers&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;    &lt;/span&gt;Global&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;      &lt;/span&gt;EnvVars&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt;        &lt;/span&gt;DOCKER_REGISTRY&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#f8f8f8;text-decoration:underline&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcr.io&amp;#34;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;jenkins:
+  Servers:
+    Global:
+      EnvVars:
+        DOCKER_REGISTRY: &amp;quot;gcr.io&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;更新-config-json&#34;&gt;更新 config.json&lt;/h2&gt;
 
 &lt;p&gt;下一步，你需要为 docker 更新 &lt;code&gt;config.json&lt;/code&gt; 中的认证。&lt;/p&gt;
 
 &lt;p&gt;如果为你的 Docker Registry 创建一个 &lt;code&gt;config.json&lt;/code&gt; 文件，例如：Google 云的 GCR，它可能看起来像：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;credHelpers&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;gcr.io&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcloud&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;us.gcr.io&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcloud&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;eu.gcr.io&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcloud&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;asia.gcr.io&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcloud&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;staging-k8s.gcr.io&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;gcloud&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;
-&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+    &amp;quot;credHelpers&amp;quot;: {
+        &amp;quot;gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;us.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;eu.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;asia.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;,
+        &amp;quot;staging-k8s.gcr.io&amp;quot;: &amp;quot;gcloud&amp;quot;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;对于 AWS 则像：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-	&lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;credsStore&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;ecr-login&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+	&amp;quot;credsStore&amp;quot;: &amp;quot;ecr-login&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后需要更新凭据 &lt;code&gt;jenkins-docker-cfg&lt;/code&gt; ，你可以执行以下操作:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl delete secret jenkins-docker-cfg
-kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;./config.json&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl delete secret jenkins-docker-cfg
+kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;使用-docker-hub&#34;&gt;使用 Docker Hub&lt;/h2&gt;
 
 &lt;p&gt;如果你想要发布你的镜像到 Docker Hub 当中 ，则需要修改你的 &lt;code&gt;config.json&lt;/code&gt; 像下面那样:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;auths&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;https://index.docker.io/v1/&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;{&lt;/span&gt;
-            &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;auth&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;MyDockerHubToken&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;,&lt;/span&gt;
-            &lt;span style=&#34;color:#204a87;font-weight:bold&#34;&gt;&amp;#34;email&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;:&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;myemail@acme.com&amp;#34;&lt;/span&gt;
-        &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;
-&lt;span style=&#34;color:#000;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+    &amp;quot;auths&amp;quot;: {
+        &amp;quot;https://index.docker.io/v1/&amp;quot;: {
+            &amp;quot;auth&amp;quot;: &amp;quot;MyDockerHubToken&amp;quot;,
+            &amp;quot;email&amp;quot;: &amp;quot;myemail@acme.com&amp;quot;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h3 id=&#34;为你的-registry-挂载凭证&#34;&gt;为你的 registry 挂载凭证&lt;/h3&gt;
 
 &lt;p&gt;你的 docker registry 需要将凭证挂载到 &lt;a href=&#34;/zh/docs/managing-jx/common-tasks/pod-templates/&#34;&gt;Pod 模板&lt;/a&gt;当中。&lt;/p&gt;
@@ -498,27 +567,42 @@ kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;
 &lt;p&gt;然而，在企业中工作时，你可能希望使用不同的 git 服务器。&lt;/p&gt;
 
 &lt;p&gt;你可以通过 &lt;a href=&#34;/commands/jx_get_git&#34;&gt;jx get git&lt;/a&gt; 列出配置好的 git 服务器。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get git&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get git
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;添加一个新的-git-服务商&#34;&gt;添加一个新的 git 服务商&lt;/h2&gt;
 
 &lt;p&gt;如果你在某个地方已经有了一个 git 服务，你可以通过 &lt;a href=&#34;/commands/jx_create_git_server&#34;&gt;jx create git server&lt;/a&gt; 把它添加到 Jenkins X中：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server gitKind someURL&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create git server gitKind someURL
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;这里 &lt;code&gt;gitKind&lt;/code&gt; 是某个 git 服务商，像 &lt;code&gt;github, gitea, gitlab, bitbucket&lt;/code&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;企业-github&#34;&gt;企业 GitHub&lt;/h2&gt;
 
 &lt;p&gt;要添加一个企业 GitHub 服务，尝试：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server github https://github.foo.com -n GHE&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create git server github https://github.foo.com -n GHE
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;这里 &lt;code&gt;-n&lt;/code&gt; 是 git 服务的名称。&lt;/p&gt;
 
 &lt;h2 id=&#34;bitbucket&#34;&gt;BitBucket&lt;/h2&gt;
 
 &lt;p&gt;要添加 BitBucket ，尝试：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git server bitbucket -n BitBucket https://bitbucket.org&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create git server bitbucket -n BitBucket https://bitbucket.org
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h3 id=&#34;添加用户-tokens&#34;&gt;添加用户 tokens&lt;/h3&gt;
 
 &lt;p&gt;为了添加一个 git 服务，你需要通过 &lt;a href=&#34;/commands/jx_create_git_token&#34;&gt;jx create git token&lt;/a&gt; 添加一个用户名和 API token：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create git token -n myProviderName myUserName&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create git token -n myProviderName myUserName
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;然后，就会提示你输入 API token&lt;/p&gt;
 
 &lt;h3 id=&#34;kubernetes-托管的-git-服务&#34;&gt;Kubernetes 托管的 git 服务&lt;/h3&gt;
@@ -528,9 +612,15 @@ kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;
 &lt;p&gt;例如：有一个 &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt; 的插件，可以让你把 gitea 作为 Jenkins X 安装的一部分。&lt;/p&gt;
 
 &lt;p&gt;要在 Jenkins X 中使用 &lt;a href=&#34;https://gitea.io/en-us/&#34; target=&#34;_blank&#34;&gt;gitea&lt;/a&gt;，你需要在安装 Jenkins X 之前启用 &lt;code&gt;gitea&lt;/code&gt; 插件：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit addon gitea -e true&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit addon gitea -e true
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;你可以通过 &lt;a href=&#34;/commands/jx_get_addons&#34;&gt;jx get addons&lt;/a&gt; 查看启用的插件：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get addons&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx get addons
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;现在，当你 &lt;a href=&#34;/zh/docs/getting-started/&#34;&gt;安装 Jenkins X&lt;/a&gt; 时，也会安装 &lt;code&gt;gitea&lt;/code&gt; 插件。&lt;/p&gt;
 
 &lt;p&gt;无论什么时候，Jenkins X 需要为一个环境或者新项目创建一个 git 库时，gitea 服务都会出现在选择列表中。&lt;/p&gt;
@@ -575,22 +665,25 @@ kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;
 &lt;p&gt;例如 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/&#34; target=&#34;_blank&#34;&gt;maven build pack&lt;/a&gt; 使用的 pod 模板时是 &lt;code&gt;jenkins-maven&lt;/code&gt;。&lt;/p&gt;
 
 &lt;p&gt;然后，我们就可以 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/Jenkinsfile#L1-L4&#34; target=&#34;_blank&#34;&gt;在 Jenkinsfile 中引用 pod 模板名称&lt;/a&gt;，在申明式流水线中使用这样的语法 &lt;code&gt;agent { label &amp;quot;jenkins-$PACKNAME }&lt;/code&gt; ，例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;// my declarative Jenkinsfile
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;
-&lt;span style=&#34;color:#000&#34;&gt;pipeline&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;agent&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#000&#34;&gt;label&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;jenkins-maven&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;environment&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;...&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;stages&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#000&#34;&gt;stage&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;CI Build and push snapshot&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;steps&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-          &lt;span style=&#34;color:#000&#34;&gt;container&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;maven&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-            &lt;span style=&#34;color:#000&#34;&gt;sh&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;mvn deploy&amp;#34;&lt;/span&gt;
-          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;...&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;// my declarative Jenkinsfile
+
+pipeline {
+    agent {
+      label &amp;quot;jenkins-maven&amp;quot;
+    }
+    environment {
+      ...
+    }
+    stages {
+      stage(&#39;CI Build and push snapshot&#39;) {
+        steps {
+          container(&#39;maven&#39;) {
+            sh &amp;quot;mvn deploy&amp;quot;
+          }
+          ...
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;提交新的-pod-模板&#34;&gt;提交新的 Pod 模板&lt;/h2&gt;
 
 &lt;p&gt;如果你正在使用一个新的 &lt;a href=&#34;/zh/architecture/build-packs&#34;&gt;build pack&lt;/a&gt;，那么，我们欢迎你 &lt;a href=&#34;/zh/docs/contributing/&#34;&gt;提交&lt;/a&gt; 一个新的 pod 模板，而且我们可以把它包含在 Jenkins X 的发行版中！&lt;/p&gt;
@@ -629,7 +722,10 @@ kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;
 &lt;p&gt;尽管一个 pod 模板倾向于有很多开发环境定义在里面，像 secrets；如果需要的话，你可以尝试在 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中用内联的形式定义 pod 模板，使变得简单。但我们更喜欢把大多数 pod 模板保留在你的开发环境源码中，而不是在每个应用中拷贝、粘贴。&lt;/p&gt;
 
 &lt;p&gt;现在，添加新的 Pod 模板最简单的方式就是通过 Jenkins 控制台。例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx console&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx console
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;这样就会打开 Jenkins 控制台。然后，导航到&lt;code&gt;管理 Jenkins&lt;/code&gt;（在左侧菜单），然后&lt;code&gt;系统配置&lt;/code&gt;。&lt;/p&gt;
 
 &lt;p&gt;你将会面临大量的页面配置选项，Pod 模板通常在底部；你应该看到了当前所有的 pod 模板，像 maven、NodeJS 等等。&lt;/p&gt;
@@ -684,32 +780,38 @@ kubectl create secret generic jenkins-docker-cfg --from-file&lt;span style=&#34;
 &lt;p&gt;如果你的构建包使用了 &lt;a href=&#34;/zh/architecture/pod-templates&#34;&gt;pod 模板&lt;/a&gt; 中不存在的构建工具，你需要&lt;a href=&#34;/zh/docs/managing-jx/common-tasks/pod-templates/#submitting-new-pod-templates&#34;&gt;提交一个新的 pod 模板&lt;/a&gt;，还可能需要一个新的构建容器景象。&lt;/p&gt;
 
 &lt;p&gt;一旦你有了 pod 模板可以使用，例如你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中引用到的 &lt;code&gt;jenkins-foo&lt;/code&gt; ：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;// my declarative Jenkinsfile
-&lt;/span&gt;&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;&lt;/span&gt;
-&lt;span style=&#34;color:#000&#34;&gt;pipeline&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;agent&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#000&#34;&gt;label&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;jenkins-foo&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;environment&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;...&lt;/span&gt;
-    &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;
-    &lt;span style=&#34;color:#000&#34;&gt;stages&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-      &lt;span style=&#34;color:#000&#34;&gt;stage&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;CI Build and push snapshot&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-        &lt;span style=&#34;color:#000&#34;&gt;steps&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-          &lt;span style=&#34;color:#000&#34;&gt;container&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;{&lt;/span&gt;
-            &lt;span style=&#34;color:#000&#34;&gt;sh&lt;/span&gt; &lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;foo deploy&amp;#34;&lt;/span&gt;
-          &lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-groovy&#34;&gt;// my declarative Jenkinsfile
+
+pipeline {
+    agent {
+      label &amp;quot;jenkins-foo&amp;quot;
+    }
+    environment {
+      ...
+    }
+    stages {
+      stage(&#39;CI Build and push snapshot&#39;) {
+        steps {
+          container(&#39;foo&#39;) {
+            sh &amp;quot;foo deploy&amp;quot;
+          }
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;一旦你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 可以在你的示例工程为你的语言实现 CI/CD 的话，我们因该把 &lt;code&gt;Dockerfile&lt;/code&gt;, &lt;code&gt;Jenkinsfile&lt;/code&gt; 和 charts 文件夹拷贝到你的派生 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34; target=&#34;_blank&#34;&gt;jenkins-x/draft-packs 仓库&lt;/a&gt; 中。&lt;/p&gt;
 
 &lt;p&gt;你可以通过把他们添加到构建包的本地库 &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt; 中来尝试。&lt;/p&gt;
 
 &lt;p&gt;例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;color:#204a87&#34;&gt;export&lt;/span&gt; &lt;span style=&#34;color:#000&#34;&gt;PACK&lt;/span&gt;&lt;span style=&#34;color:#ce5c00;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#4e9a06&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
-mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;span style=&#34;color:#000&#34;&gt;$PACK&lt;/span&gt;
-cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;span style=&#34;color:#000&#34;&gt;$PACK&lt;/span&gt;
 
-&lt;span style=&#34;color:#8f5902;font-style:italic&#34;&gt;# the charts will be in some folder charts/somefoo&lt;/span&gt;
-cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;span style=&#34;color:#000&#34;&gt;$PACK&lt;/span&gt;/charts&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;export PACK=&amp;quot;foo&amp;quot;
+mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+
+# the charts will be in some folder charts/somefoo
+cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK/charts
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;p&gt;当你的构建包在 &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;/code&gt; 文件夹中，就可以通过命令 &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; 来导入工程，使用编程语言来检测并查找最合适的构建包。如果你的构建包自定义检测逻辑的话，请让我们指导，我们可以帮助改进 &lt;a href=&#34;/commands/jx_import&#34;&gt;jx import&lt;/a&gt; 使得在你的构建包上做的更好。例如：我们有一些自定义逻辑更好地处理 &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/import.go#L383-L397&#34; target=&#34;_blank&#34;&gt;maven 和 Gradle&lt;/a&gt;。&lt;/p&gt;
 
 &lt;p&gt;如果你需要任何帮助 &lt;a href=&#34;/zh/community/&#34;&gt;请加入社区&lt;/a&gt; 。&lt;/p&gt;

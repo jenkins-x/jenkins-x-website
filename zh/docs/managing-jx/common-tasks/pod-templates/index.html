@@ -24,12 +24,12 @@
 <meta property="og:description" content="用于实现 Jenkins 流水线的 Pods" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/zh/docs/managing-jx/common-tasks/pod-templates/" />
-<meta property="article:modified_time" content="2019-10-28T01:36:23+00:00" />
+<meta property="article:modified_time" content="2019-10-28T19:42:33+00:00" />
 <meta itemprop="name" content="Pod 模板">
 <meta itemprop="description" content="用于实现 Jenkins 流水线的 Pods">
 
 
-<meta itemprop="dateModified" content="2019-10-28T01:36:23&#43;00:00" />
+<meta itemprop="dateModified" content="2019-10-28T19:42:33&#43;00:00" />
 <meta itemprop="wordCount" content="285">
 
 
@@ -133,6 +133,8 @@ if (!doNotTrack) {
 	
 	<a class="dropdown-item" href="/">English</a>
 	
+	<a class="dropdown-item" href="/es/">Español</a>
+	
 </div>
 			</li>
 			
@@ -166,6 +168,8 @@ if (!doNotTrack) {
 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 	
 	<a class="dropdown-item" href="/">English</a>
+	
+	<a class="dropdown-item" href="/es/">Español</a>
 	
 </div>
     </div>
@@ -911,22 +915,25 @@ if (!doNotTrack) {
 <p>例如 <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/" target="_blank">maven build pack</a> 使用的 pod 模板时是 <code>jenkins-maven</code>。</p>
 
 <p>然后，我们就可以 <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/maven/Jenkinsfile#L1-L4" target="_blank">在 Jenkinsfile 中引用 pod 模板名称</a>，在申明式流水线中使用这样的语法 <code>agent { label &quot;jenkins-$PACKNAME }</code> ，例如：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy"><span style="color:#8f5902;font-style:italic">// my declarative Jenkinsfile
-</span><span style="color:#8f5902;font-style:italic"></span>
-<span style="color:#000">pipeline</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-    <span style="color:#000">agent</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-      <span style="color:#000">label</span> <span style="color:#4e9a06">&#34;jenkins-maven&#34;</span>
-    <span style="color:#ce5c00;font-weight:bold">}</span>
-    <span style="color:#000">environment</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-      <span style="color:#ce5c00;font-weight:bold">...</span>
-    <span style="color:#ce5c00;font-weight:bold">}</span>
-    <span style="color:#000">stages</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-      <span style="color:#000">stage</span><span style="color:#ce5c00;font-weight:bold">(</span><span style="color:#4e9a06">&#39;CI Build and push snapshot&#39;</span><span style="color:#ce5c00;font-weight:bold">)</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-        <span style="color:#000">steps</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-          <span style="color:#000">container</span><span style="color:#ce5c00;font-weight:bold">(</span><span style="color:#4e9a06">&#39;maven&#39;</span><span style="color:#ce5c00;font-weight:bold">)</span> <span style="color:#ce5c00;font-weight:bold">{</span>
-            <span style="color:#000">sh</span> <span style="color:#4e9a06">&#34;mvn deploy&#34;</span>
-          <span style="color:#ce5c00;font-weight:bold">}</span>
-          <span style="color:#ce5c00;font-weight:bold">...</span></code></pre></div>
+
+<pre><code class="language-groovy">// my declarative Jenkinsfile
+
+pipeline {
+    agent {
+      label &quot;jenkins-maven&quot;
+    }
+    environment {
+      ...
+    }
+    stages {
+      stage('CI Build and push snapshot') {
+        steps {
+          container('maven') {
+            sh &quot;mvn deploy&quot;
+          }
+          ...
+</code></pre>
+
 <h2 id="提交新的-pod-模板">提交新的 Pod 模板</h2>
 
 <p>如果你正在使用一个新的 <a href="/zh/architecture/build-packs">build pack</a>，那么，我们欢迎你 <a href="/zh/docs/contributing/">提交</a> 一个新的 pod 模板，而且我们可以把它包含在 Jenkins X 的发行版中！</p>
@@ -965,7 +972,10 @@ if (!doNotTrack) {
 <p>尽管一个 pod 模板倾向于有很多开发环境定义在里面，像 secrets；如果需要的话，你可以尝试在 <code>Jenkinsfile</code> 中用内联的形式定义 pod 模板，使变得简单。但我们更喜欢把大多数 pod 模板保留在你的开发环境源码中，而不是在每个应用中拷贝、粘贴。</p>
 
 <p>现在，添加新的 Pod 模板最简单的方式就是通过 Jenkins 控制台。例如：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx console</code></pre></div>
+
+<pre><code class="language-sh">jx console
+</code></pre>
+
 <p>这样就会打开 Jenkins 控制台。然后，导航到<code>管理 Jenkins</code>（在左侧菜单），然后<code>系统配置</code>。</p>
 
 <p>你将会面临大量的页面配置选项，Pod 模板通常在底部；你应该看到了当前所有的 pod 模板，像 maven、NodeJS 等等。</p>
@@ -1040,7 +1050,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 28, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/7aac1bbaff7006e3b553ed1201cc0d5b866826ee">release 0.0.1181 (7aac1bb)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 28, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/52cee935813843198e855b9f7f46c82c55b09161">release 0.0.1182 (52cee93)</a>
 </div>
 </div>
 

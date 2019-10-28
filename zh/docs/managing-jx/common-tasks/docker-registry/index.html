@@ -24,13 +24,13 @@
 <meta property="og:description" content="配置你的 docker registry" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/zh/docs/managing-jx/common-tasks/docker-registry/" />
-<meta property="article:modified_time" content="2019-10-28T01:36:23+00:00" />
+<meta property="article:modified_time" content="2019-10-28T19:42:33+00:00" />
 <meta itemprop="name" content="Docker Registry">
 <meta itemprop="description" content="配置你的 docker registry">
 
 
-<meta itemprop="dateModified" content="2019-10-28T01:36:23&#43;00:00" />
-<meta itemprop="wordCount" content="143">
+<meta itemprop="dateModified" content="2019-10-28T19:42:33&#43;00:00" />
+<meta itemprop="wordCount" content="148">
 
 
 
@@ -133,6 +133,8 @@ if (!doNotTrack) {
 	
 	<a class="dropdown-item" href="/">English</a>
 	
+	<a class="dropdown-item" href="/es/">Español</a>
+	
 </div>
 			</li>
 			
@@ -166,6 +168,8 @@ if (!doNotTrack) {
 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 	
 	<a class="dropdown-item" href="/">English</a>
+	
+	<a class="dropdown-item" href="/es/">Español</a>
 	
 </div>
     </div>
@@ -900,47 +904,65 @@ if (!doNotTrack) {
 <p>如果你使用公有云的话，可能希望利用你的云服务商的 Docker Registry；或者复用你已有的 Docker Registry。</p>
 
 <p>为了指定 Docker Registry 的主机、端口，你可以使用 Jenkins 控制台：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx console</code></pre></div>
+
+<pre><code class="language-sh">jx console
+</code></pre>
+
 <p>然后，定位到 <code>管理 Jenkins -&gt; 系统配置</code>，并修改环境变量 <code>DOCKER_REGISTRY</code> 指向你选择的 Docker Registry。</p>
 
 <p>另一种方法是，把下面的内容添加到你的自定义 Jenkins X 平台 helm charts 的<code>values.yaml</code> 文件中：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">jenkins<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
-</span><span style="color:#f8f8f8;text-decoration:underline">  </span>Servers<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
-</span><span style="color:#f8f8f8;text-decoration:underline">    </span>Global<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
-</span><span style="color:#f8f8f8;text-decoration:underline">      </span>EnvVars<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline">
-</span><span style="color:#f8f8f8;text-decoration:underline">        </span>DOCKER_REGISTRY<span style="color:#000;font-weight:bold">:</span><span style="color:#f8f8f8;text-decoration:underline"> </span><span style="color:#4e9a06">&#34;gcr.io&#34;</span></code></pre></div>
+
+<pre><code class="language-yaml">jenkins:
+  Servers:
+    Global:
+      EnvVars:
+        DOCKER_REGISTRY: &quot;gcr.io&quot;
+</code></pre>
+
 <h2 id="更新-config-json">更新 config.json</h2>
 
 <p>下一步，你需要为 docker 更新 <code>config.json</code> 中的认证。</p>
 
 <p>如果为你的 Docker Registry 创建一个 <code>config.json</code> 文件，例如：Google 云的 GCR，它可能看起来像：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#000;font-weight:bold">{</span>
-    <span style="color:#204a87;font-weight:bold">&#34;credHelpers&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#000;font-weight:bold">{</span>
-        <span style="color:#204a87;font-weight:bold">&#34;gcr.io&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;gcloud&#34;</span><span style="color:#000;font-weight:bold">,</span>
-        <span style="color:#204a87;font-weight:bold">&#34;us.gcr.io&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;gcloud&#34;</span><span style="color:#000;font-weight:bold">,</span>
-        <span style="color:#204a87;font-weight:bold">&#34;eu.gcr.io&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;gcloud&#34;</span><span style="color:#000;font-weight:bold">,</span>
-        <span style="color:#204a87;font-weight:bold">&#34;asia.gcr.io&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;gcloud&#34;</span><span style="color:#000;font-weight:bold">,</span>
-        <span style="color:#204a87;font-weight:bold">&#34;staging-k8s.gcr.io&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;gcloud&#34;</span>
-    <span style="color:#000;font-weight:bold">}</span>
-<span style="color:#000;font-weight:bold">}</span></code></pre></div>
+
+<pre><code class="language-json">{
+    &quot;credHelpers&quot;: {
+        &quot;gcr.io&quot;: &quot;gcloud&quot;,
+        &quot;us.gcr.io&quot;: &quot;gcloud&quot;,
+        &quot;eu.gcr.io&quot;: &quot;gcloud&quot;,
+        &quot;asia.gcr.io&quot;: &quot;gcloud&quot;,
+        &quot;staging-k8s.gcr.io&quot;: &quot;gcloud&quot;
+    }
+}
+</code></pre>
+
 <p>对于 AWS 则像：</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#000;font-weight:bold">{</span>
-	<span style="color:#204a87;font-weight:bold">&#34;credsStore&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;ecr-login&#34;</span>
-<span style="color:#000;font-weight:bold">}</span></code></pre></div>
+
+<pre><code class="language-json">{
+	&quot;credsStore&quot;: &quot;ecr-login&quot;
+}
+</code></pre>
+
 <p>然后需要更新凭据 <code>jenkins-docker-cfg</code> ，你可以执行以下操作:</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl delete secret jenkins-docker-cfg
-kubectl create secret generic jenkins-docker-cfg --from-file<span style="color:#ce5c00;font-weight:bold">=</span>./config.json</code></pre></div>
+
+<pre><code class="language-sh">kubectl delete secret jenkins-docker-cfg
+kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
+</code></pre>
+
 <h2 id="使用-docker-hub">使用 Docker Hub</h2>
 
 <p>如果你想要发布你的镜像到 Docker Hub 当中 ，则需要修改你的 <code>config.json</code> 像下面那样:</p>
-<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#000;font-weight:bold">{</span>
-    <span style="color:#204a87;font-weight:bold">&#34;auths&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#000;font-weight:bold">{</span>
-        <span style="color:#204a87;font-weight:bold">&#34;https://index.docker.io/v1/&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#000;font-weight:bold">{</span>
-            <span style="color:#204a87;font-weight:bold">&#34;auth&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;MyDockerHubToken&#34;</span><span style="color:#000;font-weight:bold">,</span>
-            <span style="color:#204a87;font-weight:bold">&#34;email&#34;</span><span style="color:#000;font-weight:bold">:</span> <span style="color:#4e9a06">&#34;myemail@acme.com&#34;</span>
-        <span style="color:#000;font-weight:bold">}</span>
-    <span style="color:#000;font-weight:bold">}</span>
-<span style="color:#000;font-weight:bold">}</span></code></pre></div>
+
+<pre><code class="language-json">{
+    &quot;auths&quot;: {
+        &quot;https://index.docker.io/v1/&quot;: {
+            &quot;auth&quot;: &quot;MyDockerHubToken&quot;,
+            &quot;email&quot;: &quot;myemail@acme.com&quot;
+        }
+    }
+}
+</code></pre>
+
 <h3 id="为你的-registry-挂载凭证">为你的 registry 挂载凭证</h3>
 
 <p>你的 docker registry 需要将凭证挂载到 <a href="/zh/docs/managing-jx/common-tasks/pod-templates/">Pod 模板</a>当中。</p>
@@ -1007,7 +1029,7 @@ kubectl create secret generic jenkins-docker-cfg --from-file<span style="color:#
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 28, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/7aac1bbaff7006e3b553ed1201cc0d5b866826ee">release 0.0.1181 (7aac1bb)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 28, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/52cee935813843198e855b9f7f46c82c55b09161">release 0.0.1182 (52cee93)</a>
 </div>
 </div>
 
