@@ -52,6 +52,12 @@ kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 
 &lt;p&gt;See how to update your &lt;a href=&#34;/docs/getting-started/setup/boot/how-it-works/#source-repositories&#34;&gt;boot configuration with the latest SourceRepository resources&lt;/a&gt;&lt;/p&gt;
 
+&lt;h2 id=&#34;how-do-i-map-sourcerepository-to-a-custom-scheduler&#34;&gt;How do I map SourceRepository to a custom Scheduler&lt;/h2&gt;
+
+&lt;p&gt;You need to map your &lt;code&gt;SourceRepository&lt;/code&gt; to a &lt;code&gt;Scheduler&lt;/code&gt; via either specifying &lt;code&gt;--scheduler&lt;/code&gt; when you &lt;code&gt;jx create quickstart / jx import&lt;/code&gt; your repository or modifying the &lt;code&gt;SourceRepository&lt;/code&gt; CRD&amp;rsquo;s &lt;code&gt;spec.scheduler.name&lt;/code&gt; in your development git repository or specifying a different default scheduler on the &lt;code&gt;dev environment.spec.teamSettings.defaultScheduler.name&lt;/code&gt; then the next time the prow configuration is generated (on &lt;code&gt;jx create quickstart / jx import / jx boot&lt;/code&gt; it&amp;rsquo;ll update the prow config to use your scheduler&lt;/p&gt;
+
+&lt;p&gt;See also &lt;a href=&#34;/docs/using-jx/faq/chatops/#how-do-i-add-multiple-parallel-pipelines-to-a-project&#34;&gt;How do I add multiple parallel pipelines to a project?&lt;/a&gt;&lt;/p&gt;
+
 &lt;h2 id=&#34;how-do-i-add-more-charts-to-jenkins-x&#34;&gt;How do I add more charts to Jenkins X?&lt;/h2&gt;
 
 &lt;p&gt;It depends on which namespace you want the charts to be installed.&lt;/p&gt;
@@ -59,6 +65,10 @@ kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 &lt;p&gt;If its in the development environment (the &lt;code&gt;jx&lt;/code&gt; namespace by default) then &lt;code&gt;env/requirements.yaml&lt;/code&gt; is where to add the chart and for a chart &lt;code&gt;foo&lt;/code&gt; you can add &lt;code&gt;env/foo/values.yaml&lt;/code&gt; to configure it. (or &lt;code&gt;env/foo/values.tmpl.yaml&lt;/code&gt; if you want to use some &lt;a href=&#34;docs/getting-started/setup/boot/how-it-works/#improvements-to-values-yaml&#34; target=&#34;_blank&#34;&gt;templating&lt;/a&gt; of the &lt;code&gt;values.yaml&lt;/code&gt;)&lt;/p&gt;
 
 &lt;p&gt;Though if you want our chart to be in another namespace then we use the convention of adding a folder in the &lt;code&gt;system&lt;/code&gt; directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in &lt;code&gt;system&lt;/code&gt; and add the &lt;code&gt;jx step helm apply&lt;/code&gt; step in the pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt; like we do for &lt;code&gt;cert-manager&lt;/code&gt;, &lt;code&gt;nginx&lt;/code&gt;, &lt;code&gt;velero&lt;/code&gt; etc.&lt;/p&gt;
+
+&lt;h2 id=&#34;how-do-i-disable-the-ingress-controller&#34;&gt;How do I disable the ingress controller?&lt;/h2&gt;
+
+&lt;p&gt;If you already have your own ingress controller and do not want &lt;code&gt;jx boot&lt;/code&gt; to install another one you can just delete the &lt;code&gt;install-nginx-controller&lt;/code&gt; step in your dev environment git repository. e.g. &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml#L85-L99&#34; target=&#34;_blank&#34;&gt;remove this step&lt;/a&gt; from the &lt;code&gt;jenkins-x.yml&lt;/code&gt; in your dev environment git repository&lt;/p&gt;
 
       </description>
     </item>

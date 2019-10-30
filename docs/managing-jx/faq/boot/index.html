@@ -24,13 +24,13 @@
 <meta property="og:description" content="Questions on using &#39;jx boot&#39;" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/managing-jx/faq/boot/" />
-<meta property="article:modified_time" content="2019-10-30T02:17:59+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2019-10-30T11:26:35+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Boot Questions">
 <meta itemprop="description" content="Questions on using &#39;jx boot&#39;">
 
 
-<meta itemprop="dateModified" content="2019-10-30T02:17:59&#43;00:00" />
-<meta itemprop="wordCount" content="329">
+<meta itemprop="dateModified" content="2019-10-30T11:26:35&#43;00:00" />
+<meta itemprop="wordCount" content="473">
 
 
 
@@ -1739,7 +1739,9 @@ if (!doNotTrack) {
 <li><a href="#how-do-i-add-more-resources">How do I add more resources?</a></li>
 <li><a href="#how-do-i-add-new-environments">How do I add new Environments?</a></li>
 <li><a href="#how-to-to-manage-sourcerepository-resources">How to to manage SourceRepository resources?</a></li>
+<li><a href="#how-do-i-map-sourcerepository-to-a-custom-scheduler">How do I map SourceRepository to a custom Scheduler</a></li>
 <li><a href="#how-do-i-add-more-charts-to-jenkins-x">How do I add more charts to Jenkins X?</a></li>
+<li><a href="#how-do-i-disable-the-ingress-controller">How do I disable the ingress controller?</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -1826,6 +1828,12 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 
 <p>See how to update your <a href="/docs/getting-started/setup/boot/how-it-works/#source-repositories">boot configuration with the latest SourceRepository resources</a></p>
 
+<h2 id="how-do-i-map-sourcerepository-to-a-custom-scheduler">How do I map SourceRepository to a custom Scheduler</h2>
+
+<p>You need to map your <code>SourceRepository</code> to a <code>Scheduler</code> via either specifying <code>--scheduler</code> when you <code>jx create quickstart / jx import</code> your repository or modifying the <code>SourceRepository</code> CRD&rsquo;s <code>spec.scheduler.name</code> in your development git repository or specifying a different default scheduler on the <code>dev environment.spec.teamSettings.defaultScheduler.name</code> then the next time the prow configuration is generated (on <code>jx create quickstart / jx import / jx boot</code> it&rsquo;ll update the prow config to use your scheduler</p>
+
+<p>See also <a href="/docs/using-jx/faq/chatops/#how-do-i-add-multiple-parallel-pipelines-to-a-project">How do I add multiple parallel pipelines to a project?</a></p>
+
 <h2 id="how-do-i-add-more-charts-to-jenkins-x">How do I add more charts to Jenkins X?</h2>
 
 <p>It depends on which namespace you want the charts to be installed.</p>
@@ -1833,6 +1841,10 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 <p>If its in the development environment (the <code>jx</code> namespace by default) then <code>env/requirements.yaml</code> is where to add the chart and for a chart <code>foo</code> you can add <code>env/foo/values.yaml</code> to configure it. (or <code>env/foo/values.tmpl.yaml</code> if you want to use some <a href="docs/getting-started/setup/boot/how-it-works/#improvements-to-values-yaml" target="_blank">templating</a> of the <code>values.yaml</code>)</p>
 
 <p>Though if you want our chart to be in another namespace then we use the convention of adding a folder in the <code>system</code> directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in <code>system</code> and add the <code>jx step helm apply</code> step in the pipeline in <code>jenkins-x.yml</code> like we do for <code>cert-manager</code>, <code>nginx</code>, <code>velero</code> etc.</p>
+
+<h2 id="how-do-i-disable-the-ingress-controller">How do I disable the ingress controller?</h2>
+
+<p>If you already have your own ingress controller and do not want <code>jx boot</code> to install another one you can just delete the <code>install-nginx-controller</code> step in your dev environment git repository. e.g. <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml#L85-L99" target="_blank">remove this step</a> from the <code>jenkins-x.yml</code> in your dev environment git repository</p>
 
 	
 		<style>
@@ -1896,7 +1908,7 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 30, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/17794d47a89e06bd1e256fce882f6f5e285b1e9c">release 0.0.1192 (17794d4)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 30, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/fc4a938e5f6b069619a1990c88dfebddcd84fac7">release 0.0.1193 (fc4a938)</a>
 </div>
 </div>
 
