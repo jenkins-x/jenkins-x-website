@@ -1421,69 +1421,79 @@ domain (for example &lt;code&gt;acmecorp.example&lt;/code&gt;)&lt;/p&gt;
 &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34; target=&#34;_blank&#34;&gt;Zones&lt;/a&gt; page in
 your Google Cloud Platform project to setup your external domain.&lt;/p&gt;
 
-&lt;p&gt;NOTE: External DNS will automatically updates DNS records if you reuse the
- domain name, so if you delete an old cluster and create a new one it
- will preserve the same domain configuration for the new cluster.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+NOTE: External DNS will automatically updates DNS records if you reuse the
+domain name, so if you delete an old cluster and create a new one it
+will preserve the same domain configuration for the new cluster.
+&lt;/div&gt;
+
+
+&lt;p&gt;To setup External DNS:&lt;/p&gt;
 
 &lt;ol&gt;
 &lt;li&gt;&lt;p&gt;Choose a unique DNS name; you can use nested domains (for example,
  &lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;). Enter the name in the &lt;code&gt;DNS Name&lt;/code&gt;
 field&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;Run the &lt;code&gt;jx create domain&lt;/code&gt; command against your domain name:&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;Run the &lt;code&gt;jx create domain&lt;/code&gt; command against your domain name, for example:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;jx create domain gke --domain cluster1.acmecorp.example
 &lt;/code&gt;&lt;/pre&gt;
 
+&lt;p&gt;You will be prompted for information as needed during the setup:&lt;/p&gt;
+
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;The program prompts you to choose your Google Cloud Platform
-project from the available list.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Choose your Google Cloud Platform project from the available list.&lt;/p&gt;&lt;/li&gt;
 
-&lt;li&gt;&lt;p&gt;The program prompts you to update your existing managed servers
-to use the displayed list of Cloud DNS nameservers. Copy the
-list for use in the next steps.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Update your existing managed servers to use the displayed list of Cloud DNS nameservers. Copy the list for use in the next steps.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;li&gt;&lt;p&gt;From the Google Cloud Platform
-&lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34; target=&#34;_blank&#34;&gt;Zones&lt;/a&gt;
-page, change the &lt;em&gt;Resource Record Type&lt;/em&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default
-values for your domain for for &lt;em&gt;TTL&lt;/em&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;em&gt;TTL Unit&lt;/em&gt;
-(&lt;code&gt;minutes&lt;/code&gt;).&lt;/p&gt;&lt;/li&gt;
+&lt;p&gt;Next up is configuring GCP:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;From the Google Cloud Platform &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34; target=&#34;_blank&#34;&gt;Zones&lt;/a&gt; page, change the &lt;em&gt;Resource Record Type&lt;/em&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default values for your domain for for &lt;em&gt;TTL&lt;/em&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;em&gt;TTL Unit&lt;/em&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Add the first nameserver to the &lt;em&gt;Name server&lt;/em&gt; field&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add any subsequent nameservers.&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;Click &lt;code&gt;Create&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;Configure Jenkins X for the new domain names:&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Edit the &lt;code&gt;jx-requirements.yaml&lt;/code&gt; file and update the &lt;code&gt;domain&lt;/code&gt;
-field (in &lt;code&gt;ingress&lt;/code&gt;) to your domain name, for example
-&lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;p&gt;Finally, configure Jenkins X for the new domain names:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Edit the &lt;code&gt;jx-requirements.yaml&lt;/code&gt; file and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;) to your domain name, for example &lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
 
 &lt;li&gt;&lt;p&gt;In the &lt;em&gt;tls&lt;/em&gt; setting, enable TLS with &lt;code&gt;enabled: true&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;li&gt;&lt;p&gt;The resulting &lt;code&gt;jx-requirements.yaml&lt;/code&gt; entries for these settings
-should look similar to the following:&lt;/p&gt;
+&lt;p&gt;The resulting &lt;code&gt;jx-requirements.yaml&lt;/code&gt; entries for these settings should look similar to the example below:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;gitops: true
 ingress:
-domain: cluster1.acmecorp.example
-externalDNS: true
-namespaceSubDomain: -jx.
-tls:
-email: certifiable@acmecorp.example
-enabled: true
-production: true
+  domain: cluster1.acmecorp.example
+  externalDNS: true
+  namespaceSubDomain: -jx.
+  tls:
+    email: certifiable@acmecorp.example
+    enabled: true
+    production: true
 secretStorage: vault
-&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Run &lt;code&gt;jx boot&lt;/code&gt; for the changes to take effect in your
-environment.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+Remember to run &lt;code&gt;jx boot&lt;/code&gt; for the changes to take effect in your
+environment.
+&lt;/div&gt;
+
 
 &lt;h1 id=&#34;creating-a-vault&#34;&gt;Creating a Vault&lt;/h1&gt;
 
