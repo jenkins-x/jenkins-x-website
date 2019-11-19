@@ -214,6 +214,299 @@ jx upgrade addon prow
     </item>
     
     <item>
+      <title>Docs: Changelog</title>
+      <link>/docs/overview/changelog/</link>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/overview/changelog/</guid>
+      <description>
+        
+        
+        
+
+&lt;h1 id=&#34;support-matrix&#34;&gt;Support Matrix&lt;/h1&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Install Kind&lt;/th&gt;
+&lt;th&gt;Supported Git Providers&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Serverless Jenkins X pipelines with Tekton&lt;/td&gt;
+&lt;td&gt;GitHub only (due to Prow restriction - we are working on it!)&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Static Jenkins Server&lt;/td&gt;
+&lt;td&gt;GitHub, GitHub Enterprise, BitBucket Cloud, BitBucket Server, GitLab. Gitea in beta&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Clouds with Kaniko Support&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;GKE&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;EKS&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Clouds supporting bucket log storage&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;GKE&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;EKS&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&#34;status-reports&#34;&gt;Status Reports&lt;/h1&gt;
+
+&lt;p&gt;This section describes any specific manual work arounds you may require above and beyond changes described in the &lt;a href=&#34;/blog/news/&#34;&gt;News section&lt;/a&gt; or using &lt;a href=&#34;/commands/jx_upgrade/&#34;&gt;jx upgrade&lt;/a&gt; to upgrade the &lt;a href=&#34;/commands/jx_upgrade_cli/&#34;&gt;CLI&lt;/a&gt; or &lt;a href=&#34;/commands/jx_upgrade_platform/&#34;&gt;platform&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;25th-june-2019-missing-image-bitnami-monocular-api&#34;&gt;25th June 2019: missing image: bitnami/monocular-api&lt;/h2&gt;
+
+&lt;p&gt;It looks like the monocular docker images got removed today!&lt;/p&gt;
+
+&lt;p&gt;It turns out that monocular is not an absolute requirement for Jenkins X; it works great without it.&lt;/p&gt;
+
+&lt;p&gt;So a quick workaround to the problem is to scale down your monocular deployment:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl scale deploy jenkins-x-monocular-api --replicas=0
+kubectl scale deploy jenkins-x-monocular-prerender --replicas=0
+kubectl scale deploy jenkins-x-monocular-ui --replicas=0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The latest &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream release&lt;/a&gt; has removed monocular so if you &lt;a href=&#34;/docs/managing-jx/common-tasks/upgrade-jx/&#34;&gt;upgrade your platform
+&lt;/a&gt; this issue should be resolved.&lt;/p&gt;
+
+&lt;p&gt;We can always add monocular back as an optional &lt;a href=&#34;/docs/contributing/addons/&#34;&gt;App&lt;/a&gt; later on when it works again.&lt;/p&gt;
+
+&lt;h2 id=&#34;12th-june-2019-knative-build-now-deprecated&#34;&gt;12th June 2019: Knative Build now deprecated&lt;/h2&gt;
+
+&lt;p&gt;Knative Build was our first attempt at building a serverless offering in Jenkins X. Since then Knative build got replaced with the more powerful Knative Build Pipelines which then got moved and renamed to &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;So we highly recommend anyone who has created a Jenkins X installation using Knative build to move to a &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; cluster using Tekton instead.&lt;/p&gt;
+
+&lt;p&gt;Now the &lt;code&gt;jx&lt;/code&gt; binary will warn that any attempt at using &lt;code&gt;--knative-build&lt;/code&gt; when installing is deprecated.&lt;/p&gt;
+
+&lt;p&gt;We will soon have a build pack for &lt;a href=&#34;https://github.com/jenkinsci/jenkinsfile-runner&#34; target=&#34;_blank&#34;&gt;Jenkinsfile runner&lt;/a&gt; when using Tekton in case you need to reuse a Jenkinsfile within &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; and Tekton along with support for orchestrating &lt;code&gt;Jenkinsfile&lt;/code&gt; within a &lt;a href=&#34;/docs/managing-jx/common-tasks/custom-jenkins/&#34;&gt;custom Jenkins server&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;21st-may-2019-skaffold-upgrade-to-v0-29-0&#34;&gt;21st May 2019: Skaffold upgrade to v0.29.0&lt;/h2&gt;
+
+&lt;p&gt;We have noticed an incompatibility with older Skaffold configuration files and the new v0.29.0 Skaffold release.  Freshly generated applications will not suffer from this problem, but for existing applications changes to the configuration file may be required.&lt;/p&gt;
+
+&lt;p&gt;If you are running a static master or serverless (Jenkins file runner) cluster and are having issues building existing applications with the following error &lt;code&gt;creating runner: invalid skaffold config: required value not set: image&lt;/code&gt; you will need to modify your &lt;code&gt;skaffold.yaml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;code&gt;dev&lt;/code&gt; profile, remove the following section:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    artifacts:
+    - docker: {}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For more information, refer to this &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/pull/50/files&#34; target=&#34;_blank&#34;&gt;PR&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;16th-april-2019-jenkins-x-2-x&#34;&gt;16th April 2019: Jenkins X 2.x&lt;/h2&gt;
+
+&lt;p&gt;We are pleased to announce 2.0.x of Jenkins X.&lt;/p&gt;
+
+&lt;p&gt;We have changed some of the default CLI arguments when installing Jenkins X.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;we are now deprecating the use of Knative build with Prow / Serverless Jenkins in favor of &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines and Tekton&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;we default to using &lt;code&gt;--no-tiller&lt;/code&gt;  to &lt;a href=&#34;/news/helm-without-tiller/&#34;&gt;disable the use of helm&amp;rsquo;s tiller&lt;/a&gt;. We recommend to avoid tiller. If you really still want to use it then use &lt;code&gt;--no-tiller false&lt;/code&gt; on the CLI when installing Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;6th-feb-2019-regression-in-jx-install-config-secret&#34;&gt;6th Feb 2019: Regression in &lt;code&gt;jx-install-config&lt;/code&gt; secret.&lt;/h2&gt;
+
+&lt;p&gt;We have spotted a regression in the install process that generates an invalid config file inside the secret &lt;code&gt;jx-install-config&lt;/code&gt; secret.  Whilst the original defect has been fixed, the invalid secret will create an issue with &lt;code&gt;jx upgrade platform&lt;/code&gt; causing the cluster to loose all secrets.&lt;/p&gt;
+
+&lt;p&gt;To work around this, we have added some logic into &lt;code&gt;jx upgrade platform&lt;/code&gt; to detect the invalid secret and attempt to fix.  This feature is included in jx version &lt;code&gt;1.3.842&lt;/code&gt;.  An extract of a running upgrade is shown below:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;Creating /Users/garethjevans/.jx/adminSecrets.yaml from jx-install-config
+Creating /Users/garethjevans/.jx/extraValues.yaml from jx-install-config
+We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an invalid format
+? Would you like to repair the file? Yes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;1st-feb-2019-changes-to-the-default-nexus-configuration&#34;&gt;1st Feb 2019: Changes to the default Nexus configuration&lt;/h2&gt;
+
+&lt;p&gt;Anonymous access to Nexus has been disabled by default, this has implications to those running Maven based builds.  To support this, the maven settings.xml injected into each build pod needs to be modified.&lt;/p&gt;
+
+&lt;p&gt;This can be done automatically using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx upgrade platform --update-secrets
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;NOTE: this will regenerate the settings.xml from a defined template.&lt;/p&gt;
+
+&lt;p&gt;If you would prefer to apply this changes manually, edit the secret &lt;code&gt;jenkins-maven-settings&lt;/code&gt;, duplicating the server block for &lt;code&gt;local-nexus&lt;/code&gt;, changing the server id to &lt;code&gt;nexus&lt;/code&gt; e.g.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;server&amp;gt;
+    &amp;lt;id&amp;gt;local-nexus&amp;lt;/id&amp;gt;
+    &amp;lt;username&amp;gt;admin&amp;lt;/username&amp;gt;
+    &amp;lt;password&amp;gt;%s&amp;lt;/password&amp;gt;
+&amp;lt;/server&amp;gt;
+&amp;lt;server&amp;gt;
+    &amp;lt;id&amp;gt;nexus&amp;lt;/id&amp;gt;
+    &amp;lt;username&amp;gt;admin&amp;lt;/username&amp;gt;
+    &amp;lt;password&amp;gt;%s&amp;lt;/password&amp;gt;
+&amp;lt;/server&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;8-jan-2019-prow-and-knative-build-upgrade&#34;&gt;8 Jan 2019: Prow and Knative Build upgrade&lt;/h2&gt;
+
+&lt;p&gt;There are three critical bugs with the prow based Jenkins X
+&lt;a href=&#34;https://github.com/jenkins-x/jx/issues/2539&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jx/issues/2539&lt;/a&gt;
+&lt;a href=&#34;https://github.com/jenkins-x/jx/issues/2561&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jx/issues/2561&lt;/a&gt;
+&lt;a href=&#34;https://github.com/jenkins-x/jx/issues/2544&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jx/issues/2544&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The fixes involve upgrading to a newer version of Prow and Knative Build, the latter caused an issue when performing a traditional &lt;code&gt;jx upgrade addon&lt;/code&gt; so we recommend uninstalling Knative Build first (removes Knative Build related Custom Resource Definitions) and install the latest release.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx delete addon knative-build
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And to be extra sure it’s gone maybe do an extra:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;helm del --purge knative-build
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;then:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx upgrade cli
+jx upgrade addon prow
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;But this means any existing builds or custom changes to &lt;code&gt;BuildTemplate&lt;/code&gt; resources will be lost.&lt;/p&gt;
+
+&lt;h2 id=&#34;5-jan-2019-environment-git-repository-issue&#34;&gt;5 Jan 2019: environment git repository issue&lt;/h2&gt;
+
+&lt;p&gt;There was a regression added a few weeks ago which led to new installations setting up invalid &lt;code&gt;exposecontroller&lt;/code&gt; configuration in your &lt;code&gt;Staging/Production&lt;/code&gt; git repositories. See the &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/2591#issuecomment-451516674&#34; target=&#34;_blank&#34;&gt;issue and workaround&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Make sure that the &lt;code&gt;env/values.yaml&lt;/code&gt; file for your environment git repository uses &lt;code&gt;expose:&lt;/code&gt; as the key in the YAML and not &lt;code&gt;exposecontroller:&lt;/code&gt; - if it uses &lt;code&gt;exposecontroller:&lt;/code&gt; just edit it back to &lt;code&gt;expose:&lt;/code&gt; and you should be good to go!&lt;/p&gt;
+
+&lt;p&gt;Also we have noticed a possible regression with helm where if you have multiple &lt;code&gt;expose:&lt;/code&gt; sections in your environment &lt;code&gt;env/values.yaml&lt;/code&gt; it can disable the &lt;code&gt;exposecontroller&lt;/code&gt; post install helm hook which can break the creation of &lt;code&gt;Ingress&lt;/code&gt; resources in your environment - if you have more than one &lt;code&gt;expose:&lt;/code&gt; sections please combine them into a single entry.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Accelerate</title>
+      <link>/docs/overview/accelerate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/overview/accelerate/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;&lt;img src=&#34;/images/accelerate.jpg&#34; class=&#34;img-thumbnail&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X is a reimagined CI/CD implementation for the Cloud which is heavily influenced by the State of DevOps reports and more recently the &lt;a href=&#34;https://www.amazon.co.uk/Accelerate-Software-Performing-Technology-Organizations/dp/1942788339&#34; target=&#34;_blank&#34;&gt;Accelerate&lt;/a&gt; book from &lt;a href=&#34;https://twitter.com/nicolefv&#34; target=&#34;_blank&#34;&gt;Nicole Forsgren&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/jezhumble&#34; target=&#34;_blank&#34;&gt;Jez Humble&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/RealGeneKim?&#34; target=&#34;_blank&#34;&gt;Gene Kim&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Years of gathering data from real world teams and organizations which has been analyzed by inspiring thought leaders and data scientists from the DevOps world.  The Accelerate book recommends a number of capabilities that Jenkins X is implementing so users gain the scientifically proven benefits, out of the box.  We&amp;rsquo;ve started documenting the capabilities that are available today and will continue as more become available.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/capabilities.png&#34; class=&#34;img-thumbnail&#34;&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;use-version-control-for-all-artifacts&#34;&gt;Use version control for all artifacts&lt;/h1&gt;
+
+&lt;p&gt;The Weaveworks folks coined the term GitOps which we love.  Any change to an environment, whether it be a new application, version upgrade, resource limit change or simple application configuration should be raised as a Pull Request to Git, have checks run against it like a form of CI for environments and approved by a team that has control over what goes into the related environment.  We now enable governance have full traceability for any change to an environment.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Related Accelerate capability:  Use version control for all production artifacts&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;automate-your-deployment-process&#34;&gt;Automate your deployment process&lt;/h1&gt;
+
+&lt;h2 id=&#34;environments&#34;&gt;Environments&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X will automatically create Git backed environments during installation and makes it easy to add new ones using &lt;code&gt;jx create environment&lt;/code&gt;.  Additionally when creating new applications via a quickstart (&lt;code&gt;jx create quickstart&lt;/code&gt;), Java based SpringBoot (&lt;code&gt;jx create spring&lt;/code&gt;) or importing existing applications (&lt;code&gt;jx import&lt;/code&gt;), Jenkins X will both automatically add CI / CD pipelines and setup the jobs, git repos and webhooks to enable an automated deployment process.&lt;/p&gt;
+
+&lt;p&gt;Out of the box Jenkins X creates Staging and Production (this is customizable) permanent environments as well as temporary environments for preview applications from Pull Requests.&lt;/p&gt;
+
+&lt;h3 id=&#34;previews-environments&#34;&gt;Previews Environments&lt;/h3&gt;
+
+&lt;p&gt;We are trying to move as much testing, security, validation and experimentation for a change before it&amp;rsquo;s merged to master.  With the use of temporary dynamically created Preview Environments any Pull Request can have a preview version built and deployed, including libraries that feed into a downstream deployable application.  This means we can code review, test, collaborate better with all teams that are involved in agreeing that change can go live.&lt;/p&gt;
+
+&lt;p&gt;Ultimately Jenkins X wants to provide a way that developers, testers, designers and product managers can be as sure as they can that when a change is merged to master it works as expected.  We want to be confident the proposed change does not negatively affect any service or feature as well as deliver the value it is intended to.&lt;/p&gt;
+
+&lt;p&gt;Where Preview Environments get really interesting is when we are able to progress a short term PR through various stages of maturity and confidence where we begin to direct a percentage of real production traffic (either shadow traffic or even beta users).  We can then analyze the value of the proposed change and possible run multiple automated experiments over time using Hypothesis Driven Development.  This helps give us better understanding of how the change will perform when released to all users. Though we need to make sure PRs stay short lived for trunk based development; lets try avoid PRs turning into long term feature branches!&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Foster and enable team experimentation&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Using preview environments is a great way to introduce better test automation.  While Jenkins X enables this we don&amp;rsquo;t yet have examples of automated tests being run against a preview environment.  A simple test would be to ensure the application starts ok and Kubernetes liveness check pass for an amount of time. This relates to&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Implement Test Automation&lt;/em&gt;
+&lt;em&gt;Related Accelerate capability: Automate your deployment process&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;permanent-environments&#34;&gt;Permanent Environments&lt;/h3&gt;
+
+&lt;p&gt;In software development we&amp;rsquo;re used to working with multiple environments in the lead up to a change being promoted to a live production environment.  Whilst this seems business as usual it can cause significant delays to other changes if for any reason that it is deemed not fit via some process that didn&amp;rsquo;t happen pre merge to master.  Subsequent commits then become blocked and can cause delay of urgent changes being promoted to production.&lt;/p&gt;
+
+&lt;p&gt;As above Jenkins X wants any changes and experiments to be validated before it is merged to master.  We would like changes in a staging environment to be held there for a short amount of time before being promoted, ideally in an automated fashion.&lt;/p&gt;
+
+&lt;p&gt;The default Jenkins X pipelines provide deployment automation via environments.  These are customizable to suite your own CI / CD pipeline requirements.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X recommends Staging should act as a near as possible reflection on production, ideally with real production data shadowed to it using a service mesh to understand the behavior.  This also helps when developing changes in preview where we can link to non production services in staging.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Automate your deployment process&lt;/em&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;use-trunk-based-development&#34;&gt;Use trunk-based development&lt;/h1&gt;
+
+&lt;p&gt;The Accelerate book found that teams which use trunk based development with short lived branches performed better.  This has always worked for the Jenkins X core team members so this was an easy capability for Jenkins X to implement when setting up Git repositories and CI/CD jobs.&lt;/p&gt;
+
+&lt;h1 id=&#34;implement-continuous-integration&#34;&gt;Implement Continuous Integration&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X sees CI as the effort of validating a proposed change via Pull Requests before it is merged to master.  Jenkins X will automatically configure source code repositories, Jenkins and Kubernetes to provide Continuous Integration out of the box.&lt;/p&gt;
+
+&lt;h1 id=&#34;implement-continuous-delivery&#34;&gt;Implement Continuous Delivery&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X sees CD as the effort of taking that change after it&amp;rsquo;s been merged to master through to running in a live environment.  Jenkins X automates many parts in a release pipeline:&lt;/p&gt;
+
+&lt;p&gt;Jenkins X advocates the use of semantic versioning.  We use git tags to calculate the next release version which means we don&amp;rsquo;t need to store the latest release version in the master branch.  Where release systems do store the last or next version in Git repos it means CD becomes hard, as a commit in a release pipeline back to master triggers a new release.  This results in a recursive release trigger.  Using a Git tag helps avoid this situation which Jenkins X completely automates.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X will automatically create a released version on &lt;strong&gt;every&lt;/strong&gt; merge to master which can then potentially progress through to production.&lt;/p&gt;
+
+&lt;h1 id=&#34;use-loosely-coupled-architecture&#34;&gt;Use loosely coupled architecture&lt;/h1&gt;
+
+&lt;p&gt;By targeting Kubernetes users of Jenkins X can take advantage of many of the cloud features that help design and develop loosely coupled solutions.  Service discovery, fault tolerance, scalability, health checks, rolling upgrades, container scheduling and orchestration to name just a few examples of where Kubernetes helps.&lt;/p&gt;
+
+&lt;h1 id=&#34;architect-for-empowered-teams&#34;&gt;Architect for empowered teams&lt;/h1&gt;
+
+&lt;p&gt;Jenkins X aims to help polyglot application developers.  Right now Jenkins X has quickstarts and automated CI/CD setup with language detection for Golang, Java, NodeJS, .Net, React, Angular, Rust, Swift and more to come.  What this also does is provide a consistent Way Of Working so developers can concentrate on developing.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X also provides many addons, for example Grafana and Prometheus for automated metrics collection and visualization.  In this example centralized metrics help understand how your applications behave when built and deployed on Kubernetes.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; are another feature which enables developers to edit source code in their local IDE, behind the scenes it is then synced to the cloud and rapidly built and redeployed.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X believes providing developers automation that helps them experiment in the cloud, with different technologies and  feedback empowers them to make the best decisions - faster.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Accelerate</title>
       <link>/docs/overview/accelerate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -354,6 +647,225 @@ case and let the core Jenkins project focus on the classic java approach.&lt;/p&
 &lt;p&gt;One of Jenkins big strengths has always been its flexibility and huge ecosystem of different
 plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
 improving both the Cloud Native and the classic distributions of Jenkins in parallel.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: General Questions</title>
+      <link>/docs/overview/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/overview/faq/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;We have tried to collate common issues here with work arounds. If your issue isn&amp;rsquo;t listed here please &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34; target=&#34;_blank&#34;&gt;let us know&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;is-jenkins-x-open-source&#34;&gt;Is Jenkins X Open Source?&lt;/h2&gt;
+
+&lt;p&gt;Yes! All of Jenkins X source code and artifacts are open source; either Apache or MIT and will always remain so!&lt;/p&gt;
+
+&lt;h2 id=&#34;how-does-jenkins-x-compare-to-jenkins&#34;&gt;How does Jenkins X compare to Jenkins?&lt;/h2&gt;
+
+&lt;p&gt;Jenkins X provides &lt;a href=&#34;/docs/concepts/features/#automated-pipelines&#34;&gt;automated CI + CD&lt;/a&gt; for applications on kubernetes with &lt;a href=&#34;/docs/concepts/features/#promotion&#34;&gt;GitOps promotion through environments&lt;/a&gt; and &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;preview environments on Pull Requests
+&lt;/a&gt;. (See the &lt;a href=&#34;/docs/concepts/features/&#34;&gt;features for more details&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;Jenkins is a general purpose CI/CD server that can be configured to do anything you like by adding plugins, changing configuration and writing your own pipelines.&lt;/p&gt;
+
+&lt;p&gt;With Jenkins X you just &lt;a href=&#34;/docs/getting-started/&#34;&gt;install Jenkins X&lt;/a&gt; which automatically sets up all of the various tools (helm, docker registry, nexus etc) and then &lt;a href=&#34;/docs/using-jx/common-tasks/create-spring/&#34;&gt;create&lt;/a&gt;/&lt;a href=&#34;/docs/using-jx/creating/import/&#34;&gt;import&lt;/a&gt; projects and you get fully automated CI/CD and previews. This lets your developers focus on building applications while you delegate to Jenkins X to manage your CI+CD.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X supports different execution engines; so it can orchestrate a Jenkins server per team by reusing Jenkins in a docker container. Though when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; we use &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; rather than Jenkins as the underlying CI/CD engine to provide a modern highly available cloud native architecture.&lt;/p&gt;
+
+&lt;h2 id=&#34;is-jenkins-x-a-fork-of-jenkins&#34;&gt;Is Jenkins X a fork of Jenkins?&lt;/h2&gt;
+
+&lt;p&gt;No! Jenkins X can orchestrate Jenkins by reusing it inside a container and configures it to be as kubernetes native as possible.&lt;/p&gt;
+
+&lt;p&gt;Though when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; we use &lt;a href=&#34;https://tekton.dev/&#34; target=&#34;_blank&#34;&gt;Tekton&lt;/a&gt; rather than Jenkins as the underlying CI/CD engine to provide a modern highly available cloud native architecture.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-create-a-sub-project&#34;&gt;Why create a sub project?&lt;/h2&gt;
+
+&lt;p&gt;We are huge fans of &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; &amp;amp; the cloud and think its
+the long term future approach for running software for many folks.&lt;/p&gt;
+
+&lt;p&gt;However lots of folks will still want to run Jenkins in the regular jenkins way via: &lt;code&gt;java
+-jar jenkins.war&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;So the idea of the Jenkins X sub project is to focus 100% on the Kubernetes and Cloud Native use
+case and let the core Jenkins project focus on the classic java approach.&lt;/p&gt;
+
+&lt;p&gt;One of Jenkins big strengths has always been its flexibility and huge ecosystem of different
+plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
+improving both the Cloud Native and the classic distributions of Jenkins in parallel.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Apache License</title>
+      <link>/docs/overview/license/</link>
+      <pubDate>Thu, 01 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/overview/license/</guid>
+      <description>
+        
+        
+        
+
+
+
+&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
+&lt;p&gt;Jenkins X is released under the Apache 2.0 license.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;&lt;em&gt;Version 2.0, January 2004&lt;/em&gt; &lt;br&gt;
+&lt;a href=&#34;http://www.apache.org/licenses/LICENSE-2.0&#34; target=&#34;_blank&#34;&gt;http://www.apache.org/licenses/LICENSE-2.0&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Terms and Conditions for use, reproduction, and distribution&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;1-definitions&#34;&gt;1. Definitions&lt;/h2&gt;
+
+&lt;p&gt;“License” shall mean the terms and conditions for use, reproduction, and
+distribution as defined by Sections 1 through 9 of this document.&lt;/p&gt;
+
+&lt;p&gt;“Licensor” shall mean the copyright owner or entity authorized by the copyright
+owner that is granting the License.&lt;/p&gt;
+
+&lt;p&gt;“Legal Entity” shall mean the union of the acting entity and all other entities
+that control, are controlled by, or are under common control with that entity.
+For the purposes of this definition, “control” means &lt;strong&gt;(i)&lt;/strong&gt; the power, direct or
+indirect, to cause the direction or management of such entity, whether by
+contract or otherwise, or &lt;strong&gt;(ii)&lt;/strong&gt; ownership of fifty percent (50%) or more of the
+outstanding shares, or &lt;strong&gt;(iii)&lt;/strong&gt; beneficial ownership of such entity.&lt;/p&gt;
+
+&lt;p&gt;“You” (or “Your”) shall mean an individual or Legal Entity exercising
+permissions granted by this License.&lt;/p&gt;
+
+&lt;p&gt;“Source” form shall mean the preferred form for making modifications, including
+but not limited to software source code, documentation source, and configuration
+files.&lt;/p&gt;
+
+&lt;p&gt;“Object” form shall mean any form resulting from mechanical transformation or
+translation of a Source form, including but not limited to compiled object code,
+generated documentation, and conversions to other media types.&lt;/p&gt;
+
+&lt;p&gt;“Work” shall mean the work of authorship, whether in Source or Object form, made
+available under the License, as indicated by a copyright notice that is included
+in or attached to the work (an example is provided in the Appendix below).&lt;/p&gt;
+
+&lt;p&gt;“Derivative Works” shall mean any work, whether in Source or Object form, that
+is based on (or derived from) the Work and for which the editorial revisions,
+annotations, elaborations, or other modifications represent, as a whole, an
+original work of authorship. For the purposes of this License, Derivative Works
+shall not include works that remain separable from, or merely link (or bind by
+name) to the interfaces of, the Work and Derivative Works thereof.&lt;/p&gt;
+
+&lt;p&gt;“Contribution” shall mean any work of authorship, including the original version
+of the Work and any modifications or additions to that Work or Derivative Works
+thereof, that is intentionally submitted to Licensor for inclusion in the Work
+by the copyright owner or by an individual or Legal Entity authorized to submit
+on behalf of the copyright owner. For the purposes of this definition,
+“submitted” means any form of electronic, verbal, or written communication sent
+to the Licensor or its representatives, including but not limited to
+communication on electronic mailing lists, source code control systems, and
+issue tracking systems that are managed by, or on behalf of, the Licensor for
+the purpose of discussing and improving the Work, but excluding communication
+that is conspicuously marked or otherwise designated in writing by the copyright
+owner as “Not a Contribution.”&lt;/p&gt;
+
+&lt;p&gt;“Contributor” shall mean Licensor and any individual or Legal Entity on behalf
+of whom a Contribution has been received by Licensor and subsequently
+incorporated within the Work.&lt;/p&gt;
+
+&lt;h2 id=&#34;2-grant-of-copyright-license&#34;&gt;2. Grant of Copyright License&lt;/h2&gt;
+
+&lt;p&gt;Subject to the terms and conditions of this License, each Contributor hereby
+grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free,
+irrevocable copyright license to reproduce, prepare Derivative Works of,
+publicly display, publicly perform, sublicense, and distribute the Work and such
+Derivative Works in Source or Object form.&lt;/p&gt;
+
+&lt;h2 id=&#34;3-grant-of-patent-license&#34;&gt;3. Grant of Patent License&lt;/h2&gt;
+
+&lt;p&gt;Subject to the terms and conditions of this License, each Contributor hereby
+grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free,
+irrevocable (except as stated in this section) patent license to make, have
+made, use, offer to sell, sell, import, and otherwise transfer the Work, where
+such license applies only to those patent claims licensable by such Contributor
+that are necessarily infringed by their Contribution(s) alone or by combination
+of their Contribution(s) with the Work to which such Contribution(s) was
+submitted. If You institute patent litigation against any entity (including a
+cross-claim or counterclaim in a lawsuit) alleging that the Work or a
+Contribution incorporated within the Work constitutes direct or contributory
+patent infringement, then any patent licenses granted to You under this License
+for that Work shall terminate as of the date such litigation is filed.&lt;/p&gt;
+
+&lt;h2 id=&#34;4-redistribution&#34;&gt;4. Redistribution&lt;/h2&gt;
+
+&lt;p&gt;You may reproduce and distribute copies of the Work or Derivative Works thereof
+in any medium, with or without modifications, and in Source or Object form,
+provided that You meet the following conditions:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;(a)&lt;/strong&gt; You must give any other recipients of the Work or Derivative Works a copy of
+this License; and&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;(b)&lt;/strong&gt; You must cause any modified files to carry prominent notices stating that You
+changed the files; and&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;(c)&lt;/strong&gt; You must retain, in the Source form of any Derivative Works that You distribute,
+all copyright, patent, trademark, and attribution notices from the Source form
+of the Work, excluding those notices that do not pertain to any part of the
+Derivative Works; and&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;(d)&lt;/strong&gt; If the Work includes a “NOTICE” text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear. The contents of the NOTICE file are for informational purposes only and do not modify the License. You may add Your own attribution notices within Derivative Works that You distribute, alongside or as an addendum to the NOTICE text from the Work, provided that such additional attribution notices cannot be construed as modifying the License.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You may add Your own copyright statement to Your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of Your modifications, or for any such Derivative Works as a whole, provided Your use, reproduction, and distribution of the Work otherwise complies with the conditions stated in this License.&lt;/p&gt;
+
+&lt;h2 id=&#34;5-submission-of-contributions&#34;&gt;5. Submission of Contributions&lt;/h2&gt;
+
+&lt;p&gt;Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any separate license agreement you may have executed with Licensor regarding such Contributions.&lt;/p&gt;
+
+&lt;h2 id=&#34;6-trademarks&#34;&gt;6. Trademarks&lt;/h2&gt;
+
+&lt;p&gt;This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.&lt;/p&gt;
+
+&lt;h2 id=&#34;7-disclaimer-of-warranty&#34;&gt;7. Disclaimer of Warranty&lt;/h2&gt;
+
+&lt;p&gt;Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.&lt;/p&gt;
+
+&lt;h2 id=&#34;8-limitation-of-liability&#34;&gt;8. Limitation of Liability&lt;/h2&gt;
+
+&lt;p&gt;In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages.&lt;/p&gt;
+
+&lt;h2 id=&#34;9-accepting-warranty-or-additional-liability&#34;&gt;9. Accepting Warranty or Additional Liability&lt;/h2&gt;
+
+&lt;p&gt;While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;END OF TERMS AND CONDITIONS&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;appendix-how-to-apply-the-apache-license-to-your-work&#34;&gt;APPENDIX: How to apply the Apache License to your work&lt;/h2&gt;
+
+&lt;p&gt;To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets &lt;code&gt;[]&lt;/code&gt; replaced with your own identifying information. (Don&amp;rsquo;t include the brackets!) The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or class name and description of purpose be included on the same “printed page” as the copyright notice for easier identification within third-party archives.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-txt&#34;&gt;Copyright [yyyy] [name of copyright owner]
+
+Licensed under the Apache License, Version 2.0 (the &amp;quot;License&amp;quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &amp;quot;AS IS&amp;quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Add this as a file called &lt;code&gt;apache-notice.txt&lt;/code&gt; to the root of your repo.&lt;/p&gt;
 
       </description>
     </item>
