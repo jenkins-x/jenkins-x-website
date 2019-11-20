@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html class="no-js" lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-200.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <link rel="canonical" href="https://jenkins-x.io/zh/getting-started/manage-via-gitops/">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+     
+    <title>通过 GitOps 管理 | Jenkins X</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+     <meta name="generator" content="Hugo 0.58.0" />
+
+      
+        <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+      
+
+    <link href='https://jenkins-x.io/dist/main.css' rel='stylesheet' type="text/css" /><script src="https://jenkins-x.io/js/chart.js"></script>
+<style>
+  img.avatar {
+    width: 32px;
+    display: inline;
+  }
+</style>
+<meta property="og:title" content="通过 GitOps 管理" />
+<meta property="og:description" content="使用 GitOps 配置和升级你的 Jenkins X 设施" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jenkins-x.io/zh/getting-started/manage-via-gitops/" />
+
+<meta property="og:image" content="https://jenkins-x.io/images/logo.png" />
+<meta property="article:published_time" content="2016-11-01T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-09-20T06:55:10+00:00" />
+<meta itemprop="name" content="通过 GitOps 管理">
+<meta itemprop="description" content="使用 GitOps 配置和升级你的 Jenkins X 设施">
+
+
+<meta itemprop="datePublished" content="2016-11-01T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-09-20T06:55:10&#43;00:00" />
+<meta itemprop="wordCount" content="127">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
+
+<meta name="twitter:title" content="通过 GitOps 管理"/>
+<meta name="twitter:description" content="使用 GitOps 配置和升级你的 Jenkins X 设施"/>
+<meta name="twitter:site" content="@jenkinsxio"/>
+
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-4216293-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-4216293-7');
+
+
+
+var trackOutboundLink = function(id, url) {
+  console.log("track:", id, url)
+  gtag('event', 'click', {
+    'event_category': 'outbound',
+    'event_label': id,
+    'transport_type': 'beacon',
+    'event_callback': function(){document.location = url;}
+  });
+}
+
+</script>
+
+      
+     <link href='https://jenkins-x.io/css/build_status.css' rel='stylesheet' type="text/css" />
+
+  </head>
+  <body class="ma0 sans-serif bg-primary-color-light production">
+    
+<nav class="bg-primary-color-dark pv4 w-100" role="navigation">
+
+  <div class="center flex-ns flex-wrap items-center justify-start mw9">
+
+    <h1 class="dim f3 lh-solid ml0-ns mr0 mr4-l mv0 pl3 pl4-ns">
+      <a href="https://jenkins-x.io/zh" class="link white">
+         Jenkins X
+      </a>
+    </h1>
+    <ul class="list ma0 pa0 dn dib-l">
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/zh/documentation" class="dim link light-silver">
+            文档
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/zh/news" class="dim link light-silver">
+            新闻
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/zh/community" class="dim link light-silver">
+            社区
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://github.com/jenkins-x/jx" class="dim link light-silver">
+            GitHub
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins.io/zh" class="dim link light-silver">
+            Jenkins
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/zh/sponsors/" class="dim link light-silver">
+            赞助商
+              
+            
+            
+          </a>
+        </li>
+      
+    </ul>
+
+    <div class="db dib-ns pl3"><form id="site-search-form" action="" role="search">
+  <fieldset class="bn ma0 pa0">
+    <label class="clip" for="email-address">Search</label>
+    <input type="search" id="search-input" class="needs-js bg-left bg-transparent bn f5 input-reset lh-solid mt3 mt0-ns pl4 pv2 w5 white" placeholder="搜索文档" type="text" name="email-address" value="" style="background-image:url('/images/icon-search.png');background-size:16px 16px;">
+  </fieldset>
+</form>
+</div>
+
+    <div class="list ma0 pa0 dn dib-l">
+/zh/getting-started/manage-via-gitops/
+
+<ul class="list ma0 pa0 dn dib-l">
+
+  <li class="f5 dib mr4" role="menuitem">
+    
+    
+    <a href="https://jenkins-x.io//getting-started/manage-via-gitops/" class="dim gray">English</a>
+  </li>
+
+  <li class="f5 dib mr4" role="menuitem">
+    
+    
+    <a href="https://jenkins-x.io/zh/getting-started/manage-via-gitops/" class="dim gray">中文</a>
+  </li>
+
+</ul></div>
+
+    <span class="absolute mt1 mt2-l pr3 right-0 top-0">
+
+  <a href="https://twitter.com/intent/follow?screen_name=jenkinsxio" title="Follow on Twitter" class="link-transition twitter link dib z-999 pt3 pt0-l mr2">
+    <svg height="32px" id="Layer_1" style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+  </a>
+
+<a class="github-button needs-js link primary-color-dark" href="https://github.com/jenkins-x/jx" data-size="large" data-show-count="false" aria-label="Star jenkins-x/jx on GitHub">Star</a>
+</span>
+
+  </div>
+</nav>
+
+    
+    <main role="main" class="content-with-sidebar min-vh-100 pb7 pb0-ns">
+      
+  <article class="w-100 ph4 pb5 pb6-ns pt1 pt5-ns">
+    <div class="flex-l">
+
+      <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky">
+<aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
+	
+		<p class="b">此页面上的内容</p>
+  	<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#使用-gitops-管理-jenkins-x">使用 GitOps 管理 Jenkins X</a></li>
+<li><a href="#如果出现问题">如果出现问题</a></li>
+</ul></li>
+</ul>
+</nav>
+	
+
+	<div date-pref>
+		
+			<a href="https://jenkins-x.io/zh/getting-started/install-on-cluster-what-happens/" class="dib f6 pl1 hover-bg-light-gray br-100" title="安装过程中发生了什么 ">
+				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+
+		
+			<a href="https://jenkins-x.io/zh/getting-started/next/" class="dib f6 pr1 hover-bg-light-gray br-100" title="下一步？">
+			<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+	</div>
+
+</aside>
+</div>
+
+      <div class="order-1 w-60-l mw7 ph0 ph5-ns mid-gray nested-copy-line-height no-underline nested-links nested-img nested-copy-seperator nested-blockquote mt0-ns">
+        <div class="documentation-copy center measure-wide-l">
+          <div id="readout" class="fixed right-0 bottom-0">
+          </div>
+          <header class="flex-none w-100">
+  <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/getting-started/manage-via-gitops.zh.md" class="
+f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
+ page-edit">改善此页面</a>
+
+  
+    
+      <a href="https://jenkins-x.io/zh/categories/getting-started" class="f6 fw8 mb0 link mid-gray dim mr3">
+        GETTING STARTED
+      </a>
+    
+  
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">通过 GitOps 管理</h1>
+</header>
+
+<aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
+  
+    <div class="f4 fw4 lh-copy">
+      使用 GitOps 配置和升级你的 Jenkins X 设施
+    </div>
+  
+
+  
+</aside>
+
+
+
+<div class="prose" id="prose">
+
+
+
+<p>我们推荐你使用 GitOps 管理你的 Jenkins X 设施，升级它、配置它、以及添加或移除扩展<a href="https://jenkins-x.io/apps/">应用</a>，这样容易审计谁在你的设施上做了什么变更并且容易恢复坏的变更。</p>
+
+<p>当前这仅在 AWS 和 Google 云可用，因为它要求我们的 vault 操作员（需要云存储和 KMS ）存储凭据，而所有其他配置都存储在开发环境 git 仓库中。</p>
+
+<h2 id="使用-gitops-管理-jenkins-x">使用 GitOps 管理 Jenkins X</h2>
+
+<p>如果你正在创建一个集群或者在已经存在的集群安装，这里有一种快速简便的方法来使用 GitOps 来管理 Jenkins X 本身。它是 <code>—ng</code> ，为下一代 Jenkins X 而来。在我们今年晚些时候发布 Jenkins X 2.x 时，我们会将此功能标记设为默认选项。</p>
+
+<p><code>—ng</code> 标记是这些标记的一个别名：<code>—gitops —vault —no-tiller —tekton</code> 。所以它还附带了对 <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Jenkins X 流水线</a> - 基于 Tekton 的新式云原生流水线引擎的支持。</p>
+
+<p>如果你仍然想要使用Jenkins服务器作为 Jenkins X 中自动化 CI/CD 流水线的执行引擎，那么你可以使用 <code>—gitops —vault</code> 代替。仍要注意是的即使使用了 <code>—ng</code> 以及使用了由 Tekton 驱动的 <a href="https://jenkins-x.io/architecture/jenkins-x-pipelines/">Jenkins X 流水线</a>,你仍然需要创建你自己的<a href="https://jenkins-x.io/architecture/custom-jenkins/">自定义 Jenkins 服务器</a>来运行传统的 Jenkins 任务和流水线。</p>
+
+<p>一旦你使用 GitOps 安装了 Jenkins X 来管理开发环境，那么表明安装了 Jenkins X 和它的附加应用程序，你将为 Dev，Staging，Production 环境获得一个额外的 git 仓库。它也意味着如果你用一个更新命令如 <a href="https://jenkins-x.io/commands/jx_upgrade_platform/">jx upgrade platform</a> 或通过 <a href="http://localhost:1313/commands/jx_add_app/">jx add app</a> 添加、更新、删除应用，那么那些命令将在开发环境的 git 存储库生成 Pull Request ，就像当你发布新版本的微服务时， promotion 是如何工作的。</p>
+
+<h2 id="如果出现问题">如果出现问题</h2>
+
+<p>一般来说，当使用 Tekton 时，Jenkins X 可以很容易地自我升级。但是，如果升级让 Jenkins X 无法实施 CI/CD ，那么使用 GitOps 回退更改将不起作用；）</p>
+
+<p>如果你在升级 Jenkins X 过程中遇到任何问题，这里有一种手动方法可以应用开发环境的 git 存储库的内容：</p>
+
+<pre><code>git clone $MY_DEV_GIT_CLONE_URL jenkins-x-dev-env
+cd jenkins-x-dev-env/env
+jx step env apply 
+</code></pre>
+
+</div>
+
+          
+
+<h2>参照</h2>
+<ul>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/next/">下一步？</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/config/">配置</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/install-on-cluster-what-happens/">安装过程中发生了什么</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/install-on-cluster/">在 Kubernetes 上安装</a></li>
+	
+	<li><a href="https://jenkins-x.io/zh/getting-started/create-custom-builder/">创建自定义 Builder</a></li>
+	
+</ul>
+
+
+        </div>
+      </div>
+      <div class="order-0 w-20 dn db-l">
+        
+<nav role="navigation">
+  <ul class="list pa0 nl2">
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".about">关于 Jenkins X</a>
+
+          
+            <ul class="about desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/about/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    概览
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/about/features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    特色
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/about/accelerate/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    加速
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/about/concepts/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    概念
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/about/license/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    License
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".getting-started">入门</a>
+
+          
+            <ul class="getting-started desktopmenu animated fadeIn list pl0 bg-light-gray db">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    入门概览
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/install/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    获取 jx
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/create-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建新集群
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建自定义 Builder
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/install-on-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    在 Kubernetes 上安装
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/install-on-cluster-what-happens/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    安装过程中发生了什么
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/manage-via-gitops/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
+                    通过 GitOps 管理
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/next/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    下一步？
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/getting-started/config/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    配置
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".developing">研发</a>
+
+          
+            <ul class="developing desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    研发
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/create-spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建 Spring Boot
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/create-quickstart/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    快速开始
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/import/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    导入
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/browsing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    浏览
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/kube-context/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Kubernetes 上下文
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/promote/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    升级
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/preview/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    预览
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/ide/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    IDE
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    问题
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/developing/git/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Git 服务器
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".demos">示例</a>
+
+          
+            <ul class="demos desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/demos/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    示例
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/demos/create_cluster_gke/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建 GKE 集群
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/demos/create_spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建 Spring
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/demos/create_cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    创建集群
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".architecture">架构</a>
+
+          
+            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    架构
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/components/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    组件
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/source/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    源码
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/custom-resources/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    自定义资源
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/build-packs/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    构建打包
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Pod 模板
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/architecture/docker-registry/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Docker Registry
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="https://jenkins-x.io/extending/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".extending">扩展</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="https://jenkins-x.io/apidocs/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".api">API</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="https://jenkins-x.io/commands/jx/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".commands">命令行</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".faq">常见问题</a>
+
+          
+            <ul class="faq desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    常见问题概览
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    FAQ
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/jenkins/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Jenkins 相关问题
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/setup/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    安装问题
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Issues
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/technology/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    技术
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/faq/develop/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    开发问题
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".contribute">贡献</a>
+
+          
+            <ul class="contribute desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    给 Jenkins X 项目做贡献
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/development/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    开发
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/apidocs/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    API 文档
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/documentation/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    文档
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/roadmap/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    计划的特性
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/zh/contribute/triage/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    分类问题
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+  </ul>
+</nav>
+
+      </div>
+
+    </div>
+  </article>
+
+  <div class="w-100 bg-light-gray">
+    <div class="mw7 pa4 center nested-lh-copy lh-copy">
+      <h6 class="f4 dark-gray mb2">
+  <a href="https://jenkins-x.io/zh/getting-started/manage-via-gitops/" class="hide-child link primary-color">
+  <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+</span>
+    “通过 GitOps 管理”
+  </a> 上次更新： September 20, 2019: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/866dfd09334fa858fe2175e4b27699ef882770bf">release 0.0.1001 (866dfd0)</a>
+</h6>
+
+      
+
+
+    </div>
+  </div>
+
+    </main>
+
+    <footer class="bg-primary-color-dark ph4-ns pt4 relative w-100" role="contentinfo">
+  <div class="center flex-ns flex-wrap justify-between mw9 w-90">
+    <div class="pb3 pt4 w-100 w-50-ns">
+
+      <div class="b f3  light-gray mb3 nested-links tc">
+        By the <a href="https://github.com/jenkins-x/jx/contributors" class="link">Jenkins X Authors</a><br/>
+      </div>
+
+      <ul class="center f6 list ma0 mv3 pa0 tc"><li class="dib mr3"><a href="https://github.com/jenkins-x/jx/issues/new" class="dim link light-gray pv2">记录问题</a></li><li class="dib mr3"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">获取帮助</a></li><li class="dib"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">讨论源码</a></li></ul>
+
+      <ul class="center f6 list ma0 mv4 pa0 tc">
+        <li class="dib mr3"><a href="https://twitter.com/jenkinsxio" class="dim link light-gray pv2">@jenkinsxio</a>
+        </li>
+      </ul>
+
+      
+    </div>
+
+    <div> 
+      <img src="https://jenkins-x.io/images/logo.svg" width="100" height="100" />
+    </div>
+
+  </div>
+
+  <div class="f7 gray mb5 mb0-ns ph3 w-100"> 
+    <p class="dib mr4">Jenkins&reg; is a registered trademark of <a href="https://www.spi-inc.org/" class="link">Software in the Public Interest, Inc.</a></p>
+    <p class="dib">Copyright 2018–2019 the original authors.</p>
+  </div>
+
+
+  <div class="bg-primary-color-dark bottom-0 left-0 right-0 dn-l fixed pb3 ph3 w-100"><div  class="globalmenu mobilemenu pb3 dn">
+    
+
+<ul class="list hidden dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/documentation" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          文档
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/news" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          新闻
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/community" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          社区
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://github.com/jenkins-x/jx" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          GitHub
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins.io/zh" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Jenkins
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/sponsors/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          赞助商
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+<div  class="docsmenu mobilemenu pb3 dn">
+    
+
+<ul class="list dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/about/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          关于 Jenkins X
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/zh/getting-started/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          入门
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/zh/developing/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          研发
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/zh/demos/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          示例
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/zh/architecture/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          架构
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/extending/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          扩展
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/apidocs/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          API
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/commands/jx/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          命令行
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/faq/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          常见问题
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/zh/contribute/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          贡献
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+
+<div class="flex dn-l justify-between">
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link mr2 white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".globalmenu">Menu</button>
+
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".docsmenu">Docs Menu</button>
+</div>
+</div>
+
+</footer>
+
+    <script src="https://jenkins-x.io/dist/app.bundle.js"></script>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+<script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/d0c128ac1f69ba2bb20742976/9159f4f527ec7e8e4d019eb5c.js");</script>
+<script>
+    !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+    },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+    a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+    
+    twq('init','o14ln');
+    twq('track','PageView');
+ </script>
+
+  </body>
+</html>
