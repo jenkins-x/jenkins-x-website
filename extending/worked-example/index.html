@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-200.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+     
+    <title>Worked Example | Jenkins X</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+     <meta name="generator" content="Hugo 0.49" />
+
+      
+        <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+      
+
+    <link href='https://jenkins-x.io/dist/main.css' rel='stylesheet' type="text/css" /><script src="https://jenkins-x.io/js/chart.js"></script>
+<style>
+  img.avatar {
+    width: 32px;
+    display: inline;
+  }
+</style>
+<meta property="og:title" content="Worked Example" />
+<meta property="og:description" content="Implement support for JUnit Test reports in Jenkins X" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jenkins-x.io/extending/worked-example/" /><meta property="article:published_time" content="2018-09-06T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2018-10-05T12:49:00-04:00"/>
+
+<meta itemprop="name" content="Worked Example">
+<meta itemprop="description" content="Implement support for JUnit Test reports in Jenkins X">
+
+
+<meta itemprop="datePublished" content="2018-09-06T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-09-06T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="3200">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
+
+<meta name="twitter:title" content="Worked Example"/>
+<meta name="twitter:description" content="Implement support for JUnit Test reports in Jenkins X"/>
+<meta name="twitter:site" content="@jenkinsxio"/>
+
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-4216293-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-4216293-7');
+
+
+
+var trackOutboundLink = function(id, url) {
+  console.log("track:", id, url)
+  gtag('event', 'click', {
+    'event_category': 'outbound',
+    'event_label': id,
+    'transport_type': 'beacon',
+    'event_callback': function(){document.location = url;}
+  });
+}
+
+</script>
+
+      
+     <link href='https://jenkins-x.io/css/build_status.css' rel='stylesheet' type="text/css" />
+
+  </head>
+  <body class="ma0 sans-serif bg-primary-color-light production">
+    
+<nav class="bg-primary-color-dark pv4 w-100" role="navigation">
+
+  <div class="center flex-ns flex-wrap items-center justify-start mw9">
+
+    <h1 class="dim f3 lh-solid ml0-ns mr0 mr4-l mv0 pl3 pl4-ns">
+      <a href="https://jenkins-x.io/" class="link white">
+         Jenkins X
+      </a>
+    </h1>
+    <ul class="list ma0 pa0 dn dib-l">
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/documentation" class="dim link light-silver">
+            Documentation
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/news/" class="dim link light-silver">
+            News
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/community" class="dim link light-silver">
+            Community
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://github.com/jenkins-x/jx" class="dim link light-silver">
+            GitHub
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins.io" class="dim link light-silver">
+            Jenkins
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/sponsors/" class="dim link light-silver">
+            Sponsors
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/security/" class="dim link light-silver">
+            Security
+              
+            
+            
+          </a>
+        </li>
+      
+    </ul>
+
+    <div class="db dib-ns pl3"><form id="site-search-form" action="" role="search">
+  <fieldset class="bn ma0 pa0">
+    <label class="clip" for="email-address">Search</label>
+    <input type="search" id="search-input" class="needs-js bg-left bg-transparent bn f5 input-reset lh-solid mt3 mt0-ns pl4 pv2 w5 white" placeholder="Search the Docs" type="text" name="email-address" value="" style="background-image:url('/images/icon-search.png');background-size:16px 16px;">
+  </fieldset>
+</form>
+</div>
+
+    <div class="list ma0 pa0 dn dib-l"></div>
+
+    <span class="absolute mt1 mt2-l pr3 right-0 top-0">
+
+  <a href="https://twitter.com/intent/follow?screen_name=jenkinsxio" title="Follow on Twitter" class="link-transition twitter link dib z-999 pt3 pt0-l mr2">
+    <svg height="32px" id="Layer_1" style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+  </a>
+
+<a class="github-button needs-js link primary-color-dark" href="https://github.com/jenkins-x/jx" data-size="large" data-show-count="false" aria-label="Star jenkins-x/jx on GitHub">Star</a>
+</span>
+
+  </div>
+</nav>
+
+    
+    <main role="main" class="content-with-sidebar min-vh-100 pb7 pb0-ns">
+      
+  <article class="w-100 ph4 pb5 pb6-ns pt1 pt5-ns">
+    <div class="flex-l">
+
+      <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky">
+<aside class="fixed-lTK mw5-l right-0 f6 bl-l b--moon-gray pv4 pv0-ns ph4-l nested-list-reset nested-links nested-copy-line-height">
+	
+		<p class="b">What&#39;s on this Page</p>
+  	<nav id="TableOfContents">
+<ul>
+<li><a href="#functional-requirements">Functional Requirements</a></li>
+<li><a href="#implementation">Implementation</a>
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#collect-junit-xml-files-from-build">Collect JUnit XML files from build</a>
+<ul>
+<li><a href="#create-a-sample-project">Create a sample project</a></li>
+<li><a href="#generate-a-human-readable-report">Generate a Human Readable Report</a></li>
+<li><a href="#store-the-reports">Store the reports</a></li>
+<li><a href="#create-an-index-of-reports">Create an index of reports</a></li>
+<li><a href="#visualise-the-test-results">Visualise the test results</a></li>
+<li><a href="#a-better-way-to-build-functionality">A better way to build functionality</a></li>
+</ul></li>
+<li><a href="#progress-review">Progress Review</a></li>
+</ul></li>
+</ul>
+</nav>
+	
+</aside>
+</div>
+
+      <div class="order-1 w-60-l mw7 ph0 ph5-ns mid-gray nested-copy-line-height no-underline nested-links nested-img nested-copy-seperator nested-blockquote mt0-ns" style="flex-grow:1;">
+        <div class="documentation-copy center measure-wide-l">
+          <div id="readout" class="fixed right-0 bottom-0">
+          </div>
+          <header class="flex-none w-100">
+  
+  <h1 class="lh-title mb3 mv0 pt3 primary-color-dark">Worked Example</h1>
+</header>
+
+<aside class="bt bw1 pt3 mt2 mid-gray b--mid-gray fn w-100">
+  
+    <div class="f4 fw4 lh-copy">
+      Implement support for JUnit Test reports in Jenkins X
+    </div>
+  
+
+  
+</aside>
+
+
+
+<div class="prose" id="prose">
+
+
+
+<p>In this worked example we will implement the functionality of the classic <a href="https://wiki.jenkins.io/display/JENKINS/JUnit+Plugin">JUnit Plugin</a> from Jenkins in Jenkins X as a series of extensions to Jenkins X.</p>
+
+<blockquote>
+<p>This guide is still a work in progress!</p>
+</blockquote>
+
+<h1 id="functional-requirements">Functional Requirements</h1>
+
+<ul>
+<li>Collect JUnit XML files from build</li>
+<li>Associate with pipeline / pipeline step execution</li>
+<li>Notify user of URL to view test results</li>
+<li>Provide historical/trend view of tests</li>
+<li>Allow test results to affect build health</li>
+</ul>
+
+<h1 id="implementation">Implementation</h1>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ul>
+<li>A working installation of <code>jx</code></li>
+<li>A working Jenkins X cluster</li>
+<li>A working local install of Java and Maven</li>
+</ul>
+
+<h2 id="collect-junit-xml-files-from-build">Collect JUnit XML files from build</h2>
+
+<h3 id="create-a-sample-project">Create a sample project</h3>
+
+<p>We&rsquo;ll start by creating a sample Java project which will run some tests.</p>
+
+<ol>
+<li>Run <code>jx create quickstart -f spring-boot-web</code>. You can accept the defaults when prompted.</li>
+<li>Import the created sources into your favorite IDE.</li>
+
+<li><p>Open <code>pom.xml</code> and add JUnit as a dependency:</p>
+<div class="highlight"><pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.12<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span></code></pre></div></li>
+
+<li><p>Create the file <code>src/test/java/jenkinsx/example/springboot/WelcomeControllerTest.java</code>.</p></li>
+
+<li><p>Copy and paste this code into the <code>WelcomeControllerTest</code></p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">jenkinsx.example.springboot</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.junit.Assert</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.junit.Test</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WelcomeControllerTest</span> <span class="o">{</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testWelcome</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">WelcomeController</span> <span class="n">wc</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WelcomeController</span><span class="o">();</span>
+        <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;();</span>
+        <span class="n">wc</span><span class="o">.</span><span class="na">welcome</span><span class="o">(</span><span class="n">res</span><span class="o">);</span>
+        <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">res</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&#34;message&#34;</span><span class="o">),</span> <span class="s">&#34;Hello World&#34;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></div></li>
+
+<li><p>Validate your changes by running <code>mvn test</code>.</p></li>
+
+<li><p>Commit your changes and make sure the app makes it to staging in Jenkins X.</p></li>
+
+<li><p>Our test reports will be generated in Jenkins X build pods, so we want to use that for development. Jenkins X DevPods make that easy. Run <code>jx create devpod --sync</code> in your project.</p></li>
+
+<li><p>Validate the DevPod is working by running <code>mvn test</code>.</p></li>
+</ol>
+
+<h3 id="generate-a-human-readable-report">Generate a Human Readable Report</h3>
+
+<p>By default Maven Surefire doesn&rsquo;t generate HTML files, just XML reports. We want people to be able to look at the reports, as well as be able to submit the XML for analysis.</p>
+
+<ol>
+<li>In the DevPod run <code>mvn install surefire-report:report</code>. Validate that <code>target/site/surefire-report.html</code> is generated.</li>
+
+<li><p>Create a script <code>junit.sh</code> in the sample project with this code:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="cp">#!/bin/bash
+</span><span class="cp"></span>
+<span class="c1"># Generate the HTML report
+</span><span class="c1"></span>mvn surefire-report:report</code></pre></div></li>
+</ol>
+
+<h3 id="store-the-reports">Store the reports</h3>
+
+<p>We need a place to store the reports. A simple Go program will suffice for now.</p>
+
+<ol>
+<li>Run <code>jx create quickstart -f spring-boot-web</code>. You can accept the defaults when prompted.</li>
+
+<li><p>Replace the <code>main.go</code> contents with this code:</p>
+<div class="highlight"><pre class="chroma"><code class="language-golang" data-lang="golang"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+  <span class="s">&#34;fmt&#34;</span>
+  <span class="s">&#34;io/ioutil&#34;</span>
+  <span class="s">&#34;log&#34;</span>
+  <span class="s">&#34;net/http&#34;</span>
+  <span class="s">&#34;os&#34;</span>
+  <span class="s">&#34;path/filepath&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">const</span> <span class="nx">maxUploadSize</span> <span class="p">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="c1">// 2 MB
+</span><span class="c1"></span><span class="kd">const</span> <span class="nx">uploadPath</span> <span class="p">=</span> <span class="s">&#34;/reports&#34;</span>
+<span class="kd">const</span> <span class="nx">downloadPort</span> <span class="p">=</span> <span class="mi">8080</span>
+<span class="kd">const</span> <span class="nx">uploadPort</span> <span class="p">=</span> <span class="mi">8081</span>
+<span class="kd">const</span> <span class="nx">bind</span> <span class="p">=</span> <span class="s">&#34;0.0.0.0&#34;</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">go</span> <span class="nx">uploadServer</span><span class="p">()</span>
+  <span class="nx">downloadServer</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">downloadServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">server</span><span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">NewServeMux</span><span class="p">()</span>
+  <span class="nx">server</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">Dir</span><span class="p">(</span><span class="nx">uploadPath</span><span class="p">)))</span>
+  <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;Download server listening on %s:%d\n&#34;</span><span class="p">,</span> <span class="nx">bind</span><span class="p">,</span> <span class="nx">downloadPort</span><span class="p">)</span>
+  <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;%s:%d&#34;</span><span class="p">,</span> <span class="nx">bind</span><span class="p">,</span> <span class="nx">downloadPort</span><span class="p">),</span> <span class="nx">server</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">uploadServer</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">server</span><span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">NewServeMux</span><span class="p">()</span>
+  <span class="nx">server</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">uploadFileHandler</span><span class="p">())</span>
+  <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;Upload server listening on %s:%d\n&#34;</span><span class="p">,</span> <span class="nx">bind</span><span class="p">,</span> <span class="nx">uploadPort</span><span class="p">)</span>
+  <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;%s:%d&#34;</span><span class="p">,</span> <span class="nx">bind</span><span class="p">,</span> <span class="nx">uploadPort</span><span class="p">),</span> <span class="nx">server</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">uploadFileHandler</span><span class="p">()</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// validate file size
+</span><span class="c1"></span>    <span class="nx">r</span><span class="p">.</span><span class="nx">Body</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">MaxBytesReader</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">,</span> <span class="nx">maxUploadSize</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">ParseMultipartForm</span><span class="p">(</span><span class="nx">maxUploadSize</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;FILE_TOO_BIG&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// parse and validate file and post parameters
+</span><span class="c1"></span>    <span class="nx">file</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">FormFile</span><span class="p">(</span><span class="s">&#34;upload&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;INVALID_FILE&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">file</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
+    <span class="nx">fileBytes</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadAll</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;INVALID_FILE&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="nx">filename</span><span class="p">,</span> <span class="nx">dir</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nx">Split</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+    <span class="nx">newPath</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="nx">filename</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">MkdirAll</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">FileMode</span><span class="p">(</span><span class="mo">0755</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;CANT_CREATE_DIR&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="c1">// write file
+</span><span class="c1"></span>    <span class="nx">newFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Create</span><span class="p">(</span><span class="nx">newPath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;CANT_WRITE_FILE&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">newFile</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span> <span class="c1">// idempotent, okay to call twice
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">newFile</span><span class="p">.</span><span class="nx">Write</span><span class="p">(</span><span class="nx">fileBytes</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">newFile</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;CANT_WRITE_FILE&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;SUCCESS&#34;</span><span class="p">))</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">statusCode</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">w</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+  <span class="nx">w</span><span class="p">.</span><span class="nx">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">message</span><span class="p">))</span>
+<span class="p">}</span></code></pre></div>
+<p>This code will create an HTTP server that listens on two ports. It listens on 8080 to serve files from the <code>/reports</code> directory, and listens on 8081 for file uploads (using the URL path as the path as the location under <code>/reports</code> to store the file). By listening on different ports for download and upload we can easily expose the downloads service outside the cluster, but restrict the uploads service to inside the cluster meaning we have no need to secure the transport.</p>
+
+<p>We&rsquo;ll add authentication to the upload endpoint at a later point.</p></li>
+
+<li><p>We need to store the reports somewhere, and in Kubernetes this means using a volume. Add this snippet to the bottom of <code>charts/jenkins-x-reports/templates/deployment.yaml</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="w">      </span>volumes<span class="p">:</span><span class="w">
+</span><span class="w">      </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>{{<span class="w"> </span>.Values.service.reportVolumeName<span class="w"> </span>}}<span class="w">
+</span><span class="w">        </span>emptyDir<span class="p">:</span><span class="w"> </span>{}</code></pre></div>
+<p>and add this snippet to the container (just below above <code>ports</code> will work well):</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="w">        </span>volumeMounts<span class="p">:</span><span class="w">
+</span><span class="w">        </span>-<span class="w"> </span>name<span class="p">:</span><span class="w"> </span>{{<span class="w"> </span>.Values.service.reportVolumeName<span class="w"> </span>}}<span class="w">
+</span><span class="w">          </span>mountPath<span class="p">:</span><span class="w"> </span>{{<span class="w"> </span>.Values.service.reportMountPath<span class="w"> </span>}}</code></pre></div>
+<p>Now modify <code>charts/jenkins-x-reports/values.yaml</code> and modify the <code>service</code> and add (just after <code>internalPort</code> will work well):</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="w">  </span>reportVolumeName<span class="p">:</span><span class="w"> </span>reports-volume<span class="w">
+</span><span class="w">  </span>reportMountPath<span class="p">:</span><span class="w"> </span>/reports</code></pre></div>
+<p>You&rsquo;ll notice that we&rsquo;ve used <code>emptyDir{}</code> to store the reports - this is transient and reports will be lost when the pod dies. We&rsquo;ll replace this with a persistent volume later.</p></li>
+
+<li><p>Modify the <code>Dockerfile</code> to expose port <code>8081</code> as well by adding the line <code>EXPOSE 8081</code> just after <code>EXPOSE 8080</code>.</p></li>
+
+<li><p>Modify <code>charts/jenkins-x-reports/values.yaml</code> and add the values for the upload service just after the existing service:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml">serviceUpload<span class="p">:</span><span class="w">
+</span><span class="w">  </span>name<span class="p">:</span><span class="w"> </span>jenkins-x-reports-upload<span class="w">
+</span><span class="w">  </span>type<span class="p">:</span><span class="w"> </span>ClusterIP<span class="w">
+</span><span class="w">  </span>externalPort<span class="p">:</span><span class="w"> </span><span class="m">80</span><span class="w">
+</span><span class="w">  </span>internalPort<span class="p">:</span><span class="w"> </span><span class="m">8081</span></code></pre></div>
+<p>Notice how we&rsquo;ve given it a unique name, set the internal port correctly and removed the annotations that instruct Jenkins X to expose the service outside the cluster.</p>
+
+<p>We now need to create a template for these values. Add the file <code>charts/jenkins-x-reports/templates/service-upload.yaml</code>:</p>
+
+<pre><code>  apiVersion: v1
+  kind: Service
+  metadata:
+  {{- if .Values.serviceUpload.name }}
+    name: {{ .Values.serviceUpload.name }}
+  {{- else }}
+    name: {{ template &quot;fullname&quot; . }}
+  {{- end }}
+    labels:
+      chart: &quot;{{ .Chart.Name }}-{{ .Chart.Version | replace &quot;+&quot; &quot;_&quot; }}&quot;
+  {{- if .Values.serviceUpload.annotations }}
+    annotations:
+  {{ toYaml .Values.serviceUpload.annotations | indent 4 }}
+  {{- end }}
+  spec:
+    type: {{ .Values.serviceUpload.type }}
+    ports:
+    - port: {{ .Values.serviceUpload.externalPort }}
+      targetPort: {{ .Values.serviceUpload.internalPort }}
+      protocol: TCP
+      name: http
+    selector:
+      app: {{ template &quot;fullname&quot; . }}
+</code></pre>
+
+<p>This file is simply a copy of <code>service.yaml</code> with the <code>service</code> variable changed to <code>serviceUpload</code>.</p>
+
+<p>We also need to add the upload port to the list of container ports. Just below <code>containerPort: {{ .Values.service.internalPort }}</code> add:</p>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="w">          </span>containerPort<span class="p">:</span><span class="w"> </span>{{<span class="w"> </span>.Values.serviceUpload.internalPort<span class="w"> </span>}}</code></pre></div></li>
+
+<li><p>Run this as an app on your Jenkins X cluster by pushing your code changes to github. The app will build and can be tested in the staging environment.</p></li>
+
+<li><p>Validate you can upload and download files. In the DevPod for the sample app run <code>curl -F upload=@target/site/surefire-report.html http://jenkins-x-reports-upload.jx-staging/test/1</code> and then validate that the file is there by running <code>curl http://jenkins-x-reports.jx-staging/test/1</code>.</p></li>
+
+<li><p>Promote the app to production using <code>jx promote -a jenkins-x-reports -e production -v 0.0.1</code> (assuming you are still on your first version of the app)</p></li>
+
+<li><p>To POST all the junit artifacts to the reports server use this script</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="cp">#!/bin/bash
+</span><span class="cp"></span>
+<span class="nv">UPLOADED</span><span class="o">=</span>uploaded.yaml
+<span class="nv">REPORT_HOST</span><span class="o">=</span><span class="sb">`</span>jx get urls -e production <span class="p">|</span> grep -o http://jenkins-x-reports.jx-production.*<span class="sb">`</span>
+
+<span class="k">function</span> upload<span class="o">()</span> <span class="o">{</span>
+    upload_junit_artifacts
+<span class="o">}</span>
+
+<span class="k">function</span> upload_junit_artifacts<span class="o">()</span> <span class="o">{</span>
+    <span class="c1"># Generate the HTML report
+</span><span class="c1"></span>    mvn surefire-report:report
+    upload_file target/site/surefire-report.html
+    <span class="k">for</span> f in target/surefire-reports/*.xml<span class="p">;</span> <span class="k">do</span>
+        upload_file <span class="si">${</span><span class="nv">f</span><span class="si">}</span>
+    <span class="k">done</span>
+<span class="o">}</span>
+
+<span class="k">function</span> upload_file<span class="o">()</span> <span class="o">{</span>
+    <span class="o">[</span> -f <span class="s2">&#34;</span><span class="nv">$1</span><span class="s2">&#34;</span> <span class="o">]</span> <span class="o">||</span> <span class="nb">break</span>
+    <span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename <span class="nv">$1</span><span class="k">)</span>
+    <span class="nv">path</span><span class="o">=</span><span class="nv">$ORG</span>/<span class="nv">$APP_NAME</span>/<span class="nv">$VERSION</span>/<span class="nv">$filename</span>
+    <span class="nb">set</span> -x
+    curl -s -F <span class="nv">upload</span><span class="o">=</span>@<span class="nv">$1</span> http://jenkins-x-reports-upload.jx-production/<span class="nv">$path</span>
+    <span class="nb">set</span> +x
+    <span class="nb">echo</span> <span class="s2">&#34;    </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">${</span><span class="nv">REPORT_HOST</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">path</span><span class="si">}</span><span class="s2">&#34;</span> &gt;&gt; <span class="nv">$UPLOADED</span>
+<span class="o">}</span></code></pre></div></li>
+
+<li><p>Make the script executable by running <code>chmod u+x junit.sh</code></p></li>
+
+<li><p>Tell Jenkins to execute the script by adding this snippet to the <code>Jenkinsfile</code> just above the <code>jx step post build</code> lines in both the <code>CI Build and push snapshot</code> and <code>Build Release</code> stages:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">        sh <span class="s2">&#34;VERSION=`cat VERSION` ./junit.sh&#34;</span></code></pre></div></li>
+</ol>
+
+<p>So far we&rsquo;ve had to add a script to the sample and modify the <code>Jenkinsfile</code> to run the script. Later in this tutorial we&rsquo;ll implement this functionality as a cross-cutting concern and be able to remove this from the sample project. But for now let&rsquo;s focus on the functionality we need.</p>
+
+<h3 id="create-an-index-of-reports">Create an index of reports</h3>
+
+<p>In order to provide the user with access to reports we need to create a central list. A Kubernetes <code>ConfigMap</code> is a simple way to store this information. A config map does have some limitations (they aren&rsquo;t ideal for large amounts of rapidly changing data) so we&rsquo;ll come back at a later stage and provide a better solution, but for now it allows us to focus on the user functionality.</p>
+
+<p>We&rsquo;ll use one <code>ConfigMap</code> per app, and we&rsquo;ll use a standard naming pattern so that other tools can work out where the test report config map is for each app. We&rsquo;ll store the config maps in the <code>jx</code> namespace.</p>
+
+<ol>
+<li><p>Update the <code>junit.sh</code> script with these three functions:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">CM_NAME</span><span class="o">=</span><span class="nv">$ORG</span>-<span class="nv">$APP_NAME</span>-test-reports
+
+<span class="k">function</span> create_cm_if_needed<span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> ! kubectl get cm <span class="nv">$CM_NAME</span> <span class="p">&amp;</span>&gt; /dev/null<span class="p">;</span> <span class="k">then</span>
+        <span class="nb">echo</span> <span class="s2">&#34;Creating ConfigMap </span><span class="nv">$CM_NAME</span><span class="s2">&#34;</span>
+        kubectl create cm <span class="nv">$CM_NAME</span>
+    <span class="k">fi</span>
+<span class="o">}</span>
+
+<span class="k">function</span> init_patch<span class="o">()</span> <span class="o">{</span>
+    rm -f <span class="nv">$UPLOADED</span>
+    <span class="nb">echo</span> <span class="s2">&#34;data:&#34;</span> &gt;&gt; <span class="nv">$UPLOADED</span>
+    <span class="nb">echo</span> <span class="s2">&#34;  </span><span class="nv">$VERSION</span><span class="s2">: |-&#34;</span> &gt;&gt; <span class="nv">$UPLOADED</span>
+<span class="o">}</span>
+
+<span class="k">function</span> update_cm<span class="o">()</span> <span class="o">{</span>
+    <span class="nb">set</span> -x
+    kubectl -v1 patch cm <span class="nv">$CM_NAME</span> --patch <span class="s2">&#34;</span><span class="k">$(</span>cat <span class="nv">$UPLOADED</span><span class="k">)</span><span class="s2">&#34;</span>
+    <span class="nb">set</span> +x
+<span class="o">}</span></code></pre></div></li>
+
+<li><p>And update the <code>upload()</code> function to call these functions:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="k">function</span> upload<span class="o">()</span> <span class="o">{</span>
+    create_cm_if_needed
+    init_patch
+    upload_junit_artifacts
+    update_cm
+<span class="o">}</span></code></pre></div></li>
+</ol>
+
+<h3 id="visualise-the-test-results">Visualise the test results</h3>
+
+<p>We&rsquo;ll use Kibana and ElasticSearch to create dashboards to visualise the test results.</p>
+
+<ol>
+<li>Install ElasticSearch by running <code>helm install --name jenkins-x-reports-elasticsearch incubator/elasticsearch</code></li>
+
+<li><p>Install Kibana by running <code>helm install stable/kibana --name=jenkins-x-reports-kibana --set service.annotations.&quot;fabric8\.io/expose&quot;=true --set files.&quot;kibana\.yml&quot;.&quot;elasticsearch\.url&quot;=http://jenkins-x-reports-elasticsearch-client:9200 --set  &amp;&amp; jx upgrade ingress</code>.</p>
+
+<p>The ingress upgrade will ask you a number of questions, and you can just accept the defaults. You can now access Kibana by running <code>jx get urls</code> and copying the URL for <code>jenkins-x-reports-kibana</code> into your browser.</p></li>
+
+<li><p>Create a mapping for the JUnit XML format in Kibana by pasting this code into the Kibana console:</p>
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="err">PUT</span> <span class="err">tests</span> 
+<span class="p">{</span>
+    <span class="nt">&#34;mappings&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;junit&#34;</span><span class="p">:</span> <span class="p">{</span> 
+        <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> 
+        <span class="nt">&#34;errors&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;failures&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;noNamespaceSchemaLocation&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;skipped&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;tests&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;time&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;double&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;xsi&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;appName&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;org&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;timestamp&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;date&#34;</span> <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div></li>
+
+<li><p>An initial client for sending data to Kibana is available at (<a href="https://github.com/pmuir/junit-runner">https://github.com/pmuir/junit-runner</a>). Download it and get it building.
+As we start to convert the functionality we&rsquo;ve built so far to a Jenkins X extension, we&rsquo;ll move the scripted code we&rsquo;ve written so far into this Go program. For now, we can just use the current version.</p></li>
+
+<li><p>Add this function to <code>junit.sh</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="k">function</span> dashboard<span class="o">()</span> <span class="o">{</span>
+    curl https://github.com/pmuir/junit-runner/releases/download/v0.0.4/junit-runner &gt; junit-runner
+    chmod u+x junit-runner
+    ./junit-runner
+<span class="o">}</span></code></pre></div>
+<p>and call it from <code>upload()</code>. Push your changes to the sample repo and watch as Kibana starts to be populated with data.</p></li>
+</ol>
+
+<h3 id="a-better-way-to-build-functionality">A better way to build functionality</h3>
+
+<p>If you have built plugins for something like Jenkins or Eclipse, you will be used to building the functionality you need to run &ldquo;in process&rdquo; - inside the main process that the application is running (e.g. the Jenkins master). More recently a different approach to writing plugins has become more popular where you build the functionality as a separate process that is managed by the main process; this is the model used by VS Code for example. We would recommend using this approach in Jenkins X, and because Jenkins X is based on Kubernetes, that means using a separate container or Pod to build your functionality, and calling out to using REST APIs.</p>
+
+<p>In this case that means that it would be better to build the functionality we created in <code>junit-runner</code> into a separate pod, rather than run it inside the build pod. As it so happens we already have a pod - the one we built to store and serve the test artifacts.</p>
+
+<p>Let&rsquo;s open that project up, and move the code which transforms the JUnit XML and sends it to elastic search into it.</p>
+
+<ol>
+<li><p>Open the <code>main.go</code> file and add this function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">toJson</span><span class="p">(</span><span class="nx">json</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">m</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mxj</span><span class="p">.</span><span class="nx">NewMapJson</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="c1">// Kibana is quite restrictive in the way it accepts JSON, so just rebuild the JSON entirely!
+</span><span class="c1"></span>
+  <span class="nx">utc</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nx">LoadLocation</span><span class="p">(</span><span class="s">&#34;UTC&#34;</span><span class="p">)</span>
+  <span class="nx">data</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+    <span class="s">&#34;org&#34;</span><span class="p">:</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Getenv</span><span class="p">(</span><span class="s">&#34;ORG&#34;</span><span class="p">),</span>
+    <span class="s">&#34;appName&#34;</span><span class="p">:</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Getenv</span><span class="p">(</span><span class="s">&#34;APP_NAME&#34;</span><span class="p">),</span>
+    <span class="s">&#34;version&#34;</span><span class="p">:</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Getenv</span><span class="p">(</span><span class="s">&#34;VERSION&#34;</span><span class="p">),</span>
+    <span class="s">&#34;errors&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-errors&#34;</span><span class="p">),</span>
+    <span class="s">&#34;failures&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-failures&#34;</span><span class="p">),</span>
+    <span class="s">&#34;testsuiteName&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-name&#34;</span><span class="p">),</span>
+    <span class="s">&#34;skippedTests&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-skipped&#34;</span><span class="p">),</span>
+    <span class="s">&#34;tests&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-tests&#34;</span><span class="p">),</span>
+    <span class="s">&#34;time&#34;</span><span class="p">:</span> <span class="nx">m</span><span class="p">.</span><span class="nx">ValueOrEmptyForPathString</span><span class="p">(</span><span class="s">&#34;testsuite.-time&#34;</span><span class="p">),</span>
+    <span class="s">&#34;timestamp&#34;</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">().</span><span class="nx">In</span><span class="p">(</span><span class="nx">utc</span><span class="p">).</span><span class="nx">Format</span><span class="p">(</span><span class="s">&#34;2006-01-02T15:04:05Z&#34;</span><span class="p">),</span>
+    <span class="c1">// TODO Add the TestCases
+</span><span class="c1"></span>  <span class="p">}</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;%s&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nx">json2</span><span class="p">.</span><span class="nx">Marshal</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
+<p>This function comes directly from the <code>junit-runner</code> code and is responsible for building a piece of JSON that is used by Kibana.</p></li>
+
+<li><p>We also need to add this function from the <code>junit-runner</code> code which reads the XML file, converts it to JSON using <code>toJson()</code>, and then sends it onwards to our ElasticSearch instance:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">sendToElasticSearch</span><span class="p">(</span><span class="nx">reader</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span> <span class="nx">path</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+  <span class="nx">_</span><span class="p">,</span> <span class="nx">json</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">x2j</span><span class="p">.</span><span class="nx">XmlReaderToJson</span><span class="p">(</span><span class="nx">reader</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="nx">json</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">toJson</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;Successfully annnotated JUnit result with build info\n&#34;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="nx">req</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">NewRequest</span><span class="p">(</span><span class="s">&#34;POST&#34;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">NewBuffer</span><span class="p">(</span><span class="nx">json</span><span class="p">))</span>
+
+  <span class="nx">req</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Set</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/json&#34;</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">err</span>
+  <span class="p">}</span>
+
+  <span class="nx">client</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{}</span>
+  <span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="k">defer</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">StatusCode</span> <span class="o">&gt;=</span> <span class="mi">200</span> <span class="o">&amp;&amp;</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">StatusCode</span> <span class="p">&lt;</span> <span class="mi">300</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;Sent %s to %s\n&#34;</span><span class="p">,</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">body</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nx">ReadAll</span><span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;HTTP status: %s; HTTP Body: %s\n&#34;</span><span class="p">,</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Status</span><span class="p">,</span> <span class="nx">body</span><span class="p">))</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span></code></pre></div>
+<p>Finally, we need to add a const to the go file which specifies the URL of the ElasticSearch instance. Add this to the top of <code>main.go</code> file:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">const</span> <span class="nx">url</span> <span class="p">=</span> <span class="s">&#34;http://jenkins-x-reports-elasticsearch-client:9200/tests/junit/&#34;</span></code></pre></div></li>
+
+<li><p>Once you&rsquo;ve resolved all the imports, you&rsquo;ll notice that we still have some errors. That&rsquo;s because we are missing a dependency on the <code>mxj</code> library which we are using to work with XML and JSON. Make sure you have these imports:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go">  <span class="s">&#34;github.com/clbanning/mxj&#34;</span>
+  <span class="s">&#34;github.com/clbanning/mxj/x2j&#34;</span>
+  <span class="nx">json2</span> <span class="s">&#34;encoding/json&#34;</span></code></pre></div>
+<p>And then add this by running <code>dep init</code> which will detect our dependency and set it up properly.</p></li>
+
+<li><p>We&rsquo;ll also need to call it for each JUnit XML file we receive. And only for JUnit files. We can use the HTTP headers for this:
+Just above where we write the success message to the HTTP stream, add this code to call <code>sendToElasticSearch()</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go">    <span class="k">if</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">&#34;X-Content-Type&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;text/vnd.junit-xml&#34;</span> <span class="p">{</span>
+      <span class="nx">err</span> <span class="p">=</span> <span class="nx">sendToElasticSearch</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;CANT_SEND_TO_ELASTICSEATCH&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span></code></pre></div>
+<p>Push your changes up to Git to have the updated server built on Jenkins X.</p></li>
+
+<li><p>We now need to modify our script to send JUnit XML files with the mime type set to <code>text/vnd.junit-xml</code>. In the <code>junit.sh</code> file in the sample project modify the curl command in <code>upload_file()</code> to add the header. The whole line should look like:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">    curl -H <span class="s2">&#34;X-Content-Type: text/vnd.junit-xml&#34;</span> -s -F <span class="nv">upload</span><span class="o">=</span>@<span class="nv">$1</span> http://jenkins-x-reports-upload.jx-production/<span class="nv">$path</span></code></pre></div>
+<p>If you are wondering why we use <code>X-Content-Type</code> it is to avoid breaking the multipart form upload for the file!</p></li>
+
+<li><p>And of course we need to remove <code>junit-runner</code>. Delete the <code>dashboard()</code> function and remove the call to it from <code>upload()</code>.</p></li>
+
+<li><p>Now, let&rsquo;s clean things up a bit more by moving the code creating the configmap from the <code>junit.sh</code> script into the <code>jenkins-x-reports</code> code. First, we need to add a dependency on kubernetes-client to our code. Edit <code>Gopkg.toml</code> and add:</p>
+<div class="highlight"><pre class="chroma"><code class="language-toml" data-lang="toml"><span class="p">[[</span><span class="nx">constraint</span><span class="p">]]</span>
+  <span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;k8s.io/api&#34;</span>
+  <span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;kubernetes-1.11.0&#34;</span>
+
+<span class="p">[[</span><span class="nx">constraint</span><span class="p">]]</span>
+  <span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;k8s.io/apimachinery&#34;</span>
+  <span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;kubernetes-1.11.0&#34;</span>
+<span class="p">[[</span><span class="nx">constraint</span><span class="p">]]</span>
+  <span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;k8s.io/client-go&#34;</span>
+  <span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;kubernetes-1.11.0&#34;</span></code></pre></div></li>
+
+<li><p>Now we can add this function to create the Kubernetnes client:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">createKubernetesClient</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">kubernetes</span><span class="p">.</span><span class="nx">Clientset</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// creates the in-cluster config
+</span><span class="c1"></span>  <span class="nx">config</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">InClusterConfig</span><span class="p">()</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="c1">// creates the clientset
+</span><span class="c1"></span>  <span class="nx">client</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">kubernetes</span><span class="p">.</span><span class="nx">NewForConfig</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">client</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></code></pre></div>
+<p>And call it by adding these lines to the top of <code>main()</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go">  <span class="nx">client</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">createKubernetesClient</span><span class="p">()</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+  <span class="p">}</span></code></pre></div></li>
+
+<li><p>We now need to pass it to the <code>uploadServer()</code> function and change the signature of <code>uploadServer()</code> to <code>func uploadServer(client *kubernetes.Clientset)</code>, and then do the same to <code>uploadFileHandler()</code>, changing the signature to <code>func uploadServer(client *kubernetes.Clientset)</code>.</p></li>
+
+<li><p>Now, we can write a function that gets or creates the configmap:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">getOrCreateConfigMap</span><span class="p">(</span><span class="nx">org</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">app</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">client</span> <span class="nx">kubernetes</span><span class="p">.</span><span class="nx">Interface</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">corev1</span><span class="p">.</span><span class="nx">ConfigMap</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">cmName</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;%s-%s-test-reports&#34;</span><span class="p">,</span> <span class="nx">org</span><span class="p">,</span> <span class="nx">app</span><span class="p">)</span>
+  <span class="nx">cm</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">CoreV1</span><span class="p">().</span><span class="nx">ConfigMaps</span><span class="p">(</span><span class="nx">cmNamespace</span><span class="p">).</span><span class="nx">Get</span><span class="p">(</span><span class="nx">cmName</span><span class="p">,</span> <span class="nx">metav1</span><span class="p">.</span><span class="nx">GetOptions</span><span class="p">{})</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="nx">cm</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">client</span><span class="p">.</span><span class="nx">CoreV1</span><span class="p">().</span><span class="nx">ConfigMaps</span><span class="p">(</span><span class="nx">cmNamespace</span><span class="p">).</span><span class="nx">Create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">corev1</span><span class="p">.</span><span class="nx">ConfigMap</span><span class="p">{</span>
+      <span class="nx">ObjectMeta</span><span class="p">:</span> <span class="nx">metav1</span><span class="p">.</span><span class="nx">ObjectMeta</span><span class="p">{</span>
+        <span class="nx">Name</span><span class="p">:</span> <span class="nx">cmName</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">})</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">cm</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></code></pre></div></li>
+
+<li><p>In order to pass the org name and the app name to the config map creator, we can pass them using HTTP Headers. We can call the config map creation from the <code>uploadFileHandler()</code>, just before we write success by adding these lines to the top of the function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go">    <span class="c1">// Get and validate headers
+</span><span class="c1"></span>    <span class="nx">org</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">&#34;X-Org&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">org</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;MUST_PROVIDE_X-ORG_HEADER&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&#34;No X-ORG HEADER provided&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">app</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">&#34;X-App&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">app</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+      <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;MUST_PROVIDE_X-APP_HEADER&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+      <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&#34;No X-APP HEADER provided&#34;</span><span class="p">)</span>
+    <span class="p">}</span></code></pre></div>
+<p>And this to the bottom, just above the success message:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">getOrCreateConfigMap</span><span class="p">(</span><span class="nx">org</span><span class="p">,</span> <span class="nx">app</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span></code></pre></div>
+<p>And before we forget, update the <code>junit.sh</code> script to send these values. The curl command should now look like <code>curl -H &quot;X-Content-Type: text/vnd.junit-xml&quot; -H &quot;X-ORG: ${ORG}&quot; -H &quot;X-APP: ${APP_NAME} -s -F upload=@$1</code>.</p></li>
+
+<li><p>Now, let&rsquo;s implement the function <code>updateConfigMap()</code> to perform the actual patch. Use this function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">updateConfigMap</span><span class="p">(</span><span class="nx">cm</span> <span class="o">*</span><span class="nx">corev1</span><span class="p">.</span><span class="nx">ConfigMap</span><span class="p">,</span> <span class="nx">version</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">filename</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">url</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">client</span> <span class="nx">kubernetes</span><span class="p">.</span><span class="nx">Interface</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">corev1</span><span class="p">.</span><span class="nx">ConfigMap</span><span class="p">,</span> <span class="kt">error</span><span class="p">){</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;Updating %s with data for %s and Data %s\n&#34;</span><span class="p">,</span> <span class="nx">cm</span><span class="p">.</span><span class="nx">Name</span><span class="p">,</span> <span class="nx">version</span><span class="p">,</span> <span class="nx">cm</span><span class="p">.</span><span class="nx">Data</span> <span class="p">)</span>
+  <span class="k">if</span> <span class="nx">cm</span><span class="p">.</span><span class="nx">Data</span><span class="p">[</span><span class="nx">version</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+    <span class="nx">cm</span><span class="p">.</span><span class="nx">Data</span><span class="p">[</span><span class="nx">version</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;|-\n&#34;</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="nx">cm</span><span class="p">.</span><span class="nx">Data</span><span class="p">[</span><span class="nx">version</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;%s\n    %s: %s\n&#34;</span><span class="p">,</span> <span class="nx">cm</span><span class="p">.</span><span class="nx">Data</span><span class="p">[</span><span class="nx">version</span><span class="p">],</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nx">client</span><span class="p">.</span><span class="nx">CoreV1</span><span class="p">().</span><span class="nx">ConfigMaps</span><span class="p">(</span><span class="nx">cmNamespace</span><span class="p">).</span><span class="nx">Update</span><span class="p">(</span><span class="nx">cm</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div></li>
+
+<li><p>Now we need to figure out the host URL for the report downloads. Use this function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">getReportHost</span><span class="p">(</span><span class="nx">client</span> <span class="nx">kubernetes</span><span class="p">.</span><span class="nx">Interface</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">svc</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nx">CoreV1</span><span class="p">().</span><span class="nx">Services</span><span class="p">(</span><span class="s">&#34;jx-production&#34;</span><span class="p">).</span><span class="nx">Get</span><span class="p">(</span><span class="s">&#34;jenkins-x-reports&#34;</span><span class="p">,</span> <span class="nx">metav1</span><span class="p">.</span><span class="nx">GetOptions</span><span class="p">{})</span>
+  <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">err</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">svc</span><span class="p">.</span><span class="nx">Annotations</span><span class="p">[</span><span class="s">&#34;fabric8.io/exposeUrl&#34;</span><span class="p">],</span> <span class="kc">nil</span>
+<span class="p">}</span></code></pre></div></li>
+
+<li><p>We now need to wire it in. Add a version header to the top of the <code>uploadFileHandler()</code> function:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">version</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">&#34;X-Version&#34;</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">version</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+  <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;MUST_PROVIDE_X-VERSION_HEADER&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+  <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="s">&#34;No X-VERSION HEADER provided&#34;</span><span class="p">)</span>
+<span class="p">}</span>   </code></pre></div>
+<p>And add just above the success message:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">cm</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">getOrCreateConfigMap</span><span class="p">(</span><span class="nx">org</span><span class="p">,</span> <span class="nx">app</span><span class="p">,</span> <span class="nx">client</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;ERROR_CREATING_CONFIG_MAP&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">reportHost</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">getReportHost</span><span class="p">(</span><span class="nx">client</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;ERROR_CREATING_CONFIG_MAP&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">url</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&#34;%s/%s/%s/%s/%s&#34;</span><span class="p">,</span> <span class="nx">reportHost</span><span class="p">,</span> <span class="nx">org</span><span class="p">,</span> <span class="nx">app</span><span class="p">,</span> <span class="nx">version</span><span class="p">,</span> <span class="nx">filename</span><span class="p">)</span>
+    <span class="nx">cm</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">updateConfigMap</span><span class="p">(</span><span class="nx">cm</span><span class="p">,</span> <span class="nx">version</span><span class="p">,</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">client</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">renderError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;ERROR_UPDATING_CONFIG_MAP&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span></code></pre></div></li>
+
+<li><p>We can also improve the way we are storing the files now, using the headers to create the path rather than just copying the path that was used for upload by changing the variable <code>dir</code> to look more like <code>dir := filepath.Join(uploadPath, org, app, version)</code></p></li>
+
+<li><p>Finally, let&rsquo;s tidy up <code>junit.sh</code> by removing the remanants of the patching code and adding the version header. Your final curl command should look like: <code>curl -H &quot;X-Content-Type: text/vnd.junit-xml&quot; -H &quot;X-Org: ${ORG}&quot; -H &quot;X-App: ${APP_NAME}&quot; -H &quot;X-Version: ${VERSION}&quot; -s -F upload=@$1 http://jenkins-x-reports-upload.jx-production/$filename</code></p></li>
+</ol>
+
+<h2 id="progress-review">Progress Review</h2>
+
+<p>We still have some steps to complete.</p>
+
+<ul>
+<li>Add token based authentication for the upload endpoint to prevent random pieces of code updating it (it&rsquo;s only accessible in the cluster anyway)</li>
+<li>Allow contribution to build health (requires additional JX support <code>jx step post</code> and <code>jx step pre</code>)</li>
+</ul>
+
+<p>At this point the JX team have also learnt that we want to build some additional extension points into Jenkins X:</p>
+
+<ul>
+<li>A <code>jx step post</code> support for a &lsquo;post build` steps. This will allow us to implement build health, as it will allow us to:
+
+<ul>
+<li>Inject additional steps into the build that allow us to run e.g. <code>mvn surefire-report:report</code> without modifying the build</li>
+</ul></li>
+<li><code>jx step collect</code> for collecting build artifact that will run even if the build fails
+
+<ul>
+<li>Add URLs to the <code>PipelineActivity</code> CRD</li>
+</ul></li>
+</ul>
+
+<p>TODO complete the guide</p>
+
+</div>
+
+          
+
+
+        </div>
+      </div>
+      <div class="order-0 w-20 dn db-l">
+        
+<nav role="navigation">
+  <ul class="list pa0 nl2">
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".about">About Jenkins X</a>
+
+          
+            <ul class="about desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Features
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/accelerate/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Accelerate
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/concepts/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Concepts
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/decisions/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Decisions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/license/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    License
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/about/status/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Status
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".getting-started">Getting Started</a>
+
+          
+            <ul class="getting-started desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Get Started Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/tutorials/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Tutorials
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Get jx
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/create-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create new Cluster
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install-on-cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Install on Kubernetes
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/install-on-cluster-what-happens/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    What happens during installation
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/next/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    What&#39;s next?
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/config/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Configuration
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/getting-started/create-custom-builder/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create custom Builder
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".developing">Developing</a>
+
+          
+            <ul class="developing desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Developing
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Spring Boot
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/build-status/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Build Status
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-quickstart/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Quickstart
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/create-camel/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Camel
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/browsing/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Browsing
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/import/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Import
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/kube-context/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Kubernetes Context
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/promote/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Promote
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/preview/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Preview Environments
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/ide/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    IDE
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Issues
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/git/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Git Servers
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/devpods/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Dev Pods
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/developing/security-features/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Security Features
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".demos">Demos</a>
+
+          
+            <ul class="demos desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Demos
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/articles/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Articles
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/talks/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Talks and Conferences
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_cluster/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Cluster
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_cluster_gke/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Cluster GKE
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/create_spring/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Create Spring
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/image-security/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Docker Image CVE Scanning
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/kubecon-2018/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    KubeCon 2018 Demo
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/demos/devoxx-uk-2018/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    DevOxx UK 2018 Demo
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".architecture">Architecture</a>
+
+          
+            <ul class="architecture desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Architecture
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/diagram/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Diagram
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/components/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Components
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/custom-resources/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Custom Resources
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/build-packs/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Build Packs
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/cloud-native-jenkins/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Cloud Native Jenkins
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/prow/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Prow
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/pod-templates/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Pod Templates
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/storage/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Storage
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/docker-registry/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Docker Registry
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/rbac/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    RBAC
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/architecture/helm3/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Helm 3
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8 mb1 bb b--moon-gray">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2  primary-color" data-target=".extending">Extending</a>
+
+          
+            <ul class="extending desktopmenu animated fadeIn list pl0 bg-light-gray db">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/extending/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Extending Jenkins X
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/extending/worked-example/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 primary-color ">
+                    Worked Example
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="https://jenkins-x.io/commands/jx/" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".commands">CLI</a>
+
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".faq">FAQ</a>
+
+          
+            <ul class="faq desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    FAQ Overview
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/faq/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    General Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/setup/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Setup Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/issues/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Common Problems
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/technology/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Technology Questions
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/faq/develop/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Development Questions
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+      
+      <li class="f5 w-100 hover-bg-light-gray hover-accent-color-light fw8">
+        <a href="javascript:void(0)" class="js-toggle dib w-100 link mid-gray hover-accent-color-light pl2 pr2 pv2 " data-target=".contribute">Contribute</a>
+
+          
+            <ul class="contribute desktopmenu animated fadeIn list pl0 bg-light-gray dn">
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Contribute to Jenkins X
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/development/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Development
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/documentation/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Documentation
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/roadmap/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Planned Features
+                  </a>
+                </li>
+              
+                <li  class="f6 fw4">
+                  <a href="https://jenkins-x.io/contribute/triage/" class="db link hover-bg-gray hover-white pl3 pr2 pv2 black ">
+                    Triaging issues
+                  </a>
+                </li>
+              
+            </ul>
+          
+        </li>
+    
+  </ul>
+</nav>
+
+      </div>
+
+    </div>
+  </article>
+
+  <div class="w-100 bg-light-gray">
+    <div class="mw7 pa4 center nested-lh-copy lh-copy">
+      <h6 class="f4 dark-gray mb2">
+  <a href="https://jenkins-x.io/extending/worked-example/" class="hide-child link primary-color">
+  <span class="nl3 child"><svg class="grow" fill="" height="14px" viewBox="0 0 24 24" width="14px" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+</span>
+    “Worked Example”
+  </a> was last updated: October 5, 2018: <a class="hide-child link primary-color" href="https://github.com/jenkins-x/jx-docs//commit/a5ea43ef843194f6aa76c55916eb55c1896469d0">Typo (a5ea43ef8)</a>
+</h6>
+
+      <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/extending/worked-example.md" class="
+f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
+">Improve this page</a>
+
+      
+
+
+    </div>
+  </div>
+
+    </main>
+
+    <footer class="bg-primary-color-dark ph4-ns pt4 relative w-100" role="contentinfo">
+  <div class="center flex-ns flex-wrap justify-between mw9 w-90">
+    <div class="pb3 pt4 w-100 w-50-ns">
+
+      <div class="b f3  light-gray mb3 nested-links tc">
+        By the <a href="https://github.com/jenkins-x/jx/contributors" class="link">Jenkins X Authors</a><br/>
+      </div>
+
+      <ul class="center f6 list ma0 mv3 pa0 tc"><li class="dib mr3"><a href="https://github.com/jenkins-x/jx/issues/new" class="dim link light-gray pv2">File an Issue</a></li><li class="dib mr3"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Get Help</a></li><li class="dib"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Discuss Source Code</a></li></ul>
+
+      <ul class="center f6 list ma0 mv4 pa0 tc">
+        <li class="dib mr3"><a href="https://twitter.com/jenkinsxio" class="dim link light-gray pv2">@jenkinsxio</a>
+        </li>
+      </ul>
+
+      
+    </div>
+
+    <div> 
+      <img src="https://jenkins-x.io/img/profile.png" with="100" height="100">
+    </div>
+
+  </div>
+
+  <div class="f7 gray mb5 mb0-ns ph3 w-100"> 
+    <p class="dib mr4">Jenkins&reg; is a registered trademark of <a href="https://www.spi-inc.org/" class="link">Software in the Public Interest, Inc.</a></p>
+    <p class="dib">Copyright 2018–2019 the original authors.</p>
+  </div>
+
+
+  <div class="bg-primary-color-dark bottom-0 left-0 right-0 dn-l fixed pb3 ph3 w-100"><div  class="globalmenu mobilemenu pb3 dn">
+    
+
+<ul class="list hidden dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/documentation" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Documentation
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/news/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          News
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/community" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Community
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://github.com/jenkins-x/jx" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          GitHub
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins.io" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Jenkins
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/sponsors/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Sponsors
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/security/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Security
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+<div  class="docsmenu mobilemenu pb3 dn">
+    
+
+<ul class="list dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/about/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          About Jenkins X
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/getting-started/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Getting Started
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/developing/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Developing
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/demos/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Demos
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/architecture/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Architecture
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/extending/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Extending
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/commands/jx/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          CLI
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/faq/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          FAQ
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/contribute/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Contribute
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+
+<div class="flex dn-l justify-between">
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link mr2 white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".globalmenu">Menu</button>
+
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".docsmenu">Docs Menu</button>
+</div>
+</div>
+
+</footer>
+
+    <script src="https://jenkins-x.io/dist/app.bundle.js"></script>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+  </body>
+</html>

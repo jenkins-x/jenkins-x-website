@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-200.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://jenkins-x.io/files/muli-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <link rel="canonical" href="https://jenkins-x.io/news/alibaba-container-service-jenkins-x/">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+     
+    <title>Installing Jenkins X on Alibaba Cloud Container Service | Jenkins X</title>
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+     <meta name="generator" content="Hugo 0.58.0" />
+
+      
+        <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+      
+
+    <link href='https://jenkins-x.io/dist/main.css' rel='stylesheet' type="text/css" /><script src="https://jenkins-x.io/js/chart.js"></script>
+<style>
+  img.avatar {
+    width: 32px;
+    display: inline;
+  }
+</style>
+<meta property="og:title" content="Installing Jenkins X on Alibaba Cloud Container Service" />
+<meta property="og:description" content="Install Jenkins X on Alibaba Cloud Container Service. 
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jenkins-x.io/news/alibaba-container-service-jenkins-x/" />
+
+<meta property="og:image" content="https://jenkins-x.io/images/logo.png" />
+<meta property="article:published_time" content="2019-06-17T07:36:00+02:00" />
+<meta property="article:modified_time" content="2019-09-20T06:55:10+00:00" />
+<meta itemprop="name" content="Installing Jenkins X on Alibaba Cloud Container Service">
+<meta itemprop="description" content="Install Jenkins X on Alibaba Cloud Container Service. 
+">
+
+
+<meta itemprop="datePublished" content="2019-06-17T07:36:00&#43;02:00" />
+<meta itemprop="dateModified" content="2019-09-20T06:55:10&#43;00:00" />
+<meta itemprop="wordCount" content="927">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://jenkins-x.io/images/logo.png"/>
+
+<meta name="twitter:title" content="Installing Jenkins X on Alibaba Cloud Container Service"/>
+<meta name="twitter:description" content="Install Jenkins X on Alibaba Cloud Container Service. 
+"/>
+<meta name="twitter:site" content="@jenkinsxio"/>
+
+        
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-4216293-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-4216293-7');
+
+
+
+var trackOutboundLink = function(id, url) {
+  console.log("track:", id, url)
+  gtag('event', 'click', {
+    'event_category': 'outbound',
+    'event_label': id,
+    'transport_type': 'beacon',
+    'event_callback': function(){document.location = url;}
+  });
+}
+
+</script>
+
+      
+     <link href='https://jenkins-x.io/css/build_status.css' rel='stylesheet' type="text/css" />
+
+  </head>
+  <body class="ma0 sans-serif bg-primary-color-light production">
+    
+<nav class="bg-primary-color-dark pv4 w-100" role="navigation">
+
+  <div class="center flex-ns flex-wrap items-center justify-start mw9">
+
+    <h1 class="dim f3 lh-solid ml0-ns mr0 mr4-l mv0 pl3 pl4-ns">
+      <a href="https://jenkins-x.io/" class="link white">
+         Jenkins X
+      </a>
+    </h1>
+    <ul class="list ma0 pa0 dn dib-l">
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/documentation" class="dim link light-silver">
+            Documentation
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/news/" class="dim link light-silver">
+            News
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/community" class="dim link light-silver">
+            Community
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://github.com/jenkins-x/jx" class="dim link light-silver">
+            GitHub
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins.io" class="dim link light-silver">
+            Jenkins
+              
+            
+            
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10" viewBox="0 0 32 32" class="fill-current v-base" aria-label="External Link">
+<path d="M25.152 16.576v5.696q0 2.144-1.504 3.648t-3.648 1.504h-14.848q-2.144 0-3.648-1.504t-1.504-3.648v-14.848q0-2.112 1.504-3.616t3.648-1.536h12.576q0.224 0 0.384 0.16t0.16 0.416v1.152q0 0.256-0.16 0.416t-0.384 0.16h-12.576q-1.184 0-2.016 0.832t-0.864 2.016v14.848q0 1.184 0.864 2.016t2.016 0.864h14.848q1.184 0 2.016-0.864t0.832-2.016v-5.696q0-0.256 0.16-0.416t0.416-0.16h1.152q0.256 0 0.416 0.16t0.16 0.416zM32 1.152v9.12q0 0.48-0.352 0.8t-0.8 0.352-0.8-0.352l-3.136-3.136-11.648 11.648q-0.16 0.192-0.416 0.192t-0.384-0.192l-2.048-2.048q-0.192-0.16-0.192-0.384t0.192-0.416l11.648-11.648-3.136-3.136q-0.352-0.352-0.352-0.8t0.352-0.8 0.8-0.352h9.12q0.48 0 0.8 0.352t0.352 0.8z"></path>
+</svg>
+
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/sponsors/" class="dim link light-silver">
+            Sponsors
+              
+            
+            
+          </a>
+        </li>
+      
+        <li class="f5 dib mr4" role="menuitem">
+            
+          <a href="https://jenkins-x.io/security/" class="dim link light-silver">
+            Security
+              
+            
+            
+          </a>
+        </li>
+      
+    </ul>
+
+    <div class="db dib-ns pl3"><form id="site-search-form" action="" role="search">
+  <fieldset class="bn ma0 pa0">
+    <label class="clip" for="email-address">Search</label>
+    <input type="search" id="search-input" class="needs-js bg-left bg-transparent bn f5 input-reset lh-solid mt3 mt0-ns pl4 pv2 w5 white" placeholder="Search the Docs" type="text" name="email-address" value="" style="background-image:url('/images/icon-search.png');background-size:16px 16px;">
+  </fieldset>
+</form>
+</div>
+
+    <div class="list ma0 pa0 dn dib-l"></div>
+
+    <span class="absolute mt1 mt2-l pr3 right-0 top-0">
+
+  <a href="https://twitter.com/intent/follow?screen_name=jenkinsxio" title="Follow on Twitter" class="link-transition twitter link dib z-999 pt3 pt0-l mr2">
+    <svg height="32px" id="Layer_1" style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+  </a>
+
+<a class="github-button needs-js link primary-color-dark" href="https://github.com/jenkins-x/jx" data-size="large" data-show-count="false" aria-label="Star jenkins-x/jx on GitHub">Star</a>
+</span>
+
+  </div>
+</nav>
+
+    
+    <main role="main" class="content-with-sidebar min-vh-100 pb7 pb0-ns">
+      
+  
+
+  <article class="cf ph4 pv3 pv5-ns">
+      
+    <header class="flex-none w-100 pb3">
+      
+        
+          <a href="https://jenkins-x.io/categories/blog" class="f6 fw8 mb0 link mid-gray dim mr3">
+            BLOG
+          </a>
+        
+      
+
+      <h1 class="lh-title fw9 mb7 mv0 pt3">
+        <a href="https://jenkins-x.io/news/alibaba-container-service-jenkins-x/" class="link primary-color dim">
+          Installing Jenkins X on Alibaba Cloud Container Service
+        </a>
+      </h1>
+    </header>
+
+    <div class="flex-l">
+      <aside class="mid-gray fn w-100 w-25-l">
+        
+          <h2 class="f3 lh-title">
+            Install Jenkins X on Alibaba Cloud Container Service.
+          </h2>
+        
+        <time class="f6 mt2 db ttu tracked" datetime="2019-06-17T07:36:00&#43;02:00">
+          June 17, 2019
+        </time>
+        By: <strong>Carlos Sanchez</strong>
+
+        
+        
+
+        <div class="nested-links mt4">
+
+	<div date-pref>
+		
+			<a href="https://jenkins-x.io/news/jenkins-x-contributor-summit/" class="dib f6 pl1 hover-bg-light-gray br-100" title="Join Us at the Jenkins X Contributor Summit San Francisco, Monday August 12, 2019 ">
+				<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+
+		
+			<a href="https://jenkins-x.io/news/jenkins-world-agenda/" class="dib f6 pr1 hover-bg-light-gray br-100" title="DevOps World-Jenkins World 2019 San Francisco: Agenda is Live">
+			<svg class="fill-current" height="30px" viewBox="0 0 24 24" width="30px" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+    <path d="M0 0h24v24H0z" fill="none"/>
+</svg>
+
+			</a>
+		
+	</div>
+
+</div>
+
+      </aside>
+
+      <div class="fn pl5-l pt3 mid-gray w-100 w-two-third-l sans-serif nested-copy-line-height no-underline nested-links nested-img nested-copy-seperator nested-blockquote measure-wide-l">
+        <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/news/install-jx-alibaba.md" class="
+f6 ph3 pv1 br2 dib  tc ttu mv3 bg-primary-color white hover-bg-green link
+ page-edit">Improve this page</a>
+
+        
+          
+          
+          
+        
+
+<figure>
+<img src="https://jenkins-x.io/images/alibaba-cloud-logo.svg"/>
+<figcaption>
+<h5>Installing Jenkins X on Alibaba Cloud Container Service</h5>
+</figcaption>
+</figure>
+
+<h1 id="installing-jenkins-x-in-alibaba-kubernetes-container-service">Installing Jenkins X in Alibaba Kubernetes Container Service</h1>
+
+<p>Jenkins X has just added initial support to install in <a href="https://www.alibabacloud.com/product/container-service">Alibaba Container Service</a>, its Kubernetes offering.</p>
+
+<p>The following instructions allow installation in a managed Kubernetes cluster in any region outside of mainland China, where more configuration is needed avoid using Google services blocked by chinese authorities (Docker images in GCR). There is a <a href="https://github.com/jenkins-x/jenkins-x-platform/issues/5551">pending issue</a> for that.</p>
+
+<h2 id="creating-a-kubernetes-cluster">Creating a Kubernetes Cluster</h2>
+
+<p>Alibaba requires several things in order to create a Kubernetes cluster, so it is easier to do it through the <a href="https://cs.console.aliyun.com/">web UI</a> the first time.</p>
+
+<p>The following services need to be activated: Container Service, Resource Orchestration Service (ROS), RAM, and Auto Scaling service, and created the <a href="https://www.alibabacloud.com/help/doc-detail/86484.htm?spm=a2c63.p38356.b99.38.663a333eMXExon">Container Service roles</a>.</p>
+
+<p>If we want to use the command line we can install the <a href="https://github.com/aliyun/aliyun-cli"><code>aliyun</code></a> cli. I have added all the steps needed below in case you want to use it.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">brew install aliyun-cli
+aliyun configure
+<span class="nv">REGION</span><span class="o">=</span>ap-southeast-1</code></pre></div>
+<p>The clusters need to be created in a VPC, so that needs to be created with VSwitches for each zone to be used.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">aliyun vpc CreateVpc <span class="se">\
+</span><span class="se"></span>    --VpcName jx <span class="se">\
+</span><span class="se"></span>    --Description <span class="s2">&#34;Jenkins X&#34;</span> <span class="se">\
+</span><span class="se"></span>    --RegionId <span class="si">${</span><span class="nv">REGION</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    --CidrBlock <span class="m">172</span>.16.0.0/12
+
+<span class="o">{</span>
+    <span class="s2">&#34;ResourceGroupId&#34;</span>: <span class="s2">&#34;rg-acfmv2nomuaaaaa&#34;</span>,
+    <span class="s2">&#34;RequestId&#34;</span>: <span class="s2">&#34;2E795E99-AD73-4EA7-8BF5-F6F391000000&#34;</span>,
+    <span class="s2">&#34;RouteTableId&#34;</span>: <span class="s2">&#34;vtb-t4nesimu804j33p4aaaaa&#34;</span>,
+    <span class="s2">&#34;VRouterId&#34;</span>: <span class="s2">&#34;vrt-t4n2w07mdra52kakaaaaa&#34;</span>,
+    <span class="s2">&#34;VpcId&#34;</span>: <span class="s2">&#34;vpc-t4nszyte14vie746aaaaa&#34;</span>
+<span class="o">}</span>
+
+<span class="nv">VPC</span><span class="o">=</span>vpc-t4nszyte14vie746aaaaa
+
+aliyun vpc CreateVSwitch <span class="se">\
+</span><span class="se"></span>    --VSwitchName jx <span class="se">\
+</span><span class="se"></span>    --VpcId <span class="si">${</span><span class="nv">VPC</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    --RegionId <span class="si">${</span><span class="nv">REGION</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    --ZoneId <span class="si">${</span><span class="nv">REGION</span><span class="si">}</span>a <span class="se">\
+</span><span class="se"></span>    --Description <span class="s2">&#34;Jenkins X&#34;</span> <span class="se">\
+</span><span class="se"></span>    --CidrBlock <span class="m">172</span>.16.0.0/24
+
+<span class="o">{</span>
+    <span class="s2">&#34;RequestId&#34;</span>: <span class="s2">&#34;89D9AB1F-B4AB-4B4B-8CAA-F68F84417502&#34;</span>,
+    <span class="s2">&#34;VSwitchId&#34;</span>: <span class="s2">&#34;vsw-t4n7uxycbwgtg14maaaaa&#34;</span>
+<span class="o">}</span>
+
+<span class="nv">VSWITCH</span><span class="o">=</span>vsw-t4n7uxycbwgtg14maaaaa</code></pre></div>
+<p>Next, a keypair (or password) is needed for the cluster instances.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">aliyun ecs ImportKeyPair <span class="se">\
+</span><span class="se"></span>    --KeyPairName jx <span class="se">\
+</span><span class="se"></span>    --RegionId <span class="si">${</span><span class="nv">REGION</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    --PublicKeyBody <span class="s2">&#34;</span><span class="k">$(</span>cat ~/.ssh/id_rsa.pub<span class="k">)</span><span class="s2">&#34;</span></code></pre></div>
+<p>The last step is to create the cluster using the just created VPC, VSwitch and Keypair. It&rsquo;s important to select the option <em>Expose API Server with EIP</em> (<code>public_slb</code> in the API json) to be able to connect to the API from the internet.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nb">echo</span> <span class="s">&lt;&lt; EOF &gt; cluster.json
+</span><span class="s">{
+</span><span class="s">    &#34;name&#34;: &#34;jx-rocks&#34;,
+</span><span class="s">    &#34;cluster_type&#34;: &#34;ManagedKubernetes&#34;,
+</span><span class="s">    &#34;disable_rollback&#34;: true,
+</span><span class="s">    &#34;timeout_mins&#34;: 60,
+</span><span class="s">    &#34;region_id&#34;: &#34;${REGION}&#34;,
+</span><span class="s">    &#34;zoneid&#34;: &#34;${REGION}a&#34;,
+</span><span class="s">    &#34;snat_entry&#34;: true,
+</span><span class="s">    &#34;cloud_monitor_flags&#34;: false,
+</span><span class="s">    &#34;public_slb&#34;: true,
+</span><span class="s">    &#34;worker_instance_type&#34;: &#34;ecs.c4.xlarge&#34;,
+</span><span class="s">    &#34;num_of_nodes&#34;: 3,
+</span><span class="s">    &#34;worker_system_disk_category&#34;: &#34;cloud_efficiency&#34;,
+</span><span class="s">    &#34;worker_system_disk_size&#34;: 120,
+</span><span class="s">    &#34;worker_instance_charge_type&#34;: &#34;PostPaid&#34;,
+</span><span class="s">    &#34;vpcid&#34;: &#34;${VPC}&#34;,
+</span><span class="s">    &#34;vswitchid&#34;: &#34;${VSWITCH}&#34;,
+</span><span class="s">    &#34;container_cidr&#34;: &#34;172.20.0.0/16&#34;,
+</span><span class="s">    &#34;service_cidr&#34;: &#34;172.21.0.0/20&#34;,
+</span><span class="s">    &#34;key_pair&#34;: &#34;jx&#34;
+</span><span class="s">}
+</span><span class="s">EOF</span>
+
+aliyun cs  POST /clusters <span class="se">\
+</span><span class="se"></span>    --header <span class="s2">&#34;Content-Type=application/json&#34;</span> <span class="se">\
+</span><span class="se"></span>    --body <span class="s2">&#34;</span><span class="k">$(</span>cat create.json<span class="k">)</span><span class="s2">&#34;</span>
+
+<span class="o">{</span>
+    <span class="s2">&#34;cluster_id&#34;</span>: <span class="s2">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>,
+    <span class="s2">&#34;request_id&#34;</span>: <span class="s2">&#34;0C1E16F8-6A9E-4726-AF6E-A8F37CDDC50C&#34;</span>,
+    <span class="s2">&#34;task_id&#34;</span>: <span class="s2">&#34;T-5cd93cf5b8ff804bb40000e1&#34;</span>,
+    <span class="s2">&#34;instanceId&#34;</span>: <span class="s2">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>
+<span class="o">}</span>
+
+<span class="nv">CLUSTER</span><span class="o">=</span>cb643152f97ae4e44980f6199f298f223</code></pre></div>
+<p>We can now download <code>kubectl</code> configuration with</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">aliyun cs GET /k8s/<span class="si">${</span><span class="nv">CLUSTER</span><span class="si">}</span>/user_config <span class="p">|</span> jq -r .config &gt; ~/.kube/config-alibaba
+<span class="nb">export</span> <span class="nv">KUBECONFIG</span><span class="o">=</span><span class="nv">$KUBECONFIG</span>:~/.kube/config-alibaba</code></pre></div>
+<p>Another detail before being able to install applications that use <code>PersistentVolumeClaims</code> is to <a href="https://www.alibabacloud.com/help/doc-detail/86612.htm#a2c63.p38356.879954.i0.11497ec4J5rKJd">configure a default storage class</a>. There are several volume options that can be listed with <code>kubectl get storageclass</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">NAME                          PROVISIONER     AGE
+alicloud-disk-available       alicloud/disk   44h
+alicloud-disk-common          alicloud/disk   44h
+alicloud-disk-efficiency      alicloud/disk   44h
+alicloud-disk-ssd             alicloud/disk   44h</code></pre></div>
+<p>Each of them matches the following cloud disks:</p>
+
+<ul>
+<li>alicloud-disk-common: basic cloud disk (minimum size 5GiB). Only available in some zones (us-west-1a, cn-beijing-b,&hellip;)</li>
+<li>alicloud-disk-efficiency: high-efficiency cloud disk, ultra disk (minimum size 20GiB).</li>
+<li>alicloud-disk-ssd: SSD disk (minimum size 20GiB).</li>
+<li>alicloud-disk-available: provides highly available options, first attempts to create a high-efficiency cloud disk. If the corresponding AZ&rsquo;s efficient cloud disk resources are sold out, tries to create an SSD disk. If the SSD is sold out, tries to create a common cloud disk.</li>
+</ul>
+
+<p>To set SSDs as the default:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">kubectl patch storageclass alicloud-disk-ssd <span class="se">\
+</span><span class="se"></span>    -p <span class="s1">&#39;{&#34;metadata&#34;: {&#34;annotations&#34;: {&#34;storageclass.kubernetes.io/is-default-class&#34;:&#34;true&#34;}}}&#39;</span></code></pre></div>
+<p><strong>NOTE</strong>: Alibaba cloud disks must be <a href="https://www.alibabacloud.com/help/doc-detail/25513.htm#h2-url-2">more than 5GiB (basic) or 20GiB (SSD and Ultra)</a>) so we will need to configure any service that is deployed with PVCs to have that size as a minimum or the <code>PersistentVolume</code> provision will fail. The Jenkins X deployments <a href="https://github.com/jenkins-x/cloud-environments/blob/master/env-alibaba/myvalues.yaml">are already configured with this in mind</a>.</p>
+
+<h2 id="installing-jenkins-x">Installing Jenkins X</h2>
+
+<p>Alibaba Kubernetes clusters won&rsquo;t be able to pull images from the insecure docker registry included in Jenkins X, we need to use Alibaba&rsquo;s Container Registry by going to <a href="https://cr.console.aliyun.com">https://cr.console.aliyun.com</a> and setting a password.</p>
+
+<p>Then we need to create a Container Registry namespace that allows us to push any image and make them public by default.</p>
+
+<p>From the web UI we can create a Docker login password that we will be using later.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">NAMESPACE</span><span class="o">=</span>jenkins-x-<span class="k">$(</span>cat /dev/urandom <span class="p">|</span> env <span class="nv">LC_CTYPE</span><span class="o">=</span>C tr -dc <span class="s1">&#39;a-z&#39;</span> <span class="p">|</span> fold -w <span class="m">6</span> <span class="p">|</span> head -n <span class="m">1</span><span class="k">)</span>
+cat <span class="s">&lt;&lt; EOF &gt; namespace.json
+</span><span class="s">{
+</span><span class="s">    &#34;Namespace&#34;: {
+</span><span class="s">        &#34;Namespace&#34;: &#34;${NAMESPACE}&#34;
+</span><span class="s">    }
+</span><span class="s">}
+</span><span class="s">EOF</span>
+aliyun cr PUT /namespace <span class="se">\
+</span><span class="se"></span>    --header <span class="s2">&#34;Content-Type=application/json&#34;</span> <span class="se">\
+</span><span class="se"></span>    --body <span class="s2">&#34;</span><span class="k">$(</span>cat namespace.json<span class="k">)</span><span class="s2">&#34;</span>
+
+cat <span class="s">&lt;&lt; EOF &gt; namespace.json
+</span><span class="s">{
+</span><span class="s">    &#34;namespace&#34;: {
+</span><span class="s">        &#34;namespace&#34;: &#34;${NAMESPACE}&#34;,
+</span><span class="s">        &#34;defaultVisibility&#34;: &#34;PUBLIC&#34;,
+</span><span class="s">        &#34;autoCreate&#34;: true
+</span><span class="s">    }
+</span><span class="s">}
+</span><span class="s">EOF</span>
+
+aliyun cr POST /namespace/<span class="si">${</span><span class="nv">NAMESPACE</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    --header <span class="s2">&#34;Content-Type=application/json&#34;</span> <span class="se">\
+</span><span class="se"></span>    --body <span class="s2">&#34;</span><span class="k">$(</span>cat namespace.json<span class="k">)</span><span class="s2">&#34;</span></code></pre></div>
+<p>Now we can install Jenkins X as usual, passing the <code>--provider alibaba</code> flag.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">jx install <span class="se">\
+</span><span class="se"></span>    --provider alibaba <span class="se">\
+</span><span class="se"></span>    --default-admin-password<span class="o">=</span>admin <span class="se">\
+</span><span class="se"></span>    --default-environment-prefix<span class="o">=</span>jx-rocks <span class="se">\
+</span><span class="se"></span>    --tekton <span class="se">\
+</span><span class="se"></span>    --docker-registry<span class="o">=</span>registry.<span class="si">${</span><span class="nv">REGION</span><span class="si">}</span>.aliyuncs.com <span class="se">\
+</span><span class="se"></span>    --docker-registry-org<span class="o">=</span><span class="si">${</span><span class="nv">NAMESPACE</span><span class="si">}</span> <span class="se">\
+</span><span class="se"></span>    -b</code></pre></div>
+<p>After installation we need to add the Container Registry credentials to the cluster, the Docker password we have previously created.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">AUTH</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> -n <span class="s2">&#34;</span><span class="si">${</span><span class="nv">DOCKER_USERNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">DOCKER_PASSWORD</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">|</span> base64<span class="k">)</span>
+<span class="nv">DATA</span><span class="o">=</span><span class="k">$(</span>cat <span class="s">&lt;&lt; EOF | base64
+</span><span class="s">{
+</span><span class="s">    &#34;auths&#34;: {
+</span><span class="s">        &#34;registry.${REGION}.aliyuncs.com&#34;: {
+</span><span class="s">            &#34;auth&#34;: &#34;${AUTH}&#34;
+</span><span class="s">        }
+</span><span class="s">    }
+</span><span class="s">}
+</span><span class="s">EOF</span>
+<span class="k">)</span>
+cat <span class="s">&lt;&lt; EOF | kubectl apply -f -
+</span><span class="s">apiVersion: v1
+</span><span class="s">kind: Secret
+</span><span class="s">type: Opaque
+</span><span class="s">metadata:
+</span><span class="s">  name: jenkins-docker-cfg
+</span><span class="s">  namespace: jx
+</span><span class="s">data:
+</span><span class="s">  config.json: ${DATA}
+</span><span class="s">EOF</span></code></pre></div>
+<h2 id="installing-addons">Installing Addons</h2>
+
+<p>Addons can be installed normally with the caveat mentioned above about PVC minimum size. Which means that we may need to pass some Helm values to the <code>create addon</code> command, depending on the chart we are installing.</p>
+
+<p>For instance to install Prometheus with 20Gi disks:</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">jx create addon prometheus <span class="se">\
+</span><span class="se"></span>    -s alertmanager.persistentVolume.size<span class="o">=</span>20Gi,pushgateway.persistentVolume.size<span class="o">=</span>20Gi,server.persistentVolume.size<span class="o">=</span>20Gi</code></pre></div>
+<h2 id="tekton">Tekton</h2>
+
+<p>Tekton builds need to be configured to use PVCs bigger than 20Gi due to the same reasons. The default is to use 5GiB PVCs.</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">cat <span class="s">&lt;&lt; EOF | kubectl apply -f -
+</span><span class="s">apiVersion: v1
+</span><span class="s">kind: ConfigMap
+</span><span class="s">metadata:
+</span><span class="s">  name: config-artifact-pvc
+</span><span class="s">  namespace: jx
+</span><span class="s">data:
+</span><span class="s">  size: 20Gi
+</span><span class="s">EOF</span></code></pre></div>
+      </div>
+    </div>
+    
+
+      <div class="gray f6 mv6">
+        Last Update: September 20, 2019 <br>
+      </div>
+
+  </article>
+
+
+    </main>
+
+    <footer class="bg-primary-color-dark ph4-ns pt4 relative w-100" role="contentinfo">
+  <div class="center flex-ns flex-wrap justify-between mw9 w-90">
+    <div class="pb3 pt4 w-100 w-50-ns">
+
+      <div class="b f3  light-gray mb3 nested-links tc">
+        By the <a href="https://github.com/jenkins-x/jx/contributors" class="link">Jenkins X Authors</a><br/>
+      </div>
+
+      <ul class="center f6 list ma0 mv3 pa0 tc"><li class="dib mr3"><a href="https://github.com/jenkins-x/jx/issues/new" class="dim link light-gray pv2">File an Issue</a></li><li class="dib mr3"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Get Help</a></li><li class="dib"><a href="https://jenkins-x.io/community" class="dim link light-gray pv2">Discuss Source Code</a></li></ul>
+
+      <ul class="center f6 list ma0 mv4 pa0 tc">
+        <li class="dib mr3"><a href="https://twitter.com/jenkinsxio" class="dim link light-gray pv2">@jenkinsxio</a>
+        </li>
+      </ul>
+
+      
+    </div>
+
+    <div> 
+      <img src="https://jenkins-x.io/images/logo.svg" width="100" height="100" />
+    </div>
+
+  </div>
+
+  <div class="f7 gray mb5 mb0-ns ph3 w-100"> 
+    <p class="dib mr4">Jenkins&reg; is a registered trademark of <a href="https://www.spi-inc.org/" class="link">Software in the Public Interest, Inc.</a></p>
+    <p class="dib">Copyright 2018–2019 the original authors.</p>
+  </div>
+
+
+  <div class="bg-primary-color-dark bottom-0 left-0 right-0 dn-l fixed pb3 ph3 w-100"><div  class="globalmenu mobilemenu pb3 dn">
+    
+
+<ul class="list hidden dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/documentation" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Documentation
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/news/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          News
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/community" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Community
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://github.com/jenkins-x/jx" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          GitHub
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins.io" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Jenkins
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/sponsors/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Sponsors
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/security/" class="ttu f6 link primary-color-light overflow hover-white db brand-font  ma0 w-100 pv3 ph4">
+          Security
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+<div  class="docsmenu mobilemenu pb3 dn">
+    
+
+<ul class="list dib ph0 ma0 scrolling-touch tc">
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/about/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          About Jenkins X
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/getting-started/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Getting Started
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/developing/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Developing
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/demos/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Demos
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/architecture/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Architecture
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100 mb2 bb b--mid-gray">
+        <a href="https://jenkins-x.io/apps/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Extending
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/apidocs/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          API
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/commands/jx/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          CLI
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/faq/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          FAQ
+        </a>
+    </li>
+  
+    <li  class="tl dib ma0 hover-bg-black w-100">
+        <a href="https://jenkins-x.io/contribute/" class="ttu f6 link primary-color-light  hover-white db brand-font mb1  ma0 w-100 pv2 ph4">
+          Contribute
+        </a>
+    </li>
+  
+</ul>
+
+</div>
+
+<div class="flex dn-l justify-between">
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link mr2 white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".globalmenu">Menu</button>
+
+  <button class="js-toggle flex-auto dib dn-l f6 tc db mt4-ns ph3 pv2 link white bg-primary-color-dark hover-bg-primary-color ba b--white-40 w-auto" data-target=".docsmenu">Docs Menu</button>
+</div>
+</div>
+
+</footer>
+
+    <script src="https://jenkins-x.io/dist/app.bundle.js"></script>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+<script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/d0c128ac1f69ba2bb20742976/9159f4f527ec7e8e4d019eb5c.js");</script>
+<script>
+    !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+    },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+    a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+    
+    twq('init','o14ln');
+    twq('track','PageView');
+ </script>
+
+  </body>
+</html>
