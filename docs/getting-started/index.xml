@@ -48,7 +48,107 @@
       <description>
         
         
-        &lt;p&gt;TBD&lt;/p&gt;
+        
+
+&lt;p&gt;Jenkins X developer environments should be familiar to anyone who has
+developed in a Git environment, with added features that further
+automates development processes, builds, and promotion.&lt;/p&gt;
+
+&lt;h1 id=&#34;the-traditional-development-environment&#34;&gt;The traditional development environment&lt;/h1&gt;
+
+&lt;p&gt;A common workflow in a Git development involves:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Forking - The developer creates a fork of the project repository into their personal repo.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Branching - The developer creates a branch of their fork, for various reasons:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Creating a new feature&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Fixing a bug&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Applying a security patch for a vulnerability&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Committing - The developer commits the code and pushes it to their branch, creating a &lt;code&gt;diff&lt;/code&gt; file.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Creating a pull request - The developer creates a pull request (PR) from their branch back to the main repository&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Testing - A developer peer or quality assurance (QA) team member looks at the code and/or builds a test version for validating the feature or fix, finding bugs and suggesting changes if necessary.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Merging - The PR code, if accepted, is merged into the master or main project repo.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&#34;jenkins-x-and-the-developer-process&#34;&gt;Jenkins X and the developer process&lt;/h1&gt;
+
+&lt;p&gt;Development with Jenkins X is similar to the traditional Git development
+workflow, with the added benefits of continuous development via automation within a Git context, also known as &lt;em&gt;GitOps&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Jenkins X goes one step further by offering a &lt;em&gt;preview environment&lt;/em&gt; that allows developer peers and QA testers to validate new features and fixes using an evaluation build of the functionality within the Git PR.&lt;/p&gt;
+
+&lt;h2 id=&#34;generating-a-preview-environment&#34;&gt;Generating a preview environment&lt;/h2&gt;
+
+&lt;p&gt;In a typical Jenkins X development scenario, users make changes to an
+application that has been imported or created via one of the various
+supported methods, such as
+&lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;Quickstarts&lt;/a&gt;, &lt;a href=&#34;/docs/using-jx/creating/import/&#34;&gt;imported projects&lt;/a&gt;, and &lt;a href=&#34;/docs/using-jx/creating/create-spring/&#34;&gt;Spring
+Boot&lt;/a&gt; applications.&lt;/p&gt;
+
+&lt;p&gt;When the developer makes the change to their branch, with the ultimate
+goal of merging those branch changes into the &lt;code&gt;master&lt;/code&gt; branch for
+deployment to production, they save their changes from within their
+integrated development environment (IDE) and commit it to the source
+repository, such as GitHub. The process to generate a preview
+environment is typically like committing code in a traditional
+development environment:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;A developer makes a branch to their local cloned source repository to create a new feature:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;git branch acme-feature1
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The developer makes changes to the source code in their branch and adds the affected files to the commit queue:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;git add index.html server.js
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The developer commits the files adding a comment about what has changed:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;git commit -m &amp;quot;nifty new image added to the index file&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The developer runs &lt;code&gt;git push&lt;/code&gt; to send the code back to the remote  repository and create a pull request:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;git push origin acme-feature1
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The program displays a link to a pull request. The developer can highlight the URL, right-click and choose &lt;em&gt;Open URL&lt;/em&gt; to see the GitHub page in their browser.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Jenkins X creates a preview environment in the PR for the application changes and displays a link to evaluate the new feature:&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&#34;/images/pr-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;The preview environment is created whenever a change is made to the
+repository, allowing any relevant user to validate or evaluate features,
+bugfixes, or security hotfix.&lt;/p&gt;
+
+&lt;h2 id=&#34;testing-the-preview-environment&#34;&gt;Testing the preview environment&lt;/h2&gt;
+
+&lt;p&gt;The development bot created during the installation process sends a notification email to the developer as well as the designated repository approver that a PR is ready for review. During the approval process, the approver can click on the preview application with the code changes for testing and validation.&lt;/p&gt;
+
+&lt;p&gt;When the approver confirms the code and functionality changes, they can
+approve the with a simple comment that merges the code changes back to
+the master branch and initiate a production build with the new feature:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;    /approve
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The code is merged to the &lt;code&gt;master&lt;/code&gt; branch, and the release is pushed to
+staging/production or a release created and available from the GitHub
+staging environment in the &lt;code&gt;Releases&lt;/code&gt; tab.&lt;/p&gt;
 
       </description>
     </item>
