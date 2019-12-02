@@ -22,18 +22,18 @@
 <link rel="icon" type="image/png" href="/favicons/android-192x192.png"sizes="192x192">
 
 <title>Crear, probar y obtener la vista previa de una aplicación | Jenkins X</title><meta property="og:title" content="Crear, probar y obtener la vista previa de una aplicación" />
-<meta property="og:description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios entornos integrados en Jenkins X
+<meta property="og:description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios **entornos** integrados en Jenkins X
 " />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="/es/docs/getting-started/build-test-preview/" />
 
 <meta itemprop="name" content="Crear, probar y obtener la vista previa de una aplicación">
-<meta itemprop="description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios entornos integrados en Jenkins X
+<meta itemprop="description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios **entornos** integrados en Jenkins X
 ">
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Crear, probar y obtener la vista previa de una aplicación"/>
-<meta name="twitter:description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios entornos integrados en Jenkins X
+<meta name="twitter:description" content="Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios **entornos** integrados en Jenkins X
 "/>
 
 
@@ -1082,6 +1082,22 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#el-tradicional-entorno-de-desarrollo">El tradicional entorno de desarrollo</a></li>
+<li><a href="#el-proceso-de-desarrollo-en-jenkins-x">El proceso de desarrollo en Jenkins X</a>
+<ul>
+<li><a href="#generar-el-entorno-de-vista-previa">Generar el entorno de vista previa</a></li>
+<li><a href="#probando-el-entorno-de-vista-previa">Probando el entorno de vista previa</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+
+
+
           </div>
           <main class="col-12 col-md-9 col-xl-8 pl-md-5" role="main">
             <nav aria-label="breadcrumb" class="d-none d-md-block d-print-none">
@@ -1121,8 +1137,71 @@ if (!doNotTrack) {
             
 <div class="td-content">
 	<h1>Crear, probar y obtener la vista previa de una aplicación</h1>
-	<div class="lead">Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios entornos integrados en Jenkins X</div>
-	<p>En desarrollo</p>
+	<div class="lead">Este tutorial le ayudará a comprender cómo construir, probar y obtener una vista previa de su aplicación en varios <strong>entornos</strong> integrados en Jenkins X</div>
+	
+
+<p>A toda persona que ha desarrollado en entornos de Git le resultará familiar los entornos de desarrollo en Jenkins X, con la diferencia de poder contar en este último con funcionalidades que le permitan automatizar el proceso de desarrollo, las compilaciones y las promociones.</p>
+
+<h2 id="el-tradicional-entorno-de-desarrollo">El tradicional entorno de desarrollo</h2>
+
+<p>El flujo tradicional de desarrollo en Git tiene los siguientes pasos:</p>
+
+<ol>
+<li>Bifurcación - El desarrollador crea una bifurcación del repositorio del proyecto en su área personal.</li>
+<li>Ramificación - El desarrollador crea una rama en el repositorio de su área personal por las posibles razones:
+
+<ul>
+<li>Crear una nueva funcionalidad</li>
+<li>Corregir un error</li>
+<li>Adicionar un parche de seguridad</li>
+</ul></li>
+<li>Inserción - El desarrollador ingresa el código a su rama del repositorio local y le envía hacia su repositorio remoto, creando de esta forma una diferencia en el fichero (<code>diff</code>).</li>
+<li>Creación de solicitud de extracción - El desarrollador crea una solicitud de extracción (PR) desde su repositorio hacia el repositorio principal.</li>
+<li>Corrección - Los cambios en el código son revisado por el equipo de calidad (QA) del repositorio principal para validar la nueva funcionalidad o la corrección del error. En este proceso se pueden sugerir cambios en caso de ser necesario.</li>
+<li>Mezclado - El código modificado en el PR, si es aceptado, se mezcla en la rama master del proyecto principal.</li>
+</ol>
+
+<h2 id="el-proceso-de-desarrollo-en-jenkins-x">El proceso de desarrollo en Jenkins X</h2>
+
+<p>Desarrollar con Jenkins X es similar al flujo tradicional de Git, incluyendo los beneficios de la automatización del despliegue continuo a través del contexto de Git, también conocido como <em>GitOps</em>.</p>
+
+<p>Jenkins X va un paso más allá brindando una <em>vista previa del entorno</em> permitiendo a los desarrolladores o al equipo de pruebas QA validar la nueva funcionalidad o las correcciones para evaluar la compilación de la funcionalidad dentro del PR de Git.</p>
+
+<h3 id="generar-el-entorno-de-vista-previa">Generar el entorno de vista previa</h3>
+
+<p>En un escenario típico de desarrollo en Jenkins X, los usuarios realizan cambios a la aplicación que han importado o creado a través de una de las posibles variantes, p.ej <a href="/es/docs/getting-started/first-project/create-quickstart/">inicios rápidos</a>, <a href="/es/docs/using-jx/creating/import/">importar proyectos</a>, entre otros.</p>
+
+<p>Luego de tener el proyecto, el proceso para generar la vista previa de entorno a partir de los cambios realizados es muy similar al flujo tradicional de Git. Los pasos serían:</p>
+
+<ol>
+<li><p>El desarrollador crea una rama en su repositorio local para crear la nueva funcionalidad:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git checkout -b acme-feature1</code></pre></div></li>
+
+<li><p>El desarrollador realiza las modificaciones en el código y luego los agrega como cambios en Git:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git add index.html server.js</code></pre></div></li>
+
+<li><p>El desarrollador establece los cambios en Git junto a un comentario:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git commit -m <span style="color:#4e9a06">&#34;nifty new image added to the index file&#34;</span></code></pre></div></li>
+
+<li><p>El desarrollador empuja los cambios hacia el repositorio remoto:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git push origin acme-feature1</code></pre></div></li>
+
+<li><p>En su terminal se mostrará un enlace para crear la solicitud de extracción. Haga <em>clic en el enlace</em> para acceder a la página de GitHub de su repositorio y crear la solicitud de extracción.</p></li>
+
+<li><p>Jenkins X creará una vista rápida del entorno en el PR creado en el paso anterior. Se mostrará un enlace para que pueda evaluar la nueva funcionalidad:</p></li>
+</ol>
+
+<p><img src="/images/pr-comment.png" class="img-thumbnail"></p>
+
+<p>El entorno de vista rápida es creada cada vez que se realice una modificación en el repositorio, permitiendo así la validación y evaluación por parte de los integrantes del proyecto de las nuevas funcionalidades o correcciones.</p>
+
+<h3 id="probando-el-entorno-de-vista-previa">Probando el entorno de vista previa</h3>
+
+<p>El sistema envía una notificación por email tanto el desarrollador como al responsable de aprobar los cambios en el repositorio indicando que los cambios están listos para ser revisados. Durante el proceso de aprobación, los integrantes pueden dar clic en el enlace de vista previa del entorno para revisar y validar los cambios.</p>
+
+<p>Cuando el responsable de aprobar los cambios considera que el nuevo estado es correcto, puede aprobar y mezclar los cambios a la rama <code>master</code> simplemente haciendo el siguiente comentario en el PR:</p>
+<div class="highlight"><pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">/approve</code></pre></div>
+<p>En este momento los cambios se mezclan y se inicia una nueva compilación en la rama <code>master</code> con todas las modificaciones incluidas para que luego sea liberadas a los entornos <code>Staging</code> y <code>Production</code>.</p>
 
         <div class="section-index">
     
@@ -1344,7 +1423,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/cd11b33b763d97272533f21e355da58fc322b1f3">release 0.0.1309 (cd11b33)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 2, 2019: <a  href="https://github.com/jenkins-x/jx-docs/commit/6055d6bfe0619b9ebc5f1ec5ee73574a36d587d3">release 0.0.1310 (6055d6b)</a>
 </div>
 </div>
 
