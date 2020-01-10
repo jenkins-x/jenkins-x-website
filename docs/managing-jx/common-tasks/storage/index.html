@@ -24,13 +24,13 @@
 <meta property="og:description" content="Let&#39;s save your pipeline files somewhere cloud native!" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/managing-jx/common-tasks/storage/" />
-<meta property="article:modified_time" content="2020-01-10T12:08:29+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2020-01-10T14:59:38+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Storage">
 <meta itemprop="description" content="Let&#39;s save your pipeline files somewhere cloud native!">
 
 
-<meta itemprop="dateModified" content="2020-01-10T12:08:29&#43;00:00" />
-<meta itemprop="wordCount" content="604">
+<meta itemprop="dateModified" content="2020-01-10T14:59:38&#43;00:00" />
+<meta itemprop="wordCount" content="793">
 
 
 
@@ -1717,6 +1717,11 @@ if (!doNotTrack) {
 <ul>
 <li><a href="#unstashing">Unstashing</a></li>
 </ul></li>
+<li><a href="#gke-storage-permissions">GKE Storage Permissions</a>
+<ul>
+<li><a href="#create-a-new-gke-cluster-with-full-control">Create a new GKE Cluster with Full-Control</a></li>
+<li><a href="#migrate-to-a-node-pool-with-full-control">Migrate to a node-pool with Full-Control</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -1857,6 +1862,44 @@ jx step stash -c coverage -p &quot;build/coverage/*&quot; --bucket-url s3://my-a
 
 <p>If you want to easily be able to read from the URL from Go source code you can use the <a href="https://github.com/jenkins-x/jx/blob/e5a7943dc0c3d79c27f30aea73235f18b3f5dcff/pkg/cloud/buckets/buckets.go#L44-L45" target="_blank"><code>ReadURL</code> function</a>.</p>
 
+<h2 id="gke-storage-permissions">GKE Storage Permissions</h2>
+
+<p>In GKE your node-pool requires additional permissions to be able to write into GCS buckets,
+more specifically the <code>devstorage.full_control</code> permission.</p>
+
+<p>If you already have a cluster, you can see these permissions in your <a href="https://console.cloud.google.com/kubernetes" target="_blank">cluster overview</a>,
+under the dropdown <code>Permissions</code>.</p>
+
+<p>The description of the field <code>Storage</code> should be <code>Full</code>,
+by default it is <code>Read Only</code>.</p>
+
+<p>There are two ways to change your permissions,
+either you create a new cluster with the appropriate permissions
+or you just migrate the node-pool, if you already have a running cluster.</p>
+
+<h3 id="create-a-new-gke-cluster-with-full-control">Create a new GKE Cluster with Full-Control</h3>
+
+<p>To create a new cluster with the right permissions,
+you need to use the <code>--scopes</code> flag with the <code>storage-full</code> argument, as seen here:</p>
+
+<pre><code>gcloud container clusters create &lt;name&gt; --machine-type &lt;type&gt; --zone &lt;zone&gt; --scopes=storage-full
+</code></pre>
+
+<h3 id="migrate-to-a-node-pool-with-full-control">Migrate to a node-pool with Full-Control</h3>
+
+<p>Migrating to a new node-pool is quite simple, it&rsquo;s done in 2 steps!</p>
+
+<p>First create a new node-pool with the required permissions:</p>
+
+<pre><code>gcloud container node-pools create &lt;node-pool-name&gt; --cluster &lt;cluster-name&gt; --machine-type &lt;type&gt; --scopes=storage-full
+</code></pre>
+
+<p>Now delete the old node-pool, all your <code>Pods</code> will
+be rescheduled on the new node-pool through Kubernetes magic!</p>
+
+<pre><code>gcloud container node-pools delete &lt;node-pool-name&gt;
+</code></pre>
+
 	
 		<style>
   .feedback--answer {
@@ -1919,7 +1962,7 @@ jx step stash -c coverage -p &quot;build/coverage/*&quot; --bucket-url s3://my-a
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified January 10, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/87ec85ed9fa1ee24d533717a3189ba7924a047bb">release 0.0.1390 (87ec85e)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified January 10, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/d31a532fbf3b46ffab029b25b2ac17dd3afda000">release 0.0.1392 (d31a532)</a>
 </div>
 </div>
 
