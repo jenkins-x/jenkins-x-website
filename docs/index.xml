@@ -17317,7 +17317,33 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;p&gt;For details of how to setup your cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/amazon/&#34;&gt;Amazon instructions&lt;/a&gt;&lt;/p&gt;
 
-&lt;h2 id=&#34;authentication-mechanisms&#34;&gt;Authentication mechanisms&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;#basic-configuration&#34;&gt;Basic Configuration&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#authentication-mechanisms&#34;&gt;Authentication Mechanisms&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;basic-configuration&#34;&gt;Basic Configuration&lt;/h2&gt;
+
+&lt;p&gt;Please set your provider to &lt;code&gt;eks&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using EKS:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;clusterConfig:
+    provider: eks
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you wish to use AWS via something like &lt;code&gt;kops&lt;/code&gt; and not use EKS then use the &lt;code&gt;aws&lt;/code&gt; provider:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;clusterConfig:
+    provider: aws
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you wish to setup your EKS cluster by hand and not use &lt;a href=&#34;https://eksctl.io/&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt; then please specify &lt;code&gt;terraform: true&lt;/code&gt; to indicating you are setting up all of the AWS related cloud resources yourself and that you do not want &lt;code&gt;jx boot&lt;/code&gt; to try set anything up.&lt;/p&gt;
+
+&lt;p&gt;We recommend using &lt;a href=&#34;/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; as this works out of the box with kaniko for creating container images without needing a docker daemon and works well with ECR.&lt;/p&gt;
+
+&lt;h2 id=&#34;authentication-mechanisms&#34;&gt;Authentication Mechanisms&lt;/h2&gt;
 
 &lt;p&gt;There are two standard authentication mechanisms that are recommended depending on use case: Enhanced permissions for the nodepool role, and IRSA.&lt;/p&gt;
 
@@ -17398,11 +17424,11 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;p&gt;Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.&lt;/p&gt;
 
-&lt;h2 id=&#34;iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster creation and Jenkins X Boot&lt;/h2&gt;
+&lt;h2 id=&#34;iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/h2&gt;
 
 &lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with jx create cluster eks and Jenkins X.&lt;/p&gt;
 
-&lt;h3 id=&#34;iam-policy-for-cluster-creation&#34;&gt;IAM Policy for Cluster creation&lt;/h3&gt;
+&lt;h3 id=&#34;iam-policy-for-cluster-creation&#34;&gt;IAM Policy for cluster creation&lt;/h3&gt;
 
 &lt;p&gt;In order to create an EKS cluster, we make use of &lt;a href=&#34;https://github.com/weaveworks/eksctl&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt;, which is the official tool to interact with EKS clusters.&lt;/p&gt;
 
@@ -17645,14 +17671,29 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;p&gt;Jenkins X will need full permissions on EKS in order to operate without problems.  For further security, this policy can be modified to restrict its access to only certain resources and accounts.  For example, if you know the name of your cluster, you can modify the resources affected by the eks permission to limit its effect.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Vault: A special case&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Vault&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;Vault does not support IAM Roles for Service accounts at the moment, its configuration depends on an existing IAM User that needs to be provided for Jenkins X to attach an IAM Policy to and use its secret credentials to authenticate against AWS.&lt;/p&gt;
+&lt;p&gt;A special case - s&amp;mdash;
+title: Amazon
+linktitle: Amazon
+description: Using Boot on Amazon (AWS)
+date: 2017-02-01
+publishdate: 2017-02-01
+lastmod: 2020-02-13&lt;/p&gt;
 
-&lt;p&gt;The CloudFormation stack that creates its resources can be found here:
-&lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/vault_cf_tmpl.yml&#34; target=&#34;_blank&#34;&gt;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/vault_cf_tmpl.yml&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;weight-20&#34;&gt;weight: 20&lt;/h2&gt;
 
-&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;For details of how to setup your cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/amazon/&#34;&gt;Amazon instructions&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#basic-configuration&#34;&gt;Basic Configuration&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#authentication-mechanisms&#34;&gt;Authentication Mechanisms&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;basic-configuration-1&#34;&gt;Basic Configuration&lt;/h2&gt;
 
 &lt;p&gt;Please set your provider to &lt;code&gt;eks&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using EKS:&lt;/p&gt;
 
@@ -17669,6 +17710,429 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 &lt;p&gt;If you wish to setup your EKS cluster by hand and not use &lt;a href=&#34;https://eksctl.io/&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt; then please specify &lt;code&gt;terraform: true&lt;/code&gt; to indicating you are setting up all of the AWS related cloud resources yourself and that you do not want &lt;code&gt;jx boot&lt;/code&gt; to try set anything up.&lt;/p&gt;
 
 &lt;p&gt;We recommend using &lt;a href=&#34;/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; as this works out of the box with kaniko for creating container images without needing a docker daemon and works well with ECR.&lt;/p&gt;
+
+&lt;h2 id=&#34;authentication-mechanisms-1&#34;&gt;Authentication Mechanisms&lt;/h2&gt;
+
+&lt;p&gt;There are two standard authentication mechanisms that are recommended depending on use case: Enhanced permissions for the nodepool role, and IRSA.&lt;/p&gt;
+
+&lt;h3 id=&#34;enhanced-permissions-for-the-nodepool-role-1&#34;&gt;Enhanced permissions for the nodepool role&lt;/h3&gt;
+
+&lt;p&gt;The default authentication and permissions mechanism used by EKS in order to give nodepool access to certain AWS services.&lt;/p&gt;
+
+&lt;p&gt;When an EKS cluster is created, the control plane for the cluster is managed directly by AWS but its nodepool and all the worker nodes are created as EC2 instances. These EC2 instances are assigned an IAM Role with specific permissions to allow these nodes to authenticate against AWS.&lt;/p&gt;
+
+&lt;p&gt;More policies can be added to these roles in order to provide permissions to every pod running in the cluster.&lt;/p&gt;
+
+&lt;p&gt;The issue with this mechanism is that by enhancing the permissions on the nodepool EC2 instances, every pod in the cluster will have every permission provided by the Role, which could raise security concerns.&lt;/p&gt;
+
+&lt;p&gt;Third party solutions like &lt;a href=&#34;https://github.com/uswitch/kiam&#34; target=&#34;_blank&#34;&gt;kiam&lt;/a&gt; or &lt;a href=&#34;https://github.com/jtblin/kube2iam&#34; target=&#34;_blank&#34;&gt;kube2iam&lt;/a&gt; can be used to provide permissions on a pod by pod basis but for Jenkins X it is recommended to use the official &lt;a href=&#34;https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts&#34; target=&#34;_blank&#34;&gt;IAMRoles for Service Accounts&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Note that this is the mechanism that &lt;em&gt;must&lt;/em&gt; be used if the cluster was not created with &lt;a href=&#34;https://github.com/weaveworks/eksctl&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt;, because only clusters created with &lt;code&gt;eksctl&lt;/code&gt; are able to assign an Open ID Connect Provider that will make IAM Roles for Service Accounts work.&lt;/p&gt;
+
+&lt;h3 id=&#34;iam-roles-for-service-accounts-irsa-1&#34;&gt;IAM Roles for Service Accounts (IRSA)&lt;/h3&gt;
+
+&lt;p&gt;In order to avoid the security concerns that enhanced permissions on the nodepool creates, it is recommended to use IRSA mechanisms to provide fine grained permissions at the Service Account level, meaning that a Role will be created and attached for every single Service Account that is used in the cluster.&lt;/p&gt;
+
+&lt;p&gt;When executing &lt;code&gt;jx boot&lt;/code&gt; (and ensuring that the &lt;code&gt;--terraform&lt;/code&gt; flag is set to &lt;code&gt;false&lt;/code&gt;), a series of IAM Policies are created through CloudFormation stacks:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/jenkinsx-policies.yml&#34; target=&#34;_blank&#34;&gt;jenkinsx-policies.yml&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;These policies are then exported as CloudFormation outputs following a defined format. For example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;Export:
+  Name: !Join [ &amp;quot;-&amp;quot;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This policy performs a Join operation. A name is provided, in this case TektonBotPolicy; then a random suffix is appended to make the name unique.&lt;/p&gt;
+
+&lt;p&gt;The provided name will be used in the irsa.tmpl.yaml file.&lt;/p&gt;
+
+&lt;p&gt;The names of the outputs from jenkinsx-policies.yml are used in this file by processing it through Golang’s templating functionality, exporting the outputs of the CloudFormation stack under the .IAM.` prefix.&lt;/p&gt;
+
+&lt;p&gt;This means that the outputs from jenkins-x-policies.yml can be obtained and queried in this file, which will then be processed and run against the cluster.&lt;/p&gt;
+
+&lt;p&gt;For example, take this output from the CloudFormation stack:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;CFNTektonBotPolicy:
+  Value:
+  Ref: CFNJenkinsXPolicies
+  Description: The ARN of the created policy
+  Export:
+    Name: !Join [ &amp;quot;-&amp;quot;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And how we use its export name in the next file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;{{- if .IAM.TektonBotPolicy }}
+  - metadata:
+      name: tekton-bot
+      namespace: jx
+      labels: {aws-usage: &amp;quot;jenkins-x&amp;quot;}
+    attachPolicyARNs:
+    - {{.IAM.TektonBotPolicy | quote}}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In this example we are taking the policy ARN created from the CloudFormation stack under a specific export name and using it in the IRSA template file. This will then create an IAM Role, attach the policy to it, then it will create a new ServiceAccount called tekton-bot with the necessary annotations to let it assume the created role.&lt;/p&gt;
+
+&lt;p&gt;If the ServiceAccount already exists, it will perform an upsert and just add the annotation.&lt;/p&gt;
+
+&lt;p&gt;A pod that uses that ServiceAccount will automatically assume that role in IAM and be granted access to the cloud services defined in the policy that was attached to its role.&lt;/p&gt;
+
+&lt;p&gt;If you need to add more permissions for other Service Accounts, just add them to &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/jenkinsx-policies.yml&#34; target=&#34;_blank&#34;&gt;jenkinsx-policies.yml&lt;/a&gt; with an export name that can be referenced in &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/irsa.tmpl.yaml&#34; target=&#34;_blank&#34;&gt;irsa.tmpl.yaml&lt;/a&gt; and Jenkins X will create everything for you.&lt;/p&gt;
+
+&lt;p&gt;You can also simply add already created policies to your ServiceAccounts like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;  - metadata:
+      name: jenkins-x-controllerbuild
+      namespace: jx
+      labels: {aws-usage: &amp;quot;jenkins-x&amp;quot;}
+    attachPolicyARNs:
+    - &amp;quot;arn:aws:iam::aws:policy/AmazonS3FullAccess&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.&lt;/p&gt;
+
+&lt;h2 id=&#34;iam-policies-for-cluster-creation-and-jenkins-x-boot-1&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/h2&gt;
+
+&lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with jx create cluster eks and Jenkins X.&lt;/p&gt;
+
+&lt;h3 id=&#34;iam-policy-for-cluster-creation-1&#34;&gt;IAM Policy for cluster creation&lt;/h3&gt;
+
+&lt;p&gt;In order to create an EKS cluster, we make use of &lt;a href=&#34;https://github.com/weaveworks/eksctl&#34; target=&#34;_blank&#34;&gt;eksctl&lt;/a&gt;, which is the official tool to interact with EKS clusters.&lt;/p&gt;
+
+&lt;p&gt;There is no official policy documented by eksctl to get a cluster running, but there’s a very useful GitHub issue where users have been curating a comprehensive policy that should work for all cases: &lt;a href=&#34;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&#34; target=&#34;_blank&#34;&gt;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;{
+    &amp;quot;Version&amp;quot;: &amp;quot;2012-10-17&amp;quot;,
+    &amp;quot;Statement&amp;quot;: [
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;iam:CreateInstanceProfile&amp;quot;,
+                &amp;quot;iam:DeleteInstanceProfile&amp;quot;,
+                &amp;quot;iam:GetRole&amp;quot;,
+                &amp;quot;iam:GetInstanceProfile&amp;quot;,
+                &amp;quot;iam:RemoveRoleFromInstanceProfile&amp;quot;,
+                &amp;quot;iam:CreateRole&amp;quot;,
+                &amp;quot;iam:DeleteRole&amp;quot;,
+                &amp;quot;iam:AttachRolePolicy&amp;quot;,
+                &amp;quot;iam:PutRolePolicy&amp;quot;,
+                &amp;quot;iam:ListInstanceProfiles&amp;quot;,
+                &amp;quot;iam:AddRoleToInstanceProfile&amp;quot;,
+                &amp;quot;iam:ListInstanceProfilesForRole&amp;quot;,
+                &amp;quot;iam:PassRole&amp;quot;,
+                &amp;quot;iam:DetachRolePolicy&amp;quot;,
+                &amp;quot;iam:DeleteRolePolicy&amp;quot;,
+                &amp;quot;iam:GetRolePolicy&amp;quot;,
+                &amp;quot;iam:DeleteServiceLinkedRole&amp;quot;,
+                &amp;quot;iam:CreateServiceLinkedRole&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: [
+                &amp;quot;arn:aws:iam::&amp;lt;account_id&amp;gt;:instance-profile/eksctl-*&amp;quot;,
+                &amp;quot;arn:aws:iam::&amp;lt;account_id&amp;gt;:role/eksctl-*&amp;quot;
+            ]
+        },
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: &amp;quot;cloudformation:*&amp;quot;,
+            &amp;quot;Resource&amp;quot;: &amp;quot;*&amp;quot;
+        },
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;eks:*&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: &amp;quot;*&amp;quot;
+        },
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;autoscaling:DescribeAutoScalingGroups&amp;quot;,
+                &amp;quot;autoscaling:DescribeLaunchConfigurations&amp;quot;,
+                &amp;quot;autoscaling:DescribeScalingActivities&amp;quot;,
+                &amp;quot;autoscaling:CreateLaunchConfiguration&amp;quot;,
+                &amp;quot;autoscaling:DeleteLaunchConfiguration&amp;quot;,
+                &amp;quot;autoscaling:UpdateAutoScalingGroup&amp;quot;,
+                &amp;quot;autoscaling:DeleteAutoScalingGroup&amp;quot;,
+                &amp;quot;autoscaling:CreateAutoScalingGroup&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: &amp;quot;*&amp;quot;
+        },
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: &amp;quot;ec2:DeleteInternetGateway&amp;quot;,
+            &amp;quot;Resource&amp;quot;: &amp;quot;arn:aws:ec2:*:*:internet-gateway/*&amp;quot;
+        },
+        {
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;ec2:AuthorizeSecurityGroupIngress&amp;quot;,
+                &amp;quot;ec2:DeleteSubnet&amp;quot;,
+                &amp;quot;ec2:DeleteTags&amp;quot;,
+                &amp;quot;ec2:CreateNatGateway&amp;quot;,
+                &amp;quot;ec2:CreateVpc&amp;quot;,
+                &amp;quot;ec2:AttachInternetGateway&amp;quot;,
+                &amp;quot;ec2:DescribeVpcAttribute&amp;quot;,
+                &amp;quot;ec2:DeleteRouteTable&amp;quot;,
+                &amp;quot;ec2:AssociateRouteTable&amp;quot;,
+                &amp;quot;ec2:DescribeInternetGateways&amp;quot;,
+                &amp;quot;ec2:CreateRoute&amp;quot;,
+                &amp;quot;ec2:CreateInternetGateway&amp;quot;,
+                &amp;quot;ec2:RevokeSecurityGroupEgress&amp;quot;,
+                &amp;quot;ec2:CreateSecurityGroup&amp;quot;,
+                &amp;quot;ec2:ModifyVpcAttribute&amp;quot;,
+                &amp;quot;ec2:DeleteInternetGateway&amp;quot;,
+                &amp;quot;ec2:DescribeRouteTables&amp;quot;,
+                &amp;quot;ec2:ReleaseAddress&amp;quot;,
+                &amp;quot;ec2:AuthorizeSecurityGroupEgress&amp;quot;,
+                &amp;quot;ec2:DescribeTags&amp;quot;,
+                &amp;quot;ec2:CreateTags&amp;quot;,
+                &amp;quot;ec2:DeleteRoute&amp;quot;,
+                &amp;quot;ec2:CreateRouteTable&amp;quot;,
+                &amp;quot;ec2:DetachInternetGateway&amp;quot;,
+                &amp;quot;ec2:DescribeNatGateways&amp;quot;,
+                &amp;quot;ec2:DisassociateRouteTable&amp;quot;,
+                &amp;quot;ec2:AllocateAddress&amp;quot;,
+                &amp;quot;ec2:DescribeSecurityGroups&amp;quot;,
+                &amp;quot;ec2:RevokeSecurityGroupIngress&amp;quot;,
+                &amp;quot;ec2:DeleteSecurityGroup&amp;quot;,
+                &amp;quot;ec2:DeleteNatGateway&amp;quot;,
+                &amp;quot;ec2:DeleteVpc&amp;quot;,
+                &amp;quot;ec2:CreateSubnet&amp;quot;,
+                &amp;quot;ec2:DescribeSubnets&amp;quot;,
+                &amp;quot;ec2:DescribeAvailabilityZones&amp;quot;,
+                &amp;quot;ec2:DescribeImages&amp;quot;,
+                &amp;quot;ec2:describeAddresses&amp;quot;,
+                &amp;quot;ec2:DescribeVpcs&amp;quot;,
+                &amp;quot;ec2:CreateLaunchTemplate&amp;quot;,
+                &amp;quot;ec2:DescribeLaunchTemplates&amp;quot;,
+                &amp;quot;ec2:RunInstances&amp;quot;,
+                &amp;quot;ec2:DeleteLaunchTemplate&amp;quot;,
+                &amp;quot;ec2:DescribeLaunchTemplateVersions&amp;quot;,
+                &amp;quot;ec2:DescribeImageAttribute&amp;quot;,
+                &amp;quot;ec2:DescribeKeyPairs&amp;quot;,
+                &amp;quot;ec2:ImportKeyPair&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: &amp;quot;*&amp;quot;
+        }
+    ]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;iam-policy-for-jenkins-x-boot-creation-1&#34;&gt;IAM Policy for Jenkins X Boot creation&lt;/h3&gt;
+
+&lt;p&gt;A different policy is required for Jenkins X to be successful with the jx boot command.  Depending on the configuration present in jx-requirements.yml, we will attempt to interact with different cloud services like S3, DynamoDB or KMS.  This policy will allow the executing user the minimum permissions to be successful.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://gist.github.com/dgozalo/df514542b63ef05282cac793b433d74b&#34; target=&#34;_blank&#34;&gt;https://gist.github.com/dgozalo/df514542b63ef05282cac793b433d74b&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;{
+    &amp;quot;Version&amp;quot;: &amp;quot;2012-10-17&amp;quot;,
+    &amp;quot;Statement&amp;quot;: [
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;VisualEditor0&amp;quot;,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;dynamodb:CreateTable&amp;quot;,
+                &amp;quot;s3:GetObject&amp;quot;,
+                &amp;quot;cloudformation:ListStacks&amp;quot;,
+                &amp;quot;cloudformation:DescribeStackEvents&amp;quot;,
+                &amp;quot;dynamodb:DescribeTable&amp;quot;,
+                &amp;quot;s3:CreateBucket&amp;quot;,
+                &amp;quot;kms:CreateKey&amp;quot;,
+                &amp;quot;s3:ListBucket&amp;quot;,
+                &amp;quot;s3:PutBucketVersioning&amp;quot;,
+                &amp;quot;cloudformation:DescribeStacks&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: &amp;quot;*&amp;quot;
+        },
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;VisualEditor1&amp;quot;,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;iam:GetRole&amp;quot;,
+                &amp;quot;iam:GetPolicy&amp;quot;,
+                &amp;quot;ecr:CreateRepository&amp;quot;,
+                &amp;quot;iam:AttachUserPolicy&amp;quot;,
+                &amp;quot;iam:CreateRole&amp;quot;,
+                &amp;quot;iam:DeleteRole&amp;quot;,
+                &amp;quot;iam:AttachRolePolicy&amp;quot;,
+                &amp;quot;iam:CreateAccessKey&amp;quot;,
+                &amp;quot;iam:CreateOpenIDConnectProvider&amp;quot;,
+                &amp;quot;iam:CreatePolicy&amp;quot;,
+                &amp;quot;iam:DetachRolePolicy&amp;quot;,
+                &amp;quot;cloudformation:CreateStack&amp;quot;,
+                &amp;quot;cloudformation:DeleteStack&amp;quot;,
+                &amp;quot;ecr:DescribeRepositories&amp;quot;,
+                &amp;quot;iam:GetOpenIDConnectProvider&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: [
+                &amp;quot;arn:aws:iam::*:policy/CFN*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:policy/*jenkins-x-vault*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:oidc-provider/*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:role/*addon-iamserviceaccoun*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:user/*&amp;quot;,
+                &amp;quot;arn:aws:ecr:*:*:repository/*&amp;quot;,
+                &amp;quot;arn:aws:cloudformation:*:*:stack/JenkinsXPolicies*/*&amp;quot;,
+                &amp;quot;arn:aws:cloudformation:*:*:stack/*addon-iamserviceaccount*/*&amp;quot;,
+                &amp;quot;arn:aws:cloudformation:*:*:stack/*jenkins-x-vault*/*&amp;quot;
+            ]
+        },
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;VisualEditor2&amp;quot;,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: [
+                &amp;quot;iam:CreatePolicy&amp;quot;,
+                &amp;quot;iam:DetachRolePolicy&amp;quot;,
+                &amp;quot;iam:GetPolicy&amp;quot;,
+                &amp;quot;iam:CreateRole&amp;quot;,
+                &amp;quot;iam:AttachRolePolicy&amp;quot;,
+                &amp;quot;iam:GetOpenIDConnectProvider&amp;quot;,
+                &amp;quot;iam:CreateOpenIDConnectProvider&amp;quot;
+            ],
+            &amp;quot;Resource&amp;quot;: [
+                &amp;quot;arn:aws:iam::*:oidc-provider/*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:role/*addon-iamserviceaccoun*&amp;quot;,
+                &amp;quot;arn:aws:iam::*:policy/CFN*&amp;quot;
+            ]
+        },
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;VisualEditor3&amp;quot;,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Action&amp;quot;: &amp;quot;eks:*&amp;quot;,
+            &amp;quot;Resource&amp;quot;: [
+                &amp;quot;arn:aws:eks:*:*:fargateprofile/*/*/*&amp;quot;,
+                &amp;quot;arn:aws:eks:*:*:cluster/*&amp;quot;,
+                &amp;quot;arn:aws:eks:*:*:nodegroup/*/*/*&amp;quot;
+            ]
+        }
+    ]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The reason for these policies is further described for each cloud resource below.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;IAM&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In order to make IAM Roles for Service Accounts work, Jenkins X will create IAM Policies and Roles and then attach these policies to these roles.  These Roles are then annotated into selected Service Accounts so pods using them can assume the role.  In order to make IRSA work, Jenkins X needs to create an Open ID Connect Provider with IAM in order to authenticate the annotated pods.  Also, in order to make Vault work, we (for now) need to attach a policy, created just for Vault, into a provided IAM User.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;CloudFormation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X creates a series of CloudFormation stacks to prepare the platform for cluster installation. All IAM Policies created for IRSA are created as CloudFormation stacks.  Every cloud resource needed by Vault is also created by CloudFormation, but only if they are not provided in jx-requirements.yml already.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;S3&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X uses S3 for Long Term Storage, that is, for logs archival and stashing of artifacts created in Pipelines.  Jenkins X Boot will attempt to check for existing S3 buckets and create them if they don’t exist.  It is also used by Vault, so there needs to be enough permissions for the executing user to interact with the service. Permissions to interact with the bucket however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;DynamoDB&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This service is used by Vault, so the executing user needs to have permissions to at least create the table. Permissions to interact with the table however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;KMS&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Vault needs to create a KMS key in order to encrypt its contents. Again, the executing user just needs permissions to create the Key. Permissions to interact with KMS however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;ECR&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X will check if there is an ECR registry already created for a given application, and create it otherwise.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;EKS&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Jenkins X will need full permissions on EKS in order to operate without problems.  For further security, this policy can be modified to restrict its access to only certain resources and accounts.  For example, if you know the name of your cluster, you can modify the resources affected by the eks permission to limit its effect.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Vault&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A special case - refer to &lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/h2&gt;
+
+&lt;p&gt;When booting JX on an EKS cluster with Vault enabled, fields under vault.aws in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file are required to enable Vault support.&lt;/p&gt;
+
+&lt;p&gt;Vault does not currently support Identity Access Management (IAM) Roles for Service Accounts, so you will be prompted to provide a preconfigured IAM User.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;jx-requirements.yml&lt;/code&gt; file contains the following settings for EKS Vault configuration:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;vault:
+    aws:
+      autoCreate: true
+      iamUserName: &amp;lt;username&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For Vault support on EKS clusters, you must provide an &lt;strong&gt;existing&lt;/strong&gt; IAM username in the &lt;code&gt;iamUserName&lt;/code&gt; setting to use its Access Keys to authenticate the Vault pod against AWS.&lt;/p&gt;
+
+&lt;p&gt;The IAM user does not need any permissions attached to it. During the installation process, Jenkins X creates a new IAM Policy and attaches it to this user. These will essentially be the permissions that the Vault pod will use.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Important&lt;/strong&gt;: A new set of Access Keys are created during Vault creation. There is a limit of 2 key pairs per IAM user, so ensure that there is at least one key slot free on the IAM user that you are providing. Otherwise, the Vault configuration will fail. If you do not want Jenkins X to create these keys, you can provide a key pair that you already created through the environment variables: &lt;strong&gt;VAULT_AWS_ACCESS_KEY_ID&lt;/strong&gt; and &lt;strong&gt;VAULT_AWS_SECRET_ACCESS_KEY&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;strong&gt;install-vault&lt;/strong&gt; step, the jx boot process runs a CloudFormation stack in order to create every resource needed by Vault to work.&lt;/p&gt;
+
+&lt;p&gt;You can find the CloudFormation stack template &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/vault_cf_tmpl.yml&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;providing-an-existing-vault-instance&#34;&gt;Providing an Existing Vault Instance&lt;/h3&gt;
+
+&lt;p&gt;If you want to provide an existing Vault instance instead of letting Jenkins X create one, you need to set Vault.aws.autoCreate to false.&lt;/p&gt;
+
+&lt;p&gt;You must provide the names of the existing resources in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;vault:
+  aws:
+    autoCreate: false
+    iamUserName: acmeuser
+    dynamoDBTable: &amp;quot;&amp;quot;
+    dynamoDBRegion: &amp;quot;&amp;quot;
+    kmsKeyId: &amp;quot;&amp;quot;
+    kmsRegion: &amp;quot;&amp;quot;
+    s3Bucket: &amp;quot;&amp;quot;
+    s3Region: &amp;quot;&amp;quot;
+    s3Prefix: &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: A pair of Access Keys will be created even if you set &lt;strong&gt;autoCreate&lt;/strong&gt; to &lt;strong&gt;false&lt;/strong&gt;. To prevent this, you can set an existing pair through environment variables: &lt;strong&gt;VAULT_AWS_ACCESS_KEY_ID&lt;/strong&gt; and &lt;strong&gt;VAULT_AWS_SECRET_ACCESS_KEY&lt;/strong&gt;.
+ee &lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;configuring-vault-for-eks-1&#34;&gt;Configuring Vault for EKS&lt;/h2&gt;
+
+&lt;p&gt;When booting JX on an EKS cluster with Vault enabled, fields under vault.aws in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file are required to enable Vault support.&lt;/p&gt;
+
+&lt;p&gt;Vault does not currently support Identity Access Management (IAM) Roles for Service Accounts, so you will be prompted to provide a preconfigured IAM User.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;jx-requirements.yml&lt;/code&gt; file contains the following settings for EKS Vault configuration:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;vault:
+    aws:
+      autoCreate: true
+      iamUserName: &amp;lt;username&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For Vault support on EKS clusters, you must provide an &lt;strong&gt;existing&lt;/strong&gt; IAM username in the &lt;code&gt;iamUserName&lt;/code&gt; setting to use its Access Keys to authenticate the Vault pod against AWS.&lt;/p&gt;
+
+&lt;p&gt;The IAM user does not need any permissions attached to it. During the installation process, Jenkins X creates a new IAM Policy and attaches it to this user. These will essentially be the permissions that the Vault pod will use.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Important&lt;/strong&gt;: A new set of Access Keys are created during Vault creation. There is a limit of 2 key pairs per IAM user, so ensure that there is at least one key slot free on the IAM user that you are providing. Otherwise, the Vault configuration will fail. If you do not want Jenkins X to create these keys, you can provide a key pair that you already created through the environment variables: &lt;strong&gt;VAULT_AWS_ACCESS_KEY_ID&lt;/strong&gt; and &lt;strong&gt;VAULT_AWS_SECRET_ACCESS_KEY&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;strong&gt;install-vault&lt;/strong&gt; step, the jx boot process runs a CloudFormation stack in order to create every resource needed by Vault to work.&lt;/p&gt;
+
+&lt;p&gt;You can find the CloudFormation stack template &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/vault_cf_tmpl.yml&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;providing-an-existing-vault-instance-1&#34;&gt;Providing an Existing Vault Instance&lt;/h3&gt;
+
+&lt;p&gt;If you want to provide an existing Vault instance instead of letting Jenkins X create one, you need to set Vault.aws.autoCreate to false.&lt;/p&gt;
+
+&lt;p&gt;You must provide the names of the existing resources in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;vault:
+  aws:
+    autoCreate: false
+    iamUserName: acmeuser
+    dynamoDBTable: &amp;quot;&amp;quot;
+    dynamoDBRegion: &amp;quot;&amp;quot;
+    kmsKeyId: &amp;quot;&amp;quot;
+    kmsRegion: &amp;quot;&amp;quot;
+    s3Bucket: &amp;quot;&amp;quot;
+    s3Region: &amp;quot;&amp;quot;
+    s3Prefix: &amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note: A pair of Access Keys will be created even if you set &lt;strong&gt;autoCreate&lt;/strong&gt; to &lt;strong&gt;false&lt;/strong&gt;. To prevent this, you can set an existing pair through environment variables: &lt;strong&gt;VAULT_AWS_ACCESS_KEY_ID&lt;/strong&gt; and &lt;strong&gt;VAULT_AWS_SECRET_ACCESS_KEY&lt;/strong&gt;.&lt;/p&gt;
 
       </description>
     </item>
