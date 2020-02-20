@@ -14,6 +14,259 @@
     
     
     <item>
+      <title>Docs: Creating Jenkins X Pipelines from scratch</title>
+      <link>/docs/using-jx/pipelines/newpipeline/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/pipelines/newpipeline/</guid>
+      <description>
+        
+        
+        &lt;p&gt;If you’re starting out with a blank canvas, it’s still a good idea to have a look at the &lt;a href=&#34;https://github.com/jenkins-x-quickstarts&#34; target=&#34;_blank&#34;&gt;quickstart templates&lt;/a&gt; to get inspiration for creating a pipeline with proper syntax and structure.&lt;/p&gt;
+
+&lt;p&gt;You can copy the basic structure over from an existing file, or copy from here, but at the very minimum you need to define two pipelines, pullRequest and Release, which will encompass the more detailed stages and steps:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;buildPack: none
+pipelineConfig:
+ pipelines:
+   pullRequest:
+   release:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For the &lt;code&gt;pullRequest&lt;/code&gt; pipeline you define the stages and steps that Jenkins X will execute for each pull request, and &lt;code&gt;Release&lt;/code&gt; is the same, just for what should happen to create the final product (whether a k8s app, docker image, static website, etc.)&lt;/p&gt;
+
+&lt;p&gt;You can also specify a &lt;code&gt;feature&lt;/code&gt; pipeline, for processing merges to a feature branch. However, note that the &lt;a href=&#34;/docs/overview/accelerate/&#34;&gt;Accelerate book&lt;/a&gt; recommends against long term feature branches. Instead, consider using trunk based development which is a practice of high performing teams.&lt;/p&gt;
+
+&lt;p&gt;Each pipeline will have an &lt;code&gt;agent&lt;/code&gt; defined (usually Kaniko for building docker images) and at least one &lt;code&gt;stage&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    release:
+      pipeline:
+        agent:
+          image: gcr.io/kaniko-project/executor:9912ccbf8d22bbafbf971124600fbb0b13b9cbd6
+        stages:
+        - name: release
+          steps:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Within each stage you’ll define the steps, which can generally be anything you can call on a command line or execute via a docker container. &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#configuration-for-steps&#34;&gt;Configuration for steps&lt;/a&gt; lists the various parameters you can use in a step.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Pipeline Environment Variables</title>
+      <link>/docs/using-jx/pipelines/envvars/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/pipelines/envvars/</guid>
+      <description>
+        
+        
+        
+
+&lt;p&gt;There are variables that are available by default, and there are those that you can define yourself.&lt;/p&gt;
+
+&lt;h2 id=&#34;default-environment-variables&#34;&gt;Default environment variables&lt;/h2&gt;
+
+&lt;p&gt;The following environment variables are available for use in a step in Jenkins X Pipelines:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;DOCKER_REGISTRY&lt;/td&gt;
+&lt;td&gt;the docker registry host (e.g. &lt;code&gt;docker.io&lt;/code&gt; or &lt;code&gt;gcr.io&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;BUILD_NUMBER&lt;/td&gt;
+&lt;td&gt;the build number (1, 2, 3) starts at &lt;code&gt;1&lt;/code&gt; for each repo and branch&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PIPELINE_KIND&lt;/td&gt;
+&lt;td&gt;the kind of pipeline such as &lt;code&gt;release&lt;/code&gt; or &lt;code&gt;pullrequest&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PIPELINE_CONTEXT&lt;/td&gt;
+&lt;td&gt;the pipeline context if there are multiple pipelines per PR (for different tests/governance/lint etc)&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;REPO_OWNER&lt;/td&gt;
+&lt;td&gt;the git repository owner&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;REPO_NAME&lt;/td&gt;
+&lt;td&gt;the git repository name&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;JOB_NAME&lt;/td&gt;
+&lt;td&gt;the job name which typically looks like &lt;code&gt;$REPO_OWNER/$REPO_NAME/$BRANCH_NAME&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;APP_NAME&lt;/td&gt;
+&lt;td&gt;the name of the app which typically is the &lt;code&gt;$REPO_NAME&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;BRANCH_NAME&lt;/td&gt;
+&lt;td&gt;the name of the branch such as &lt;code&gt;master&lt;/code&gt; or &lt;code&gt;PR-123&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;JX_BATCH_MODE&lt;/td&gt;
+&lt;td&gt;indicates to jx to use batch mode if &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;VERSION&lt;/td&gt;
+&lt;td&gt;contains the version number being released or the PR&amp;rsquo;s preview version&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;BUILD_ID&lt;/td&gt;
+&lt;td&gt;same as &lt;code&gt;$BUILD_NUMBER&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;JOB_TYPE&lt;/td&gt;
+&lt;td&gt;the prow job type such as &lt;code&gt;presubmit&lt;/code&gt; for PR or &lt;code&gt;postsubmit&lt;/code&gt; for release&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PULL_BASE_REF&lt;/td&gt;
+&lt;td&gt;the branch/ref of git&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PULL_BASE_SHA&lt;/td&gt;
+&lt;td&gt;the git SHA being built&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PULL_NUMBER&lt;/td&gt;
+&lt;td&gt;for PRs this will be the number without the &lt;code&gt;PR-&lt;/code&gt; prefix&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PULL_REFS&lt;/td&gt;
+&lt;td&gt;for batch merging all the git refs&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&#34;version&#34;&gt;${VERSION}&lt;/h3&gt;
+
+&lt;p&gt;This particular variable is populated by Jenkins X when running pipelines. You can use this to tag docker images or anything else where you need a version number for the application you’re building.&lt;/p&gt;
+
+&lt;p&gt;For Release pipelines, Jenkins X will look up the latest Git tag and use that as a basis for the value, increment it and create a new tag. For example, if your latest tag is &lt;code&gt;1.3.34&lt;/code&gt;, Jenkins X will populate &lt;code&gt;${VERSION}&lt;/code&gt; with &lt;code&gt;1.3.35&lt;/code&gt; and will tag the HEAD of the master branch with the same value. This all happens automatically, giving you a record of the last successful build of the master branch.&lt;/p&gt;
+
+&lt;p&gt;For &lt;code&gt;pullRequest&lt;/code&gt; pipelines, the value is populated based on the version recorded in the GitOps repo for your application, and appended with &lt;code&gt;PR-&amp;lt;pull request number&amp;gt;-&amp;lt;build number&amp;gt;&lt;/code&gt; giving each build a pull request a unique version.&lt;/p&gt;
+
+&lt;h4 id=&#34;triggering-a-major-or-minor-version-bump&#34;&gt;Triggering a major or minor version bump&lt;/h4&gt;
+
+&lt;p&gt;When the version is bumped automatically, only the patch version is changed. To change the major or minor version, manually add a tag (e.g. 1.4.0) to your repo and Jenkins X will continue to increment from there (making the next application version 1.4.1 in the previous example).&lt;/p&gt;
+
+&lt;h4 id=&#34;overriding-version&#34;&gt;Overriding ${VERSION}&lt;/h4&gt;
+
+&lt;p&gt;For &lt;code&gt;pullRequest&lt;/code&gt; pipelines, the logic behind &lt;code&gt;${VERSION}&lt;/code&gt; cannot yet be overridden, but you could likely construct a version string out of the other variables mentioned above, if the default doesn’t serve your purpose.&lt;/p&gt;
+
+&lt;p&gt;For &lt;code&gt;Release&lt;/code&gt; pipelines, you can override the default logic by adding a &lt;code&gt;setVersion&lt;/code&gt; declaration above the &lt;code&gt;pipeline&lt;/code&gt; keyword like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    release:
+      setVersion:
+        steps:
+          - name: next-version
+            sh: &amp;quot;jx step next-version --version $(cat HUGO_VERSION)-${BUILD_NUMBER} --tag&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The example above uses a file with a version number to construct a specific version string where the unique part is the build number. The &lt;code&gt;--tag&lt;/code&gt; part makes Jenkins X also tag the repo with the generated string. In the example, we wanted to keep the official Hugo version and have a separate indicator for the build number, to avoid bumping the patch number and making our image seem ahead of the official Hugo version. The string generated ends up looking like &lt;code&gt;0.60.1-3&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;self-defined-variables&#34;&gt;Self defined variables&lt;/h2&gt;
+
+&lt;p&gt;You can define your own environment variables either at the pipeline level:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    release:
+      pipeline:
+        environment:
+          - name: PIPELINE_VAR
+            value: A value for the pipeline variable
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;at a stage level:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    release:
+      pipeline:
+        stages:
+          environment:
+            - name: STAGE_VAR
+              value: A value for the stage level variable
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;or at a step level:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    release:
+      pipeline:
+        stages:
+          steps:
+            environment:
+              - name: STEP_VAR
+                value: A value for the step level variable
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Each level will add their variables to the variables defined in the level(s) above them, or potentially replace a variable if the same name is used.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Custom images in steps</title>
+      <link>/docs/using-jx/pipelines/customimages/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/using-jx/pipelines/customimages/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X supports various types of Docker builder images, as long as the image is published in an accessible registry.&lt;/p&gt;
+
+&lt;p&gt;One example is to re-use Google’s fairly small &lt;a href=&#34;https://github.com/GoogleCloudPlatform/cloud-builders&#34; target=&#34;_blank&#34;&gt;cloud builder images&lt;/a&gt; to perform quick tasks:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;         - image: gcr.io/cloud-builders/npm
+           name: install-dependencies
+           command: npm
+           args: [&#39;install&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Or you can use your own published images like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;          - image: gcr.io/jenkinsxio/hugo-extended:0.60.1-3
+            name: build-website
+            command: hugo
+            args:
+            - -d
+            - tmp-website
+            - --enableGitInfo
+            - --baseURL http://${APP_NAME}.jx-${REPO_OWNER}-${REPO_NAME}-pr-${PULL_NUMBER}.${DOMAIN}/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The main requirement is that the image is available, either with or without authentication.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: What&#39;s next?</title>
       <link>/docs/getting-started/next/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -17164,7 +17417,7 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;h2 id=&#34;what-environment-variables-are-available-by-default-inside-a-pipeline&#34;&gt;What environment variables are available by default inside a pipeline?&lt;/h2&gt;
 
-&lt;p&gt;See the &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/#default-environment-variables&#34;&gt;default environment variables created for pipeline steps&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;See the &lt;a href=&#34;/docs/using-jx/pipelines/envvars/#default-environment-variables&#34;&gt;default environment variables created for pipeline steps&lt;/a&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;is-there-a-reference-for-the-syntax&#34;&gt;Is there a reference for the syntax?&lt;/h2&gt;
 
@@ -17172,9 +17425,9 @@ to &lt;code&gt;&amp;lt;unique name&amp;gt;.&amp;lt;your username&amp;gt;.jenkins
 
 &lt;h2 id=&#34;how-do-i-mount-a-secret-or-configmap&#34;&gt;How do I mount a Secret or ConfigMap?&lt;/h2&gt;
 
-&lt;p&gt;Each step in a Jenkins X Pipeline in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file is basically a &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#container-v1-core&#34; target=&#34;_blank&#34;&gt;Container&lt;/a&gt; from kubernetes so you can specify the image, resource limitts, environment variables and mount them from a &lt;code&gt;ConfigMap&lt;/code&gt; or &lt;code&gt;Secret&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Each step in a Jenkins X Pipeline in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file is basically a &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#container-v1-core&#34; target=&#34;_blank&#34;&gt;Container&lt;/a&gt; from kubernetes so you can specify the image, resource limits, environment variables and mount them from a &lt;code&gt;ConfigMap&lt;/code&gt; or &lt;code&gt;Secret&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;You can see &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#full-pipeline-definition-in-jenkins-x-yml&#34;&gt;an example of mounting a Secrett to an environment variable here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can see &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#full-pipeline-definition-in-jenkins-x-yml&#34;&gt;an example of mounting a Secret to an environment variable here&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;If you are inside a shell script you can also use the &lt;a href=&#34;/commands/deprecation/&#34;&gt;jx step credential&lt;/a&gt;&lt;/p&gt;
 
@@ -20848,106 +21101,6 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 &lt;p&gt;We&amp;rsquo;d love to improve this UX if you fancy &lt;a href=&#34;/docs/contributing/&#34;&gt;helping out&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h2 id=&#34;default-environment-variables&#34;&gt;Default environment variables&lt;/h2&gt;
-
-&lt;p&gt;The following environment variables are available for use in a step in Jenkins X Pipelines:&lt;/p&gt;
-
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Description&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;DOCKER_REGISTRY&lt;/td&gt;
-&lt;td&gt;the docker registry host (e.g. &lt;code&gt;docker.io&lt;/code&gt; or &lt;code&gt;gcr.io&lt;/code&gt;)&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;BUILD_NUMBER&lt;/td&gt;
-&lt;td&gt;the build number (1, 2, 3) starts at &lt;code&gt;1&lt;/code&gt; for each repo and branch&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PIPELINE_KIND&lt;/td&gt;
-&lt;td&gt;the kind of pipeline such as &lt;code&gt;release&lt;/code&gt; or &lt;code&gt;pullrequest&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PIPELINE_CONTEXT&lt;/td&gt;
-&lt;td&gt;the pipeline context if there are multiple pipelines per PR (for different tests/governance/lint etc)&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;REPO_OWNER&lt;/td&gt;
-&lt;td&gt;the git repository owner&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;REPO_NAME&lt;/td&gt;
-&lt;td&gt;the git repository name&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;JOB_NAME&lt;/td&gt;
-&lt;td&gt;the job name which typically looks like &lt;code&gt;$REPO_OWNER/$REPO_NAME/$BRANCH_NAME&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;APP_NAME&lt;/td&gt;
-&lt;td&gt;the name of the app which typically is the &lt;code&gt;$REPO_NAME&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;BRANCH_NAME&lt;/td&gt;
-&lt;td&gt;the name of the branch such as &lt;code&gt;master&lt;/code&gt; or &lt;code&gt;PR-123&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;JX_BATCH_MODE&lt;/td&gt;
-&lt;td&gt;indicates to jx to use batch mode if &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;VERSION&lt;/td&gt;
-&lt;td&gt;contains the version number being released or the PR&amp;rsquo;s preview version&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;BUILD_ID&lt;/td&gt;
-&lt;td&gt;same as &lt;code&gt;$BUILD_NUMBER&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;JOB_TYPE&lt;/td&gt;
-&lt;td&gt;the prow job type such as &lt;code&gt;presubmit&lt;/code&gt; for PR or &lt;code&gt;postsubmit&lt;/code&gt; for release&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PULL_BASE_REF&lt;/td&gt;
-&lt;td&gt;the branch/ref of git&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PULL_BASE_SHA&lt;/td&gt;
-&lt;td&gt;the git SHA being built&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PULL_NUMBER&lt;/td&gt;
-&lt;td&gt;for PRs this will be the number without the &lt;code&gt;PR-&lt;/code&gt; prefix&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;PULL_REFS&lt;/td&gt;
-&lt;td&gt;for batch merging all the git refs&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
       </description>
     </item>
     
@@ -21302,268 +21455,6 @@ It’s normally used to update the ConfigMap that contains the prow configuratio
 
 &lt;p&gt;Using init-containers for steps &lt;a href=&#34;https://github.com/knative/build/pull/470&#34; target=&#34;_blank&#34;&gt;may change in the future&lt;/a&gt;, due to limitations on init-containers.
 Knative Build CRD is being deprecated in favor of the Pipeline CRD. The Build CRD will be superseded by the new Task CRD, but they are really similar.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Jenkins X Security</title>
-      <link>/docs/contributing/security/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/contributing/security/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;The Jenkins X project takes security seriously. We make every possible effort to ensure users can adequately secure their automation infrastructure.
-To that end, we work with Jenkins X platform and app developers, as well as security researchers, to fix security vulnerabilities in Jenkins X in a timely manner, and to improve the security of Jenkins X in general.&lt;/p&gt;
-
-&lt;h2 id=&#34;how-to-report-a-security-vulnerability&#34;&gt;How to Report a Security Vulnerability&lt;/h2&gt;
-
-&lt;p&gt;If you find a vulnerability in Jenkins X, please report it in the &lt;strong&gt;Jenkins CI&lt;/strong&gt; issue tracker under the &lt;a href=&#34;https://issues.jenkins-ci.org/browse/SECURITY&#34; target=&#34;_blank&#34;&gt;SECURITY project&lt;/a&gt;.
-Please &lt;strong&gt;do not report security issues in the github&lt;/strong&gt; tracker.&lt;br /&gt;
-This project is configured in such a way that only the reporter and the security team can see the details.
-By restricting access to this potentially sensitive information, we can work on a fix and deliver it before the method of attack becomes well-known.&lt;/p&gt;
-
-&lt;p&gt;If you are unable to report using the above issue tracker, you can also send your report to the private Jenkins Security Team mailing list: &lt;a href=&#34;mailto:jenkinsci-cert@googlegroups.com&#34; target=&#34;_blank&#34;&gt;jenkinsci-cert@googlegroups.com&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;vulnerabilities-in-apps&#34;&gt;Vulnerabilities in Apps&lt;/h2&gt;
-
-&lt;p&gt;Whilst the Jenkins X team is not responsible for the quality of third party apps, please still use the above reporting mechanism and we will co-ordinate with the app developer to ensure a fix in a secure maner.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Serverless Apps</title>
-      <link>/docs/managing-jx/tutorials/serverless-apps/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/managing-jx/tutorials/serverless-apps/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;Serverless applications are regular applications that &amp;ldquo;scale to zero&amp;rdquo;. This means when your application isn&amp;rsquo;t in use - no resources at all will be used. You only pay for what you use. These applications scale up elastically to meet the workload.&lt;/p&gt;
-
-&lt;p&gt;Once you have this feature enabled - all new apps you import or quickstarts you use by default will be serverless style (you can override as needed - see below). You don&amp;rsquo;t have to change the way you build web apps. This is currently in a preview state (but works well), and in future most web apps will work in this fashion (and this will be the default).&lt;/p&gt;
-
-&lt;h2 id=&#34;enabling-serverless-apps&#34;&gt;Enabling serverless apps&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon gloo
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;And you are then good to go. Any new projects you create will be created in this serverless style.&lt;/p&gt;
-
-&lt;h2 id=&#34;converting-existing-applications&#34;&gt;Converting existing applications&lt;/h2&gt;
-
-&lt;p&gt;If you already have a microservice and you want to convert it over to Knative Serve just &lt;a href=&#34;/docs/using-jx/creating/import/&#34;&gt;import the source repository into Jenkins X&lt;/a&gt; and you should be all done.&lt;/p&gt;
-
-&lt;p&gt;If your application was imported recently into Jenkins X but before you installed and enabled Knative Serve you can use &lt;a href=&#34;/commands/deprecation/&#34;&gt;jx edit deploy&lt;/a&gt; to switch between the &lt;code&gt;default&lt;/code&gt; deployment kind (using kubernetes &lt;code&gt;Deployment&lt;/code&gt; and &lt;code&gt;Service&lt;/code&gt; resources) and the &lt;code&gt;knative&lt;/code&gt; kind (using Knative &lt;code&gt;Service&lt;/code&gt; resource)&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit deploy
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;This command will modify the &lt;code&gt;knativeDeploy&lt;/code&gt; flag in your helm &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; file to enable / disable Knative Serve. Once you have committed that code change and merged to master your application will be released to staging using Knative Serve by the automated CI/CD pipeline in Jenkins X.&lt;/p&gt;
-
-&lt;h2 id=&#34;edit-your-team-s-deploy-kind&#34;&gt;Edit your team’s deploy kind&lt;/h2&gt;
-
-&lt;p&gt;You can edit the default deployment kind for your team which is used when’re you create a QuickStart or import a repository via the &lt;a href=&#34;/commands/deprecation/&#34;&gt;jx edit deploy&lt;/a&gt; command with the &lt;code&gt;-t&lt;/code&gt; argument:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx edit deploy -t
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
-
-&lt;p&gt;We use an open source project called &lt;a href=&#34;https://www.knative.dev/&#34; target=&#34;_blank&#34;&gt;Knative&lt;/a&gt; to provide the elastic scaling of your applications and functions.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://www.knative.dev/&#34; target=&#34;_blank&#34;&gt;Knative Serve&lt;/a&gt; exposes functions in any programming language over HTTP with elastic scaling from zero to many pods. This lets you build serverless applications which run on any cloud or kubernetes cluster and make an efficient use of resources.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://www.knative.dev/&#34; target=&#34;_blank&#34;&gt;Knative&lt;/a&gt; works with service mesh technologies like &lt;a href=&#34;https://istio.io/&#34; target=&#34;_blank&#34;&gt;Istio&lt;/a&gt; or &lt;a href=&#34;https://gloo.solo.io/&#34; target=&#34;_blank&#34;&gt;Gloo&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;The Jenkins X builld packs create a Knative Serve resource in your helm chart at &lt;code&gt;charts/myapp/templates/ksvc.yaml&lt;/code&gt;. This resource is only created if the &lt;code&gt;knativeDeploy&lt;/code&gt; flag is true / otherwise the default kubernetes &lt;code&gt;Service&lt;/code&gt; &amp;amp; &lt;code&gt;Deployment&lt;/code&gt; are created.&lt;/p&gt;
-
-&lt;h2 id=&#34;installing-knative-serve&#34;&gt;Installing Knative Serve&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://gloo.solo.io/&#34; target=&#34;_blank&#34;&gt;Gloo&lt;/a&gt; is much smaller and simpler to install than &lt;a href=&#34;https://istio.io/&#34; target=&#34;_blank&#34;&gt;Istio&lt;/a&gt; so in this guide we are going to use that.&lt;/p&gt;
-
-&lt;p&gt;We have a simple command &lt;a href=&#34;/commands/jx_create_addon_gloo/&#34;&gt;jx create addon gloo&lt;/a&gt; to install Gloo and Knative Serve on Jenkins X:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;jx create addon gloo
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;This command will install Knative Serve into the &lt;code&gt;knative-serving&lt;/code&gt; namespace and Gloo into the &lt;code&gt;gloo-system&lt;/code&gt; namespace. You can check it’s all installed and working via:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get pod -n knative-serving
-kubectl get pod -n gloo-system
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Or you can follow the &lt;a href=&#34;https://www.knative.dev/docs/install/&#34; target=&#34;_blank&#34;&gt;Knative install guide&lt;/a&gt; to install it directly via istio or gloo.&lt;/p&gt;
-
-&lt;h2 id=&#34;using-knative-serve&#34;&gt;Using Knative Serve&lt;/h2&gt;
-
-&lt;p&gt;Now you have installed &lt;a href=&#34;https://www.knative.dev/&#34; target=&#34;_blank&#34;&gt;Knative Serve&lt;/a&gt; snd &lt;a href=&#34;https://gloo.solo.io/&#34; target=&#34;_blank&#34;&gt;Gloo&lt;/a&gt; you can &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;create a new quicktart&lt;/a&gt; or &lt;a href=&#34;/docs/getting-started/demos-talks-posts/create_spring/&#34;&gt;create a new spring boot application&lt;/a&gt; and it will default to using Knative Serve to elastically scale your microservice based on its load over HTTP.&lt;/p&gt;
-
-&lt;p&gt;You can check if Knative Serve is being used on your application by doing:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;kubectl get ksvc -n jx-staging
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Which should show all of the Knative Service resources in your Staging environment.&lt;/p&gt;
-
-&lt;h2 id=&#34;demo&#34;&gt;Demo&lt;/h2&gt;
-
-&lt;p&gt;Here is a &lt;a href=&#34;https://youtu.be/eYIaz_plUOw?t=1980&#34; target=&#34;_blank&#34;&gt;demo of using Knative Serve snd Gloo&lt;/a&gt; from the &lt;a href=&#34;/community/april-4/&#34;&gt;April 4th, 2019&lt;/a&gt; &lt;a href=&#34;/community/&#34;&gt;Office Hours&lt;/a&gt;:&lt;/p&gt;
-
-&lt;iframe width=&#34;565&#34; height=&#34;480&#34; src=&#34;https://www.youtube.com/embed/eYIaz_plUOw&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Lighthouse</title>
-      <link>/docs/reference/components/lighthouse/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/reference/components/lighthouse/</guid>
-      <description>
-        
-        
-        
-
-&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; is a great way to do &lt;a href=&#34;/docs/using-jx/faq/chatops/&#34;&gt;ChatOps&lt;/a&gt; with &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; though unfortunately its only supported for GitHub.com and is quite heavy and complex. To work around this we&amp;rsquo;ve created &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;Lighthouse&lt;/a&gt; is a lightweight &lt;a href=&#34;/docs/using-jx/faq/chatops/&#34;&gt;ChatOps&lt;/a&gt; based webhook handler which can trigger &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; on webhooks from multiple git providers such as: GitHub, GitHub Enterprise, BitBucket Server, BitBucket Cloud, GitLab, Gogs and Gitea.&lt;/p&gt;
-
-&lt;p&gt;Currently Lighthouse is focussed on using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; with tekton though longer term it could be reused with tekton orchestrating Jenkins pipelines via the &lt;a href=&#34;/docs/managing-jx/common-tasks/custom-jenkins/&#34;&gt;Custom Jenkins Server App&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&#34;features&#34;&gt;Features&lt;/h2&gt;
-
-&lt;p&gt;Currently Lighthouse supports the common &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins&#34; target=&#34;_blank&#34;&gt;prow plugins&lt;/a&gt; and handles push webhooks to branches &amp;amp; Pull Request webhooks to then trigger Jenkins X pipelines.&lt;/p&gt;
-
-&lt;p&gt;Lighthouse uses the same &lt;code&gt;config.yaml&lt;/code&gt; and &lt;code&gt;plugins.yaml&lt;/code&gt; file structure from Prow so that we can easily migrate from &lt;code&gt;prow &amp;lt;-&amp;gt; lighthouse&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;This also means we get to reuse the clean generation of Prow configuration from the &lt;code&gt;SourceRepository&lt;/code&gt;, &lt;code&gt;SourceRepositoryGroup&lt;/code&gt; and &lt;code&gt;Scheduler&lt;/code&gt; CRDs integrated into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;. e.g. here&amp;rsquo;s the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/templates/default-scheduler.yaml&#34; target=&#34;_blank&#34;&gt;default scheduler configuration&lt;/a&gt; which is used for any project imported into your Jenkins X cluster; without you having to touch the actual prow configuration files. You can create many schedulers and associate them to different &lt;code&gt;SourceRepository&lt;/code&gt; resources.&lt;/p&gt;
-
-&lt;p&gt;We can also reuse Prow&amp;rsquo;s capability of defining many separate pipelines on a repository (for PRs or releases) via having separate &lt;code&gt;contexts&lt;/code&gt;. Then on a Pull Request we can use &lt;code&gt;/test something&lt;/code&gt; or &lt;code&gt;/test all&lt;/code&gt; to trigger pipelines and use the &lt;code&gt;/ok-to-test&lt;/code&gt; and &lt;code&gt;/approve&lt;/code&gt; or &lt;code&gt;/lgtm&lt;/code&gt; commands&lt;/p&gt;
-
-&lt;h2 id=&#34;using-lighthouse-with-boot&#34;&gt;Using Lighthouse with boot&lt;/h2&gt;
-
-&lt;p&gt;We have integrated &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34; target=&#34;_blank&#34;&gt;lighthouse&lt;/a&gt; into &lt;a href=&#34;/docs/reference/boot/&#34;&gt;jx boot&lt;/a&gt;. To switch to &lt;code&gt;lighthouse&lt;/code&gt; from &lt;code&gt;prow&lt;/code&gt; you need to add something like this to your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;webhook: lighthouse
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Once you have modified your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file you just need to run &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;If you are using something else other than github.com as your git provider you will also require some extra YAML to configure the git provider. Here are some examples:&lt;/p&gt;
-
-&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
-  provider: gke
-  zone: europe-west1-c
-  environmentGitOwner: myowner
-  gitKind: github
-  gitName: ghe
-  gitServer: https://my-github.com
-webhook: lighthouse
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;bitbucket-server&#34;&gt;BitBucket Server&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
-  provider: gke
-  environmentGitOwner: myowner
-  gitKind: bitbucketserver
-  gitName: bs
-  gitServer: https://my-bitbucket-server.com
-webhook: lighthouse
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;gitlab&#34;&gt;GitLab&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cluster:
-  provider: gke
-  environmentGitOwner: myowner
-  gitKind: gitlab
-  gitName: gitlab
-  gitServer: https://my-gitlab-server.com
-webhook: lighthouse
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;comparisons-to-prow&#34;&gt;Comparisons to Prow&lt;/h2&gt;
-
-&lt;p&gt;Lighthouse is very prow-like and currently reuses the Prow plugin source code and a bunch of &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins&#34; target=&#34;_blank&#34;&gt;plugins from prow&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Its got a few differences though:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;rather than be GitHub specific lighthouse uses &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; so it can support any git provider&lt;/li&gt;
-&lt;li&gt;lighthouse is mostly like &lt;code&gt;hook&lt;/code&gt; from Prow; an auto scaling webhook handler - to keep the footprint small. This also means if anything goes wrong handling webhooks you only have one pod to look into.&lt;/li&gt;
-&lt;li&gt;lighthouse is also very light. In Jenkins X we have about 10 pods related to prow; with lighthouse we have just 1 along with the tekton controller itself. That one lighthouse pod could easily be auto scaled too from 0 to many as it starts up very quickly.&lt;/li&gt;
-&lt;li&gt;lighthouse focuses purely on Tekton pipelines so it does not require a &lt;code&gt;ProwJob&lt;/code&gt; CRD; instead a push webhook to a release or pull request branch can trigger zero to many &lt;code&gt;PipelineRun&lt;/code&gt; CRDs instead&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&#34;porting-prow-commands&#34;&gt;Porting Prow commands&lt;/h2&gt;
-
-&lt;p&gt;If there are any prow commands you want which we&amp;rsquo;ve not yet ported over, its relatively easy to port prow plugins.&lt;/p&gt;
-
-&lt;p&gt;We&amp;rsquo;ve reused the prow plugin code and configuration code; so its mostly a case of switching imports of &lt;code&gt;k8s.io/test-infra/prow&lt;/code&gt; to &lt;code&gt;github.com/jenkins-x/lighthouse/pkg/prow&lt;/code&gt; - then modifying the github client structs from, say, &lt;code&gt;github.PullRequest&lt;/code&gt; to &lt;code&gt;scm.PullRequest&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Most of the github structs map 1-1 with the &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; equivalents (e.g. Issue, Commit, PullRequest) though the go-scm API does tend to return slices to pointers to resources by default. There are some naming differences at different parts of the API though.&lt;/p&gt;
-
-&lt;p&gt;e.g. compare the &lt;code&gt;githubClient&lt;/code&gt; API for the &lt;a href=&#34;https://github.com/kubernetes/test-infra/blob/344024d30165cda6f4691cc178f25b16f1a1f5af/prow/plugins/lgtm/lgtm.go#L134-L150&#34; target=&#34;_blank&#34;&gt;prow lgtm&lt;/a&gt; versus the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/pkg/prow/plugins/lgtm/lgtm.go#L135-L150&#34; target=&#34;_blank&#34;&gt;lighthouse lgtm&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;All the prow plugin related code lives in the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow&#34; target=&#34;_blank&#34;&gt;pkg/prow&lt;/a&gt; tree of packages. Mostly all we&amp;rsquo;ve done is switch to using &lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34; target=&#34;_blank&#34;&gt;jenkins-x/go-scm&lt;/a&gt; and switch out the current prow agents and instead use a single &lt;code&gt;tekton&lt;/code&gt; agent using the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/pkg/plumber/interface.go#L3-L6&#34; target=&#34;_blank&#34;&gt;PlumberClient&lt;/a&gt; to trigger pipelines.&lt;/p&gt;
-
-&lt;h2 id=&#34;environment-variables&#34;&gt;Environment variables&lt;/h2&gt;
-
-&lt;p&gt;The following environment variables are used:&lt;/p&gt;
-
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Name&lt;/th&gt;
-&lt;th&gt;Description&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;GIT_KIND&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the kind of git server: &lt;code&gt;github, bitbucket, gitea, stash&lt;/code&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;GIT_SERVER&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the URL of the server if not using the public hosted git providers: &lt;a href=&#34;https://github.com&#34; target=&#34;_blank&#34;&gt;https://github.com&lt;/a&gt; or &lt;a href=&#34;https://bitbucket.org&#34; target=&#34;_blank&#34;&gt;https://bitbucket.org&lt;/a&gt; &lt;a href=&#34;https://gitlab.com&#34; target=&#34;_blank&#34;&gt;https://gitlab.com&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;GIT_USER&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the git user (bot name) to use on git operations&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;GIT_TOKEN&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the git token to perform operations on git (add comments, labels etc)&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;HMAC_TOKEN&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the token sent from the git provider in webhooks&lt;/td&gt;
-&lt;/tr&gt;
-
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;JX_SERVICE_ACCOUNT&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;the service account to use for generated pipelines&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
 
       </description>
     </item>
