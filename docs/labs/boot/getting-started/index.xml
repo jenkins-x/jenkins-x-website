@@ -1,0 +1,129 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Getting Started</title>
+    <link>/docs/labs/boot/getting-started/</link>
+    <description>Recent content in Getting Started on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Wed, 01 Feb 2017 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="/docs/labs/boot/getting-started/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Setting up Cloud Resources</title>
+      <link>/docs/labs/boot/getting-started/cloud/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/cloud/</guid>
+      <description>
+        
+        
+        &lt;p&gt;First create your kubernetes cluster. If you are using Google Cloud you can try &lt;a href=&#34;https://github.com/jenkins-x-labs/jenkins-x-installer#prerequisits&#34;&gt;using gcloud directly&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If not try the &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/create-cluster/&#34;&gt;usual Jenkins X way&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Create Repository</title>
+      <link>/docs/labs/boot/getting-started/repository/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/repository/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Once you are connected to a Kubernetes cluster you need to create a git repository for your development environment.&lt;/p&gt;
+&lt;h2 id=&#34;creating-a-fresh-install&#34;&gt;Creating a fresh install&lt;/h2&gt;
+&lt;p&gt;To create a fresh install run the &lt;code&gt;jxl boot create&lt;/code&gt; command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot create
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will create a new git repository for your installation.&lt;/p&gt;
+&lt;p&gt;The command will output instructions on how to setup the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets&lt;/a&gt; and then &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;run the boot job&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;upgrading-an-existing-cluster&#34;&gt;Upgrading an existing cluster&lt;/h2&gt;
+&lt;p&gt;f you have already installed Jenkins X somehow; e.g. via the deprecated &lt;code&gt;jx install&lt;/code&gt; command of via &lt;code&gt;jx boot&lt;/code&gt; with or without using GitOps using helm 2.x to manage the development environment then we have a way to upgrade your cluster to helm 3 and helmfile.&lt;/p&gt;
+&lt;p&gt;To do this connect to your current Kubernetes cluster so that &lt;code&gt;kubectl&lt;/code&gt; can see the development namespace.&lt;/p&gt;
+&lt;p&gt;You can test this by running:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl get environments 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Which should list the &lt;code&gt;Environment&lt;/code&gt; resources in your installation which usually has &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; and &lt;code&gt;production&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can use the &lt;code&gt;jxl boot upgrade&lt;/code&gt; command to help upgrade your existing Jenkins X cluster to helm 3 and helmfile.&lt;/p&gt;
+&lt;p&gt;Connect to the cluster you wish to migrate and run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot upgrade
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;and follow the instructions.&lt;/p&gt;
+&lt;p&gt;If your cluster is using GitOps the command will clone the development git repository to a temporary directory, modify it and submit a pull request.&lt;/p&gt;
+&lt;p&gt;If your cluster is not using GitOps then a new git repository will be created along with instructions on how to setup the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets&lt;/a&gt; and then &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;run the boot job&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Secrets</title>
+      <link>/docs/labs/boot/getting-started/secrets/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/secrets/</guid>
+      <description>
+        
+        
+        &lt;p&gt;You need to specify a few secret values before you can boot up.&lt;/p&gt;
+&lt;p&gt;We don&amp;rsquo;t store the secrets in git but use some kind of secret manager. Over time we want to support many providers. Currently we support&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Google Secret Manager: the &lt;code&gt;secrets.yaml&lt;/code&gt; file is stored in a google secret manager secret&lt;/li&gt;
+&lt;li&gt;Kubernetes Secrets: a single Kubernetes &lt;code&gt;Secret&lt;/code&gt; stores the &lt;code&gt;secrets.yaml&lt;/code&gt; file&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To populate the Secrets run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot secrets edit --giturl https://github.com/myuser/environment-mycluster-dev.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will prompt you to enter all the missing Secrets required.&lt;/p&gt;
+&lt;p&gt;If you want to re-enter them all again or recreate tokens do the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot secrets edit -a --giturl https://github.com/myuser/environment-mycluster-dev.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that once you have booted up a cluster you can omit the &lt;code&gt;--git-url&lt;/code&gt; parameter as it can be discovered from the current kubernetes cluster (via the &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; resource)&lt;/p&gt;
+&lt;h4 id=&#34;importing-and-exporting&#34;&gt;Importing and exporting&lt;/h4&gt;
+&lt;p&gt;You can export the current secrets to the file system via&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot secrets export -f /tmp/mysecrets.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Or to view them on the terminal&amp;hellip;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot secrets export -c
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you have an existing secrets.yaml file on the file system that looks kinda like this (with the actual values included)&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;secrets&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;adminUser&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;username&lt;/span&gt;: 
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;password&lt;/span&gt;: 
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;hmacToken&lt;/span&gt;: 
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipelineUser&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;username&lt;/span&gt;: 
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;token&lt;/span&gt;: 
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;:  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then you can import this YAML file via:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot secrets import -f /tmp/mysecrets.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;migrating-secrets-from-vault&#34;&gt;Migrating Secrets from Vault&lt;/h3&gt;
+&lt;p&gt;If you have secrets already in a Vault then use the vault CLI tool to export the secrets to disk, reformat it in the above YAML layout and then import the secrets as above.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Running Boot</title>
+      <link>/docs/labs/boot/getting-started/run/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/run/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Once you have &lt;a href=&#34;/docs/labs/boot/getting-started/repository/&#34;&gt;created your git repository&lt;/a&gt; for your development environment via &lt;code&gt;jxl boot create&lt;/code&gt; or &lt;code&gt;jxl boot upgrade&lt;/code&gt; and populated the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets&lt;/a&gt; as shown above you can run the boot &lt;code&gt;Job&lt;/code&gt; via:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot run --git-url=https://github.com/myorg/env-mycluster-dev.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once you have booted up once you can omit the &lt;code&gt;git-url&lt;/code&gt; argument as it can be discovered from the &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; resource:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot run
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will use helm to install the boot Job and tail the log of the pod so you can see the boot job run. It looks like the boot process is running locally on your laptop but really it is all running inside a Pod inside Kubernetes.&lt;/p&gt;
+&lt;h3 id=&#34;upgrading-your-cluster&#34;&gt;Upgrading your cluster&lt;/h3&gt;
+&lt;p&gt;Once you have the git repository for the upgrade you need to run the boot Job in a clean empty cluster.&lt;/p&gt;
+&lt;p&gt;To simplify things you may want to create a new cluster, connect to that and then boot from there. If you are happy with the results you can scale down/destroy the old one&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
