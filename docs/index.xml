@@ -53,7 +53,7 @@
       <description>
         
         
-        &lt;p&gt;Before you start using the Alpha features you need to get the Alpha Command Line tool called &lt;code&gt;jxl&lt;/code&gt;.&lt;/p&gt;
+        &lt;p&gt;Before you start using the Labs features you need to get the Labs Command Line tool called &lt;code&gt;jxl&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;You can download &lt;code&gt;jxl&lt;/code&gt; from here: &lt;a href=&#34;https://github.com/jenkins-x-labs/jxl/releases&#34;&gt;https://github.com/jenkins-x-labs/jxl/releases&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Its basically a drop in alternative to the usual &lt;code&gt;jx&lt;/code&gt; that has all of the new Labs features enabled.&lt;/p&gt;
 &lt;p&gt;e.g. &lt;code&gt;jxl&lt;/code&gt; assumes:&lt;/p&gt;
@@ -380,14 +380,19 @@ The last one (&lt;code&gt;Create project issue&lt;/code&gt;) is a link to create
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;It opens the door to a flexible &lt;a href=&#34;/docs/labs/boot/multi-cluster/&#34;&gt;multi-cluster support&lt;/a&gt; so that every cluster/environment can be managed in the same canonical GitOps approach (as each cluster can use &lt;code&gt;jx boot&lt;/code&gt; whether its a dev environment or remote staging/production environment)&lt;/li&gt;
-&lt;li&gt;The new &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;jxl boot run&lt;/a&gt; command runs the boot pipeline as a &lt;code&gt;Job&lt;/code&gt; inside the Kubernetes cluster. This ensures consistency in tooling used and also improves security by avoiding having the secrets on a developers laptop.&lt;/li&gt;
 &lt;li&gt;We can use the &lt;code&gt;helm list&lt;/code&gt; command line to view versions of each chart/app nicely in the CLI.
 &lt;ul&gt;
 &lt;li&gt;we can avoid composite charts to simplfiy configuration and upgrades&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;Everything is now an app. So if you want to remove our &lt;code&gt;nginx-ingress&lt;/code&gt; chart and replace it with another ingress solution (knative / istio / gloo / ambassador / linkerd or whatever) just go ahead and use the &lt;a href=&#34;/docs/labs/boot/apps/&#34;&gt;apps commands&lt;/a&gt; to add/remove apps and have boot manage everything in a consistent way&lt;/li&gt;
-&lt;li&gt;The boot git repository is much smaller and simpler; less to keep in sync/rebase/merge with the upstream git repository. Its mostly just 2 YAML files now &lt;code&gt;jx-requirements.yml&lt;/code&gt; and &lt;code&gt;jx-apps.yml&lt;/code&gt; which are both pretty much specific to your cluster installation. The &lt;code&gt;jenkins-x.yml&lt;/code&gt; pipeline is configured inside the build pack.
+&lt;li&gt;You can install an app in a specific namespace if you wish
+&lt;ul&gt;
+&lt;li&gt;This also opens the door to using boot to setup multi-team installations where multiple teams use different namespaces but share services in the same cluster&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The new &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;jxl boot run&lt;/a&gt; command runs the boot pipeline as a &lt;code&gt;Job&lt;/code&gt; inside the Kubernetes cluster. This ensures consistency in tooling used and also improves security by avoiding having the secrets on a developers laptop.&lt;/li&gt;
+&lt;li&gt;The boot git repository is much smaller and simpler; less to keep in sync/rebase/merge with the upstream git repository. Its mostly just 2 YAML files now &lt;code&gt;jx-requirements.yml&lt;/code&gt; and &lt;code&gt;jx-apps.yml&lt;/code&gt; which are both pretty much specific to your cluster installation. The &lt;code&gt;jenkins-x.yml&lt;/code&gt; pipeline is configured inside the build pack so usually is 1 simple line long. So there&amp;rsquo;s no need for all the git merge/rebase/cherry pick logic in jx 2.x
 &lt;ul&gt;
 &lt;li&gt;we rely more instead on the &lt;a href=&#34;https://jenkins-x.io/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; which can be shared across installations&lt;/li&gt;
 &lt;/ul&gt;
@@ -400,6 +405,7 @@ The last one (&lt;code&gt;Create project issue&lt;/code&gt;) is a link to create
 &lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;li&gt;we no longer use &lt;code&gt;exposecontroller&lt;/code&gt; and use regular helm configuration to create &lt;code&gt;Ingress&lt;/code&gt; resources and &lt;a href=&#34;/docs/labs/boot/faq/#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;override domain names&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;secret handling is currently much simpler:
 &lt;ul&gt;
 &lt;li&gt;You can specify all the secrets &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;setup up the secrets&lt;/a&gt; before &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt; by importing a &lt;code&gt;secrets.yaml&lt;/code&gt; or entering them directly&lt;/li&gt;
@@ -19331,6 +19337,8 @@ limitations under the License.
 &lt;ul&gt;
 &lt;li&gt;only works for github.com repositories&lt;/li&gt;
 &lt;li&gt;cannot be used to &lt;a href=&#34;/docs/labs/boot/apps/&#34;&gt;add/remove any apps&lt;/a&gt; like ingress, cert manager or external DNS for TLS&lt;/li&gt;
+&lt;li&gt;can only work with helm 2&lt;/li&gt;
+&lt;li&gt;can only support helm charts deployed into a single namespace&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Our assumption with the Environment Controller is that we need something that:&lt;/p&gt;
 &lt;ul&gt;

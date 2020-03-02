@@ -96,14 +96,19 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;It opens the door to a flexible &lt;a href=&#34;/docs/labs/boot/multi-cluster/&#34;&gt;multi-cluster support&lt;/a&gt; so that every cluster/environment can be managed in the same canonical GitOps approach (as each cluster can use &lt;code&gt;jx boot&lt;/code&gt; whether its a dev environment or remote staging/production environment)&lt;/li&gt;
-&lt;li&gt;The new &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;jxl boot run&lt;/a&gt; command runs the boot pipeline as a &lt;code&gt;Job&lt;/code&gt; inside the Kubernetes cluster. This ensures consistency in tooling used and also improves security by avoiding having the secrets on a developers laptop.&lt;/li&gt;
 &lt;li&gt;We can use the &lt;code&gt;helm list&lt;/code&gt; command line to view versions of each chart/app nicely in the CLI.
 &lt;ul&gt;
 &lt;li&gt;we can avoid composite charts to simplfiy configuration and upgrades&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;Everything is now an app. So if you want to remove our &lt;code&gt;nginx-ingress&lt;/code&gt; chart and replace it with another ingress solution (knative / istio / gloo / ambassador / linkerd or whatever) just go ahead and use the &lt;a href=&#34;/docs/labs/boot/apps/&#34;&gt;apps commands&lt;/a&gt; to add/remove apps and have boot manage everything in a consistent way&lt;/li&gt;
-&lt;li&gt;The boot git repository is much smaller and simpler; less to keep in sync/rebase/merge with the upstream git repository. Its mostly just 2 YAML files now &lt;code&gt;jx-requirements.yml&lt;/code&gt; and &lt;code&gt;jx-apps.yml&lt;/code&gt; which are both pretty much specific to your cluster installation. The &lt;code&gt;jenkins-x.yml&lt;/code&gt; pipeline is configured inside the build pack.
+&lt;li&gt;You can install an app in a specific namespace if you wish
+&lt;ul&gt;
+&lt;li&gt;This also opens the door to using boot to setup multi-team installations where multiple teams use different namespaces but share services in the same cluster&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The new &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;jxl boot run&lt;/a&gt; command runs the boot pipeline as a &lt;code&gt;Job&lt;/code&gt; inside the Kubernetes cluster. This ensures consistency in tooling used and also improves security by avoiding having the secrets on a developers laptop.&lt;/li&gt;
+&lt;li&gt;The boot git repository is much smaller and simpler; less to keep in sync/rebase/merge with the upstream git repository. Its mostly just 2 YAML files now &lt;code&gt;jx-requirements.yml&lt;/code&gt; and &lt;code&gt;jx-apps.yml&lt;/code&gt; which are both pretty much specific to your cluster installation. The &lt;code&gt;jenkins-x.yml&lt;/code&gt; pipeline is configured inside the build pack so usually is 1 simple line long. So there&amp;rsquo;s no need for all the git merge/rebase/cherry pick logic in jx 2.x
 &lt;ul&gt;
 &lt;li&gt;we rely more instead on the &lt;a href=&#34;https://jenkins-x.io/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; which can be shared across installations&lt;/li&gt;
 &lt;/ul&gt;
@@ -116,6 +121,7 @@
 &lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;li&gt;we no longer use &lt;code&gt;exposecontroller&lt;/code&gt; and use regular helm configuration to create &lt;code&gt;Ingress&lt;/code&gt; resources and &lt;a href=&#34;/docs/labs/boot/faq/#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;override domain names&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;secret handling is currently much simpler:
 &lt;ul&gt;
 &lt;li&gt;You can specify all the secrets &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;setup up the secrets&lt;/a&gt; before &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt; by importing a &lt;code&gt;secrets.yaml&lt;/code&gt; or entering them directly&lt;/li&gt;
@@ -167,30 +173,6 @@
 &lt;li&gt;since we are using helm 3 directly you can add/remove apps and re-run &lt;code&gt;jx boot&lt;/code&gt; and things are removed correctly.&lt;/li&gt;
 &lt;/ul&gt;
 
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Tips</title>
-      <link>/docs/labs/boot/tips/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/labs/boot/tips/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;helmfile-and-helm-3-tips&#34;&gt;Helmfile and helm 3 tips&lt;/h2&gt;
-&lt;p&gt;If you have used Jenkins X before but have not yet used helmfile or helm 3 here are a few tips and tricks.&lt;/p&gt;
-&lt;h2 id=&#34;uninstall&#34;&gt;Uninstall&lt;/h2&gt;
-&lt;p&gt;From inside a git clone of your (dev) environment you can run:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;helmfile destroy
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;if you don&amp;rsquo;t have &lt;code&gt;apps/helmfile.yaml&lt;/code&gt; or &lt;code&gt;system/helmfile.yaml&lt;/code&gt; files you can run &lt;code&gt;jx boot&lt;/code&gt; first to generate the files&lt;/p&gt;
-&lt;h2 id=&#34;listing-the-apps-that-have-been-deployed&#34;&gt;Listing the apps that have been deployed.&lt;/h2&gt;
-&lt;p&gt;You can either use &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_apps/&#34;&gt;jx get apps&lt;/a&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx get app
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;or use the &lt;code&gt;helm&lt;/code&gt; CLI directly:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;helm list
-&lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
     
@@ -478,46 +460,42 @@ jx step verify install
     </item>
     
     <item>
-      <title>Docs: </title>
-      <link>/docs/labs/boot/getting-started/</link>
+      <title>Docs: FAQ</title>
+      <link>/docs/labs/boot/faq/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>/docs/labs/boot/getting-started/</guid>
+      <guid>/docs/labs/boot/faq/</guid>
       <description>
         
         
-        &lt;h2 id=&#34;getting-started&#34;&gt;Getting started&lt;/h2&gt;
-&lt;p&gt;Currently you will need a custom build of &lt;code&gt;jx&lt;/code&gt; from this &lt;a href=&#34;https://github.com/jenkins-x/jx/pull/6664&#34;&gt;Pull Request&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Also you will need to install &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;installing-helmfile&#34;&gt;Installing helmfile&lt;/h3&gt;
-&lt;p&gt;On a mac you can install &lt;code&gt;helmfile&lt;/code&gt; via:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;brew install helmfile
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note this also installs a &lt;code&gt;helm&lt;/code&gt; 3 binary on your &lt;code&gt;$PATH&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;You also need to install these helm plugins:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm plugin install https://github.com/aslafy-z/helm-git.git
-helm plugin install https://github.com/databus23/helm-diff
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;setting-up-your-secrets&#34;&gt;Setting up your secrets&lt;/h3&gt;
-&lt;p&gt;write some installation secrets to a file using the template below, this is a temporary solution&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mkdir -p /tmp/.jx/localSecrets/currentCluster
-vi /tmp/.jx/localSecrets/currentCluster/secrets.yaml
-secrets:     
-  adminUser:
-    username: &amp;quot;admin&amp;quot;
-    password: &amp;quot;&amp;quot; 
-  hmacToken: &amp;quot;&amp;quot; 
-  pipelineUser:
-    username: &amp;quot;&amp;quot;  
-    email: &amp;quot;&amp;quot; 
-    token: &amp;quot;&amp;quot; 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then define &lt;code&gt;JX_SECRETS_YAML&lt;/code&gt; to point to this YAML file (wherever you put it):&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;export JX_SECRETS_YAML=/tmp/.jx/localSecrets/currentCluster/secrets.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;using-boot&#34;&gt;Using boot&lt;/h3&gt;
-&lt;p&gt;Now run:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx boot --helmfile
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;and follow the prompts.&lt;/p&gt;
-&lt;h3 id=&#34;uninstall&#34;&gt;Uninstall&lt;/h3&gt;
-&lt;p&gt;To uninstall your Jenkins X installation from the git clone of the boot configuration run:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;helmfile destroy    
+        &lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
+&lt;p&gt;You can use helm 3.x directly to list all the apps (charts) deployed in a namespace:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;helm list
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;To look in another namespace add it as an argument:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;helm list -n nginx
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;how-do-i-customise-an-app-in-an-environment&#34;&gt;How do I customise an App in an Environment&lt;/h2&gt;
+&lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;/docs/labs/boot/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;See &lt;a href=&#34;/docs/labs/boot/apps/#customising-charts&#34;&gt;how to customise a chart&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;How do I configure the ingress domain in Dev, Staging or Production?&lt;/h2&gt;
+&lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;/docs/labs/boot/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can override the domain name for use in all apps within an environment by modifying the &lt;code&gt;jx-requirements.yml&lt;/code&gt; in the git repository for the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Also by default there is a namespace specific separator added. So if your service is &lt;code&gt;cheese&lt;/code&gt; the full domain name would be something like &lt;code&gt;cheese.jx-staging.mydomain.com&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If you wish to avoid the namespace specific separator if each environment already has its own unique &lt;code&gt;domain&lt;/code&gt; value then you can specify:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com  
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to change any of these values for a single app only then you can use the &lt;a href=&#34;/docs/labs/boot/apps/#customising-charts&#34;&gt;app customisation mechanism&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;e.g. for an app called &lt;code&gt;mychart&lt;/code&gt; you can create a file called &lt;code&gt;apps/mychart/values.yaml&lt;/code&gt; in the git repository for your environment and add the following YAML:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;jxRequirements&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com  
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-uninstall-boot&#34;&gt;How do I uninstall boot?&lt;/h2&gt;
+&lt;p&gt;From inside a git clone of your &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment&amp;rsquo;s git repository you can run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx step create helmfile 
+helmfile destroy
 &lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
