@@ -1,0 +1,219 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – Setting up Cloud Resources</title>
+    <link>/docs/labs/boot/getting-started/cloud/</link>
+    <description>Recent content in Setting up Cloud Resources on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/labs/boot/getting-started/cloud/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: gcloud</title>
+      <link>/docs/labs/boot/getting-started/cloud/gcloud/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/cloud/gcloud/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h1&gt;
+&lt;p&gt;Before you begin you need to install &lt;a href=&#34;https://cloud.google.com/sdk/gcloud&#34;&gt;gcloud&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Now define a few environment variables:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;NAMESPACE&lt;/code&gt; is the Kubernetes namespace the base Jenkins X installation will installed into, note optionl apps installed during the boot process can be installed into different namespaces&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CLUSTER_NAME&lt;/code&gt; provide a unique cluster name for the GCP project&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PROJECT_ID&lt;/code&gt; the GCP project the cluster and other cloud resources will be created into&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ZONE&lt;/code&gt; the GCP zone to create the new cluster, e.g. &lt;code&gt;europe-west1-b&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ENV_GIT_OWNER&lt;/code&gt; the GitHub organisation the GitOps environments are created, these are the repos that contain the meta data for each Jenkins X environment.  &lt;em&gt;Note&lt;/em&gt; the pipline user env vars below must have permission to create repos in the GitHub organisation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export NAMESPACE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx
+export CLUSTER_NAME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;test-cluster-foo
+export PROJECT_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx-development
+export ZONE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;europe-west1-b
+export ENV_GIT_OWNER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;your git id&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;simple-way&#34;&gt;Simple way&lt;/h2&gt;
+&lt;p&gt;To use the simple bash script to run the &lt;a href=&#34;https://cloud.google.com/sdk/gcloud&#34;&gt;gcloud&lt;/a&gt; commands run the following command in a terminal:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone https://github.com/jenkins-x-labs/cloud-resources.git
+cd cloud-resources/gcloud
+./create_cluster.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;harder-way&#34;&gt;Harder way&lt;/h2&gt;
+&lt;p&gt;This way we&amp;rsquo;ll list out all the &lt;a href=&#34;https://cloud.google.com/sdk/gcloud&#34;&gt;gcloud&lt;/a&gt; commands you will need to run in a terminal:&lt;/p&gt;
+&lt;h3 id=&#34;creating-the-kubernetes-cluster&#34;&gt;Creating the Kubernetes Cluster&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;
+&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash hljs&#34; data-lang=&#34;bash&#34;&gt;gcloud beta container clusters create $CLUSTER_NAME \
+ --enable-autoscaling \
+ --min-nodes=1 \
+ --max-nodes=3 \
+ --project=$PROJECT_ID \
+ --identity-namespace=$PROJECT_ID.svc.id.goog \
+ --region=$ZONE \
+ --labels=$LABELS \
+ --machine-type=n1-standard-4 \
+ --num-nodes=2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;creating-the-cloud-resources&#34;&gt;Creating the cloud resources&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;
+&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash hljs&#34; data-lang=&#34;bash&#34;&gt;gcloud config set project $PROJECT_ID
+
+gcloud components update --no-user-output-enabled
+
+# enable secret manager
+gcloud services enable secretmanager.googleapis.com
+
+# setup the service accounts
+gcloud iam service-accounts create $CLUSTER_NAME-ex
+gcloud iam service-accounts create $CLUSTER_NAME-jb
+gcloud iam service-accounts create $CLUSTER_NAME-ko
+gcloud iam service-accounts create $CLUSTER_NAME-st
+gcloud iam service-accounts create $CLUSTER_NAME-tk
+gcloud iam service-accounts create $CLUSTER_NAME-vo
+gcloud iam service-accounts create $CLUSTER_NAME-vt
+
+cat `dirname &#34;$0&#34;`/setup.yaml | sed &#34;s/{namespace}/$NAMESPACE/&#34; | sed &#34;s/{project_id}/$PROJECT_ID/&#34; | sed &#34;s/{cluster_name}/$CLUSTER_NAME/&#34; | kubectl apply -f -
+
+
+# external dns
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/externaldns-sa]&#34; \
+  $CLUSTER_NAME-ex@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/dns.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-ex@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+
+# jx boot
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/boot-sa]&#34; \
+  $CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/dns.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/viewer \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/iam.serviceAccountKeyAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# kaniko
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/kaniko-sa]&#34; \
+  $CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectCreator \
+  --member &#34;serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# tekton
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/tekton-sa]&#34; \
+  $CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/viewer \
+  --member &#34;serviceAccount:$CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# storage
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/storage-sa]&#34; \
+  $CLUSTER_NAME-st@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-st@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-st@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# velero
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/velero-sa]&#34; \
+  $CLUSTER_NAME-vo@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vo@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vo@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectCreator \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vo@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# vault
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/vault-sa]&#34; \
+  $CLUSTER_NAME-vt@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vt@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/cloudkms.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vt@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/cloudkms.cryptoKeyEncrypterDecrypter \
+  --member &#34;serviceAccount:$CLUSTER_NAME-vt@$PROJECT_ID.iam.gserviceaccount.com&#34;
+
+# lets setup google secret manager
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/secretmanager.secretAccessor \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: terraform</title>
+      <link>/docs/labs/boot/getting-started/cloud/terraform/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/boot/getting-started/cloud/terraform/</guid>
+      <description>
+        
+        
+        &lt;p&gt;TODO&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
