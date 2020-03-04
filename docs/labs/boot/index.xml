@@ -36,8 +36,11 @@
         
         
         &lt;p&gt;We recommend using separate clusters for your &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments. This lets you completely isolate your environments which improves security.&lt;/p&gt;
+&lt;h2 id=&#34;setting-up-multi-cluster&#34;&gt;Setting up multi cluster&lt;/h2&gt;
 &lt;p&gt;To enable multi cluster you need to specify &lt;code&gt;remoteCluster: true&lt;/code&gt; on your &lt;code&gt;Staging&lt;/code&gt; and/or &lt;code&gt;Production&lt;/code&gt; environments in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Here&amp;rsquo;s an example &lt;code&gt;jx-requirements.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;The easiest way to do that is passing in &lt;code&gt;--env-report&lt;/code&gt;  when you &lt;a href=&#34;/docs/labs/boot/getting-started/repository/&#34;&gt;created your environment git repositories&lt;/a&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot create --env-remote
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Or if you&amp;rsquo;ve already &lt;a href=&#34;/docs/labs/boot/getting-started/repository/&#34;&gt;created your environment git repositories&lt;/a&gt; you can modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to something like this:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;bootConfigURL&lt;/span&gt;: https://github.com/jenkins-x/jenkins-x-boot-helmfile-config
 &lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: github
@@ -59,8 +62,17 @@
   &lt;span style=&#34;color:#66d9ef&#34;&gt;ref&lt;/span&gt;: v1&lt;span style=&#34;color:#ae81ff&#34;&gt;.0.330&lt;/span&gt;
   &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: https://github.com/jenkins-x/jenkins-x-versions.git
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; currently the git layout of remote environments is a little different to the usual environment git repository layout (as its using helmfile and helm 3 rather than helm 2). So we recommend creating new git repositories for your remote environments (which &lt;code&gt;jx boot&lt;/code&gt; does by default if the git repository doesn&amp;rsquo;t exist).&lt;/p&gt;
-&lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;setup-the-development-cluster-as-normal&#34;&gt;Setup the development cluster as normal&lt;/h3&gt;
+&lt;p&gt;Follow the &lt;a href=&#34;/docs/labs/boot/getting-started/&#34;&gt;getting started guide for helm 3 boot&lt;/a&gt; to setup the secrets and boot up the development cluster.&lt;/p&gt;
+&lt;h3 id=&#34;configure-the-stagingproduction-git-repository&#34;&gt;Configure the Staging/Production git repository&lt;/h3&gt;
+&lt;p&gt;First make sure you do:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export NAMESPACE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx-staging
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then you will need to follow the instructions to &lt;a href=&#34;/docs/labs/boot/getting-started/cloud/&#34;&gt;setup the cloud resources for the Staging/Production cluster&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;When you are connected to the Staging/Production cluster you will need to run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot verify --git-url=https://github.com/myorg/environment-mycluster-staging.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will ensure that your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in your &lt;code&gt;staging&lt;/code&gt; / &lt;code&gt;production&lt;/code&gt; git repository is setup to point at the correct cloud resources.&lt;/p&gt;
+&lt;p&gt;Then follow the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets setup&lt;/a&gt; and  &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;run the boot job&lt;/a&gt; for the &lt;code&gt;staging&lt;/code&gt; / &lt;code&gt;production&lt;/code&gt; environment&lt;/p&gt;
+&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
 &lt;p&gt;Once you run &lt;code&gt;jx boot&lt;/code&gt; on your development cluster you will get a helm 3 based installation of Jenkins X as usual but with a few differences:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;the &lt;code&gt;Environment&lt;/code&gt; resources for &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; marked as &lt;code&gt;remote&lt;/code&gt;&lt;/li&gt;
