@@ -463,101 +463,88 @@ The last one (&lt;code&gt;Create project issue&lt;/code&gt;) is a link to create
     </item>
     
     <item>
-      <title>Docs: Benefits</title>
-      <link>/docs/labs/boot/benefits/</link>
+      <title>Docs: Progressive Delivery</title>
+      <link>/docs/labs/boot/progressive-delivery/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>/docs/labs/boot/benefits/</guid>
+      <guid>/docs/labs/boot/progressive-delivery/</guid>
       <description>
         
         
-        &lt;ul&gt;
-&lt;li&gt;We can use vanilla helm 3 now to install, update or delete charts in any namespace without needing tiller or custom code to manage &lt;code&gt;helm template&lt;/code&gt;
+        &lt;p&gt;Progressive delivery allows you to gradually rollout new versions of your application to an environment using &lt;em&gt;canaries&lt;/em&gt; and gradually giving traffic to the new version until you are happy to fully rollover to the new version.&lt;/p&gt;
+&lt;p&gt;Our recommendation for using progressive delivery with Jenkins X is to use:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;We can avoid all the complexities of the &lt;code&gt;jx step helm apply&lt;/code&gt; logic using our own helm template generation + post processing logic. We can also move away from boot&amp;rsquo;s use of &lt;code&gt;{{ .Requirements.foo }}&lt;/code&gt; and &lt;code&gt;{{ .Parameters.bar }}&lt;/code&gt; expressions&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; as the progressive delivery controller&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt; as the service mesh to provider advanced load balancing capabilities across internal or external networking&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;It opens the door to a flexible &lt;a href=&#34;/docs/labs/boot/multi-cluster/&#34;&gt;multi-cluster support&lt;/a&gt; so that every cluster/environment can be managed in the same canonical GitOps approach (as each cluster can use &lt;code&gt;jx boot&lt;/code&gt; whether its a dev environment or remote staging/production environment)&lt;/li&gt;
-&lt;li&gt;We can use the &lt;code&gt;helm list&lt;/code&gt; command line to view versions of each chart/app nicely in the CLI.
+&lt;h2 id=&#34;configuring-progressive-delivery&#34;&gt;Configuring Progressive Delivery&lt;/h2&gt;
+&lt;p&gt;Please follow the usual &lt;a href=&#34;/docs/labs/boot/getting-started/&#34;&gt;getting started guide for boot and helm 3&lt;/a&gt; but before &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running boot&lt;/a&gt; please make sure you make the following configuration:&lt;/p&gt;
+&lt;h3 id=&#34;add-the-istio-and-flagger-apps&#34;&gt;Add the istio and flagger apps&lt;/h3&gt;
+&lt;p&gt;Please make sure your &lt;code&gt;jx-apps.yml&lt;/code&gt; has the necessary apps for using &lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; and &lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt;. Your &lt;code&gt;jx-apps.yml&lt;/code&gt; in your development environment git repository should look something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apps&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jx-labs/istio
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: flagger/flagger
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: flagger/grafana
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jx-labs/flagger-metrics
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: stable/kuberhealthy
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So that you remove &lt;code&gt;stable/nginx-ingress&lt;/code&gt; from your &lt;code&gt;jx-apps.yml&lt;/code&gt; file and ensure the above apps are added at the top of the file.&lt;/p&gt;
+&lt;h3 id=&#34;enable-istio-based-ingress&#34;&gt;Enable istio based ingress&lt;/h3&gt;
+&lt;p&gt;To avoid having 2 &lt;code&gt;LoadBalancer&lt;/code&gt; services for both &lt;code&gt;istio&lt;/code&gt; and &lt;code&gt;nginx&lt;/code&gt; (which costs more money) its easier to switch to pure istio for both internal and external load balancing. This also results in a smaller footprint.&lt;/p&gt;
+&lt;p&gt;To do that ensure that &lt;code&gt;kind: istio&lt;/code&gt; is added to the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in the top level &lt;code&gt;ingress:&lt;/code&gt; section like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: istio
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;now-boot&#34;&gt;Now boot&lt;/h3&gt;
+&lt;p&gt;Now your development git repository should be setup and be ready. Now:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;we can avoid composite charts to simplfiy configuration and upgrades&lt;/li&gt;
+&lt;li&gt;make sure you have setup &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;any secrets you need to boot&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;now &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;run boot&lt;/a&gt; to setup your installation&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Everything is now an app. So if you want to remove our &lt;code&gt;nginx-ingress&lt;/code&gt; chart and replace it with another ingress solution (knative / istio / gloo / ambassador / linkerd or whatever) just go ahead and use the &lt;a href=&#34;/docs/labs/boot/apps/&#34;&gt;apps commands&lt;/a&gt; to add/remove apps and have boot manage everything in a consistent way
-&lt;ul&gt;
-&lt;li&gt;e.g. here&amp;rsquo;s &lt;a href=&#34;https://github.com/jstrachan/environment-bucketrepo-dev/blob/master/jx-apps.yml#L2-L5&#34;&gt;an example&lt;/a&gt; of removing &lt;code&gt;nginx&lt;/code&gt;, &lt;code&gt;chartmusem&lt;/code&gt; and &lt;code&gt;nexus&lt;/code&gt; and adding in &lt;code&gt;istio&lt;/code&gt;, &lt;code&gt;flagger&lt;/code&gt; and some other tools like &lt;code&gt;bucketrepo&lt;/code&gt; and &lt;code&gt;kuberhealthy&lt;/code&gt; via a single simple yaml change. Incidentally to replace the use of &lt;code&gt;Ingress&lt;/code&gt; resources with istio&amp;rsquo;s &lt;code&gt;Gateway&lt;/code&gt; and &lt;code&gt;VirtualService&lt;/code&gt; you also need to add the &lt;code&gt;kind: istio&lt;/code&gt; flag in the &lt;a href=&#34;https://github.com/jstrachan/environment-bucketrepo-dev/blob/master/jx-requirements.yml#L57&#34;&gt;jx-requirements.yml&lt;/a&gt; file&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;You can install an app in a specific namespace if you wish
-&lt;ul&gt;
-&lt;li&gt;This also opens the door to using boot to setup multi-team installations where multiple teams use different namespaces but share services in the same cluster&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;The new &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;jxl boot run&lt;/a&gt; command runs the boot pipeline as a &lt;code&gt;Job&lt;/code&gt; inside the Kubernetes cluster. This ensures consistency in tooling used and also improves security by avoiding having the secrets on a developers laptop.&lt;/li&gt;
-&lt;li&gt;The boot git repository is much smaller and simpler; less to keep in sync/rebase/merge with the upstream git repository. Its mostly just 2 YAML files now &lt;code&gt;jx-requirements.yml&lt;/code&gt; and &lt;code&gt;jx-apps.yml&lt;/code&gt; which are both pretty much specific to your cluster installation. The &lt;code&gt;jenkins-x.yml&lt;/code&gt; pipeline is configured inside the build pack so usually is 1 simple line long. So there&amp;rsquo;s no need for all the git merge/rebase/cherry pick logic in jx 2.x
-&lt;ul&gt;
-&lt;li&gt;we rely more instead on the &lt;a href=&#34;https://jenkins-x.io/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; which can be shared across installations&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;the boot process is split up into &lt;a href=&#34;/docs/labs/boot/getting-started/&#34;&gt;separate phases&lt;/a&gt; which makes things easier to iterate and configure:
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/cloud/&#34;&gt;setting up the cloud resources&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/repository/&#34;&gt;creating the git repository&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;setting up secrets&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;we no longer use &lt;code&gt;exposecontroller&lt;/code&gt; and use regular helm configuration to create &lt;code&gt;Ingress&lt;/code&gt; resources and &lt;a href=&#34;/docs/labs/boot/faq/#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;override domain names&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;secret handling is currently much simpler:
-&lt;ul&gt;
-&lt;li&gt;You can specify all the secrets &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;setup up the secrets&lt;/a&gt; before &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt; by importing a &lt;code&gt;secrets.yaml&lt;/code&gt; or entering them directly&lt;/li&gt;
-&lt;li&gt;we support Google Secret Manager or a Kubernetes Secret current; but this simple &lt;a href=&#34;https://github.com/jenkins-x-labs/helmboot/blob/master/pkg/secretmgr/interface.go#L5&#34;&gt;SecretManager&lt;/a&gt; interface should be super easy to implement for other cloud secrets providers or managed vault installations.&lt;/li&gt;
-&lt;li&gt;the simpler secrets handling means we can run the &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;running the boot Job&lt;/a&gt; inside the kubernetes cluster for better security&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;When it is all complete you should see istio, flagger, grafana pods running in the &lt;code&gt;istio-system&lt;/code&gt; namespace something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+flagger-66dc49cd-g6ptp                  1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+grafana-7d7d7476f6-ff6bm                1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+istio-ingressgateway-598796f4d9-sq8b7   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+istiod-7d9c7bdd6-vjp9j                  1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+kuberhealthy-f54f7f7df-b5gbf            1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;          32h
+kuberhealthy-f54f7f7df-j6qwt            1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+prometheus-b47d8c58c-n974m              2/2     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;From 1.5 onwards istio is pretty small; just 2 pods. Note that those &lt;code&gt;kuberhealthy&lt;/code&gt; pods are optional and just help with reporting.&lt;/p&gt;
+&lt;h3 id=&#34;enable-istio-in-stagingproduction&#34;&gt;Enable istio in staging/production&lt;/h3&gt;
+&lt;p&gt;If you wish to use a Canary with &lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; and &lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt; in your staging or production namespace you need to make sure you have labelled the namespace correctly to enable istio injection.&lt;/p&gt;
+&lt;p&gt;To enable istio in staging:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl label namespace jx-staging istio-injection&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;enabled
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To enable istio in production:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl label namespace jx-production istio-injection&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;enabled
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;defaulting-to-use-canary&#34;&gt;Defaulting to use Canary&lt;/h3&gt;
+&lt;p&gt;Run the following command to default to using canary deployments and horizontal pod autoscaling whenever you &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;create a new quickstart&lt;/a&gt; or &lt;a href=&#34;/docs/using-jx/creating/import/&#34;&gt;import a project&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx edit deploy --team --canary --hpa
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will enable all new quickstarts and imported projects to use canary rollouts and use horizontal pod autoscaling in all environments.&lt;/p&gt;
+&lt;p&gt;You can switch the defaults back again at any time or configure any app to change its defaults by running &lt;code&gt;jx edit deploy&lt;/code&gt; inside a git clone of an application.&lt;/p&gt;
+&lt;h3 id=&#34;enablingdisabling-canaryhpa-in-an-environment&#34;&gt;Enabling/Disabling Canary/HPA in an Environment&lt;/h3&gt;
+&lt;p&gt;If you want to enable/disable canary or horizontal pod autoscaling for a specific app in an environment then you can &lt;a href=&#34;/docs/labs/boot/apps/#customising-charts&#34;&gt;follow the app customisation approach&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Assuming your app is called &lt;code&gt;myapp&lt;/code&gt; then in the git repository for the environment (e.g. &lt;code&gt;Staging&lt;/code&gt;) you can add/edit a file called &lt;code&gt;apps/mychart/values.yaml&lt;/code&gt; to look like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;canary&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
 
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Comparison</title>
-      <link>/docs/labs/boot/comparison/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/labs/boot/comparison/</guid>
-      <description>
-        
-        
-        &lt;p&gt;This document outlines the similarities and differences of the helmfile / helm 3 approach for those who are aware of &lt;code&gt;jx boot&lt;/code&gt; with helm 2.&lt;/p&gt;
-&lt;h2 id=&#34;similarities-with-jx-boot-and-helm-2&#34;&gt;Similarities with &lt;code&gt;jx boot&lt;/code&gt; and helm 2&lt;/h2&gt;
-&lt;p&gt;Just like classic boot with the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/&#34;&gt;jenkins-x-boot-config&lt;/a&gt; git repository, this new &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; solution supports:&lt;/p&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;hpa&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;you can enable/disable those 2 flags for canary releases and horizontal pod autoscaler at any point in any environment.&lt;/p&gt;
+&lt;h2 id=&#34;using-progressive-delivery&#34;&gt;Using Progressive Delivery&lt;/h2&gt;
+&lt;p&gt;Once you have followed the above steps create a &lt;a href=&#34;/docs/getting-started/first-project/create-quickstart/&#34;&gt;quickstart application&lt;/a&gt; in the usual way.&lt;/p&gt;
+&lt;p&gt;As you merge changes to the master branch of your application Jenkins X will create a new release and &lt;a href=&#34;/docs/using-jx/faq/#how-does-promotion-actually-work&#34;&gt;promote it to the staging environment&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However if Canary deployment is enabled your new version will gradually be rolled out progressively:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;you can run &lt;code&gt;jx boot&lt;/code&gt; to spin up a new git repository for your development environment&lt;/li&gt;
-&lt;li&gt;you can run &lt;code&gt;jx boot&lt;/code&gt; at any time to reapply changes from your laptop or can trigger a CI/CD pipeline using tekton to do the same thing&lt;/li&gt;
-&lt;li&gt;the git repository contains a &lt;code&gt;jenkins-x.yml&lt;/code&gt; to implement the boot pipeline&lt;/li&gt;
-&lt;li&gt;a YAML file is used to store all the charts that are applied using &lt;code&gt;jx boot&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the defaults are that 20% of the traffic will go to the new version&lt;/li&gt;
+&lt;li&gt;flagger will keep monitoring the metrics used in the Canary resource to determine if the canary is good&lt;/li&gt;
+&lt;li&gt;after the configured time period is over the traffic will be increased to 40% then 60%&lt;/li&gt;
+&lt;li&gt;eventually if things look good the new version will fully rollout to 100% traffic&lt;/li&gt;
+&lt;li&gt;if anything goes bad during the rollout time period the old version is restored&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;differences-with-jx-boot-and-helm-3&#34;&gt;Differences with &lt;code&gt;jx boot&lt;/code&gt; and helm 3&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;we use helm 3 along with &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; to actually apply the helm charts into a kubernetes cluster&lt;/li&gt;
-&lt;li&gt;any helm chart can be deployed in any namespace (previously we used 1 namespace for all charts in the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/requirements.yaml&#34;&gt;env/requirements.yaml&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;we no longer use a composite chart for &lt;code&gt;env/Chart.yaml&lt;/code&gt; and instead deploy each chart independently
-&lt;ul&gt;
-&lt;li&gt;this means that each chart has its own unique version number; so that &lt;code&gt;helm list&lt;/code&gt; gives nice meaningful results&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;we have done away with the complexity of &lt;code&gt;jenkins-x-platform&lt;/code&gt; (a composite chart containing logs of &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/blob/master/jenkins-x-platform/requirements.yaml&#34;&gt;dependencies&lt;/a&gt; like &lt;code&gt;jenkins&lt;/code&gt; + &lt;code&gt;chartmuseum&lt;/code&gt; + &lt;code&gt;nexus&lt;/code&gt; etc) so that each chart can be added/removed independently or swapped out with a different version/distribution&lt;/li&gt;
-&lt;li&gt;instead of using &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/requirements.yaml&#34;&gt;env/requirements.yaml&lt;/a&gt; we now use a simple and more powerful &lt;a href=&#34;https://github.com/jenkins-x-labs/boot-helmfile-poc/blob/master/jx-apps.yml&#34;&gt;jx-apps.yml&lt;/a&gt; file which is similar but supports:
-&lt;ul&gt;
-&lt;li&gt;we can specify a &lt;code&gt;namespace&lt;/code&gt; on any chart&lt;/li&gt;
-&lt;li&gt;we can add extra &lt;code&gt;valuesFiles&lt;/code&gt; to use with the chart to override the helm &lt;code&gt;values.yaml&lt;/code&gt; files&lt;/li&gt;
-&lt;li&gt;different &lt;code&gt;phase&lt;/code&gt; values so that we can default some charts like &lt;code&gt;nginx-ingress&lt;/code&gt; to the &lt;code&gt;system&lt;/code&gt; phase before we setup ingress, DNS, TLS and certs&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;instead of copying lots of &lt;code&gt;env/$appName/values*.yaml&lt;/code&gt; files into the boot config like we do in &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/&#34;&gt;these folders&lt;/a&gt; such as &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/lighthouse/values.tmpl.yaml&#34;&gt;the lighthouse/values.tmpl.yaml&lt;/a&gt; we can instead default all of these from the version stream at &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/apps/jenkins-x/lighthouse&#34;&gt;apps/jenkins-x/lighthouse&lt;/a&gt; - which means the boot config git repository is much simpler, we can share more configuration with the version stream and it avoids lots of git merge/rebase issues.&lt;/li&gt;
-&lt;li&gt;since we are using helm 3 directly you can add/remove apps and re-run &lt;code&gt;jx boot&lt;/code&gt; and things are removed correctly.&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;There is an excellent &lt;a href=&#34;https://youtu.be/7eePqtxW7NM&#34;&gt;video showing this in action&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
@@ -19019,6 +19006,32 @@ case and let the core Jenkins project focus on the classic java approach.&lt;/p&
 plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
 improving both the Cloud Native and the classic distributions of Jenkins in parallel.&lt;/p&gt;
 
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Getting Started</title>
+      <link>/docs/labs/jenkins/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/labs/jenkins/getting-started/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Make sure you have got the &lt;a href=&#34;/docs/labs/jxl/&#34;&gt;jxl binary&lt;/a&gt; before proceeding.&lt;/p&gt;
+&lt;h2 id=&#34;adding-jenkins-servers&#34;&gt;Adding Jenkins Servers&lt;/h2&gt;
+&lt;p&gt;You can register any Jenkins servers you wish to the Jenkins Server Registry via the &lt;code&gt;jxl jenkins add&lt;/code&gt; command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl jenkins add 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you already know the name, URL, username and API Token then you can use:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl jenkins add -u https://myjenkins.com/ --username myuser
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;removing-jenkins-servers&#34;&gt;Removing Jenkins Servers&lt;/h3&gt;
+&lt;p&gt;You can remove a Jenkins server via:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl jenkins remove
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that this only removes it from the registry; it doesn&amp;rsquo;t affect the actual Jenkins Server.&lt;/p&gt;
+&lt;h2 id=&#34;listing-the-available-jenkins-servers&#34;&gt;Listing the available Jenkins Servers&lt;/h2&gt;
+&lt;p&gt;To list the servers you can use try:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl jenkins list
+&lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
     
