@@ -40,15 +40,29 @@
         
         &lt;p&gt;Once you are connected to a Kubernetes cluster you need to create a git repository for your development environment.&lt;/p&gt;
 &lt;h2 id=&#34;creating-a-fresh-install&#34;&gt;Creating a fresh install&lt;/h2&gt;
-&lt;p&gt;To create a fresh install run the &lt;code&gt;jxl boot create&lt;/code&gt; command:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jxl boot create
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will create the git repositories for your environments.&lt;/p&gt;
-&lt;p&gt;The command will output instructions on how to setup the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets&lt;/a&gt; and then &lt;a href=&#34;/docs/labs/boot/getting-started/run/&#34;&gt;run the boot job&lt;/a&gt;.&lt;/p&gt;
+
+
+&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Jenkins X creates repositories per default as private. This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub &lt;em&gt;organisation&lt;/em&gt; to hold the various created (environment) repositories as free organization accounts do not have access to private repos. Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.&lt;/p&gt;
+&lt;p&gt;For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&amp;rsquo;re ready to go all in. Alternatively, you can use a free GitHub organisation and enable public environment repositories by setting &lt;code&gt;environmentGitPublic&lt;/code&gt; to true in your jx boot configuration in the next section or use &lt;code&gt;--git-public&lt;/code&gt; flags below.&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;To create a fresh install run the &lt;code&gt;jxl boot create&lt;/code&gt; command.  Note this by default creates three git repositories, one for each environments dev, staging and production.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;or for public git repositories as per the note above&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create --env-git-public  --git-public
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../cloud&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../secrets&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
 &lt;h3 id=&#34;extra-arguments&#34;&gt;Extra arguments&lt;/h3&gt;
 &lt;p&gt;You can pass in a whole number of different arguments to default values in your installation. You can see all the available arguments via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create --help
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;e.g. if you want to specify the kubernetes provider to &lt;code&gt;gke&lt;/code&gt; and enable public repositories for environments and apps you can use:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create --provider&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;gke --env-git-public  --git-public
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;e.g. if you want to specify the kubernetes provider to &lt;code&gt;gke&lt;/code&gt; you can use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create --provider&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;gke
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;shrinking-the-footprint&#34;&gt;Shrinking the footprint&lt;/h3&gt;
 &lt;p&gt;If you are using a free tier or small kubernetes cluster you can shrink the footprint a little via the following:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; jxl boot create --repository&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;bucketrepo
@@ -101,6 +115,12 @@
 &lt;p&gt;To populate the Secrets run:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jxl boot secrets edit --git-url https://github.com/myuser/environment-mycluster-dev.git
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will prompt you to enter all the missing Secrets required.&lt;/p&gt;
+&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../repository&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../config&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
 &lt;h3 id=&#34;re-enter-all-secrets&#34;&gt;Re-enter all secrets&lt;/h3&gt;
 &lt;p&gt;If you want to re-enter them all again or recreate tokens do the following:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jxl boot secrets edit -a --git-url https://github.com/myuser/environment-mycluster-dev.git
@@ -142,17 +162,16 @@
       <description>
         
         
-        &lt;p&gt;You can edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in your git repository for your &lt;code&gt;dev&lt;/code&gt; environment to configure various capabilities:&lt;/p&gt;
+        &lt;p&gt;You can edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in the git repository that was created in an earlier step for your &lt;code&gt;dev&lt;/code&gt; environment, to configure various capabilities:&lt;/p&gt;
+&lt;p&gt;Make changes to the config using the help below or continue Next to run boot.&lt;/p&gt;
+&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../secrets&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../run&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
 &lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
 &lt;p&gt;Jenkins X supports a number of different Git providers. You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
-
-
-&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
-&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Jenkins X creates repositories per default as private. This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub &lt;em&gt;organisation&lt;/em&gt; to hold the various created (environment) repositories as free organization accounts do not have access to private repos. Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.&lt;/p&gt;
-&lt;p&gt;For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&amp;rsquo;re ready to go all in. Alternatively, you can enable public environment repositories by setting &lt;code&gt;environmentGitPublic&lt;/code&gt; to true in your jx boot configuration. In case you&amp;rsquo;re using &lt;code&gt;jx create&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt;, you&amp;rsquo;ll need to add the &lt;code&gt;--git-public&lt;/code&gt; option as part of the command to enable public repo&lt;/p&gt;
-
-&lt;/div&gt;
-
 &lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
 &lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
@@ -451,6 +470,13 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once you have booted up once you can omit the &lt;code&gt;git-url&lt;/code&gt; argument as it can be discovered from the &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; resource:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jxl boot run
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will use helm to install the boot Job and tail the log of the pod so you can see the boot job run. It looks like the boot process is running locally on your laptop but really it is all running inside a Pod inside Kubernetes.&lt;/p&gt;
+&lt;p&gt;Once this has finished you are ready to import or create a quicstart.&lt;/p&gt;
+&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../config&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../../../wizard/overview/&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
 &lt;h3 id=&#34;upgrading-your-cluster&#34;&gt;Upgrading your cluster&lt;/h3&gt;
 &lt;p&gt;Once you have the git repository for the upgrade you need to run the boot Job in a clean empty cluster.&lt;/p&gt;
 &lt;p&gt;To simplify things you may want to create a new cluster, connect to that and then boot from there. If you are happy with the results you can scale down/destroy the old one&lt;/p&gt;
