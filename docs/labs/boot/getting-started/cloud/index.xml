@@ -77,7 +77,17 @@ gcloud iam service-accounts create $CLUSTER_NAME-tk --display-name=$CLUSTER_NAME
 gcloud iam service-accounts create $CLUSTER_NAME-vo --display-name=$CLUSTER_NAME-vo --project $PROJECT_ID
 gcloud iam service-accounts create $CLUSTER_NAME-vt --display-name=$CLUSTER_NAME-vt --project $PROJECT_ID
 
+
 curl https://raw.githubusercontent.com/jenkins-x-labs/cloud-resources/master/gcloud/setup.yaml | sed &#34;s/{namespace}/$NAMESPACE/&#34; | sed &#34;s/{project_id}/$PROJECT_ID/&#34; | sed &#34;s/{cluster_name}/$CLUSTER_NAME/&#34; | kubectl apply -f -
+
+# change to the new jx namespace
+jx ns $NAMESPACE
+
+# lets create the kaniko key
+gcloud iam service-accounts keys create kaniko-secret.json --iam-account $CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com --project $PROJECT_ID
+
+kubectl create secret generic kaniko-secret --from-file=kaniko-secret=kaniko-secret.json
+
 
 
 # external dns
@@ -96,7 +106,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 # jx boot
 gcloud iam service-accounts add-iam-policy-binding \
   --role roles/iam.workloadIdentityUser \
-  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/boot-sa]&#34; \
+  --member &#34;serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/jxl-boot]&#34; \
   $CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com \
   --project $PROJECT_ID
 
@@ -117,6 +127,16 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --role roles/storage.admin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34; \
+  --project $PROJECT_ID
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34; \
+  --project $PROJECT_ID
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectCreator \
   --member &#34;serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com&#34; \
   --project $PROJECT_ID
 
