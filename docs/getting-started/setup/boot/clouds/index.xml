@@ -23,8 +23,7 @@
       <description>
         
         
-        &lt;p&gt;For details of how to setup your cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/google/&#34;&gt;Google Cloud instructions&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+        &lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
 &lt;p&gt;On GCP we default to using GCR as the container registry (using &lt;code&gt;gcr.io&lt;/code&gt;).&lt;/p&gt;
 &lt;p&gt;Please set your provider to &lt;code&gt;gke&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using GCP:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
@@ -43,13 +42,7 @@
       <description>
         
         
-        &lt;p&gt;The information in this document assumes you have already created a Kubernetes cluster in AWS and you are now ready to &lt;code&gt;boot&lt;/code&gt; your cluster with Jenkins X.
-For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/amazon/&#34;&gt;Amazon instructions&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#basic-configuration&#34;&gt;Basic Configuration&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#authentication-mechanisms&#34;&gt;Authentication Mechanisms&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#configuring-dns-and-tls-on-eks&#34;&gt;Configuring DNS and TLS on EKS&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;The information in this document assumes you have already created a Kubernetes cluster in AWS and you are now ready to &lt;code&gt;boot&lt;/code&gt; your cluster with Jenkins X.&lt;/p&gt;
 &lt;h2 id=&#34;basic-configuration&#34;&gt;Basic Configuration&lt;/h2&gt;
 &lt;p&gt;Please set your provider to &lt;code&gt;eks&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using EKS:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
@@ -104,7 +97,7 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
     - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;arn:aws:iam::aws:policy/AmazonS3FullAccess&amp;#34;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.&lt;/p&gt;
 &lt;h2 id=&#34;iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/h2&gt;
-&lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with jx create cluster eks and Jenkins X.&lt;/p&gt;
+&lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with &lt;code&gt;jx create cluster eks&lt;/code&gt; and Jenkins X.&lt;/p&gt;
 &lt;h3 id=&#34;iam-policy-for-cluster-creation&#34;&gt;IAM Policy for cluster creation&lt;/h3&gt;
 &lt;p&gt;In order to create an EKS cluster, we make use of &lt;a href=&#34;https://github.com/weaveworks/eksctl&#34;&gt;eksctl&lt;/a&gt;, which is the official tool to interact with EKS clusters.&lt;/p&gt;
 &lt;p&gt;There is no official policy documented by eksctl to get a cluster running, but there’s a very useful GitHub issue where users have been curating a comprehensive policy that should work for all cases: &lt;a href=&#34;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&#34;&gt;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&lt;/a&gt;&lt;/p&gt;
@@ -309,21 +302,21 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
     ]
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The reason for these policies is further described for each cloud resource below.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;IAM&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;iam&#34;&gt;IAM&lt;/h4&gt;
 &lt;p&gt;In order to make IAM Roles for Service Accounts work, Jenkins X will create IAM Policies and Roles and then attach these policies to these roles.  These Roles are then annotated into selected Service Accounts so pods using them can assume the role.  In order to make IRSA work, Jenkins X needs to create an Open ID Connect Provider with IAM in order to authenticate the annotated pods.  Also, in order to make Vault work, we (for now) need to attach a policy, created just for Vault, into a provided IAM User.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;CloudFormation&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;cloudformation&#34;&gt;CloudFormation&lt;/h4&gt;
 &lt;p&gt;Jenkins X creates a series of CloudFormation stacks to prepare the platform for cluster installation. All IAM Policies created for IRSA are created as CloudFormation stacks.  Every cloud resource needed by Vault is also created by CloudFormation, but only if they are not provided in jx-requirements.yml already.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;S3&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;s3&#34;&gt;S3&lt;/h4&gt;
 &lt;p&gt;Jenkins X uses S3 for Long Term Storage, that is, for logs archival and stashing of artifacts created in Pipelines.  Jenkins X Boot will attempt to check for existing S3 buckets and create them if they don’t exist.  It is also used by Vault, so there needs to be enough permissions for the executing user to interact with the service. Permissions to interact with the bucket however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;DynamoDB&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;dynamodb&#34;&gt;DynamoDB&lt;/h4&gt;
 &lt;p&gt;This service is used by Vault, so the executing user needs to have permissions to at least create the table. Permissions to interact with the table however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;KMS&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;kms&#34;&gt;KMS&lt;/h4&gt;
 &lt;p&gt;Vault needs to create a KMS key in order to encrypt its contents. Again, the executing user just needs permissions to create the Key. Permissions to interact with KMS however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;ECR&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;ecr&#34;&gt;ECR&lt;/h4&gt;
 &lt;p&gt;Jenkins X will check if there is an ECR registry already created for a given application, and create it otherwise.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;EKS&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;eks&#34;&gt;EKS&lt;/h4&gt;
 &lt;p&gt;Jenkins X will need full permissions on EKS in order to operate without problems.  For further security, this policy can be modified to restrict its access to only certain resources and accounts.  For example, if you know the name of your cluster, you can modify the resources affected by the eks permission to limit its effect.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Vault&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;vault&#34;&gt;Vault&lt;/h4&gt;
 &lt;p&gt;A special case - refer to &lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/h2&gt;
 &lt;p&gt;When booting JX on an EKS cluster with Vault enabled, fields under vault.aws in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file are required to enable Vault support.&lt;/p&gt;
@@ -386,7 +379,8 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
 &lt;li&gt;Click Create&lt;/li&gt;
 &lt;li&gt;Configure Jenkins X for the new domain names:
 &lt;ul&gt;
-&lt;li&gt;Open the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in a text editor (such as TextEdit for macOS or gedit for Linux) and edit the ingress section at the root level.
+&lt;li&gt;
+&lt;p&gt;Open the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in a text editor (such as TextEdit for macOS or gedit for Linux) and edit the ingress section at the root level.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: cluster1.acmecorp.example
   &lt;span style=&#34;color:#66d9ef&#34;&gt;ignoreLoadBalancer&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;

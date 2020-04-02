@@ -115,6 +115,23 @@
     </item>
     
     <item>
+      <title>Docs: Jenkins X OSS alternatives</title>
+      <link>/docs/getting-started/alternatives/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/getting-started/alternatives/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;cloudbees-jenkins-x-distribution&#34;&gt;CloudBees Jenkins X Distribution&lt;/h2&gt;
+&lt;p&gt;The &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution/overview&#34;&gt;CloudBees Jenkins X Distribution&lt;/a&gt; - is released monthly based on the open source binary that is then battle tested and verified by CloudBees. CJXD is free to download and use, with optional paid &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-support/overview&#34;&gt;commercial support&lt;/a&gt; available should you need it.&lt;/p&gt;
+&lt;h2 id=&#34;cloudbees-ci-cd-powered-by-jenkins-x&#34;&gt;CloudBees CI-CD powered by Jenkins X&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-ci-cd/overview&#34;&gt;CloudBees CI-CD powered by Jenkins X&lt;/a&gt; - is CI/CD as a service so you don&amp;rsquo;t need to worry about setting up and managing Jenkins X. A Preview Experience of the new Jenkins X SaaS is currently available. Sign up &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-ci-cd/overview&#34;&gt;here to try out the new Jenkins X Saas&lt;/a&gt;!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Pipeline Environment Variables</title>
       <link>/docs/using-jx/pipelines/envvars/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -323,6 +340,260 @@
             - --enableGitInfo
             - --baseURL http://${APP_NAME}.jx-${REPO_OWNER}-${REPO_NAME}-pr-${PULL_NUMBER}.${DOMAIN}/
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The main requirement is that the image is available, either with or without authentication.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Create GKE cluster</title>
+      <link>/docs/getting-started/setup/create-cluster/gke/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/getting-started/setup/create-cluster/gke/</guid>
+      <description>
+        
+        
+        
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Tip&lt;/h4&gt;
+The GKE Terraform Module for Jenkins X is published in the &lt;a href=&#34;https://registry.terraform.io/modules/jenkins-x/jx/google&#34;&gt;Terraform Registry&lt;/a&gt;.
+The source is in the &lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx&#34;&gt;terraform-google-jx&lt;/a&gt; repository on GitHub.
+&lt;/div&gt;
+
+&lt;h2 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h2&gt;
+&lt;p&gt;To create your GKE cluster, you need first a Google Cloud project.
+Instructions on how to setup a project can be found in the Google Cloud &lt;a href=&#34;https://cloud.google.com/deployment-manager/docs/step-by-step-guide/installation-and-setup&#34;&gt;documentation&lt;/a&gt;.
+You need your Google Cloud project id as input for using the Terraform Module.&lt;/p&gt;
+&lt;p&gt;You also need to install the Cloud SDK, in particular &lt;code&gt;gcloud&lt;/code&gt;.
+You find instructions on how to install and authenticate in the documentation mentioned above.&lt;/p&gt;
+&lt;p&gt;Once you have &lt;code&gt;gcloud&lt;/code&gt; installed, you need to create &lt;a href=&#34;https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login&#34;&gt;Application Default Credentials&lt;/a&gt; by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud auth application-default login
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Finally, ensure you have the following binaries installed:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;gcloud&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kubectl&lt;/code&gt; ~&amp;gt; 1.14.0
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;kubectl&lt;/code&gt; comes bundled with the Cloud SDK&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;terraform&lt;/code&gt; ~&amp;gt; 0.12.0
+&lt;ul&gt;
+&lt;li&gt;Terraform installation instruction can be found &lt;a href=&#34;https://learn.hashicorp.com/terraform/getting-started/install&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cluster-creation&#34;&gt;Cluster creation&lt;/h2&gt;
+&lt;p&gt;A default Jenkins X ready cluster can be provisioned by creating a file &lt;em&gt;main.tf&lt;/em&gt; with the following content in an empty directory:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-tf&#34; data-lang=&#34;tf&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;module&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jx&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#a6e22e&#34;&gt;  source&lt;/span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-x/jx/google&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;  gcp_project&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;my-gcp-project-id&amp;gt;&amp;#34;&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can then apply this Terraform configuration via the following terminal commands:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;terraform init
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This creates a cluster within the specified Google Cloud project with all possible configuration options defaulted.&lt;/p&gt;
+&lt;p&gt;No custom domain is used.
+Instead DNS resolution occurs via &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt;.
+For more information on how to configure and use a custom domain, refer to &lt;a href=&#34;/docs/getting-started/setup/create-cluster/gke#using-a-custom-domain&#34;&gt;Using a custom domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you just want to evaluate Jenkins X, you can set &lt;code&gt;force_destroy&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt;.
+This allows you to remove all generated resources when running &lt;code&gt;terraform destroy&lt;/code&gt;, including any generated buckets with their content.&lt;/p&gt;
+&lt;p&gt;On completion of &lt;code&gt;terraform apply&lt;/code&gt; there will be a &lt;em&gt;jx-requirements.yaml&lt;/em&gt; in the working directory.
+This file can be used as input for running &lt;a href=&#34;/docs/getting-started/setup/boot&#34;&gt;&lt;code&gt;jx boot&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The following sections define the various configuration variables as well as the Module&amp;rsquo;s output variables.&lt;/p&gt;
+&lt;h3 id=&#34;inputs&#34;&gt;Inputs&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;Default&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;Required&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
+&lt;td&gt;Name of the Kubernetes cluster to create&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;jenkins-x&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dev_env_approvers&lt;/td&gt;
+&lt;td&gt;List of git users allowed to approve pull request for dev enviornment repository&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;list(string)&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;[]&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;force_destroy&lt;/td&gt;
+&lt;td&gt;Flag to determine whether storage buckets get forcefully destroyed&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bool&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;gcp_project&lt;/td&gt;
+&lt;td&gt;The name of the GCP project to use&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;n/a&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;yes&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;git_owner_requirement_repos&lt;/td&gt;
+&lt;td&gt;The git id of the owner for the requirement repositories&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_node_count&lt;/td&gt;
+&lt;td&gt;Maximum number of cluster nodes&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;number&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;5&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;min_node_count&lt;/td&gt;
+&lt;td&gt;Minimum number of cluster nodes&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;number&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;3&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;node_disk_size&lt;/td&gt;
+&lt;td&gt;Node disk size in GB&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;100&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;node_machine_type&lt;/td&gt;
+&lt;td&gt;Node type for the Kubernetes cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;n1-standard-2&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;parent_domain&lt;/td&gt;
+&lt;td&gt;The parent domain to be allocated to the cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;tls_email&lt;/td&gt;
+&lt;td&gt;Email used by Let&amp;rsquo;s Encrypt. Required for TLS when parent_domain is specified.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;velero_schedule&lt;/td&gt;
+&lt;td&gt;The Velero backup schedule in cron notation to be set in the Velero Schedule CRD (see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/systems/velero-backups/templates/default-backup.yaml&#34;&gt;default-backup.yaml&lt;/a&gt;)&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;0 * * * *&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;velero_ttl&lt;/td&gt;
+&lt;td&gt;The the lifetime of a velero backup to be set in the Velero Schedule CRD (see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/systems/velero-backups/templates/default-backup&#34;&gt;default-backup.yaml&lt;/a&gt;)&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;720h0m0s&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;version_stream_ref&lt;/td&gt;
+&lt;td&gt;The git ref for version stream to use when booting Jenkins X. Refer to &lt;a href=&#34;/docs/concepts/version-stream&#34;&gt;version stream&lt;/a&gt; for more information.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;master&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;version_stream_url&lt;/td&gt;
+&lt;td&gt;The URL for the version stream to use when booting Jenkins X. Refer to &lt;a href=&#34;/docs/concepts/version-stream&#34;&gt;version stream&lt;/a&gt; for more information.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;https://github.com/jenkins-x/jenkins-x-versions.git&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;webhook&lt;/td&gt;
+&lt;td&gt;Jenkins X webhook handler for git provider&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;prow&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;zone&lt;/td&gt;
+&lt;td&gt;Zone in which to create the cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;us-central1-a&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;outputs&#34;&gt;Outputs&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;backup_bucket_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for backup storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
+&lt;td&gt;The name of the created Kubernetes cluster&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;gcp_project&lt;/td&gt;
+&lt;td&gt;The GCP project in which the resources got created&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;log_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for log storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;report_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for report storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;repository_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for artifact storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;vault_bucket_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for secret storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;zone&lt;/td&gt;
+&lt;td&gt;The zone of the created Kubernetes cluster&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;using-a-custom-domain&#34;&gt;Using a custom domain&lt;/h2&gt;
+&lt;p&gt;If you want to use a custom domain with your Jenkins X installation, you need to provide values for the variables &lt;em&gt;parent_domain&lt;/em&gt; and &lt;em&gt;tls_email&lt;/em&gt;.
+&lt;em&gt;parent_domain&lt;/em&gt; is the fully qualified domain name you want to use and &lt;em&gt;tls_email&lt;/em&gt; is the email you want to use for issuing Let&amp;rsquo;s Encrypt TLS certificates.&lt;/p&gt;
+&lt;p&gt;Before you run the Terraform configuration, you also need to create a &lt;a href=&#34;https://cloud.google.com/dns/zones&#34;&gt;Cloud DNS managed zone&lt;/a&gt;, with the DNS name in the managed zone matching your custom domain name, for example in the case of &lt;em&gt;example.jenkins-x.rocks&lt;/em&gt; as domain:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/getting-started/create_managed_zone.png&#34; alt=&#34;Creating a Managed Zone&#34;&gt;&lt;/p&gt;
+&lt;p&gt;When creating the managed zone, a set of DNS servers get created which you need to specify in the DNS settings of your DNS registrar.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/getting-started/managed_zone_details.png&#34; alt=&#34;DNS settings of a Managed Zone&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It is essential that before you run &lt;code&gt;jx boot&lt;/code&gt;, your DNS servers settings are propagated, and your domain resolves.
+You can use &lt;a href=&#34;https://dnschecker.org/&#34;&gt;DNS checker&lt;/a&gt; to check whether your domain settings have propagated.&lt;/p&gt;
+&lt;p&gt;When a custom domain is provided, Jenkins X uses &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;ExternalDNS&lt;/a&gt; together with &lt;a href=&#34;https://github.com/jetstack/cert-manager&#34;&gt;cert-manager&lt;/a&gt; to create A record entries in your managed zone for the various exposed applications.&lt;/p&gt;
+&lt;p&gt;If &lt;em&gt;parent_domain&lt;/em&gt; is not set, your cluster will use &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; in order to create publicly resolvable URLs of the form ht&lt;span&gt;tp://&amp;lt;app-name&amp;gt;-&amp;lt;environment-name&amp;gt;.&amp;lt;cluster-ip&amp;gt;.nip.io.&lt;/p&gt;
+&lt;h2 id=&#34;running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;Applying this Terraform module will not only create the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/required-cloud-resources&#34;&gt;required cloud resources&lt;/a&gt;, but also create a &lt;em&gt;jx-requirements.yml&lt;/em&gt; file.
+From within an empty directory run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; jx boot -r &amp;lt;path-to-generated-jx-requirements.yml&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;More information about the boot process can be found in the &lt;a href=&#34;/docs/getting-started/setup/boot&#34;&gt;Run Boot&lt;/a&gt; section.&lt;/p&gt;
 
       </description>
     </item>
@@ -6568,8 +6839,7 @@ jx upgrade addon prow
       <description>
         
         
-        &lt;p&gt;For details of how to setup your cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/google/&#34;&gt;Google Cloud instructions&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+        &lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
 &lt;p&gt;On GCP we default to using GCR as the container registry (using &lt;code&gt;gcr.io&lt;/code&gt;).&lt;/p&gt;
 &lt;p&gt;Please set your provider to &lt;code&gt;gke&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using GCP:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
@@ -18081,13 +18351,7 @@ pipelineConfig:
       <description>
         
         
-        &lt;p&gt;The information in this document assumes you have already created a Kubernetes cluster in AWS and you are now ready to &lt;code&gt;boot&lt;/code&gt; your cluster with Jenkins X.
-For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/amazon/&#34;&gt;Amazon instructions&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#basic-configuration&#34;&gt;Basic Configuration&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#authentication-mechanisms&#34;&gt;Authentication Mechanisms&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;#configuring-dns-and-tls-on-eks&#34;&gt;Configuring DNS and TLS on EKS&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;The information in this document assumes you have already created a Kubernetes cluster in AWS and you are now ready to &lt;code&gt;boot&lt;/code&gt; your cluster with Jenkins X.&lt;/p&gt;
 &lt;h2 id=&#34;basic-configuration&#34;&gt;Basic Configuration&lt;/h2&gt;
 &lt;p&gt;Please set your provider to &lt;code&gt;eks&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to indicate you are using EKS:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
@@ -18142,7 +18406,7 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
     - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;arn:aws:iam::aws:policy/AmazonS3FullAccess&amp;#34;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.&lt;/p&gt;
 &lt;h2 id=&#34;iam-policies-for-cluster-creation-and-jenkins-x-boot&#34;&gt;IAM Policies for Cluster Creation and Jenkins X Boot&lt;/h2&gt;
-&lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with jx create cluster eks and Jenkins X.&lt;/p&gt;
+&lt;p&gt;Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with &lt;code&gt;jx create cluster eks&lt;/code&gt; and Jenkins X.&lt;/p&gt;
 &lt;h3 id=&#34;iam-policy-for-cluster-creation&#34;&gt;IAM Policy for cluster creation&lt;/h3&gt;
 &lt;p&gt;In order to create an EKS cluster, we make use of &lt;a href=&#34;https://github.com/weaveworks/eksctl&#34;&gt;eksctl&lt;/a&gt;, which is the official tool to interact with EKS clusters.&lt;/p&gt;
 &lt;p&gt;There is no official policy documented by eksctl to get a cluster running, but there’s a very useful GitHub issue where users have been curating a comprehensive policy that should work for all cases: &lt;a href=&#34;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&#34;&gt;https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2&lt;/a&gt;&lt;/p&gt;
@@ -18347,21 +18611,21 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
     ]
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The reason for these policies is further described for each cloud resource below.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;IAM&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;iam&#34;&gt;IAM&lt;/h4&gt;
 &lt;p&gt;In order to make IAM Roles for Service Accounts work, Jenkins X will create IAM Policies and Roles and then attach these policies to these roles.  These Roles are then annotated into selected Service Accounts so pods using them can assume the role.  In order to make IRSA work, Jenkins X needs to create an Open ID Connect Provider with IAM in order to authenticate the annotated pods.  Also, in order to make Vault work, we (for now) need to attach a policy, created just for Vault, into a provided IAM User.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;CloudFormation&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;cloudformation&#34;&gt;CloudFormation&lt;/h4&gt;
 &lt;p&gt;Jenkins X creates a series of CloudFormation stacks to prepare the platform for cluster installation. All IAM Policies created for IRSA are created as CloudFormation stacks.  Every cloud resource needed by Vault is also created by CloudFormation, but only if they are not provided in jx-requirements.yml already.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;S3&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;s3&#34;&gt;S3&lt;/h4&gt;
 &lt;p&gt;Jenkins X uses S3 for Long Term Storage, that is, for logs archival and stashing of artifacts created in Pipelines.  Jenkins X Boot will attempt to check for existing S3 buckets and create them if they don’t exist.  It is also used by Vault, so there needs to be enough permissions for the executing user to interact with the service. Permissions to interact with the bucket however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;DynamoDB&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;dynamodb&#34;&gt;DynamoDB&lt;/h4&gt;
 &lt;p&gt;This service is used by Vault, so the executing user needs to have permissions to at least create the table. Permissions to interact with the table however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;KMS&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;kms&#34;&gt;KMS&lt;/h4&gt;
 &lt;p&gt;Vault needs to create a KMS key in order to encrypt its contents. Again, the executing user just needs permissions to create the Key. Permissions to interact with KMS however, is handled by IRSA and are only granted to the Vault pod.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;ECR&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;ecr&#34;&gt;ECR&lt;/h4&gt;
 &lt;p&gt;Jenkins X will check if there is an ECR registry already created for a given application, and create it otherwise.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;EKS&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;eks&#34;&gt;EKS&lt;/h4&gt;
 &lt;p&gt;Jenkins X will need full permissions on EKS in order to operate without problems.  For further security, this policy can be modified to restrict its access to only certain resources and accounts.  For example, if you know the name of your cluster, you can modify the resources affected by the eks permission to limit its effect.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Vault&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;vault&#34;&gt;Vault&lt;/h4&gt;
 &lt;p&gt;A special case - refer to &lt;a href=&#34;#configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;configuring-vault-for-eks&#34;&gt;Configuring Vault for EKS&lt;/h2&gt;
 &lt;p&gt;When booting JX on an EKS cluster with Vault enabled, fields under vault.aws in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file are required to enable Vault support.&lt;/p&gt;
@@ -18424,7 +18688,8 @@ For details of how to create a cluster see the &lt;a href=&#34;/docs/getting-sta
 &lt;li&gt;Click Create&lt;/li&gt;
 &lt;li&gt;Configure Jenkins X for the new domain names:
 &lt;ul&gt;
-&lt;li&gt;Open the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in a text editor (such as TextEdit for macOS or gedit for Linux) and edit the ingress section at the root level.
+&lt;li&gt;
+&lt;p&gt;Open the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in a text editor (such as TextEdit for macOS or gedit for Linux) and edit the ingress section at the root level.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: cluster1.acmecorp.example
   &lt;span style=&#34;color:#66d9ef&#34;&gt;ignoreLoadBalancer&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
@@ -19061,67 +19326,6 @@ Deprecated. Will be removed on 1st of February 2020.
 &lt;/figcaption&gt;
 &lt;/figure&gt;
 
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: General Questions</title>
-      <link>/docs/overview/faq/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/overview/faq/</guid>
-      <description>
-        
-        
-        &lt;p&gt;We have tried to collate common issues here with work arounds. If your issue isn&amp;rsquo;t listed here please &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34;&gt;let us know&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;is-jenkins-x-open-source&#34;&gt;Is Jenkins X Open Source?&lt;/h2&gt;
-&lt;p&gt;Yes! All of Jenkins X source code and artifacts are open source; either Apache or MIT and will always remain so!&lt;/p&gt;
-&lt;h2 id=&#34;how-does-jenkins-x-compare-to-jenkins&#34;&gt;How does Jenkins X compare to Jenkins?&lt;/h2&gt;
-&lt;p&gt;Jenkins X provides &lt;a href=&#34;/docs/concepts/features/#automated-pipelines&#34;&gt;automated CI + CD&lt;/a&gt; for applications on kubernetes with &lt;a href=&#34;/docs/concepts/features/#promotion&#34;&gt;GitOps promotion through environments&lt;/a&gt; and &lt;a href=&#34;/docs/concepts/features/#preview-environments&#34;&gt;preview environments on Pull Requests
-&lt;/a&gt;. (See the &lt;a href=&#34;/docs/concepts/features/&#34;&gt;features for more details&lt;/a&gt;).&lt;/p&gt;
-&lt;p&gt;Jenkins is a general purpose CI/CD server that can be configured to do anything you like by adding plugins, changing configuration and writing your own pipelines.&lt;/p&gt;
-&lt;p&gt;With Jenkins X you just &lt;a href=&#34;/docs/getting-started/&#34;&gt;install Jenkins X&lt;/a&gt; which automatically sets up all of the various tools (helm, docker registry, nexus etc) and then &lt;a href=&#34;/docs/using-jx/common-tasks/create-spring/&#34;&gt;create&lt;/a&gt;/&lt;a href=&#34;/docs/using-jx/creating/import/&#34;&gt;import&lt;/a&gt; projects and you get fully automated CI/CD and previews. This lets your developers focus on building applications while you delegate to Jenkins X to manage your CI+CD.&lt;/p&gt;
-&lt;p&gt;Jenkins X supports different execution engines; so it can orchestrate a Jenkins server per team by reusing Jenkins in a docker container. Though when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; we use &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; rather than Jenkins as the underlying CI/CD engine to provide a modern highly available cloud native architecture.&lt;/p&gt;
-&lt;h2 id=&#34;is-jenkins-x-a-fork-of-jenkins&#34;&gt;Is Jenkins X a fork of Jenkins?&lt;/h2&gt;
-&lt;p&gt;No! Jenkins X can orchestrate Jenkins by reusing it inside a container and configures it to be as kubernetes native as possible.&lt;/p&gt;
-&lt;p&gt;Though when using &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines&lt;/a&gt; we use &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; rather than Jenkins as the underlying CI/CD engine to provide a modern highly available cloud native architecture.&lt;/p&gt;
-&lt;h2 id=&#34;why-create-a-sub-project&#34;&gt;Why create a sub project?&lt;/h2&gt;
-&lt;p&gt;We are huge fans of &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; &amp;amp; the cloud and think its
-the long term future approach for running software for many folks.&lt;/p&gt;
-&lt;p&gt;However lots of folks will still want to run Jenkins in the regular jenkins way via: &lt;code&gt;java
--jar jenkins.war&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;So the idea of the Jenkins X sub project is to focus 100% on the Kubernetes and Cloud Native use
-case and let the core Jenkins project focus on the classic java approach.&lt;/p&gt;
-&lt;p&gt;One of Jenkins big strengths has always been its flexibility and huge ecosystem of different
-plugins and capabilities. The separate Jenkins X sub project helps the community iterate and go fast
-improving both the Cloud Native and the classic distributions of Jenkins in parallel.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Getting Started</title>
-      <link>/docs/labs/jenkins/getting-started/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/labs/jenkins/getting-started/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Make sure you have got the &lt;a href=&#34;/docs/labs/jxl/&#34;&gt;jxl binary&lt;/a&gt; before proceeding.&lt;/p&gt;
-&lt;h2 id=&#34;adding-jenkins-servers&#34;&gt;Adding Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;You can register any Jenkins servers you wish to the Jenkins Server Registry via the &lt;code&gt;jxl jenkins add&lt;/code&gt; command:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jxl jenkins add 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you already know the name, URL, username and API Token then you can use:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jxl jenkins add -u https://myjenkins.com/ --username myuser
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;removing-jenkins-servers&#34;&gt;Removing Jenkins Servers&lt;/h3&gt;
-&lt;p&gt;You can remove a Jenkins server via:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jxl jenkins remove
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that this only removes it from the registry; it doesn&amp;rsquo;t affect the actual Jenkins Server.&lt;/p&gt;
-&lt;h2 id=&#34;listing-the-available-jenkins-servers&#34;&gt;Listing the available Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;To list the servers you can use try:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jxl jenkins list
-&lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
     

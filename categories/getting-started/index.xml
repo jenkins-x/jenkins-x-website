@@ -4,7 +4,7 @@
     <link>/categories/getting-started/</link>
     <description>Recent content in getting started on Jenkins X</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 03 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 10 Jul 2018 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="/categories/getting-started/index.xml" rel="self" type="application/rss+xml" />
     
@@ -17,24 +17,283 @@
     <item>
       <title>Docs: Create cluster</title>
       <link>/docs/getting-started/setup/create-cluster/</link>
-      <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/docs/getting-started/setup/create-cluster/</guid>
       <description>
         
         
-        &lt;p&gt;Jenkins X requires a Kubernetes cluster to exist so that it can be installed via &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;There are a number of approaches for creating Kubernetes clusters.&lt;/p&gt;
-&lt;p&gt;Our recommended a approach is to use &lt;a href=&#34;https://www.terraform.io&#34;&gt;Terraform&lt;/a&gt; to setup all of your Cloud Infrastructure (kubernetes cluster, service accounts, storage buckets, logging etc) and to use a cloud provider to create and manage your kubernetes clusters.&lt;/p&gt;
-&lt;p&gt;Or you can use a kubernetes provider specific approach:&lt;/p&gt;
+        &lt;p&gt;Jenkins X runs on a Kubernetes cluster.
+There are a number of approaches for creating this cluster.
+Our recommended a approach is to use a cloud provider to create and manage your Kubernetes clusters.
+We also recommend to use &lt;a href=&#34;https://www.terraform.io&#34;&gt;Terraform&lt;/a&gt; to setup and manage all required cloud infrastructure.&lt;/p&gt;
+&lt;p&gt;To make this as easy as possible, we are providing &lt;a href=&#34;https://www.terraform.io/docs/modules/index.html&#34;&gt;Terraform Modules&lt;/a&gt; for the most popular cloud providers.
+The modules can be found in the &lt;a href=&#34;https://registry.terraform.io/search?q=jx&#34;&gt;Terraform Registry&lt;/a&gt;, as well as on &lt;a href=&#34;http://github.com/jenkins-x?q=terraform-&#34;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you want to run your cluster on Google Cloud refer to the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/gke&#34;&gt;GKE&lt;/a&gt; instructions.&lt;/p&gt;
+&lt;!-- In case you prefer Amazon&#39;s refer to the [EKS](/docs/getting-started/setup/create-cluster/eks) instructions. --&gt;
+&lt;p&gt;If you want more what cloud resources are required by Jenkins X and created by Terraform refer to &lt;a href=&#34;/docs/getting-started/setup/create-cluster/required-cloud-resources&#34;&gt;Required cloud resources&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
     
     <item>
-      <title>Docs: Jenkins X Boot</title>
+      <title>Docs: Create GKE cluster</title>
+      <link>/docs/getting-started/setup/create-cluster/gke/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/getting-started/setup/create-cluster/gke/</guid>
+      <description>
+        
+        
+        
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Tip&lt;/h4&gt;
+The GKE Terraform Module for Jenkins X is published in the &lt;a href=&#34;https://registry.terraform.io/modules/jenkins-x/jx/google&#34;&gt;Terraform Registry&lt;/a&gt;.
+The source is in the &lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx&#34;&gt;terraform-google-jx&lt;/a&gt; repository on GitHub.
+&lt;/div&gt;
+
+&lt;h2 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h2&gt;
+&lt;p&gt;To create your GKE cluster, you need first a Google Cloud project.
+Instructions on how to setup a project can be found in the Google Cloud &lt;a href=&#34;https://cloud.google.com/deployment-manager/docs/step-by-step-guide/installation-and-setup&#34;&gt;documentation&lt;/a&gt;.
+You need your Google Cloud project id as input for using the Terraform Module.&lt;/p&gt;
+&lt;p&gt;You also need to install the Cloud SDK, in particular &lt;code&gt;gcloud&lt;/code&gt;.
+You find instructions on how to install and authenticate in the documentation mentioned above.&lt;/p&gt;
+&lt;p&gt;Once you have &lt;code&gt;gcloud&lt;/code&gt; installed, you need to create &lt;a href=&#34;https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login&#34;&gt;Application Default Credentials&lt;/a&gt; by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud auth application-default login
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Finally, ensure you have the following binaries installed:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;gcloud&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kubectl&lt;/code&gt; ~&amp;gt; 1.14.0
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;kubectl&lt;/code&gt; comes bundled with the Cloud SDK&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;terraform&lt;/code&gt; ~&amp;gt; 0.12.0
+&lt;ul&gt;
+&lt;li&gt;Terraform installation instruction can be found &lt;a href=&#34;https://learn.hashicorp.com/terraform/getting-started/install&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cluster-creation&#34;&gt;Cluster creation&lt;/h2&gt;
+&lt;p&gt;A default Jenkins X ready cluster can be provisioned by creating a file &lt;em&gt;main.tf&lt;/em&gt; with the following content in an empty directory:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-tf&#34; data-lang=&#34;tf&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;module&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jx&amp;#34;&lt;/span&gt; {
+&lt;span style=&#34;color:#a6e22e&#34;&gt;  source&lt;/span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-x/jx/google&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;  gcp_project&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;my-gcp-project-id&amp;gt;&amp;#34;&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can then apply this Terraform configuration via the following terminal commands:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;terraform init
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This creates a cluster within the specified Google Cloud project with all possible configuration options defaulted.&lt;/p&gt;
+&lt;p&gt;No custom domain is used.
+Instead DNS resolution occurs via &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt;.
+For more information on how to configure and use a custom domain, refer to &lt;a href=&#34;/docs/getting-started/setup/create-cluster/gke#using-a-custom-domain&#34;&gt;Using a custom domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you just want to evaluate Jenkins X, you can set &lt;code&gt;force_destroy&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt;.
+This allows you to remove all generated resources when running &lt;code&gt;terraform destroy&lt;/code&gt;, including any generated buckets with their content.&lt;/p&gt;
+&lt;p&gt;On completion of &lt;code&gt;terraform apply&lt;/code&gt; there will be a &lt;em&gt;jx-requirements.yaml&lt;/em&gt; in the working directory.
+This file can be used as input for running &lt;a href=&#34;/docs/getting-started/setup/boot&#34;&gt;&lt;code&gt;jx boot&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The following sections define the various configuration variables as well as the Module&amp;rsquo;s output variables.&lt;/p&gt;
+&lt;h3 id=&#34;inputs&#34;&gt;Inputs&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;Default&lt;/th&gt;
+&lt;th align=&#34;center&#34;&gt;Required&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
+&lt;td&gt;Name of the Kubernetes cluster to create&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;jenkins-x&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;dev_env_approvers&lt;/td&gt;
+&lt;td&gt;List of git users allowed to approve pull request for dev enviornment repository&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;list(string)&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;[]&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;force_destroy&lt;/td&gt;
+&lt;td&gt;Flag to determine whether storage buckets get forcefully destroyed&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bool&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;gcp_project&lt;/td&gt;
+&lt;td&gt;The name of the GCP project to use&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;n/a&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;yes&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;git_owner_requirement_repos&lt;/td&gt;
+&lt;td&gt;The git id of the owner for the requirement repositories&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_node_count&lt;/td&gt;
+&lt;td&gt;Maximum number of cluster nodes&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;number&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;5&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;min_node_count&lt;/td&gt;
+&lt;td&gt;Minimum number of cluster nodes&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;number&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;3&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;node_disk_size&lt;/td&gt;
+&lt;td&gt;Node disk size in GB&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;100&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;node_machine_type&lt;/td&gt;
+&lt;td&gt;Node type for the Kubernetes cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;n1-standard-2&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;parent_domain&lt;/td&gt;
+&lt;td&gt;The parent domain to be allocated to the cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;tls_email&lt;/td&gt;
+&lt;td&gt;Email used by Let&amp;rsquo;s Encrypt. Required for TLS when parent_domain is specified.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;velero_schedule&lt;/td&gt;
+&lt;td&gt;The Velero backup schedule in cron notation to be set in the Velero Schedule CRD (see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/systems/velero-backups/templates/default-backup.yaml&#34;&gt;default-backup.yaml&lt;/a&gt;)&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;0 * * * *&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;velero_ttl&lt;/td&gt;
+&lt;td&gt;The the lifetime of a velero backup to be set in the Velero Schedule CRD (see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/systems/velero-backups/templates/default-backup&#34;&gt;default-backup.yaml&lt;/a&gt;)&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;720h0m0s&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;version_stream_ref&lt;/td&gt;
+&lt;td&gt;The git ref for version stream to use when booting Jenkins X. Refer to &lt;a href=&#34;/docs/concepts/version-stream&#34;&gt;version stream&lt;/a&gt; for more information.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;master&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;version_stream_url&lt;/td&gt;
+&lt;td&gt;The URL for the version stream to use when booting Jenkins X. Refer to &lt;a href=&#34;/docs/concepts/version-stream&#34;&gt;version stream&lt;/a&gt; for more information.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;https://github.com/jenkins-x/jenkins-x-versions.git&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;webhook&lt;/td&gt;
+&lt;td&gt;Jenkins X webhook handler for git provider&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;prow&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;zone&lt;/td&gt;
+&lt;td&gt;Zone in which to create the cluster&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;us-central1-a&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;outputs&#34;&gt;Outputs&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;backup_bucket_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for backup storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_name&lt;/td&gt;
+&lt;td&gt;The name of the created Kubernetes cluster&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;gcp_project&lt;/td&gt;
+&lt;td&gt;The GCP project in which the resources got created&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;log_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for log storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;report_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for report storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;repository_storage_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for artifact storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;vault_bucket_url&lt;/td&gt;
+&lt;td&gt;The URL to the bucket for secret storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;zone&lt;/td&gt;
+&lt;td&gt;The zone of the created Kubernetes cluster&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;using-a-custom-domain&#34;&gt;Using a custom domain&lt;/h2&gt;
+&lt;p&gt;If you want to use a custom domain with your Jenkins X installation, you need to provide values for the variables &lt;em&gt;parent_domain&lt;/em&gt; and &lt;em&gt;tls_email&lt;/em&gt;.
+&lt;em&gt;parent_domain&lt;/em&gt; is the fully qualified domain name you want to use and &lt;em&gt;tls_email&lt;/em&gt; is the email you want to use for issuing Let&amp;rsquo;s Encrypt TLS certificates.&lt;/p&gt;
+&lt;p&gt;Before you run the Terraform configuration, you also need to create a &lt;a href=&#34;https://cloud.google.com/dns/zones&#34;&gt;Cloud DNS managed zone&lt;/a&gt;, with the DNS name in the managed zone matching your custom domain name, for example in the case of &lt;em&gt;example.jenkins-x.rocks&lt;/em&gt; as domain:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/getting-started/create_managed_zone.png&#34; alt=&#34;Creating a Managed Zone&#34;&gt;&lt;/p&gt;
+&lt;p&gt;When creating the managed zone, a set of DNS servers get created which you need to specify in the DNS settings of your DNS registrar.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/images/getting-started/managed_zone_details.png&#34; alt=&#34;DNS settings of a Managed Zone&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It is essential that before you run &lt;code&gt;jx boot&lt;/code&gt;, your DNS servers settings are propagated, and your domain resolves.
+You can use &lt;a href=&#34;https://dnschecker.org/&#34;&gt;DNS checker&lt;/a&gt; to check whether your domain settings have propagated.&lt;/p&gt;
+&lt;p&gt;When a custom domain is provided, Jenkins X uses &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;ExternalDNS&lt;/a&gt; together with &lt;a href=&#34;https://github.com/jetstack/cert-manager&#34;&gt;cert-manager&lt;/a&gt; to create A record entries in your managed zone for the various exposed applications.&lt;/p&gt;
+&lt;p&gt;If &lt;em&gt;parent_domain&lt;/em&gt; is not set, your cluster will use &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; in order to create publicly resolvable URLs of the form ht&lt;span&gt;tp://&amp;lt;app-name&amp;gt;-&amp;lt;environment-name&amp;gt;.&amp;lt;cluster-ip&amp;gt;.nip.io.&lt;/p&gt;
+&lt;h2 id=&#34;running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;Applying this Terraform module will not only create the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/required-cloud-resources&#34;&gt;required cloud resources&lt;/a&gt;, but also create a &lt;em&gt;jx-requirements.yml&lt;/em&gt; file.
+From within an empty directory run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; jx boot -r &amp;lt;path-to-generated-jx-requirements.yml&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;More information about the boot process can be found in the &lt;a href=&#34;/docs/getting-started/setup/boot&#34;&gt;Run Boot&lt;/a&gt; section.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Run Boot</title>
       <link>/docs/getting-started/setup/boot/</link>
-      <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/docs/getting-started/setup/boot/</guid>
       <description>
@@ -43,33 +302,40 @@
         &lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
 &lt;p&gt;&lt;em&gt;Jenkins X Boot&lt;/em&gt; uses the following approach:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;create your Kubernetes cluster however you want:
+&lt;li&gt;
+&lt;p&gt;Create your Kubernetes cluster however you want:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;use &lt;code&gt;jx create cluster --skip-installation&lt;/code&gt; e.g. for Google Cloud use &lt;code&gt;jx create cluster gke --skip-installation&lt;/code&gt;. To see all the different providers see &lt;a href=&#34;/commands/jx_create_cluster/&#34;&gt;jx create cluster&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;use Terraform to create your Kubernetes clusters + the associated cloud resources&lt;/li&gt;
 &lt;li&gt;use your cloud providers web console to create a new Kubernetes cluster&lt;/li&gt;
 &lt;li&gt;use some custom tool of your choice (maybe it&amp;rsquo;s provided to you by your operations team)&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
 &lt;p&gt;Please check out our &lt;a href=&#34;/docs/getting-started/setup/boot/clouds/&#34;&gt;Cloud Providers Guide&lt;/a&gt; on our recommendations for your cloud provider.&lt;/p&gt;
 &lt;p&gt;You can verify you can communicate correctly with your Kubernetes cluster via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get ns
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;run the &lt;a href=&#34;/commands/jx_boot/&#34;&gt;jx boot&lt;/a&gt; command:&lt;/li&gt;
-&lt;/ul&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Run the &lt;a href=&#34;/commands/jx_boot/&#34;&gt;jx boot&lt;/a&gt; command:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx boot
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You will now be prompted for any missing parameters required to install, such as your admin user/password, the Pipeline git user and token etc.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You will now be prompted for any missing parameters required to install, such as your admin user/password, the Pipeline git user and token etc.&lt;/p&gt;
 &lt;p&gt;Then Jenkins X should be installed and set up on your Kubernetes cluster.&lt;/p&gt;
 &lt;h3 id=&#34;about-jx-boot&#34;&gt;About &lt;code&gt;jx boot&lt;/code&gt;&lt;/h3&gt;
-&lt;p&gt;The &lt;a href=&#34;/commands/jx_boot/&#34;&gt;jx boot&lt;/a&gt; interprets the boot pipeline using your local &lt;code&gt;jx&lt;/code&gt; binary. The underlying pipeline for booting Jenkins X can later be run inside Kubernetes via Tekton. If ever something goes wrong with Tekton you can always &lt;code&gt;jx boot&lt;/code&gt; again to get things back up and running (e.g., if someone accidentally deletes your cluster).&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;/commands/jx_boot/&#34;&gt;jx boot&lt;/a&gt; interprets the boot pipeline using your local &lt;code&gt;jx&lt;/code&gt; binary.
+The underlying pipeline for booting Jenkins X can later be run inside Kubernetes via Tekton.
+If ever something goes wrong with Tekton you can always &lt;code&gt;jx boot&lt;/code&gt; again to get things back up and running (e.g., if someone accidentally deletes your cluster).&lt;/p&gt;
 &lt;h4 id=&#34;pre-and-post-validation&#34;&gt;Pre and Post Validation&lt;/h4&gt;
-&lt;p&gt;Before any installation is attempted, Boot runs the &lt;a href=&#34;/commands/jx_step_verify_preinstall/&#34;&gt;jx step verify preinstall&lt;/a&gt; command to check everything looks OK. It will also check whether your installed package versions are within the upper and lower version limits, see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/packages&#34;&gt;here&lt;/a&gt; for further information. If you are using Terraform (so that your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file has &lt;code&gt;terraform: true&lt;/code&gt;) it will fail if Terraform has not created the required cloud resources. Otherwise they are lazily created for you if they don&amp;rsquo;t exist.&lt;/p&gt;
+&lt;p&gt;Before any installation is attempted, Boot runs the &lt;a href=&#34;/commands/jx_step_verify_preinstall/&#34;&gt;jx step verify preinstall&lt;/a&gt; command to check everything looks OK.
+It will also check whether your installed package versions are within the upper and lower version limits, see &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/packages&#34;&gt;here&lt;/a&gt; for further information.
+If you are using Terraform (so that your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file has &lt;code&gt;terraform: true&lt;/code&gt;) it will fail if Terraform has not created the required cloud resources.
+Otherwise they are lazily created for you if they don&amp;rsquo;t exist.&lt;/p&gt;
 &lt;p&gt;Once the installation has completed the &lt;a href=&#34;/commands/jx_step_verify_install/&#34;&gt;jx step verify install&lt;/a&gt; command is run to verify your installation is valid.&lt;/p&gt;
 &lt;h4 id=&#34;packages&#34;&gt;Packages&lt;/h4&gt;
-&lt;p&gt;For any boot based installation package versions which are used by &lt;code&gt;jx&lt;/code&gt; are checked against the upper and lower version limits specified within the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/packages&#34;&gt;version stream&lt;/a&gt;. Usually the upgrade process of a local pacage is pain free, however, downgrading can sometimes be difficult.&lt;/p&gt;
+&lt;p&gt;For any boot based installation package versions which are used by &lt;code&gt;jx&lt;/code&gt; are checked against the upper and lower version limits specified within the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-versions/tree/master/packages&#34;&gt;version stream&lt;/a&gt;.
+Usually the upgrade process of a local pacage is pain free, however, downgrading can sometimes be difficult.&lt;/p&gt;
 &lt;h5 id=&#34;brew&#34;&gt;Brew&lt;/h5&gt;
-&lt;p&gt;This [gist] (&lt;a href=&#34;https://gist.github.com/rdump/b79a63084b47f99a41514432132bd408&#34;&gt;https://gist.github.com/rdump/b79a63084b47f99a41514432132bd408&lt;/a&gt;) describes how you can switch to different versions of the &lt;code&gt;kubectl&lt;/code&gt; package&lt;code&gt;using the&lt;/code&gt;brew` package manager.&lt;/p&gt;
+&lt;p&gt;This &lt;a href=&#34;https://gist.github.com/rdump/b79a63084b47f99a41514432132bd408&#34;&gt;gist&lt;/a&gt; describes how you can switch to different versions of the &lt;code&gt;kubectl&lt;/code&gt; package using the &lt;code&gt;brew&lt;/code&gt; package manager.&lt;/p&gt;
 &lt;h2 id=&#34;changing-your-installation&#34;&gt;Changing your installation&lt;/h2&gt;
 &lt;p&gt;At any time you can re-run &lt;a href=&#34;/commands/jx_boot/&#34;&gt;jx boot&lt;/a&gt; to re-apply any changes in your configuration. To do this git clone your development environment git repository, change directory into the git clone and run &lt;code&gt;jx boot&lt;/code&gt;. e.g.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;git clone https://github.com/myuser/environment-mycluster-dev.git
@@ -156,12 +422,17 @@ jx boot
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;jenkins&#34;&gt;Jenkins&lt;/h3&gt;
 &lt;p&gt;To use a Jenkins server in boot for processing webhooks and pipelines configure it via &lt;code&gt;webhook: jenkins&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
 &lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
-&lt;p&gt;Jenkins X supports a number of different Git providers. You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
+&lt;p&gt;Jenkins X supports a number of different Git providers.
+You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
 
 
 &lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
-&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Jenkins X creates repositories per default as private. This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub &lt;em&gt;organisation&lt;/em&gt; to hold the various created (environment) repositories as free organization accounts do not have access to private repos. Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.&lt;/p&gt;
-&lt;p&gt;For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&amp;rsquo;re ready to go all in. Alternatively, you can enable public environment repositories by setting &lt;code&gt;environmentGitPublic&lt;/code&gt; to true in your jx boot configuration. In case you&amp;rsquo;re using &lt;code&gt;jx create&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt;, you&amp;rsquo;ll need to add the &lt;code&gt;--git-public&lt;/code&gt; option as part of the command to enable public repo&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Jenkins X creates repositories per default as private.
+This can cause issues when evaluating Jenkins X with GitHub, using a free GitHub &lt;em&gt;organisation&lt;/em&gt; to hold the various created (environment) repositories as free organization accounts do not have access to private repos.
+Using a personal Github account is not an issue though, as free private accounts have unlimited private repos.&lt;/p&gt;
+&lt;p&gt;For evaluation purposes you could use a private GitHub account as the owner of the repositories, and switch to a paid organizational account once you&amp;rsquo;re ready to go all in.
+Alternatively, you can enable public environment repositories by setting &lt;code&gt;environmentGitPublic&lt;/code&gt; to true in your jx boot configuration.
+In case you&amp;rsquo;re using &lt;code&gt;jx create&lt;/code&gt; or &lt;code&gt;jx install&lt;/code&gt;, you&amp;rsquo;ll need to add the &lt;code&gt;--git-public&lt;/code&gt; option as part of the command to enable public repo&lt;/p&gt;
 
 &lt;/div&gt;
 
@@ -209,7 +480,8 @@ jx boot
     &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h3&gt;
-&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;.
+If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
@@ -234,7 +506,8 @@ jx boot
     &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h3&gt;
-&lt;p&gt;For this specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For this specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;.
+If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
@@ -258,7 +531,8 @@ jx boot
     &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;gitlab&#34;&gt;GitLab&lt;/h3&gt;
-&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;. If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;.
+If you want to use &lt;a href=&#34;/docs/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;#webhook&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
@@ -283,7 +557,8 @@ jx boot
     &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;repository&#34;&gt;Repository&lt;/h2&gt;
-&lt;p&gt;Jenkins X lets you configure different artifact repositories. We use artifact repositories to:&lt;/p&gt;
+&lt;p&gt;Jenkins X lets you configure different artifact repositories.
+We use artifact repositories to:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;store artifacts from some kinds of build (e.g. Java builds tend to deploy jars, &lt;code&gt;pom.xml&lt;/code&gt; files and tarballs)&lt;/li&gt;
 &lt;li&gt;act as a Maven proxy to cache maven dependencies when using java/maven builds&lt;/li&gt;
@@ -329,7 +604,8 @@ jx boot
     &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
   &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
     &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section. The following URL syntax is supported&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section.
+The following URL syntax is supported&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;gs://anotherBucket/mydir/something.txt&lt;/code&gt; : using a GCS bucket on GCP&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;s3://nameOfBucket/mydir/something.txt&lt;/code&gt; : using S3 bucket on AWS&lt;/li&gt;
@@ -393,7 +669,8 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
   &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
     &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: prow
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;. There&amp;rsquo;s a complete example below.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;.
+There&amp;rsquo;s a complete example below.&lt;/p&gt;
 &lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.tls.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;clusterName&lt;/span&gt;: mycluster
@@ -437,7 +714,9 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;autoUpdate&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
   &lt;span style=&#34;color:#66d9ef&#34;&gt;schedule&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0 12 */5 * *&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When auto upgrades are enabled a &lt;code&gt;CronJob&lt;/code&gt; is run which periodically checks for changes in the &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; or &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34;&gt;boot configuration&lt;/a&gt;. If changes are detected the &lt;a href=&#34;/commands/jx_upgrade_boot/&#34;&gt;jx upgrade boot&lt;/a&gt; will create a pull request on your development Git repository. Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When auto upgrades are enabled a &lt;code&gt;CronJob&lt;/code&gt; is run which periodically checks for changes in the &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; or &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34;&gt;boot configuration&lt;/a&gt;.
+If changes are detected the &lt;a href=&#34;/commands/jx_upgrade_boot/&#34;&gt;jx upgrade boot&lt;/a&gt; will create a pull request on your development Git repository.
+Once that merges the boot configuration is upgraded and boot will be re-run inside a tekton pipeline to upgrade your installation.&lt;/p&gt;
 &lt;h3 id=&#34;manual-upgrades&#34;&gt;Manual upgrades&lt;/h3&gt;
 &lt;p&gt;You can manually run the &lt;a href=&#34;/commands/jx_upgrade_boot/&#34;&gt;jx upgrade boot&lt;/a&gt; command at any time which if there have been changes in &lt;a href=&#34;/docs/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; or &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config&#34;&gt;boot configuration&lt;/a&gt; will create a Pull Request on your development git repository.&lt;/p&gt;
 &lt;p&gt;Once that merges the boot configuration is upgraded and boot will be re-run inside a Tekton pipeline to upgrade your installation.&lt;/p&gt;
@@ -452,10 +731,98 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
     &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://my-backup-bucket
 &lt;span style=&#34;color:#66d9ef&#34;&gt;velero&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: velero
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using whatever your cloud providers bucket URLs are. For more background, check out the &lt;a href=&#34;/docs/managing-jx/common-tasks/storage/&#34;&gt;storage guide&lt;/a&gt;&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using whatever your cloud providers bucket URLs are.
+For more background, check out the &lt;a href=&#34;/docs/managing-jx/common-tasks/storage/&#34;&gt;storage guide&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;user-interface&#34;&gt;User Interface&lt;/h2&gt;
-&lt;p&gt;If you&amp;rsquo;re looking for a UI, there is one available for the &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution/overview&#34;&gt;CloudBees Jenkins X Distribution&lt;/a&gt;. It should normally work on OSS Jenkins X as well, though CloudBees won&amp;rsquo;t support it unless you&amp;rsquo;re also using their distribution. You can read more about it here: &lt;a href=&#34;https://docs.cloudbees.com/docs/cloudbees-jenkins-x-distribution/latest/user-interface/&#34;&gt;Using the CloudBees Jenkins X Distribution user interface
+&lt;p&gt;If you&amp;rsquo;re looking for a UI, there is one available for the &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution/overview&#34;&gt;CloudBees Jenkins X Distribution&lt;/a&gt;.
+It should normally work on OSS Jenkins X as well, though CloudBees won&amp;rsquo;t support it unless you&amp;rsquo;re also using their distribution.
+You can read more about it here: &lt;a href=&#34;https://docs.cloudbees.com/docs/cloudbees-jenkins-x-distribution/latest/user-interface/&#34;&gt;Using the CloudBees Jenkins X Distribution user interface
 &lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Required cloud resources</title>
+      <link>/docs/getting-started/setup/create-cluster/required-cloud-resources/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/getting-started/setup/create-cluster/required-cloud-resources/</guid>
+      <description>
+        
+        
+        &lt;p&gt;No matter which Terraform module you choose, each will create a similar set of resources.
+Most importantly it will create the Kubernetes cluster of course, but there are a other aspects as well.&lt;/p&gt;
+&lt;h2 id=&#34;cloud-apis&#34;&gt;Cloud APIs&lt;/h2&gt;
+&lt;p&gt;Terraform enables all required cloud provider APIs.&lt;/p&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;p&gt;Logs, test reports and build artifacts, but also backups and secrets are stored in cloud storage (buckets).
+One task of the Terraform module is to create these buckets.
+Some buckets are optional and you can configure whether they get created or not.
+Refer to the documentation for your cloud provider specific Terraform module for more information.&lt;/p&gt;
+&lt;p&gt;If all storage options are enabled, the following buckets are created:&lt;/p&gt;
+&lt;dl&gt;
+ &lt;dt&gt;
+&lt;/dt&gt;
+ &lt;dd&gt;&lt;/dd&gt;
+ &lt;dt&gt; Log bucket&lt;/dt&gt;
+ &lt;dd&gt;Bucket for storing build logs.
+Refer to &lt;a href=&#34;/docs/managing-jx/common-tasks/storage#configuring-storage&#34;&gt;Configuring Storage&lt;/a&gt; for more information.&lt;/dd&gt;
+ &lt;dt&gt; Report bucket&lt;/dt&gt;
+ &lt;dd&gt;Bucket for storing test and coverage reports.
+Refer to &lt;a href=&#34;/docs/managing-jx/common-tasks/storage#configuring-storage&#34;&gt;Configuring Storage&lt;/a&gt; for more information.&lt;/dd&gt;
+ &lt;dt&gt; Repository bucket&lt;/dt&gt;
+ &lt;dd&gt;Bucket used for storing artifacts when using &lt;a href=&#34;/docs/getting-started/setup/boot/#bucketrepo&#34;&gt;Bucketrepo&lt;/a&gt;.
+Bucketrepo  is a small footprint microservice that is an alternative to both Nexus and Chartmusem.&lt;/dd&gt;
+ &lt;dt&gt; Velero bucket&lt;/dt&gt;
+ &lt;dd&gt;Bucket for &lt;a href=&#34;https://velero.io&#34;&gt;Velero&lt;/a&gt; backups.
+Refer to &lt;a href=&#34;/docs/getting-started/setup/boot/#backups&#34;&gt;Backups&lt;/a&gt; for more information.&lt;/dd&gt;
+ &lt;dt&gt; Vault bucket&lt;/dt&gt;
+ &lt;dd&gt;Bucket used by Vault for storing its data.
+Jenkins X uses Vault to store secrets.
+Refer to &lt;a href=&#34;/docs/getting-started/setup/boot/#vault&#34;&gt;Vault&lt;/a&gt; for more information.&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;h2 id=&#34;permission-management&#34;&gt;Permission management&lt;/h2&gt;
+&lt;p&gt;Several Jenkins X services need to interact with the underlying cloud infrastructure.
+For example, the Build Controller needs to be able to store log files into the log storage bucket.
+Another example is &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;ExternalDNS&lt;/a&gt; creating dynamically new DNS entries for services.
+In this case ExternalDNS service needs access to the DNS APIs of the underyling cloud provider.&lt;/p&gt;
+&lt;p&gt;To ensure that each service gets only the permissions it needs to fulfill its resposibilty, cloud providers allow to bind Kuberenetes service accounts to cloud provider specific service announts or roles.
+The mechanism to achieve this varies between cloud providers.
+For Google Cloud it is called &lt;a href=&#34;https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity&#34;&gt;Workload Identity&lt;/a&gt; and for AWS &lt;a href=&#34;https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html&#34;&gt;IAM Roles for Service Accounts&lt;/a&gt;.
+It is the resposibilty of the corresponding Terraform module to configure these permissions.&lt;/p&gt;
+&lt;p&gt;At the moment Kubernetes service accounts for the following areas are created:&lt;/p&gt;
+&lt;dl&gt;
+ &lt;dt&gt;
+&lt;/dt&gt;
+ &lt;dd&gt;&lt;/dd&gt;
+ &lt;dt&gt; Tekton&lt;/dt&gt;
+ &lt;dd&gt;Service account used by Tekton for the actual pipline execution.
+The Tekton service account needs permissions to read and write to cloud storage.
+The name of the service account is &lt;em&gt;tekton-bot&lt;/em&gt;.&lt;/dd&gt;
+ &lt;dt&gt; Build Controller&lt;/dt&gt;
+ &lt;dd&gt;Service account used by the Build Controller service which is responsible to track the overall progress of pipeline executions.
+The Build Controller service account needs permissions to read and write to cloud storage.
+The name of the service account is &lt;em&gt;jenkins-x-controllerbuild&lt;/em&gt;.&lt;/dd&gt;
+ &lt;dt&gt; DNS&lt;/dt&gt;
+ &lt;dd&gt;There are three Kuberenetes services accounts created related to DNS.
+One for ExternalDNS with the name &lt;em&gt;exdns-external-dns&lt;/em&gt; and two for &lt;a href=&#34;https://github.com/jetstack/cert-manager&#34;&gt;cert-manager&lt;/a&gt;, namely &lt;em&gt;cm-cert-manager&lt;/em&gt; and &lt;em&gt;cm-cainjector&lt;/em&gt;.
+Each of these services need access to the DNS API of the cloud provider.&lt;/dd&gt;
+ &lt;dt&gt; Vault&lt;/dt&gt;
+ &lt;dd&gt;Service account used by the Vault operator.
+The Vault service account needs permissions to read and write to cloud storage and access to kryptographic key managment.
+The name of the service account is _&amp;lt;cluster-name&amp;gt;-vt.&lt;/dd&gt;
+ &lt;dt&gt; Velero&lt;/dt&gt;
+ &lt;dd&gt;Service account used by the Velero backup service.
+The Velero service account needs permissions to read and write to cloud storage.
+The name of the service account is &lt;em&gt;velero-server&lt;/em&gt;&lt;/dd&gt;
+ &lt;dt&gt; Kaniko&lt;/dt&gt;
+ &lt;dd&gt;Service account used by &lt;a href=&#34;https://github.com/GoogleContainerTools/kaniko&#34;&gt;Kaniko&lt;/a&gt; which is a safer option to build Docker images in Kuberenetes than the Docker daemon.
+The Kaniko service account needs permissions to read and write to cloud storage.
+The name of the service account is &lt;em&gt;kaniko-sa&lt;/em&gt;.&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;h2 id=&#34;kryptograpphic-key-management&#34;&gt;Kryptograpphic key management&lt;/h2&gt;
+&lt;p&gt;For using the Vault Operator, the Terraform module needs to create a krypographic keyring and key to seed Vault.&lt;/p&gt;
 
       </description>
     </item>
@@ -615,180 +982,6 @@ anotherplugin:4.5.6
     </item>
     
     <item>
-      <title>Docs: Create EKS cluster with Terraform</title>
-      <link>/docs/getting-started/setup/create-cluster/amazon/terraform/</link>
-      <pubDate>Wed, 03 Apr 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/docs/getting-started/setup/create-cluster/amazon/terraform/</guid>
-      <description>
-        
-        
-        &lt;p&gt;This is a short guide to setup EKS on AWS and the required resources for Jenkins X&amp;rsquo;s setup of Vault
-using Terraform. It assumes access to AWS is configured and familiarity with AWS, kubectl and Terraform.&lt;/p&gt;
-&lt;p&gt;This snippet of Terraform code sets EKS and up needed resources on AWS. It outputs the parameters
-you then need to add to append to &lt;code&gt;jx install&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-tf&#34; data-lang=&#34;tf&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;region&amp;#34;&lt;/span&gt; {
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;subnets&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    type&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;list&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vpc_id&amp;#34;&lt;/span&gt; {
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;key_name&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;SSH key name for worker nodes&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;variable&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;bucket_domain&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Suffix for S3 bucket used for vault unseal operation&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    region&lt;/span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${var.region}&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;module&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;eks&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    source&lt;/span&gt;       &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;terraform-aws-modules/eks/aws&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    cluster_name&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${var.region}&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    subnets&lt;/span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${var.subnets}&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    vpc_id&lt;/span&gt;       &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${var.vpc_id}&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    worker_groups&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-        {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            autoscaling_enabled&lt;/span&gt;   &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            asg_min_size&lt;/span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            asg_desired_capacity&lt;/span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            instance_type&lt;/span&gt;         &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;t3.large&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            asg_max_size&lt;/span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;            key_name&lt;/span&gt;              &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${var.key_name}&amp;#34;&lt;/span&gt;
-        }
-    ]
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    version&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;5.0.0&amp;#34;&lt;/span&gt;
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Needed for cluster-autoscaler
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_iam_role_policy_attachment&amp;#34; &amp;#34;workers_AmazonEC2ContainerRegistryPowerUser&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;  policy_arn&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;  role&lt;/span&gt;       &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${module.eks.worker_iam_role_name}&amp;#34;&lt;/span&gt;
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Create S3 bucket for KMS
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_s3_bucket&amp;#34; &amp;#34;vault-unseal&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    bucket&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vault-unseal.${var.region}.${var.bucket_domain}&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    acl&lt;/span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;private&amp;#34;&lt;/span&gt;
-
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;versioning&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        enabled&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    }
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Create KMS key
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_kms_key&amp;#34; &amp;#34;bank_vault&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    description&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;KMS Key for bank vault unseal&amp;#34;&lt;/span&gt;
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Create DynamoDB table
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_dynamodb_table&amp;#34; &amp;#34;vault-data&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    name&lt;/span&gt;           &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vault-data&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    read_capacity&lt;/span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    write_capacity&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    hash_key&lt;/span&gt;       &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Path&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    range_key&lt;/span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;attribute&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        name&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Path&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        type&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;S&amp;#34;&lt;/span&gt;
-    }
-
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;attribute&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        name&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Key&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        type&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;S&amp;#34;&lt;/span&gt;
-    }
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Create service account for vault. Should the policy
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_iam_user&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;  name&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vault_${var.region}&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;data&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_iam_policy_document&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;statement&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;DynamoDB&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DescribeLimits&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DescribeTimeToLive&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:ListTagsOfResource&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DescribeReservedCapacityOfferings&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DescribeReservedCapacity&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:ListTables&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:BatchGetItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:BatchWriteItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:CreateTable&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DeleteItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:GetItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:GetRecords&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:PutItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:Query&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:UpdateItem&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:Scan&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dynamodb:DescribeTable&amp;#34;&lt;/span&gt;
-        ]
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_dynamodb_table.vault-data.arn}&amp;#34;&lt;/span&gt;]
-    }
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;statement&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;S3&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;s3:PutObject&amp;#34;&lt;/span&gt;,
-                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;s3:GetObject&amp;#34;&lt;/span&gt;
-        ]
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_s3_bucket.vault-unseal.arn}/*&amp;#34;&lt;/span&gt;]
-    }
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;statement&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;S3List&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;s3:ListBucket&amp;#34;&lt;/span&gt;
-        ]
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_s3_bucket.vault-unseal.arn}&amp;#34;&lt;/span&gt;]
-    }
-    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;statement&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        sid&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;KMS&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        effect&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        actions&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kms:Encrypt&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kms:Decrypt&amp;#34;&lt;/span&gt;,
-            &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kms:DescribeKey&amp;#34;&lt;/span&gt;
-        ]
-&lt;span style=&#34;color:#a6e22e&#34;&gt;        resources&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_kms_key.bank_vault.arn}&amp;#34;&lt;/span&gt;]
-    }
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_iam_user_policy&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    name&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vault_${var.region}&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    user&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_iam_user.vault.name}&amp;#34;&lt;/span&gt;
-
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    policy&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${data.aws_iam_policy_document.vault.json}&amp;#34;&lt;/span&gt;
-}
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;resource&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;aws_iam_access_key&amp;#34; &amp;#34;vault&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    user&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;${aws_iam_user.vault.name}&amp;#34;&lt;/span&gt;
-}&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Output KMS key id, S3 bucket name and secret name in the form of jx install options
-&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;output&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jx_params&amp;#34;&lt;/span&gt; {
-&lt;span style=&#34;color:#a6e22e&#34;&gt;    value&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt; &amp;#34;--provider&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;eks --gitops --no-tiller --vault --aws-dynamodb-region&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${var.region} --aws-dynamodb-table&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${aws_dynamodb_table.vault-data.name} --aws-kms-region&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${var.region} --aws-kms-key-id&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${aws_kms_key.bank_vault.key_id} --aws-s3-region&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${var.region}  --aws-s3-bucket&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${aws_s3_bucket.vault-unseal.id} --aws-access-key-id&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;${aws_iam_access_key.vault.id} --aws-secret-access-key&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;aws_iam_access_key&lt;/span&gt;.&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;vault&lt;/span&gt;.&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;secret&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&amp;#34;&lt;/span&gt;
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Save as &lt;code&gt;eks.tf&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;The module terraform-aws-modules/eks/aws will also store a kubeconfig file as &lt;code&gt;config&lt;/code&gt;. This can be
-copied to or merged with your &lt;code&gt;~/.kube/config&lt;/code&gt;. Then &lt;code&gt;jx install&lt;/code&gt; can be run with the parameters
-output by the Terraform config above.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: Install on Kubernetes</title>
       <link>/docs/managing-jx/old/install-on-cluster/</link>
       <pubDate>Tue, 01 Nov 2016 00:00:00 +0000</pubDate>
@@ -821,10 +1014,13 @@ You can check the status at any time with this command:&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;using-aws&#34;&gt;Using AWS&lt;/h2&gt;
 &lt;p&gt;If you are using AWS, be sure to check out the detailed blog on &lt;a href=&#34;https://aws.amazon.com/blogs/opensource/continuous-delivery-eks-jenkins-x/&#34;&gt;Continuous Delivery with Amazon EKS and Jenkins X&lt;/a&gt; by &lt;a href=&#34;https://twitter.com/hekonsek&#34;&gt;Henryk Konsek&lt;/a&gt; which goes into lots of detail on how to setup AWS + EKS with Jenkins X.&lt;/p&gt;
-&lt;p&gt;If you want to go further with infrastructure as code you can follow this
-&lt;a href=&#34;/docs/managing-jx/common-tasks/aws-terraform-install-gitops/&#34;&gt;guide&lt;/a&gt; about setting up an EKS cluster and other
+&lt;!--
+TODO Terraform 
+If you want to go further with infrastructure as code you can follow this
+[guide](/docs/managing-jx/common-tasks/aws-terraform-install-gitops/) about setting up an EKS cluster and other
 requirements in AWS with Terraform and then installing Jenkins X on it using GitOps for the
-installation.&lt;/p&gt;
+installation.
+--&gt;
 &lt;h3 id=&#34;ingress-on-aws&#34;&gt;Ingress on AWS&lt;/h3&gt;
 &lt;p&gt;On AWS, the ideal setup is to use a Route 53 DNS wildcard CNAME to point &lt;code&gt;*.somedomain&lt;/code&gt; at your ELB or NLB host name. Then, when prompted by &lt;code&gt;jx&lt;/code&gt;, you install &lt;code&gt;somedomain&lt;/code&gt; (where &lt;code&gt;somedomain&lt;/code&gt; is an actual DNS domain/subdomain you own).&lt;/p&gt;
 &lt;p&gt;Then, all the &lt;code&gt;Ingress&lt;/code&gt; resources for any exposed service in any namespace will appear as &lt;code&gt;mysvc.myns.somedomain&lt;/code&gt; - whether for things like Jenkins or Nexus or for your own microservices or Preview Environments.&lt;/p&gt;
@@ -837,7 +1033,6 @@ installation.&lt;/p&gt;
 &lt;p&gt;When using &lt;code&gt;jx install --provider=(aws|eks)&lt;/code&gt;, you are prompted if you want to use DNS and optionally setup a wildcard DNS CNAME record on Route 53. If not, we assume you&amp;rsquo;re going to avoid DNS to kick the tires on a single availability zone IP address by resolving the NLB host name to one of the availability zone IP addresses.&lt;/p&gt;
 &lt;h3 id=&#34;getting-registries-to-work-on-aws-with-cluster-set-up-with-kops&#34;&gt;Getting registries to work on AWS with cluster set up with kops&lt;/h3&gt;
 &lt;p&gt;The default on AWS is to use ECR as the Docker container registry. For this to work, the nodes need permission to upload images to ECR. If you instead want to use the embedded Docker registry of Jenkins X inside your Kubernetes cluster, you will need to enable insecure Docker registries.&lt;/p&gt;
-&lt;p&gt;Note that you may want to use the &lt;a href=&#34;/docs/getting-started/setup/create-cluster/amazon/&#34;&gt;jx create cluster aws&lt;/a&gt; command which automates all of this for you!&lt;/p&gt;
 &lt;h4 id=&#34;give-nodes-permission-to-use-ecr&#34;&gt;Give nodes permission to use ECR&lt;/h4&gt;
 &lt;p&gt;Do the following:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kops edit cluster
