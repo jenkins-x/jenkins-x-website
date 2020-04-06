@@ -109,6 +109,7 @@
 &lt;p&gt;We don&amp;rsquo;t store the secrets in git but use some kind of secret manager. Over time we want to support many providers. Currently we support&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Google Secret Manager: the &lt;code&gt;secrets.yaml&lt;/code&gt; file is stored in a google secret manager secret&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;vault&#34;&gt;Vault&lt;/a&gt; using HashiCorp&amp;rsquo;s Vault&lt;/li&gt;
 &lt;li&gt;Kubernetes Secrets: a single Kubernetes &lt;code&gt;Secret&lt;/code&gt; stores the &lt;code&gt;secrets.yaml&lt;/code&gt; file&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;populate-secrets&#34;&gt;Populate Secrets&lt;/h2&gt;
@@ -170,7 +171,45 @@
     &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../run&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/nav&gt;
-&lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
+&lt;h2 id=&#34;secrets&#34;&gt;Secrets&lt;/h2&gt;
+&lt;p&gt;Boot currently supports the following options for managing secrets:&lt;/p&gt;
+&lt;h3 id=&#34;local-storage&#34;&gt;Local Storage&lt;/h3&gt;
+&lt;p&gt;This is the default or can be explicitly configured via &lt;code&gt;secretStorage: local&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If enabled secrets are loaded/saved into the folder &lt;code&gt;~/.jx/localSecrets/$clusterName&lt;/code&gt;. You can use &lt;code&gt;$JX_HOME&lt;/code&gt; to change the location of &lt;code&gt;~/.jx&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;vault&#34;&gt;Vault&lt;/h3&gt;
+&lt;p&gt;This is the recommended approach when using GKE or EKS providers. It can be explicitly configured via &lt;code&gt;secretStorage: vault&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: vault
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This configuration will cause &lt;code&gt;jx boot&lt;/code&gt;&#39;s pipeline to install a Vault using KMS and a cloud storage bucket to load/save secrets.&lt;/p&gt;
+&lt;p&gt;The big advantage of Vault is it means a team of folks can then easily run &lt;code&gt;jx boot&lt;/code&gt; on the same cluster. Even if you accidentally delete your Kubernetes cluster, it&amp;rsquo;s easy to restore from the KMS + cloud bucket.&lt;/p&gt;
+&lt;h3 id=&#34;google-secret-manager&#34;&gt;Google Secret Manager&lt;/h3&gt;
+&lt;p&gt;This can be explicitly configured via &lt;code&gt;secretStorage: gsm&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: gsm
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
 &lt;p&gt;Jenkins X supports a number of different Git providers. You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
 &lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
 &lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.&lt;/p&gt;
@@ -467,6 +506,8 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
         
         &lt;p&gt;Once you have &lt;a href=&#34;/docs/labs/boot/getting-started/repository/&#34;&gt;created your git repository&lt;/a&gt; for your development environment via &lt;code&gt;jxl boot create&lt;/code&gt; or &lt;code&gt;jxl boot upgrade&lt;/code&gt; and populated the &lt;a href=&#34;/docs/labs/boot/getting-started/secrets/&#34;&gt;secrets&lt;/a&gt; as shown above you can run the boot &lt;code&gt;Job&lt;/code&gt; via:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jxl boot run --git-url=https://github.com/myorg/env-mycluster-dev.git
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you are using a private git repository you can specify the user name and token to clone the git repository via &lt;code&gt;--git-username&lt;/code&gt; and &lt;code&gt;--git-token&lt;/code&gt; arguments or you can add them into the URL:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jxl boot run --git-url=https://myusername:mytoken@github.com/myorg/env-mycluster-dev.git
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once you have booted up once you can omit the &lt;code&gt;git-url&lt;/code&gt; argument as it can be discovered from the &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; resource:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jxl boot run
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will use helm to install the boot Job and tail the log of the pod so you can see the boot job run. It looks like the boot process is running locally on your laptop but really it is all running inside a Pod inside Kubernetes.&lt;/p&gt;

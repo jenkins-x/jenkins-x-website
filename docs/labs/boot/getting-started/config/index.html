@@ -24,11 +24,11 @@
 <meta property="og:description" content="Changing your configuration" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/labs/boot/getting-started/config/" />
-<meta property="article:modified_time" content="2020-04-06T14:59:49+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2020-04-06T16:18:05+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="Configuration">
 <meta itemprop="description" content="Changing your configuration">
-<meta itemprop="dateModified" content="2020-04-06T14:59:49&#43;00:00" />
-<meta itemprop="wordCount" content="1186">
+<meta itemprop="dateModified" content="2020-04-06T16:18:05&#43;00:00" />
+<meta itemprop="wordCount" content="1378">
 
 
 
@@ -1367,8 +1367,31 @@ if (!doNotTrack) {
       
       
       
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/docs/labs/boot/getting-started/secrets/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Secrets</a>
+  </li>
+  <ul>
+    <li class="collapse " id="docslabsbootgetting-startedsecrets">
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-docslabsbootgetting-startedsecrets" href="/docs/labs/boot/getting-started/secrets/">Secrets</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docslabsbootgetting-startedsecretsvault" href="/docs/labs/boot/getting-started/secrets/vault/">Vault</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
       
       
       
@@ -2313,6 +2336,13 @@ if (!doNotTrack) {
 
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#secrets">Secrets</a>
+      <ul>
+        <li><a href="#local-storage">Local Storage</a></li>
+        <li><a href="#vault">Vault</a></li>
+        <li><a href="#google-secret-manager">Google Secret Manager</a></li>
+      </ul>
+    </li>
     <li><a href="#git">Git</a>
       <ul>
         <li><a href="#github">GitHub</a></li>
@@ -2413,7 +2443,45 @@ if (!doNotTrack) {
     <li class="page-item"><a class="page-link" href="../run">Next</a></li>
   </ul>
 </nav>
-<h2 id="git">Git</h2>
+<h2 id="secrets">Secrets</h2>
+<p>Boot currently supports the following options for managing secrets:</p>
+<h3 id="local-storage">Local Storage</h3>
+<p>This is the default or can be explicitly configured via <code>secretStorage: local</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+  <span style="color:#66d9ef">provider</span>: gke
+<span style="color:#66d9ef">environments</span>:
+- <span style="color:#66d9ef">key</span>: dev
+- <span style="color:#66d9ef">key</span>: staging
+- <span style="color:#66d9ef">key</span>: production
+<span style="color:#66d9ef">kaniko</span>: <span style="color:#66d9ef">true</span>
+<span style="color:#66d9ef">secretStorage</span>: local
+<span style="color:#66d9ef">webhook</span>: lighthouse
+</code></pre></div><p>If enabled secrets are loaded/saved into the folder <code>~/.jx/localSecrets/$clusterName</code>. You can use <code>$JX_HOME</code> to change the location of <code>~/.jx</code>.</p>
+<h3 id="vault">Vault</h3>
+<p>This is the recommended approach when using GKE or EKS providers. It can be explicitly configured via <code>secretStorage: vault</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+  <span style="color:#66d9ef">provider</span>: gke
+<span style="color:#66d9ef">environments</span>:
+- <span style="color:#66d9ef">key</span>: dev
+- <span style="color:#66d9ef">key</span>: staging
+- <span style="color:#66d9ef">key</span>: production
+<span style="color:#66d9ef">kaniko</span>: <span style="color:#66d9ef">true</span>
+<span style="color:#66d9ef">secretStorage</span>: vault
+<span style="color:#66d9ef">webhook</span>: lighthouse
+</code></pre></div><p>This configuration will cause <code>jx boot</code>'s pipeline to install a Vault using KMS and a cloud storage bucket to load/save secrets.</p>
+<p>The big advantage of Vault is it means a team of folks can then easily run <code>jx boot</code> on the same cluster. Even if you accidentally delete your Kubernetes cluster, it&rsquo;s easy to restore from the KMS + cloud bucket.</p>
+<h3 id="google-secret-manager">Google Secret Manager</h3>
+<p>This can be explicitly configured via <code>secretStorage: gsm</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+  <span style="color:#66d9ef">provider</span>: gke
+<span style="color:#66d9ef">environments</span>:
+- <span style="color:#66d9ef">key</span>: dev
+- <span style="color:#66d9ef">key</span>: staging
+- <span style="color:#66d9ef">key</span>: production
+<span style="color:#66d9ef">kaniko</span>: <span style="color:#66d9ef">true</span>
+<span style="color:#66d9ef">secretStorage</span>: gsm
+<span style="color:#66d9ef">webhook</span>: lighthouse
+</code></pre></div><h2 id="git">Git</h2>
 <p>Jenkins X supports a number of different Git providers. You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your <code>jx-requirements.yml</code></p>
 <h3 id="github">GitHub</h3>
 <p>This is the default Git provider if you don&rsquo;t specify one.</p>
@@ -2758,7 +2826,7 @@ For more details see the <a href="https://jenkins-x.io/architecture/storage/">St
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified April 6, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/2140a0e99118d3ea0cc8d5b3922c2d2ac6fb2c47">release 0.0.1627 (2140a0e)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified April 6, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/4d11860839198a8e4969699205c95c1371669d28">release 0.0.1628 (4d11860)</a>
 </div>
 </div>
 
