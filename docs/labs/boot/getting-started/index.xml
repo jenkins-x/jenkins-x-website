@@ -49,6 +49,7 @@
 &lt;/div&gt;
 
 &lt;p&gt;To create a fresh install run the &lt;code&gt;jxl boot create&lt;/code&gt; command.  Note this by default creates three git repositories, one for each environments dev, staging and production.&lt;/p&gt;
+&lt;p&gt;In a new directory run:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;or for public git repositories as per the note above&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jxl boot create --env-git-public  --git-public
@@ -418,6 +419,7 @@ for more information on this view the &lt;a href=&#34;https://jenkins-x.io/docs/
 
 For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/storage/&#34;&gt;Storage Guide&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;ingress&#34;&gt;Ingress&lt;/h2&gt;
+&lt;p&gt;When installing Jenkins X it is common that you will want to use a custom domain to access services and applications running in Kubernetes.&lt;/p&gt;
 &lt;p&gt;If you don&amp;rsquo;t specify anything in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file then boot will default to using HTTP (rather than HTTPS) and using &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; as the DNS mechanism.&lt;/p&gt;
 &lt;p&gt;After running boot your &lt;code&gt;jx-requirements.yml&lt;/code&gt; may look like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
@@ -447,7 +449,32 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
   &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
     &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: prow
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;. There&amp;rsquo;s a complete example below.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;custom-domains-with-external-dns&#34;&gt;Custom domains with external dns&lt;/h3&gt;
+&lt;p&gt;There is a very useful open source project called &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;external-dns&lt;/a&gt; which integrates with Cloud Providers own managed dns services, to automatically enable dns.&lt;/p&gt;
+&lt;p&gt;In labs this has been verified on GKE so far but we are looking to do more very soon.&lt;/p&gt;
+&lt;h4 id=&#34;configure-for-google-cloud&#34;&gt;Configure for Google Cloud&lt;/h4&gt;
+&lt;p&gt;If you want to buy a new domain then using &lt;a href=&#34;https://domains.google.com/m/registrar/search&#34;&gt;Google Domains&lt;/a&gt; is nice and easy&lt;/p&gt;
+&lt;img src=&#34;/images/getting-started/googlednscreate.png&#34; width=&#34;80%&#34; float=&#34;left&#34;&gt;
+&lt;p&gt;First configure &lt;a href=&#34;https://cloud.google.com/dns&#34;&gt;Google Cloud DNS&lt;/a&gt; in the GCP project that your Kubernetes cluster runs, to manage your custom domain, you will have a list of four servers returned&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;➜ jx create domain gke -d acame-trading.com
+
+Please update your existing DNS managed servers to use the nameservers below
+ns-cloud-e1.googledomains.com.
+ns-cloud-e2.googledomains.com.
+ns-cloud-e3.googledomains.com.
+ns-cloud-e4.googledomains.com.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now update your dns provider so that &lt;a href=&#34;https://cloud.google.com/dns&#34;&gt;Google Cloud DNS&lt;/a&gt; can manage your domain, here&amp;rsquo;s an example using &lt;a href=&#34;https://domains.google.com/m/registrar/search&#34;&gt;Google Domains&lt;/a&gt;:&lt;/p&gt;
+&lt;img src=&#34;/images/getting-started/googlednsconfigure.png&#34; width=&#34;80%&#34; float=&#34;left&#34;&gt;
+&lt;p&gt;Next you can edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; and add your domain:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; when using jxl on GKE the &lt;code&gt;externalDNS:&lt;/code&gt; value is ignored and will be deprecated.  This flag used to create cloud resources but these have now been moved outside of the boot process.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: my.domain.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Edit the &lt;code&gt;jx-apps.yml&lt;/code&gt; in your environment repository and add the external dns chart:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apps&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: bitnami/external-dns
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Remember to repeat this in each environment git repository, you can also use different domains for each environment by repeating all the external dns steps here.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; it can take a few minutes for DNS to propogate for each URL so please be patient when you first enable external dns or deploy a new application into an environment for the first time.&lt;/p&gt;
+&lt;h3 id=&#34;automated-tls&#34;&gt;Automated TLS&lt;/h3&gt;
 &lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.tls.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;clusterName&lt;/span&gt;: mycluster
@@ -465,7 +492,7 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
 &lt;span style=&#34;color:#66d9ef&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: my.domain.com
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: -jx.
   &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
     &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;: someone@acme.com
