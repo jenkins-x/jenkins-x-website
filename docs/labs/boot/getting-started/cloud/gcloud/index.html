@@ -24,11 +24,11 @@
 <meta property="og:description" content="Using gcloud to setup google cloud resources" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/docs/labs/boot/getting-started/cloud/gcloud/" />
-<meta property="article:modified_time" content="2020-04-20T08:32:17+00:00" /><meta property="og:site_name" content="Jenkins X" />
+<meta property="article:modified_time" content="2020-04-20T10:19:59+00:00" /><meta property="og:site_name" content="Jenkins X" />
 <meta itemprop="name" content="gcloud">
 <meta itemprop="description" content="Using gcloud to setup google cloud resources">
-<meta itemprop="dateModified" content="2020-04-20T08:32:17&#43;00:00" />
-<meta itemprop="wordCount" content="805">
+<meta itemprop="dateModified" content="2020-04-20T10:19:59&#43;00:00" />
+<meta itemprop="wordCount" content="758">
 
 
 
@@ -2478,7 +2478,6 @@ gcloud services enable secretmanager.googleapis.com
 # setup the service accounts
 gcloud iam service-accounts create $CLUSTER_NAME-ex --display-name=$CLUSTER_NAME-ex --project $PROJECT_ID
 gcloud iam service-accounts create $CLUSTER_NAME-jb --display-name=$CLUSTER_NAME-jb --project $PROJECT_ID
-gcloud iam service-accounts create $CLUSTER_NAME-ko --display-name=$CLUSTER_NAME-ko --project $PROJECT_ID
 gcloud iam service-accounts create $CLUSTER_NAME-sm --display-name=$CLUSTER_NAME-sm --project $PROJECT_ID
 gcloud iam service-accounts create $CLUSTER_NAME-st --display-name=$CLUSTER_NAME-st --project $PROJECT_ID
 gcloud iam service-accounts create $CLUSTER_NAME-tk --display-name=$CLUSTER_NAME-tk --project $PROJECT_ID
@@ -2490,13 +2489,6 @@ curl https://raw.githubusercontent.com/jenkins-x-labs/cloud-resources/master/gcl
 
 # change to the new jx namespace
 jx ns $NAMESPACE
-
-# lets create the kaniko key
-gcloud iam service-accounts keys create kaniko-secret.json --iam-account $CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com --project $PROJECT_ID
-
-kubectl create secret generic kaniko-secret --from-file=kaniko-secret=kaniko-secret.json
-
-
 
 # external dns
 gcloud iam service-accounts add-iam-policy-binding \
@@ -2553,28 +2545,6 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member "serviceAccount:$CLUSTER_NAME-jb@$PROJECT_ID.iam.gserviceaccount.com" \
   --project $PROJECT_ID
 
-# kaniko
-gcloud iam service-accounts add-iam-policy-binding \
-  --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$PROJECT_ID.svc.id.goog[$NAMESPACE/kaniko-sa]" \
-  $CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com \
-  --project $PROJECT_ID
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --role roles/storage.admin \
-  --member "serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com" \
-  --project $PROJECT_ID
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --role roles/storage.objectAdmin \
-  --member "serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com" \
-  --project $PROJECT_ID
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --role roles/storage.objectCreator \
-  --member "serviceAccount:$CLUSTER_NAME-ko@$PROJECT_ID.iam.gserviceaccount.com" \
-  --project $PROJECT_ID
-
 # tekton
 gcloud iam service-accounts add-iam-policy-binding \
   --role roles/iam.workloadIdentityUser \
@@ -2585,6 +2555,21 @@ gcloud iam service-accounts add-iam-policy-binding \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --role roles/viewer \
   --member "serviceAccount:$CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com" \
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.admin \
+  --member "serviceAccount:$CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project $PROJECT_ID
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectAdmin \
+  --member "serviceAccount:$CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project $PROJECT_ID
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --role roles/storage.objectCreator \
+  --member "serviceAccount:$CLUSTER_NAME-tk@$PROJECT_ID.iam.gserviceaccount.com" \
+  --project $PROJECT_ID
 
 # secret manager
 gcloud iam service-accounts add-iam-policy-binding \
@@ -2742,7 +2727,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified April 20, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/ac4fc9c463327613f031b8ef9755ac0cc196bb36">release 0.0.1650 (ac4fc9c)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified April 20, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/01c9110ef942c876da146a189fb79ce57bfb8f84">release 0.0.1651 (01c9110)</a>
 </div>
 </div>
 
