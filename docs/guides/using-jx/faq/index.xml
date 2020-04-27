@@ -1,0 +1,147 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X – FAQ</title>
+    <link>/docs/guides/using-jx/faq/</link>
+    <description>Recent content in FAQ on Jenkins X</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="/docs/guides/using-jx/faq/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Pipelines Questions</title>
+      <link>/docs/guides/using-jx/faq/pipelines/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/guides/using-jx/faq/pipelines/</guid>
+      <description>
+        
+        
+        &lt;p&gt;For more background see the guide on &lt;a href=&#34;/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; using &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt;. There is also the &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/&#34;&gt;Jenkins X Pipelines Syntax Reference&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-a-custom-step&#34;&gt;How do I add a custom step?&lt;/h2&gt;
+&lt;p&gt;To add a new custom step to your &lt;code&gt;jenkins-x.yml&lt;/code&gt; file see &lt;a href=&#34;/about/concepts/jenkins-x-pipelines/#customizing-the-pipelines&#34;&gt;how to use the jx create step&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-override-a-step&#34;&gt;How do I override a step?&lt;/h2&gt;
+&lt;p&gt;If there is a named step in the pipeline you wish to override you can add some YAML to your &lt;code&gt;jenkins-x.yml&lt;/code&gt; file as
+follows:&lt;/p&gt;
+&lt;p&gt;In this case were are going to replace the step called &lt;code&gt;helm-release&lt;/code&gt; in the &lt;code&gt;release&lt;/code&gt; pipeline&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;pipelineConfig:
+  pipelines:
+    overrides:
+      - pipeline: release
+        name: helm-release
+        step: 
+          image: busybox
+          sh: echo &amp;quot;this command is replaced&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You can see the effect of this change locally before you commit it to git via the &lt;a href=&#34;/commands/jx_step_syntax_effective/&#34;&gt;jx step syntax effective&lt;/a&gt; command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx step syntax effective -s
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You can override whole Stages or replace a specific step with a single step or a sequence of steps. You can also add steps before/after another step.&lt;/p&gt;
+&lt;p&gt;For more detail check out &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#specifying-and-overriding-release-pull-request-and-feature-pipelines&#34;&gt;how to override steps&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-can-i-override-the-default-container-image&#34;&gt;How can I override the default container image?&lt;/h2&gt;
+&lt;p&gt;As you can see above you can override any step in any build pack; but you can also override the container image used by default in all the steps by adding this YAML to your &lt;code&gt;jenkins-x.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;pipelineConfig:
+  agent:
+    label: jenkins-go
+    container: somerepo/my-container-image:1.2.3
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You can see the effect of this change locally before you commit it to git via the &lt;a href=&#34;/commands/jx_step_syntax_effective/&#34;&gt;jx step syntax effective&lt;/a&gt; command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx step syntax effective -s
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;For more detail check out &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#specifying-and-overriding-release-pull-request-and-feature-pipelines&#34;&gt;how to override steps&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-jenkins-x-pipelines-compare-to-jenkins-pipelines&#34;&gt;How do Jenkins X Pipelines compare to Jenkins pipelines?&lt;/h2&gt;
+&lt;p&gt;See &lt;a href=&#34;/about/concepts/jenkins-x-pipelines/#differences-to-jenkins-pipelines&#34;&gt;the differences between Jenkins X and Jenkins Pipelines&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-get-ide-completion-editing-jenkins-xyml&#34;&gt;How do I get IDE completion editing &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;See the IDE guide for &lt;a href=&#34;/about/concepts/jenkins-x-pipelines/#editing-in-vs-code&#34;&gt;IDEA&lt;/a&gt; and &lt;a href=&#34;/about/concepts/jenkins-x-pipelines/#editing-in-vs-code&#34;&gt;VS Code&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;what-environment-variables-are-available-by-default-inside-a-pipeline&#34;&gt;What environment variables are available by default inside a pipeline?&lt;/h2&gt;
+&lt;p&gt;See the &lt;a href=&#34;/docs/guides/using-jx/pipelines/envvars/#default-environment-variables&#34;&gt;default environment variables created for pipeline steps&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;is-there-a-reference-for-the-syntax&#34;&gt;Is there a reference for the syntax?&lt;/h2&gt;
+&lt;p&gt;See the &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/&#34;&gt;Jenkins X Pipelines Syntax Reference&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-mount-a-secret-or-configmap&#34;&gt;How do I mount a Secret or ConfigMap?&lt;/h2&gt;
+&lt;p&gt;Each step in a Jenkins X Pipeline in the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file is basically a &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#container-v1-core&#34;&gt;Container&lt;/a&gt; from kubernetes so you can specify the image, resource limits, environment variables and mount them from a &lt;code&gt;ConfigMap&lt;/code&gt; or &lt;code&gt;Secret&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;You can see &lt;a href=&#34;/docs/reference/pipeline-syntax-reference/#full-pipeline-definition-in-jenkins-xyml&#34;&gt;an example of mounting a Secret to an environment variable here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you are inside a shell script you can also use the &lt;a href=&#34;/commands/deprecation/&#34;&gt;jx step credential&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;can-i-mount-a-persistent-volume-in-my-pipeline&#34;&gt;Can I mount a Persistent Volume in my pipeline?&lt;/h2&gt;
+&lt;p&gt;Tekton already mounts a separate Persistent Volume for each build pod at &lt;code&gt;/workspace&lt;/code&gt; so the build results are kept around for a while until they are garbage collected.&lt;/p&gt;
+&lt;p&gt;On most kubernetes clusters you cannot easily share a single Persistent Volume across multiple pods; so having a shared PV across builds isn&amp;rsquo;t generally easy or compatible. You can however add a step to populate your PV on startup from a cloud bucket and at the end of a pipeline copy data into a bucket to speed up caching.&lt;/p&gt;
+&lt;p&gt;You can also do things like use Nexus as a network cache for fetching maven dependencies (which happens OOTB with Maven builds in Jenkins X) or add the Athens proxy for Go.&lt;/p&gt;
+&lt;p&gt;Hopefully the Tekton community will figure out some even better caching solutions to speed up builds.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-define-an-environment-variable-inside-a-step-for-other-steps-to-use&#34;&gt;How do I define an environment variable inside a step for other steps to use?&lt;/h2&gt;
+&lt;p&gt;Files are the easiest approach as the &lt;code&gt;/workspace&lt;/code&gt; directory is shared with all steps. So write in one step and use the value from other steps etc.&lt;/p&gt;
+&lt;p&gt;The other option is mounting a &lt;code&gt;ConfigMap&lt;/code&gt; as environment variables into each step and modifying that on one step; but files are easier really.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: ChatOps Questions</title>
+      <link>/docs/guides/using-jx/faq/chatops/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/guides/using-jx/faq/chatops/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;what-is-chatops&#34;&gt;What is ChatOps?&lt;/h2&gt;
+&lt;p&gt;We use the phrase &lt;em&gt;ChatOps&lt;/em&gt; to mean operating code changes and GitOPs promotion via chat. More specifically this usually is done via commenting on Pull Requests on your git providers website; though in the future this could be via Slack or web consoles too.&lt;/p&gt;
+&lt;h2 id=&#34;what-are-the-benefits-of-chatops&#34;&gt;What are the benefits of ChatOps?&lt;/h2&gt;
+&lt;p&gt;ChatOps helps developers collaborate on Pull Requests and speeds up merging of Pull Requests. We want to be able to merge changes as quickly as possible into master so that we continuously integrate code which minimises the downsides of long term feature branching and merge hell.&lt;/p&gt;
+&lt;p&gt;ChatOps (and &lt;a href=&#34;#what-does-hook-do&#34;&gt;tide in particular&lt;/a&gt;) also helps automate and speeds up tasks e.g.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;developers don&amp;rsquo;t have to keep hitting reload on a Pull Request page waiting for all the tests to pass so that they can click &lt;code&gt;Merge&lt;/code&gt;. Just add a &lt;code&gt;/lgtm&lt;/code&gt; comment or approve the code review and the Pull Request will automatically get merged once its tests go green. This also avoids developers accidentally hitting &lt;code&gt;Merge&lt;/code&gt; before all the test pass!&lt;/li&gt;
+&lt;li&gt;all Pull Request are automatically rebased and tested against master before merging - further ensuring we don&amp;rsquo;t accidentally break master&lt;/li&gt;
+&lt;li&gt;batch merging of Pull Request is supported to speed up merging Pull Requests.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For more detail see &lt;a href=&#34;#what-does-hook-do&#34;&gt;what does tide do&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;which-kinds-of-webhook-support-chatops&#34;&gt;Which kinds of webhook support ChatOps?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; support both webhooks and &lt;a href=&#34;/docs/guides/using-jx/faq/chatops/&#34;&gt;ChatOps&lt;/a&gt; whereas Jenkins just supports webhooks only.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-re-trigger-a-pr-pipeline&#34;&gt;How do I re-trigger a PR pipeline?&lt;/h2&gt;
+&lt;p&gt;If a pipeline fails due to some compile error or failing test - fix the code and push your changes and the Pull Request pipeline will rerun.&lt;/p&gt;
+&lt;p&gt;If you think the pipeline failed due to some temporary infrastructure reason then you can use ChatOps to re-trigger the pipeline via commenting on the Pull Request:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/retest&lt;/code&gt; reruns only failed pipelines&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test all&lt;/code&gt; reruns all failed pipelines.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test foo&lt;/code&gt; reruns the pipeline called &lt;code&gt;foo&lt;/code&gt; only&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Note that you need to be in the &lt;code&gt;OWNERS&lt;/code&gt; file as an &lt;a href=&#34;#why-did-a-pullrequest-have-no-pipeline-triggered&#34;&gt;approver for this to work&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-multiple-parallel-pipelines-to-a-project&#34;&gt;How do I add multiple parallel pipelines to a project?&lt;/h2&gt;
+&lt;p&gt;It can be useful to have multiple pipelines to perform different kinds of long running tests on Pull Requests. e.g. running the same test suite using different databases, microsevice configurations or underlying infrastructure.&lt;/p&gt;
+&lt;p&gt;In Jenkins X you can create a custom &lt;code&gt;Scheduler&lt;/code&gt; resource in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; configuration (in &lt;code&gt;env/templates/myscheduler.yaml&lt;/code&gt;) which you can add multiple named contexts in the &lt;code&gt;presubmits&lt;/code&gt; section. Then for each context name make sure you have a file called &lt;code&gt;jenkins-x-${context}.yml&lt;/code&gt; in your project.&lt;/p&gt;
+&lt;p&gt;Then Jenkins X will invoke each context on demand via &lt;code&gt;/test mycontext&lt;/code&gt; or automatically if you enable &lt;code&gt;alwaysRun: true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can see how we define lots of &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/f377a72498282de9ee49b807b4d5ba74321a4fab/env/templates/jx-versions-scheduler.yaml#L18&#34;&gt;parallel testing contexts in the version stream here&lt;/a&gt; which all run in parallel and report their status on each pull request on the &lt;a href=&#34;/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;See also &lt;a href=&#34;/docs/faq//boot/#how-do-i-map-sourcerepository-to-a-custom-scheduler&#34;&gt;How do I map SourceRepository to a custom Scheduler?&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;what-does-hook-do&#34;&gt;What does hook do?&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;hook&lt;/code&gt; is the name of the microservice in &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and the http endpoint in &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; which listens to webhooks coming in from your git provider which then gets processed as either a ChatOps command or a trigger of a pipeline.&lt;/p&gt;
+&lt;h2 id=&#34;what-does-tide-do&#34;&gt;What does tide do?&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;tide&lt;/code&gt; is a microservice in  &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; which periodically queries open pull requests on the repositories you have imported into Jenkins X. Then it performs the following logic:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;if a Pull Request has passed all of its review + CI tests (e.g. its got the &lt;code&gt;approved&lt;/code&gt; and/or &lt;code&gt;lgtm&lt;/code&gt; labels applied or has passed a github code review) and is green and is based off of master it is automatically merged.&lt;/li&gt;
+&lt;li&gt;if a Pull Request has passed all of its review + CI tests but is not based off of master its pipelines are re-triggered based off of master to ensure the Pull Request will be valid if it were merged.&lt;/li&gt;
+&lt;li&gt;if batching is enabled and there are multiple pending Pull Requests which are approved and green, a batch pipeline is triggered which combines multiple Pull Requests together into a single change - if all those pipelines go green then all the PRs are merged together at once and closed. This greatly speeds up getting multiple Pull Requests merged together (as it avoids re-triggering each PR&amp;rsquo;s tests after each one is merged).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;how-can-i-make-chatops-ha&#34;&gt;How can I make ChatOps HA?&lt;/h2&gt;
+&lt;p&gt;To make ChatOps highly avialable scale up the deployments which listen for http requests to, say, 3 replicas.&lt;/p&gt;
+&lt;p&gt;When using &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; that just means modifying the replicas for the &lt;code&gt;lighthouse&lt;/code&gt; deployment. e.g. in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; git repository try changing &lt;code&gt;env/lighthouse/values.tmpl.yaml&lt;/code&gt; to:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;replicaCount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When using &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; you need to scale up &lt;code&gt;hook&lt;/code&gt; and &lt;code&gt;pipelinerunner&lt;/code&gt;. e.g. in your &lt;a href=&#34;/docs/getting-started/setup/boot/&#34;&gt;boot&lt;/a&gt; git repository try changing &lt;code&gt;env/prow/values.tmpl.yaml&lt;/code&gt; to:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;hook&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;replicaCount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;pipelinerunner&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;replicaCount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;should-i-use-prow-or-lighthouse&#34;&gt;Should I use prow or lighthouse?&lt;/h2&gt;
+&lt;p&gt;If you are using a git server other than &lt;a href=&#34;https://github.com&#34;&gt;https://github.com&lt;/a&gt; then we recommend &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you are using &lt;a href=&#34;https://github.com&#34;&gt;https://github.com&lt;/a&gt; then for your git server then for now we recommend &lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; as it has had more testing than &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Though &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; is our strategic direction. We are starting to incrementally move our open source repositories over to &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;. At some point in the future once we&amp;rsquo;ve been using &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; in production for all of our open source and commercial repositories &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; will become our recommended solution for all git providers so that we can have a single, simpler &amp;amp; smaller codebase to maintain.&lt;/p&gt;
+&lt;h2 id=&#34;how-to-handle-a-flakybroken-pipeline&#34;&gt;How to handle a flaky/broken pipeline&lt;/h2&gt;
+&lt;p&gt;If you have a pending Pull Request which is blocked on a flaky test or an incorrectly failing lint or code review; you can use ChatOps to override its status via the ChatOps command: &lt;code&gt;/override nameOfPipeline&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;why-did-a-pullrequest-have-no-pipeline-triggered&#34;&gt;Why did a PullRequest have no pipeline triggered?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; and &lt;a href=&#34;/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; use an &lt;code&gt;OWNERS&lt;/code&gt; file stored in each git repository to define which developers are allowed to review and approve changes. You can even limit those roles to different folders.&lt;/p&gt;
+&lt;p&gt;If a non-reviewer submits a Pull Request it won&amp;rsquo;t trigger CI pipelines by default until a reviewer adds an &lt;code&gt;/ok-to-test&lt;/code&gt; comment on the Pull Request.&lt;/p&gt;
+&lt;p&gt;If you have public git repositories this also avoids the security issue of a non-approver submitting a Pull Request to change the pipeline to email them your security credentials in the CI pipeline ;)&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
