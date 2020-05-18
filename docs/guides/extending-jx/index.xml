@@ -1,11 +1,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Overview</title>
-    <link>https://jenkins-x.io/community/addons/</link>
-    <description>Recent content in Overview on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Extending Jenkins X</title>
+    <link>https://jenkins-x.io/docs/guides/extending-jx/</link>
+    <description>Recent content in Extending Jenkins X on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
     
-	  <atom:link href="https://jenkins-x.io/community/addons/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://jenkins-x.io/docs/guides/extending-jx/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -14,11 +14,140 @@
     
     
     <item>
-      <title>Community: Binary Plugins for the Jenkins X CLI</title>
-      <link>https://jenkins-x.io/community/addons/plugins/</link>
+      <title>Docs: Introduction</title>
+      <link>https://jenkins-x.io/docs/guides/extending-jx/introduction/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://jenkins-x.io/community/addons/plugins/</guid>
+      <guid>https://jenkins-x.io/docs/guides/extending-jx/introduction/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;This guide is still a work in progress!&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In this guide we will explore the Apps Framework that allows you to extend and enhance the capabilities in Jenkins X.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;We&amp;rsquo;re still working on the ability to alter the pipeline from an app - right now our apps include a section in the
+README explaining how to change your &lt;code&gt;JenkinsFile&lt;/code&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Once complete an App will be able to add, remove and alter stages of the pipeline.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Jenkins X is built on top of Kubernetes. Kubernetes is highly configurable and extensible. This extensibility forms the
+basis of many of the ways we recommend extending Jenkins X.&lt;/p&gt;
+&lt;p&gt;The Apps Framework consists of a number of areas:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the install and configuration framework&lt;/li&gt;
+&lt;li&gt;the APIs offered by Jenkins&lt;/li&gt;
+&lt;li&gt;the data model&lt;/li&gt;
+&lt;li&gt;pipeline extensibility&lt;/li&gt;
+&lt;li&gt;the testing framework&lt;/li&gt;
+&lt;li&gt;plugins for the &lt;code&gt;jx&lt;/code&gt; CLI&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In this reference guide we&amp;rsquo;ll cover each of these areas in depth. We also provide a number of other resources for
+working with the Apps Framework:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Tutorials&lt;/li&gt;
+&lt;li&gt;How To&amp;rsquo;s&lt;/li&gt;
+&lt;li&gt;Articles&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;install-and-configuration-framework&#34;&gt;Install and Configuration Framework&lt;/h1&gt;
+&lt;p&gt;Jenkins X Apps are distributed as Helm Charts via Helm Chart repositories. Any Helm chart can be installed as an app
+using &lt;code&gt;jx add app&lt;/code&gt;, although Jenkins X adds various capabilities to Helm Charts including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the ability to interactively ask questions to generate &lt;code&gt;values.yaml&lt;/code&gt; based on JSON Schema&lt;/li&gt;
+&lt;li&gt;the ability to create pull requests against the GitOps repo that manages your team/cluster&lt;/li&gt;
+&lt;li&gt;the ability to store secrets in vault&lt;/li&gt;
+&lt;li&gt;the ability to upgrade all apps to the latest version&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Planned features include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;integrating &lt;a href=&#34;https://github.com/kubernetes-sigs/kustomize&#34;&gt;kustomize&lt;/a&gt; to allow existing charts to be modified&lt;/li&gt;
+&lt;li&gt;storing Helm repository credentials in vault&lt;/li&gt;
+&lt;li&gt;taking existing &lt;code&gt;values.yaml&lt;/code&gt; as defaults when asking questions based on JSON Schema during app upgrade&lt;/li&gt;
+&lt;li&gt;only asking new questions during app upgrade&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jx get apps&lt;/code&gt; - the ability to list all apps that can be installed&lt;/li&gt;
+&lt;li&gt;integration for bash completion&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;apis&#34;&gt;APIs&lt;/h1&gt;
+&lt;p&gt;APIs can be consumed from a microservice deployed to Kubernetes, from outside the cluster (with appropriate
+configuration for authentication) or from inside pipeline extensions.&lt;/p&gt;
+&lt;p&gt;Jenkins X APIs uses &lt;a href=&#34;https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/&#34;&gt;Kubernetes Custom Resources&lt;/a&gt; to expose its API. The API is declarative, and
+Jenkins X uses controllers to try to match the actual state to the desired state. Jenkins X continually takes action
+to achieve and maintain the desired state.&lt;/p&gt;
+&lt;p&gt;Jenkins X uses this architectural pattern itself meaning that this API is very complete.&lt;/p&gt;
+&lt;p&gt;Custom resources are exposed by the Kubernetes API server and can be accessed as REST endpoints, using &lt;code&gt;kubectl&lt;/code&gt; or
+via client libraries for different platforms. Currently we offer clients for:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go&lt;/li&gt;
+&lt;li&gt;Java (incomplete) - &lt;a href=&#34;https://github.com/jenkins-x-quickstarts/spring-boot-watch-pipeline-activity&#34;&gt;Quickstart&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Javascript &lt;a href=&#34;https://github.com/jenkins-x-quickstarts/spring-boot-watch-pipeline-activity&#34;&gt;Quickstart&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;using-jx-as-a-library&#34;&gt;Using &lt;code&gt;jx&lt;/code&gt; as a library&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;jx&lt;/a&gt; contains many useful functions and is documented on &lt;a href=&#34;https://godoc.org/github.com/jenkins-x/jx&#34;&gt;godoc.org&lt;/a&gt;. The easiest way to consume it is is as a go module:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;go get github.com/jenkins-x/jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;jx-app-cli-commands&#34;&gt;&lt;code&gt;jx&lt;/code&gt; app CLI Commands&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/commands/jx_add_app/&#34;&gt;jx add app&lt;/a&gt;	 - Adds an app to Jenkins X&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/commands/jx_delete_app/&#34;&gt;jx delete app&lt;/a&gt;	 - Deletes one or more apps from Jenkins X&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/commands/jx_get_apps/&#34;&gt;jx get apps&lt;/a&gt;	 - Display one or more installed apps&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/commands/jx_upgrade_apps/&#34;&gt;jx upgrade apps&lt;/a&gt;	 - Upgrades one or more apps to a newer release&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;source-code-management&#34;&gt;Source code management&lt;/h2&gt;
+&lt;p&gt;The ability to add new SCM connections to Jenkins X from an app is under active development.&lt;/p&gt;
+&lt;h2 id=&#34;identity-management&#34;&gt;Identity Management&lt;/h2&gt;
+&lt;p&gt;In the future we intend to add the ability to plug your own identity management and SSO solution in to Jenkins X.&lt;/p&gt;
+&lt;h2 id=&#34;custom-quickstarts&#34;&gt;Custom Quickstarts&lt;/h2&gt;
+&lt;p&gt;Jenkins X ships with a series of quickstarts that provide you with pre-made applications that you can start a project with.&lt;/p&gt;
+&lt;p&gt;You can create your own quickstarts that give your team members a starting point. Read more about &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;creating quickstarts&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can customize the list of quickstarts available to your team making it easier for them to select the right place to start. Read more about &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/#customising-your-teams-quickstarts&#34;&gt;customizing the quickstarts available&lt;/a&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;pipeline-extensibility&#34;&gt;Pipeline Extensibility&lt;/h1&gt;
+&lt;h2 id=&#34;pipeline-triggers&#34;&gt;Pipeline triggers&lt;/h2&gt;
+&lt;p&gt;TODO&lt;/p&gt;
+&lt;h2 id=&#34;build-environment-creds-env-vars-parameters&#34;&gt;Build environment (creds, env vars, parameters)&lt;/h2&gt;
+&lt;h3 id=&#34;build-packs--pod-templates&#34;&gt;Build Packs &amp;amp; Pod Templates&lt;/h3&gt;
+&lt;p&gt;In Jenkins X a &lt;em&gt;Build Pack&lt;/em&gt; allows you to transform source code into a applications which can be deployed on Kubernetes. Build Packs are based on &lt;a href=&#34;https://draft.sh/&#34;&gt;draft&lt;/a&gt;, and will automatically add:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to turn the code into an immutable docker image for running on kubernetes&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to define the declarative Jenkins pipeline to define the CI/CD steps for the application&lt;/li&gt;
+&lt;li&gt;helm chart in the &lt;code&gt;charts&lt;/code&gt; folder to generate the kubernetes resources to run the application on kubernetes&lt;/li&gt;
+&lt;li&gt;a &lt;em&gt;preview chart&lt;/em&gt; in the &lt;code&gt;charts/preview&lt;/code&gt; folder to define any dependencies for deploying a preview environment on a Pull Request&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you need to add support for different languages or build tools then you will need to create a new &lt;em&gt;Pod Template&lt;/em&gt;. A pod template defines the pod used to run the build, and consists of:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;one or more build containers for running commands inside (e.g. your build tools like &lt;code&gt;mvn&lt;/code&gt; or &lt;code&gt;npm&lt;/code&gt; along with tools we use for other parts of the pipeline like &lt;code&gt;git&lt;/code&gt;, &lt;code&gt;jx&lt;/code&gt;, &lt;code&gt;helm&lt;/code&gt;, &lt;code&gt;kubectl&lt;/code&gt; etc)&lt;/li&gt;
+&lt;li&gt;volumes for persistence&lt;/li&gt;
+&lt;li&gt;environment variables&lt;/li&gt;
+&lt;li&gt;secrets so the pipeline can write to git repositories, docker registries, maven/npm/helm repositories and so forth&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Read more about &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/build-packs/#creating-new-build-packs&#34;&gt;creating build packs&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/pod-templates/&#34;&gt;creating pod templates&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;build-stages&#34;&gt;Build Stages&lt;/h2&gt;
+&lt;p&gt;Build stages are defined in the &lt;code&gt;Jenkinsfile&lt;/code&gt;. The &lt;code&gt;Jenkinsfile&lt;/code&gt; defines the actions to take, and the order in which to
+take the actions.&lt;/p&gt;
+&lt;p&gt;The order is of actions is procedural - the first action defined will be executed first. Simple conditions are supported via the &lt;code&gt;when&lt;/code&gt; directive.&lt;/p&gt;
+&lt;p&gt;The action that can be taken are defined by the pipeline engine. In the case of a Jenkinsfile these are defined in the &lt;a href=&#34;https://jenkins.io/doc/pipeline/steps/&#34;&gt;Pipeline Steps Reference&lt;/a&gt;. Typically in Jenkins X we use the &lt;code&gt;sh&lt;/code&gt; step which allows us to execute any shell script in the build container.&lt;/p&gt;
+&lt;p&gt;Read more about &lt;a href=&#34;https://jenkins.io/doc/book/pipeline/syntax/&#34;&gt;defining pipelines&lt;/a&gt; using the &lt;code&gt;Jenkinsfile&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;re still working on adding the ability to customize build stages to the Apps Framework.&lt;/p&gt;
+&lt;h1 id=&#34;data-model&#34;&gt;Data Model&lt;/h1&gt;
+&lt;h1 id=&#34;testing-frame&#34;&gt;Testing Frame&lt;/h1&gt;
+&lt;h1 id=&#34;jx-cli-plugins&#34;&gt;&lt;code&gt;jx&lt;/code&gt; CLI plugins&lt;/h1&gt;
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; CLI can be extended with binary plugins. Binary plugins are separate binaries to &lt;code&gt;jx&lt;/code&gt; that are entirely
+responsible for their own execution (argument parsing, subcommands, platform compatibility). We strongly recommend
+writing binary plugins in Go and using the &lt;a href=&#34;https://github.com/spf13/cobra&#34;&gt;Cobra CLI framework&lt;/a&gt; just like &lt;code&gt;jx&lt;/code&gt;
+itself. Binary plugins can import &lt;code&gt;jx&lt;/code&gt; as a library of useful functions.&lt;/p&gt;
+&lt;p&gt;Jenkins X provides a management framework for binary plugins that allows them to be automatically installed on the
+users machine when the relevant subcommand is called. The management framework will also take care of upgrading and
+removing plugins as needed. Plugins are managed by adding a custom resource to the team or cluster.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Binary Plugins for the Jenkins X CLI</title>
+      <link>https://jenkins-x.io/docs/guides/extending-jx/plugins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/guides/extending-jx/plugins/</guid>
       <description>
         
         
@@ -77,11 +206,11 @@ Have some tasty brie
     </item>
     
     <item>
-      <title>Community: Worked Example</title>
-      <link>https://jenkins-x.io/community/addons/worked-example/</link>
+      <title>Docs: Worked Example</title>
+      <link>https://jenkins-x.io/docs/guides/extending-jx/worked-example/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://jenkins-x.io/community/addons/worked-example/</guid>
+      <guid>https://jenkins-x.io/docs/guides/extending-jx/worked-example/</guid>
       <description>
         
         
