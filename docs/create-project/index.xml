@@ -1,0 +1,277 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Creating projects</title>
+    <link>https://jenkins-x.io/docs/create-project/</link>
+    <description>Recent content in Creating projects on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="https://jenkins-x.io/docs/create-project/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Build Packs</title>
+      <link>https://jenkins-x.io/docs/create-project/build-packs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/create-project/build-packs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;We use &lt;a href=&#34;https://draft.sh/&#34;&gt;draft&lt;/a&gt; style &lt;em&gt;build packs&lt;/em&gt; for different languages, runtimes and build tools to add the necessary configuration files to projects as we &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;import them&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/common-tasks/create-spring/&#34;&gt;create&lt;/a&gt; &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;them&lt;/a&gt; so that we can build and deploy them in kubernetes.&lt;/p&gt;
+&lt;p&gt;The build packs are used to default the following files if they do not already exist in the project being created/imported:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to turn the code into an immutable docker image for running on kubernetes&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to define the declarative Jenkins pipeline to define the CI/CD steps for the application&lt;/li&gt;
+&lt;li&gt;helm chart in the &lt;code&gt;charts&lt;/code&gt; folder to generate the kubernetes resources to run the application on kubernetes&lt;/li&gt;
+&lt;li&gt;a &lt;em&gt;preview chart&lt;/em&gt; in the &lt;code&gt;charts/preview&lt;/code&gt; folder to define any dependencies for deploying a &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;preview environment&lt;/a&gt; on a Pull Request&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The default build packs are at &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&lt;/a&gt; with a folder for each language or build tool.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; command line clones the build packs to your &lt;code&gt;.~/.jx/draft/packs/&lt;/code&gt; folder and updates them via a &lt;code&gt;git pull&lt;/code&gt; each time you try create or import a project.&lt;/p&gt;
+&lt;h2 id=&#34;pipeline-extension-model&#34;&gt;Pipeline extension model&lt;/h2&gt;
+&lt;p&gt;As part of the move to &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/cloud-native-jenkins/&#34;&gt;cloud native Jenkins&lt;/a&gt; we&amp;rsquo;ve refactored our &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/&#34;&gt;build packs&lt;/a&gt; so that they are more modular and easier to compose and reuse across workloads.&lt;/p&gt;
+&lt;p&gt;For example the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;jenkins-x-kubernetes&lt;/a&gt; build pack inherits from the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic&#34;&gt;jenkins-x-classic&lt;/a&gt; build pack, reusing the CI and release pipelines but then adding the kubernetes specific workloads (e.g. building docker images, creating helm charts, &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#promotion&#34;&gt;Promotion via GitOps&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;To do this we&amp;rsquo;ve introduced a simple new YAML file format for defining pipelines.&lt;/p&gt;
+&lt;h2 id=&#34;pipelines&#34;&gt;Pipelines&lt;/h2&gt;
+&lt;p&gt;Each Pipeline YAML file has a number of separate logical pipelines:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;release&lt;/code&gt; for processing merges to the &lt;code&gt;master&lt;/code&gt; branch which typically creates a new version and release then triggers promotion&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pullRequest&lt;/code&gt; for processing Pull Requests&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;feature&lt;/code&gt; for processing merges to a feature branch. Though note that the &lt;a href=&#34;https://jenkins-x.io/about/accelerate/&#34;&gt;accelerate book&lt;/a&gt; recommends against long term feature branches. Instead consider using trunk based development which is a practice of high performing teams.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;life-cycles&#34;&gt;Life Cycles&lt;/h2&gt;
+&lt;p&gt;Then each pipeline has a number of distinct life cycle phases - rather like maven has &lt;code&gt;clean&lt;/code&gt;, &lt;code&gt;compile&lt;/code&gt;, &lt;code&gt;compile-test&lt;/code&gt;, &lt;code&gt;package&lt;/code&gt; etc.&lt;/p&gt;
+&lt;p&gt;The life cycle phases in Jenkins X Pipeline YAML are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;setup&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;preBuild&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;build&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postBuild&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;promote&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;extending&#34;&gt;Extending&lt;/h2&gt;
+&lt;p&gt;A Pipeline YAML can extend another YAML file. You can reference a base pipeline YAML via:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;using &lt;code&gt;file&lt;/code&gt; to reference a relative file path in the same build pack &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L1-L2&#34;&gt;like this example using file&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;using &lt;code&gt;import&lt;/code&gt; to reference a YAML file which is imported like &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml#L2-L3&#34;&gt;this example using import&lt;/a&gt; which then refers to a &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/imports.yaml#L2-L4&#34;&gt;named imported module via git&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;overriding-steps&#34;&gt;Overriding steps&lt;/h2&gt;
+&lt;p&gt;Rather like classes in languages like Java you can override steps in a Pipeline YAML from a base Pipeline YAML. This lets you reuse the steps in a base pipeline&amp;rsquo;s life cycle then add your own additional steps.&lt;/p&gt;
+&lt;p&gt;By default any steps you define are added after the base pipeline YAML steps like in &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence/pipeline.yaml#L7&#34;&gt;this example&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can add steps before the base pipeline steps using the &lt;code&gt;preSteps: &lt;/code&gt; property like &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L6&#34;&gt;this example&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you want to completely replace all the steps from a base pipeline for a particular life cycle you can use &lt;code&gt;replace: true&lt;/code&gt; like in &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/0520fe3d9740cbcb1cc9754e173fe7726219f58e/pkg/jx/cmd/test_data/step_buildpack_apply/inheritence2/pipeline.yaml#L11-L14&#34;&gt;this example&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;example-pipeline&#34;&gt;Example Pipeline&lt;/h2&gt;
+&lt;p&gt;For example for &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml&#34;&gt;maven libraries we use this pipeline.yaml file&lt;/a&gt; which:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L1-L2&#34;&gt;extends&lt;/a&gt; the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/pipeline.yaml&#34;&gt;common pipeline&lt;/a&gt; that sets up git and defines common post build steps&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L3-L5&#34;&gt;configures the agent&lt;/a&gt; in terms of &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and container name&lt;/li&gt;
+&lt;li&gt;defines the steps for the &lt;code&gt;pull request&lt;/code&gt; pipeline &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L7-L11&#34;&gt;build steps&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;defines the &lt;code&gt;release&lt;/code&gt; pipeline &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L13-L18&#34;&gt;set version steps&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic/blob/f7027df958eb385d50fec0c0368e606a6d5eb9df/packs/maven/pipeline.yaml#L19-L21&#34;&gt;build steps&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Then the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml&#34;&gt;maven kubernetes pipeline.yaml&lt;/a&gt; then &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/45819e05fa197d9069af682fbbcad0af8d8d605a/packs/maven/pipeline.yaml#L2-L3&#34;&gt;extends&lt;/a&gt; from the classic pipeline to add the kubernetes steps&lt;/p&gt;
+&lt;h1 id=&#34;creating-new-build-packs&#34;&gt;Creating new build packs&lt;/h1&gt;
+&lt;p&gt;We love &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;contributions&lt;/a&gt; so please consider adding new build packs and &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod templates&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here are instructions on how to create a new build pack - please if anything is not clear come &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;join the community and just ask&lt;/a&gt; we are happy to help!&lt;/p&gt;
+&lt;p&gt;The best place to start with is a &lt;em&gt;quickstart&lt;/em&gt; application. A sample project that you can use as a test. So create/find a suitable example project and then &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;import it&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Then manually add a &lt;code&gt;Dockerfile&lt;/code&gt; and &lt;code&gt;Jenkinsfile&lt;/code&gt; if one is not already added for you. You could start with files from the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs&#34;&gt;current build pack folders&lt;/a&gt; - using the most similar language/framework to yours.&lt;/p&gt;
+&lt;p&gt;If your build pack is using build tools which are not yet available in one of the existing &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/pod-templates/&#34;&gt;pod templates&lt;/a&gt; then you will need to &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/pod-templates/&#34;&gt;submit a new pod template&lt;/a&gt; probably using a new build container image too.&lt;/p&gt;
+&lt;p&gt;Once you have a pod template to use, say, &lt;code&gt;jenkins-foo&lt;/code&gt; then refer to it in your &lt;code&gt;Jenkinsfile&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// my declarative Jenkinsfile
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+pipeline &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+    agent &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+      label &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-foo&amp;#34;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+    environment &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;...&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+    stages &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+      stage&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CI Build and push snapshot&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+        steps &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+          container&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+            sh &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo deploy&amp;#34;&lt;/span&gt;
+          &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once your &lt;code&gt;Jenkinsfile&lt;/code&gt; is capable of doing CI/CD for your language/runtime on your sample project then we should be able to take the &lt;code&gt;Dockerfile&lt;/code&gt;, &lt;code&gt;Jenkinsfile&lt;/code&gt; and charts folder and copy them into a folder in your fork of the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;jenkins-x/draft-packs repository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can try that out locally by adding these files to your local clone of the build packs repository at &lt;code&gt; ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;export PACK&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
+mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# the charts will be in some folder charts/somefoo&lt;/span&gt;
+cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK/charts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once your build pack is in a folder at &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;/code&gt;
+then it should be usable by the &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; code
+which uses programming language detection to find the most suitable build pack to use when importing a project.
+If your build pack requires custom logic to detect it then let us know
+and we can help patch &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; to work better for your build pack.
+For example, we have some custom logic for handling &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/712d9edf5e55aafaadfb3e0ac57692bb44634b1c/pkg/jx/cmd/common_buildpacks.go#L82:L108&#34;&gt;Maven and Gradle better&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you need any more help &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;join the community&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Creating with Quickstarts or importing</title>
+      <link>https://jenkins-x.io/docs/create-project/creating/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/create-project/creating/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Quickstarts are pre-made applications you can start a project from, instead of
+starting from scratch.&lt;/p&gt;
+&lt;p&gt;You can create new applications from our list of curated Quickstart applications
+via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_quickstart/&#34;&gt;jx create quickstart&lt;/a&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You are then prompted for a list of quickstarts to choose from.&lt;/p&gt;
+&lt;p&gt;If you know the language you wish to use you can filter the list of quickstarts
+shown via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart -l go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or use a text filter to filter on the project names:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart -f http
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;what-happens-when-you-create-a-quickstart&#34;&gt;What happens when you create a quickstart&lt;/h3&gt;
+&lt;p&gt;Once you have chosen the project to create and given it a name the following is
+automated for you:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;creates a new application from the quickstart in a sub directory&lt;/li&gt;
+&lt;li&gt;add your source code into a git repository&lt;/li&gt;
+&lt;li&gt;create a remote git repository on a git service, such as &lt;a href=&#34;https://github.com&#34;&gt;GitHub&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;push your code to the remote git service&lt;/li&gt;
+&lt;li&gt;adds default files:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to build your application as a docker image&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to implement the CI / CD pipeline&lt;/li&gt;
+&lt;li&gt;Helm chart to run your application inside Kubernetes&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;if you are using Jenkins X Pipelines and tekton then:
+&lt;ul&gt;
+&lt;li&gt;a webhook is registered on the remote git repository which triggers prow/lighthouse to trigger a tekton pipeline&lt;/li&gt;
+&lt;li&gt;add the repository to the prow configuration&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;if you are using a Jenkins Server then:
+&lt;ul&gt;
+&lt;li&gt;a webhook is registered on the remote git repository which triggers a pipeline in Jenkins&lt;/li&gt;
+&lt;li&gt;create a multi-branch project in your Jenkins server&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;trigger the first pipeline&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;how-do-quickstarts-work&#34;&gt;How do quickstarts work?&lt;/h3&gt;
+&lt;p&gt;The source of these Quickstarts are maintained in &lt;a href=&#34;https://github.com/jenkins-x-quickstarts&#34;&gt;the jenkins-quickstarts
+GitHub organization&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;When you create a quickstart we use the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;Jenkins X build
+packs&lt;/a&gt; to match
+the right pack for the project using the source code language kinds to pick the
+most suitable match.&lt;/p&gt;
+&lt;p&gt;When you use &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/create-cluster/&#34;&gt;jx create&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/install-on-cluster/&#34;&gt;jx
+install&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx
+init&lt;/a&gt; the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;Jenkins X build
+packs&lt;/a&gt; are cloned
+into your &lt;code&gt;~/.jx/draft/packs&lt;/code&gt; folder.&lt;/p&gt;
+&lt;p&gt;Depending on your JenkinsX installation type (Serverless Jenkins vs. Static
+Master Jenkin), you can view all the languages supported via build packs on your
+machine via:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Serverless Jenkins&lt;/em&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/packs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;Static Master Jenkins&lt;/em&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;ls -al ~/.jx/draft/packs/github.com/jenkins-x-buildpacks/jenkins-x-classic/packs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then when you create a quickstart, use &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/common-tasks/create-spring/&#34;&gt;jx create
+spring&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;jx
+import&lt;/a&gt; the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;Jenkins X build
+packs&lt;/a&gt; are used
+to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;find the right language pack. e.g. here are the current &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs&#34;&gt;list of language packs&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;the language pack is then used to default these files if they don&amp;rsquo;t already exist:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; to package the application as a docker image&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; to implement the CI / CD pipelines using declarative pipeline as code&lt;/li&gt;
+&lt;li&gt;Helm Charts to deploy the application on Kubernetes and to implement &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;adding-your-own-quickstarts&#34;&gt;Adding your own Quickstarts&lt;/h2&gt;
+&lt;p&gt;If you would like to submit a new Quickstart to Jenkins X please just &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new?labels=quickstart&amp;amp;title=Add%20quickstart&amp;amp;body=Please%20add%20this%20github%20quickstart:&#34;&gt;raise an
+issue&lt;/a&gt;
+with the URL in GitHub of your quickstart and we can fork it it into the
+&lt;a href=&#34;https://github.com/jenkins-x-quickstarts&#34;&gt;quickstart organisation&lt;/a&gt; so it
+appears in the &lt;code&gt;jx create quickstart&lt;/code&gt; menu.&lt;/p&gt;
+&lt;p&gt;Or if you are part of an open source project and wish to curate your own set of
+quickstarts for your project; you can &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new?labels=quickstart&amp;amp;title=Add%20quickstart&amp;amp;body=Please%20add%20this%20github%20quickstart:&#34;&gt;raise an
+issue&lt;/a&gt;
+giving us details of the github organisation where the quickstarts live and
+we&amp;rsquo;ll add that in as a default organisation to include in the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_quickstart/&#34;&gt;jx create
+quickstart&lt;/a&gt; command. Its easier for the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_quickstart/&#34;&gt;jx
+create quickstart&lt;/a&gt; if you maintain the
+quickstarts in a separate quickstart organisation on github.&lt;/p&gt;
+&lt;p&gt;Until we do that you can still use your own Quickstarts in the &lt;code&gt;jx create quickstart&lt;/code&gt; command via the &lt;code&gt;-g&lt;/code&gt; or &lt;code&gt;--organisations&lt;/code&gt; command line argument.
+For example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstart  -l go --organisations my-github-org
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then all quickstarts found in &lt;code&gt;my-github-org&lt;/code&gt; will be listed in addition to the
+Jenkins X quickstarts.&lt;/p&gt;
+&lt;h2 id=&#34;customising-your-teams-quickstarts&#34;&gt;Customising your team&amp;rsquo;s quickstarts&lt;/h2&gt;
+&lt;p&gt;You can configure at a team level the quickstarts which are presented to you in
+the &lt;code&gt;jx create quickstart&lt;/code&gt; command. These settings are stored in the
+&lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/&#34;&gt;Environment Custom Resource&lt;/a&gt; in
+Kubernetes.&lt;/p&gt;
+&lt;p&gt;To add the location of a set of quickstarts you can use the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_quickstartlocation/&#34;&gt;jx create
+quickstartlocation&lt;/a&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create quickstartlocation --url https://mygit.server.com --owner my-quickstarts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you omit the &lt;code&gt;--url&lt;/code&gt; argument the command will assume its a
+&lt;a href=&#34;https://github.com/&#34;&gt;GitHub&lt;/a&gt; repository. Note that both public and private
+repositories are supported.&lt;/p&gt;
+&lt;p&gt;This means you can have your own shared private quickstarts to reuse within your
+organisation. Of course we&amp;rsquo;d obviously prefer you to &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new?labels=quickstart&amp;amp;title=Add%20quickstart&amp;amp;body=Please%20add%20this%20github%20quickstart:&#34;&gt;share your quickstarts
+with us via open
+source&lt;/a&gt;
+then we can include your quickstart with the entire &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;community&lt;/a&gt; -
+but there may be times you want to curate your own internal quickstarts using
+proprietary software.&lt;/p&gt;
+&lt;p&gt;You can also specify &lt;code&gt;--includes&lt;/code&gt; or &lt;code&gt;--excludes&lt;/code&gt; patterns to filter the names
+of the repositories where &lt;code&gt;*&lt;/code&gt; matches anything and &lt;code&gt;foo*&lt;/code&gt; matches anything
+starting with &lt;code&gt;foo&lt;/code&gt;. e.g. you could just include the languages and technologies
+your organisation supports and exclude the rest etc.&lt;/p&gt;
+&lt;p&gt;Also note that you can use the alias of &lt;code&gt;qsloc&lt;/code&gt; instead of &lt;code&gt;quickstartlocation&lt;/code&gt;
+if you like shorter aliases ;)&lt;/p&gt;
+&lt;p&gt;You can then view the current quickstart locations for your team via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_quickstartlocation/&#34;&gt;jx get
+quickstartlocations&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get quickstartlocations
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or using an abbreviation&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get qsloc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There is also &lt;a href=&#34;https://jenkins-x.io/commands/jx_delete_quickstartlocation/&#34;&gt;jx delete
+quickstartlocation&lt;/a&gt; if you need to
+remove a git organisation.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Environments</title>
+      <link>https://jenkins-x.io/docs/create-project/environments/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/create-project/environments/</guid>
+      <description>
+        
+        
+        &lt;p&gt;An &lt;em&gt;environment&lt;/em&gt; is a place where applications get deployed. Developers often refer to environments using a short name like &lt;code&gt;Testing, Staging/UAT or Production&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;With Jenkins X each &lt;em&gt;team&lt;/em&gt; gets its own Environments. By default Jenkins X creates a &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environment for each team but you can create new environments via &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_environment/&#34;&gt;jx create environment&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;There is also the &lt;code&gt;Dev&lt;/code&gt; environment which is where tools like Tekton, Nexus or Prow are installed and where CI/CD pipelines run.&lt;/p&gt;
+&lt;p&gt;We use GitOps to manage the configuration and version of the kubernetes resources which are deployed to each environment. So each Environment has its own git repository that contains all the Helm Charts, their versions and the configuration for the applications be run in the environment.&lt;/p&gt;
+&lt;p&gt;An Environment maps to a namespace in a Kubernetes cluster. When Pull Requests are merged into the environments git repository the pipeline runs for the environment which then applies the helm charts in git to the environments namespace.&lt;/p&gt;
+&lt;p&gt;This means both developers and operations can use the same git repository to manage all the configuration and versions of all the applications and resources for an environment in the same git repository and all changes to the environment are captured in git. So its easy to see who made changes when and more importantly its then easy to revert changes which cause bad things to happen.&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/gitops.png&#34; class=&#34;img-thumbnail&#34;&gt;
+      </description>
+    </item>
+    
+  </channel>
+</rss>

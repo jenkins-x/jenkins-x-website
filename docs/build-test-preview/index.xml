@@ -1,0 +1,705 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Build and test</title>
+    <link>https://jenkins-x.io/docs/build-test-preview/</link>
+    <description>Recent content in Build and test on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="https://jenkins-x.io/docs/build-test-preview/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs: Jenkins X Pipelines</title>
+      <link>https://jenkins-x.io/docs/build-test-preview/jenkins-x-pipelines/</link>
+      <pubDate>Mon, 04 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/build-test-preview/jenkins-x-pipelines/</guid>
+      <description>
+        
+        
+        &lt;p&gt;In continuous delivery (CD) environments, a &lt;em&gt;pipeline&lt;/em&gt; is a process (expressed
+as a collection of commands or plugins and a configuration file to express the
+development process) that automates the life cycle from repository source files
+to production deployment.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Jenkins X Pipelines&lt;/strong&gt; is a &lt;em&gt;serverless&lt;/em&gt; pipeline execution engine
+based on the &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton Pipelines&lt;/a&gt; open source
+project. Tekton has been designed to be a modern cloud native solution
+for running pipelines.&lt;/p&gt;
+&lt;p&gt;Jenkins X pipelines are configured in YAML configuration files. The files can be
+found in two locations serving distinct purposes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In the Jenkins X project repository, called &lt;code&gt;jenkins-x.yml&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;In the build packs for creating applications, if it is specified in the project repository &lt;code&gt;jenkins-x.yml&lt;/code&gt; file under &lt;code&gt;buildPack&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;pipeline-types&#34;&gt;Pipeline types&lt;/h2&gt;
+&lt;p&gt;Each pipeline YAML file has a number of separate logical pipelines:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;release&lt;/code&gt; for processing merges to the master branch which typically creates a new version and release then triggers promotion&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pullRequest&lt;/code&gt; for processing Pull Requests&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;feature&lt;/code&gt; for processing merges to a feature branch. Consider using trunk based development which is a practice of high performing teams.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;lifecycles&#34;&gt;Lifecycles&lt;/h2&gt;
+&lt;p&gt;Jenkins X has various steps in building, validating, and releasing your
+application through the development lifecycle. The lifecycle phases in the
+Jenkins X pipeline YAML configuration are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;setup&lt;/code&gt; - Steps to create the build environment, such as checking out code
+with git checkout or generating credentials files for Git provider
+authentication&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;preBuild&lt;/code&gt; - Steps to perform before a build occurs, such as ensuring a Docker
+image registry is available for building&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;build&lt;/code&gt; - Steps performed to build your application&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;postBuild&lt;/code&gt; - Steps performed after the build occurs, such as validating for
+Common Vulnerability Exposure (CVE) in any code changes.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;promote&lt;/code&gt; - Shifting the state of an application (after build and validation)
+to another environment, such as Staging or Production.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;understanding-jenkins-x-pipelines&#34;&gt;Understanding Jenkins X pipelines&lt;/h2&gt;
+&lt;p&gt;The Jenkins X cluster configuration process creates a YAML-based pipeline
+configuration file called jenkins-x.yml. This file configures the default
+development pipeline for building applications on kubernetes clusters with
+Jenkins X.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;buildPack: none
+pipelineConfig:
+  pipelines:
+    release:
+      pipeline:
+        agent:
+          image: gcr.io/jenkinsxio/builder-go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;buildPack&lt;/code&gt; specifies a build pack which contains a &lt;code&gt;pipeline.yml&lt;/code&gt; file that
+supersedes the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in the project directory. If none is
+specified, there is no build pack and Jenkins X uses the default pipeline
+configuration.&lt;/p&gt;
+&lt;p&gt;The configuration defines the pipeline agent, in this case a Google Container
+Registry image for the Go language build tools.&lt;/p&gt;
+&lt;p&gt;The configuration defines the pipeline agent, in this case a Google Container
+Registry image for the Go language build tools.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;        environment:
+          - name: DEPLOY_NAMESPACE
+            value: jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;environment&lt;/code&gt; specifies environment variables used in the pipeline
+configuration. In this instance, the &lt;code&gt;DEPLOY_NAMESPACE&lt;/code&gt; variable is used with a
+value of &lt;code&gt;jx&lt;/code&gt; for the Jenkins X namespace.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;        stages:
+          - name: release
+            steps:
+              - name: verify-preintall
+                dir: /workspace/source/env
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;verify&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;preinstall&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;stages&lt;/code&gt; are unique groups of steps (or nested stages sequentially run within a
+stage) that specify commands, directories, and arguments for a particular
+pipeline stage. In this instance, there is a step within the &lt;code&gt;release&lt;/code&gt; stage
+called &lt;code&gt;verify-preinstall&lt;/code&gt; that runs a &lt;code&gt;jx&lt;/code&gt; command that verifies whether cloud
+infrastructure (such as the presence of the &lt;code&gt;kubectl&lt;/code&gt; binary and the correct
+version of git is installed) was setup in the preinstallation process.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;              - name: install-vault
+                dir: /workspace/source/systems/vault
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;boot&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;vault&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;name&lt;/code&gt; calls out a unique step in the pipeline configuration that defines
+development steps to verify and apply arguments to various commands necessary
+for the stage under which it is nested. In this instance, &lt;code&gt;install-vault&lt;/code&gt;
+installs the Hashicorp Vault tool for secrets management.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;              - name: apply-repositories
+                dir: /workspace/source/repositories
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;helm&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;apply&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--name&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;repos&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This step creates and applies the Helm Package Manager for installation and
+management of helm kubernetes applications.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;              - name: apply-pipeline-schedulers
+                dir: /workspace/source/prowConfig
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;scheduler&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;config&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;apply&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--direct=true&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This step allows the pipeline to work with a scheduler, which executes program
+jobs unattended in the background.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;              - name: update-webhooks
+                dir: /workspace/source/repositories
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;update&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;webhooks&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--verbose&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--warn-on-fail&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This step updates webhooks, which is a service that listens for GitHub activity
+and trigger jobs, send automated messages to chat clients such as Slack, and
+other configurable actions.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;              - name: verify-install
+                dir: /workspace/source/env
+                command: jx
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;step&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;verify&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;install&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;--pod-wait-time&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;30m&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This step verifies the project installation, downloading and installing or
+updating components when necessary.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;    pullRequest:
+      pipeline:
+        agent:
+          image: gcr.io/jenkinsxio/builder-go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;pullRequest&lt;/code&gt; is a logical pipeline within the project pipeline that specifies how pull requests are managed when changes are made to the project repository in GitHub.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;        stages:
+          - name: release
+            steps:
+              - name: helm-build
+                dir: /workspace/source/env
+                command: make
+                args: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;build&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;pullRequest&lt;/code&gt; pipeline contains a stage wherein steps can also be executed. In this instance, make is run to create a helm chart and validate that a build has been completed.&lt;/p&gt;
+&lt;h2 id=&#34;extending-pipelines&#34;&gt;Extending pipelines&lt;/h2&gt;
+&lt;p&gt;A pipeline YAML can extend another YAML file. You can reference a base pipeline
+YAML using the following methods:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Using file to reference a relative file path in the same build pack&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;extends:
+  file: ../jenkins-x.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Using import to reference a YAML file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;extends:
+  import: classic
+  file: maven/pipeline.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;which then refers to a named imported module via git:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;modules:
+- name: classic
+  gitUrl: https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git
+  gitRef: master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;overriding-steps&#34;&gt;Overriding steps&lt;/h2&gt;
+&lt;p&gt;Users can override steps in a pipeline YAML from a base pipeline YAML, similar to overriding classes in languages like Java. This allows users reuse the steps in a base pipeline’s lifecycle, then add additional steps.&lt;/p&gt;
+&lt;p&gt;By default any steps you define are added after the base pipeline YAML steps. For example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;extends:
+  file: base-pipeline.yaml
+pipelines:
+  pullRequest:
+    build:
+      steps:
+      - sh: export VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$PREVIEW_VERSION &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; skaffold build -f skaffold.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can add steps before the base pipeline steps using the preSteps: property:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;extends:
+  file: base-pipeline.yaml
+pipelines:
+  release:
+    setup:
+      preSteps:
+      - sh: echo BEFORE BASE SETUP
+      steps:
+      - sh: echo AFTER BASE SETUP
+    build:
+      replace: true
+      steps:
+      - sh: mvn clean deploy -Pmyprofile
+        comment: this command is overridden from the base pipeline
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you want to completely replace all the steps from a base pipeline for a
+particular lifecycle you can use replace: true:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;  replace: true
+  steps:
+  - sh: mvn clean deploy -Pmyprofile
+    comment: this command is overridden from the base pipeline
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;!--
+## Trying Jenkins X Pipelines
+
+Create a new cluster installed with Jenkins X Pipelines using `jx` and the following flags:
+
+```sh
+jx create cluster gke --tekton
+```
+
+Or if you want to go all in on the next generation of Jenkins X with built-in GitOps for your development environment, using Tekton and using Vault for storage of secrets then use the following (only works on GCP and AWS right now):
+
+```sh
+jx create cluster gke --ng
+```
+
+The general developer experience, CLI and IDE plugins should work as before - but using [Tekton Pipelines](https://tekton.dev/) Custom Resources under the covers instead of creating a Jenkins Server per team!
+
+## Using a quickstart
+
+Once your cluster is started you can create a new quickstart.
+
+```sh
+jx create quickstart
+```
+
+A `prowjob` is created, a new prow pipeline controller watches for these jobs and when it receives an event it will check if it has a `pipelinerun` spec present, if not it will post the `prowjob` to a new `pipelinerunner` service from Jenkins X which in turn clones the repo and revision then translates its `jenkins-x.yml` into vanilla Tekton Pipeline resources.  Once they are created the `tekton-pipeline-controller` executes the builds.
+
+## Differences to Jenkins Pipelines
+
+Jenkins X Pipelines use a new `jenkins-x.yml` file which is YAML instead of the Groovy `Jenkinsfile` used by Jenkins.
+
+However it&#39;s still reusing the same reusable and composable build packs under the covers. (The Jenkins X [build packs](/docs/create-project/build-packs/) are actually written in Jenkins X Pipelines YAML).
+
+One thing you will notice is that with Jenkins X Pipelines we don&#39;t need to copy/paste a large `Jenkinsfile` into each application&#39;s git repository; usually the generated `jenkins-x.yml` file is small, like this:
+
+```yaml
+buildPack: maven
+```
+
+That&#39;s it! What that basically means is at runtime the Jenkins X Pipeline will use the [build packs](/docs/create-project/build-packs/) to generate the actual Tekton Pipeline.
+
+## Customizing the Pipelines
+
+Having automated [build packs](/docs/create-project/build-packs/) to do all of your CI+CD is pretty awesome - as most of the time your microservices will all be compiled, tested, packaged, released and promoted in the same way. CI+CD is often undifferentiated heavy lifting we should just automate!
+
+However there are times you want to customize a [particular pipeline](/docs/create-project/build-packs/#pipelines) (release, pull request, feature etc) and a particular [life cycle](/docs/first-projects/build-packs/#life-cycles) to change the actual steps invoked.
+
+You can read more about the [extension model](/docs/create-project/build-packs/#pipeline-extension-model) to find out all you can do. Basically you can add steps before/after any life cycle or completely replace a set of life cycles or even opt out of the build pack completely and inline your pipelines inside your `jenkins-x.yml`
+
+For a quick way to add a new step into a pipeline life cycle you can use the [jx create step](/commands/deprecation/) command:
+
+&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/architecture/create-step.gif&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Create a new Jenkins X Pipeline Step via the CLI&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+You can also add or override an environment variable in your pipeline via the [jx create variable](/commands/jx_create_variable/) command
+
+## Editing in VS Code
+
+If you are using [VS Code](https://code.visualstudio.com/) we recommend you install the [YAML Language Extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) from Red Hat.
+
+This extension lets you edit YAML files with optional JSON Schema validation.
+
+Jenkins X&#39;s JSON Schema is already registered with [schemastore.org](http://schemastore.org/json/) so editing your `jenkins-x.yml` file in VS Code will include smart completion and validation!
+
+&lt;figure&gt;
+&lt;embed src=&#34;https://jenkins-x.io/images/architecture/yaml-edit.mp4&#34; autostart=&#34;false&#34; height=&#34;400&#34; width=&#34;600&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Edit Jenkins X Pipeline in VS Code&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+We&#39;d love to improve this UX if you fancy [helping out](/docs/contributing).
+
+## Editing in IDEA
+
+This should already be included out of the box due to the Jenkins X JSON Schema being registered with [schemastore.org](http://schemastore.org/json/) so editing your `jenkins-x.yml` file in IDEA will include smart completion and validation!
+
+We&#39;d love to improve this UX if you fancy [helping out](/docs/contributing/).
+--&gt;&lt;blockquote&gt;
+&lt;/blockquote&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Using ChatOps and PR commands</title>
+      <link>https://jenkins-x.io/docs/build-test-preview/chatops/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/build-test-preview/chatops/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;em&gt;ChatOps&lt;/em&gt; are operating codes and GitOps commands sent via chat.
+These actions are performed via commenting on Pull Requests on your git providers website.&lt;/p&gt;
+&lt;h2 id=&#34;chatops-commands&#34;&gt;ChatOps Commands&lt;/h2&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&#34;left&#34;&gt;ChatOps Command&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;GitLab Command&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lgtm&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-lgtm&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;This PR looks good to me - this command can be from anyone with access to the repo&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/approve&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;\lh-approve&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;This PR can be merged - must be someone in the repo &lt;code&gt;OWNERS&lt;/code&gt; file&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/test this&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;\lh-test this&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Run the default test pipeline context for this PR&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/test (context)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;N/A&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Run a specific test pipeline context by name&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/retest&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-retest&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Rerun any failed test pipeline contexts for this PR&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/override (context)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-override (context)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Override a failed pipeline context&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/hold&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-hold&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Set this PR to not automerge even if it has been set &lt;code&gt;lgtm&lt;/code&gt; and approved&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/hold cancel&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-hold cancel&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;remove the &lt;code&gt;\hold&lt;/code&gt; on the automerge&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/assign (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-assign (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;assign the PR to the given (&lt;code&gt;user&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/unassign (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-unassign (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;remove the &lt;code&gt;user&lt;/code&gt; as assignee&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/cc (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-cc (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;add the given &lt;code&gt;user&lt;/code&gt; as a reviewer for the PR&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/uncc (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-uncc (user)&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;remove the &lt;code&gt;user&lt;/code&gt; as a reviewer&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/ok-to-test&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;&lt;code&gt;/lh-ok-to-test&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;If a &lt;code&gt;user&lt;/code&gt; without write access to the repo opens a PR, the PR will not be built automatically. It receives the &lt;code&gt;needs-ok-to-test&lt;/code&gt; label, until a user with rights enters &lt;code&gt;/ok-to-test&lt;/code&gt;, at which point it gets be built&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;pull-requests&#34;&gt;Pull Requests&lt;/h2&gt;
+&lt;p&gt;The pull request (PR) is the foundation of Jenkins X CI/CD pipeline execution.
+In PRs, Jenkins X allows developers and reviewers to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Verify changes&lt;/li&gt;
+&lt;li&gt;Review PR code changes and their effects&lt;/li&gt;
+&lt;li&gt;Approve or deny PRs or suggest changes&lt;/li&gt;
+&lt;li&gt;Approve PRs and trigger automatic merge and promotion&lt;/li&gt;
+&lt;li&gt;Manual promotion of PRs to production environments and software releases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Pull requests can be marked as work in progress, blocking automerging, either via making the PR a draft on GitHub, or by adding &lt;code&gt;WIP:&lt;/code&gt;, &lt;code&gt;wip:&lt;/code&gt;, &lt;code&gt;[wip]:&lt;/code&gt;, or similar at the beginning of the PR title.
+The PR will be moved out of work-in-progress when no longer in draft or when the &lt;code&gt;WIP&lt;/code&gt; prefix in the PR title has been removed.&lt;/p&gt;
+&lt;h3 id=&#34;how-lighthouse-merges-a-pr&#34;&gt;How Lighthouse merges a PR&lt;/h3&gt;
+&lt;p&gt;There are some unique actions and behaviors when using lighthouse as the webhook handler for Jenkins X:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The PR must have its required test contexts pass (by default, just &lt;code&gt;pr-build&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;PRs must be set &lt;code&gt;/lgtm&lt;/code&gt; and approved, or have the &lt;code&gt;updatebot&lt;/code&gt; label on it.&lt;/li&gt;
+&lt;li&gt;The PR must not have any merge conflicts.&lt;/li&gt;
+&lt;li&gt;If multiple PRs are all in the merge pool at the same time, the lowest numbered PR will be merged first, then the next one will be rebuilt and then merged, etc.&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Preview Environments</title>
+      <link>https://jenkins-x.io/docs/build-test-preview/preview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/build-test-preview/preview/</guid>
+      <description>
+        
+        
+        &lt;p&gt;We highly recommend the use of &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;Preview Environments&lt;/a&gt; to get early feedback on changes to applications before the changes are merged into master.&lt;/p&gt;
+&lt;p&gt;Typically the creation of preview environments is automated inside the Pipelines created by Jenkins X.&lt;/p&gt;
+&lt;h3 id=&#34;generating-a-preview-environment&#34;&gt;Generating a preview environment&lt;/h3&gt;
+&lt;p&gt;In a typical Jenkins X development scenario, users make changes to an
+application that has been imported or created via one of the various
+supported methods, such as
+&lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;Quickstarts&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;imported projects&lt;/a&gt;, and &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/create-spring/&#34;&gt;Spring
+Boot&lt;/a&gt; applications.&lt;/p&gt;
+&lt;p&gt;When the developer makes the change to their branch, with the ultimate
+goal of merging those branch changes into the &lt;code&gt;master&lt;/code&gt; branch for
+deployment to production, they save their changes from within their
+integrated development environment (IDE) and commit it to the source
+repository, such as GitHub. The process to generate a preview
+environment is typically like committing code in a traditional
+development environment:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;A developer makes a branch to their local cloned source repository to create a new feature:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;git checkout -b acme-feature1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;The developer makes changes to the source code in their branch and adds the affected files to the commit queue:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;git add index.html server.js
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;The developer commits the files adding a comment about what has changed:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;    git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nifty new image added to the index file&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;The developer runs &lt;code&gt;git push&lt;/code&gt; to send the code back to the remote  repository and create a pull request:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;    git push origin acme-feature1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;5&#34;&gt;
+&lt;li&gt;
+&lt;p&gt;The program displays a link to a pull request. The developer can highlight the URL, right-click and choose &lt;em&gt;Open URL&lt;/em&gt; to see the GitHub page in their browser.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Jenkins X creates a preview environment in the PR for the application changes and displays a link to evaluate the new feature:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;row&#34;&gt;
+  &lt;div class=&#34;col col-lg-9&#34;&gt;
+    &lt;img src=&#34;https://jenkins-x.io/images/pr-comment.png&#34;/&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+The preview environment is created whenever a change is made to the
+repository, allowing any relevant user to validate or evaluate features,
+bugfixes, or security hotfix.
+&lt;h3 id=&#34;testing-the-preview-environment&#34;&gt;Testing the preview environment&lt;/h3&gt;
+&lt;p&gt;The development bot created during the installation process sends a notification email to the developer as well as the designated repository approver that a PR is ready for review. During the approval process, the approver can click on the preview application with the code changes for testing and validation.&lt;/p&gt;
+&lt;p&gt;When the approver confirms the code and functionality changes, they can
+approve the with a simple comment that merges the code changes back to
+the master branch and initiate a production build with the new feature:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;    /approve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The code is merged to the &lt;code&gt;master&lt;/code&gt; branch, and the release is pushed to
+staging/production or a release created and available from the GitHub
+staging environment in the &lt;code&gt;Releases&lt;/code&gt; tab.&lt;/p&gt;
+&lt;h3 id=&#34;manually-creating-a-preview&#34;&gt;Manually creating a preview&lt;/h3&gt;
+&lt;p&gt;You can manually create a &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;Preview Environment&lt;/a&gt; using &lt;a href=&#34;https://jenkins-x.io/commands/jx/&#34;&gt;jx&lt;/a&gt; via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_preview/&#34;&gt;jx preview&lt;/a&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx preview
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;what-happens-when-a-preview-environment-is-created&#34;&gt;What happens when a Preview environment is created&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;a new &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#environments&#34;&gt;Environment&lt;/a&gt; of kind &lt;code&gt;Preview&lt;/code&gt; is created along with a &lt;a href=&#34;https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/&#34;&gt;kubernetes namespace&lt;/a&gt; which shows up in the &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; command along with the &lt;a href=&#34;https://jenkins-x.io/developing/kube-context/&#34;&gt;jx environment and jx namespace commands&lt;/a&gt; so you can see which preview environments are active and switch into them to look around&lt;/li&gt;
+&lt;li&gt;the Pull Request is built as a preview docker image and chart and deployed into the preview environment&lt;/li&gt;
+&lt;li&gt;a comment is added to the Pull Request to let your team know the preview application is ready for testing with a link to open the application. So in one click your team members can try out the preview!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/pr-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
+&lt;h2 id=&#34;adding-more-resources&#34;&gt;Adding more resources&lt;/h2&gt;
+&lt;p&gt;Its common when creating, for example, a web front end to need a backend or database to work from to verify that the microservice works.&lt;/p&gt;
+&lt;p&gt;For each application the preview environment is defined by a helm chart at: &lt;code&gt;charts/preview/Chart.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;charts&#34;&gt;Charts&lt;/h2&gt;
+&lt;p&gt;So you can easily add any dependent helm charts to your preview environment by adding new entries in the file &lt;code&gt;charts/preview/requirements.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can find possible charts to install by searching helm. e.g. to find a &lt;code&gt;postgresql&lt;/code&gt; chart try:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;helm search postgres
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once you know the chart and the repository its in you can add it to your &lt;code&gt;charts/preview/requirements.yaml&lt;/code&gt; file (the &lt;code&gt;postgresql&lt;/code&gt; section in dependencies array):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# !! File must end with empty line !!&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;dependencies&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;alias&lt;/span&gt;: expose
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: exposecontroller
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: http://chartmuseum.jenkins-x.io
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;2.3.56&lt;/span&gt;
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;alias&lt;/span&gt;: cleanup
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: exposecontroller
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: http://chartmuseum.jenkins-x.io
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;2.3.56&lt;/span&gt;
+
+  &lt;span style=&#34;color:#75715e&#34;&gt;# Ephemeral PostgeSQL created in preview environment.&lt;/span&gt;
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: postgresql
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: https://kubernetes-charts.storage.googleapis.com
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;2.6.2&lt;/span&gt;
+
+  &lt;span style=&#34;color:#75715e&#34;&gt;# !! &amp;#34;alias: preview&amp;#34; must be last entry in dependencies array !!&lt;/span&gt;
+  &lt;span style=&#34;color:#75715e&#34;&gt;# !! Place custom dependencies above !!&lt;/span&gt;
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;alias&lt;/span&gt;: preview
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: demo179
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: file://../demo179
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note: &lt;code&gt;- alias: preview&lt;/code&gt; must be last entry in dependecies array and &lt;code&gt;requirements.yaml&lt;/code&gt; file must end with empty line.&lt;/p&gt;
+&lt;h2 id=&#34;service-linking&#34;&gt;Service Linking&lt;/h2&gt;
+&lt;p&gt;If you need any additional resources like &lt;code&gt;ConfigMap&lt;/code&gt;, &lt;code&gt;Secret&lt;/code&gt; or &lt;code&gt;Service&lt;/code&gt; resources you can add them to &lt;code&gt;charts/preview/templates/*.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can always &lt;em&gt;service link&lt;/em&gt; from the Preview Environment namespace to other namespaces by creating a &lt;code&gt;Service&lt;/code&gt; with an &lt;code&gt;externalName&lt;/code&gt; which links to a &lt;code&gt;Service&lt;/code&gt; running in another namespace (such as Staging or Production) or to point to a service running outside of the Kubernetes cluster completely.&lt;/p&gt;
+&lt;p&gt;We have a command &lt;a href=&#34;https://jenkins-x.io/commands/jx_step_link/&#34;&gt;jx step service link&lt;/a&gt; which does this for you:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx step link services --from-namespace jx-staging --includes &amp;quot;*&amp;quot; --excludes &amp;quot;cheese*&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;configuration&#34;&gt;Configuration&lt;/h3&gt;
+&lt;p&gt;If you need to tweak your application when running in a Preview Environment you can add custom settings to the &lt;code&gt;charts/preview/values.yaml&lt;/code&gt;file&lt;/p&gt;
+&lt;h2 id=&#34;post-preview-jobs&#34;&gt;Post preview jobs&lt;/h2&gt;
+&lt;p&gt;One of the extension points of Jenkins X lets you put a hook in after a preview job has been deployed. This hook applies to all apps in a team even existing ones, for all new pull requests/changes. (You don&amp;rsquo;t have to add it to each pipeline by hand - it can be used to enforce best practices).&lt;/p&gt;
+&lt;p&gt;This means you can run a container Job against the preview app, validating it, before the CI pipeline completes. Should this Job fail, the pull request will be marked as a failure.&lt;/p&gt;
+&lt;p&gt;Here is an example:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx create post preview job --name owasp --image owasp/zap2docker-weekly:latest -c &amp;quot;zap-baseline.py&amp;quot; -c &amp;quot;-I&amp;quot; -c &amp;quot;-t&amp;quot; -c &amp;quot;\$(JX_PREVIEW_URL)&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This creates a post preview job which runs the &lt;code&gt;zap-baseline.py&lt;/code&gt; command inside the specified docker image (it will pull the image and run it, and then shut it down) which scans the running preview app for any problems.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;$JX_PREVIEW_URL&lt;/code&gt; environment variable is made available in case the job needs to access the running preview app. Use &lt;code&gt;-c&lt;/code&gt; to pass commands to the container.&lt;/p&gt;
+&lt;p&gt;This job runs after the preview has been deployed. If it returns non zero, the PR will be marked as a failure.&lt;/p&gt;
+&lt;p&gt;You can also run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx get post preview
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;to list any configured post preview jobs, and:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx delete post preview job --name=NAME_HERE
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;And it will remove that post preview job (for the whole team).&lt;/p&gt;
+&lt;h2 id=&#34;further-reading&#34;&gt;Further reading&lt;/h2&gt;
+&lt;p&gt;To get more detail on using preview environments check out &lt;a href=&#34;https://medium.com/@MichalFoksa/jenkins-x-preview-environment-3bf2424a05e4&#34;&gt;this blog post&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Promotion and Environments</title>
+      <link>https://jenkins-x.io/docs/build-test-preview/promotion/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/build-test-preview/promotion/</guid>
+      <description>
+        
+        
+        &lt;p&gt;The CD Pipelines of Jenkins X automate the &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#promotion&#34;&gt;promotion&lt;/a&gt; of version changes through each &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#environments&#34;&gt;Environment&lt;/a&gt; which is configured with a &lt;em&gt;promotion strategy&lt;/em&gt; property of &lt;code&gt;Auto&lt;/code&gt;. By default the &lt;code&gt;Staging&lt;/code&gt; environment uses automatic promotion and the &lt;code&gt;Production&lt;/code&gt; environment uses &lt;code&gt;Manual&lt;/code&gt; promotion.&lt;/p&gt;
+&lt;p&gt;To manually Promote a version of your application to an environment use the &lt;a href=&#34;https://jenkins-x.io/commands/jx_promote/&#34;&gt;jx promote&lt;/a&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote --app myapp --version 1.2.3 --env production
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The command waits for the promotion to complete, logging details of its progress. You can specify the timeout to wait for the promotion to complete via the &lt;code&gt;--timeout&lt;/code&gt; argument.&lt;/p&gt;
+&lt;p&gt;e.g. to wait for 5 hours&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote  --app myapp --version 1.2.3 --env production --timeout 5h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can use terms like &lt;code&gt;20m&lt;/code&gt; or &lt;code&gt;10h30m&lt;/code&gt; for the various duration expressions.&lt;/p&gt;
+&lt;div class=&#34;row&#34;&gt;
+  &lt;div class=&#34;col col-lg-9&#34;&gt;
+    &lt;img src=&#34;https://jenkins-x.io/images/overview.png&#34; class=&#34;img-thumbnail&#34;&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;feedback&#34;&gt;Feedback&lt;/h2&gt;
+&lt;p&gt;If the commit comments reference issues (e.g. via the text &lt;code&gt;fixes #123&lt;/code&gt;) then Jenkins X pipelines will generate release notes like those of &lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34;&gt;the jx releases&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Also as the version with those new commits is promoted to &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; you will get automated comments on each fixed issue that the issue is now available for review in the corresponding environment along with a link to the release notes and a link to the app running in that environment. e.g.&lt;/p&gt;
+&lt;div class=&#34;row&#34;&gt;
+  &lt;div class=&#34;col col-lg-9&#34;&gt;
+    &lt;img src=&#34;https://jenkins-x.io/images/issue-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;promoting-external-apps&#34;&gt;Promoting external apps&lt;/h2&gt;
+&lt;p&gt;There may be apps that have already been released by other teams or companies who maybe don&amp;rsquo;t yet use Jenkins X and the applications are not already in your helm chart repository.&lt;/p&gt;
+&lt;p&gt;If you wish to search your helm repositories for an application to promote you can use the &lt;code&gt;-f&lt;/code&gt; for filter option to find a chart to promote.&lt;/p&gt;
+&lt;p&gt;e.g. to find a &lt;code&gt;redis&lt;/code&gt; chart to promote to staging you could do:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote -f redis --env staging
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For databases you may want to alias (via &lt;code&gt;--alias&lt;/code&gt;) the name of the chart to be a logical name for the kind of database you need. As you may need multiple databases in the same environment for different microservices. e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote -f postgres --alias salesdb --env staging
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you cannot find the particular application you are looking for you may need to add a helm chart repository to your helm installation via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;helm repo add myrepo https://something.acme.com/charts/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;for example to add the stable community charts:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;stable&amp;#34;&lt;/span&gt; has been added to your repositories
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to add the incubator community charts:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;incubator&amp;#34;&lt;/span&gt; has been added to your repositories
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There are huge numbers of &lt;a href=&#34;https://github.com/helm/charts/tree/master/stable&#34;&gt;charts already created and maintained by the community&lt;/a&gt; these days. If you want to add your own apps developed outside of Jenkins X you just need to package the YAML as a helm chart and install it in a chart repository.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Developing Using DevPods</title>
+      <link>https://jenkins-x.io/docs/build-test-preview/devpods/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/build-test-preview/devpods/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X allows you to edit app code by using a Kubernetes Pod which we call &lt;code&gt;DevPod&lt;/code&gt;.  This helps you develop inside the cloud with the same software tools, platform, container images and pod templates as the CI/CD pipelines. This helps keep everyone in the team and your CI/CD pipelines using the same platform and tools all the time to reduce waste and avoid those pesky &amp;lsquo;it works on my laptop but not in production&amp;rsquo; issues.&lt;/p&gt;
+&lt;p&gt;There are a couple of ways that you as a developer can quickly become productive when editing an app, and add value ultra fast.&lt;/p&gt;
+&lt;p&gt;There are specific steps for each approach, and we provide you a visual representation of each workflow, as well as the specific steps to quickly get started.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+Keep in mind, this development workflow helps you make changes before even checking in your code to the repo, or submitting a formal pull request.  Really meant for you to validate your changes fast!
+&lt;/div&gt;
+
+&lt;h2 id=&#34;develop-using-devpods-and-a-desktop-ide&#34;&gt;Develop Using DevPods and a desktop IDE&lt;/h2&gt;
+&lt;p&gt;In this scenario, you are using a desktop IDE such as VS Code or Intellij which in fact have &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/developing/ide/&#34;&gt;a plugin&lt;/a&gt; for &lt;code&gt;Jenkins X&lt;/code&gt;.  You are making &lt;strong&gt;iterative&lt;/strong&gt; changes using your IDE and said changes are reflected immediately when you open the &lt;code&gt;url&lt;/code&gt; assigned to your &lt;code&gt;DevPod&lt;/code&gt;&lt;/p&gt;
+&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/developing/developer_workflow_ide.png&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Developer Workflow - Develop Using DevPods and an IDE&lt;/h5&gt;
+&lt;/figcaption&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+See &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/developing/ide/#vs-code&#34;&gt;IDE&lt;/a&gt; for more details on using VSCode
+&lt;/div&gt;
+
+&lt;p&gt;To get started using this approach, simply execute the following command in the root of your app directory.  We are using a &lt;code&gt;NodeJS&lt;/code&gt; app for this example, therefore we specify the language using the &lt;code&gt;-l&lt;/code&gt; parameter.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create devpod -l nodejs --reuse --sync
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A successful execution will ensures the following happened:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Output the &lt;code&gt;URLs&lt;/code&gt; available to access the &lt;code&gt;Pod&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;App folder will sync with the &lt;code&gt;Pod&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;An ssh session is initiated to the &lt;code&gt;Pod&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once this happens, you must execute one more command within your ssh session to the Pod to ensure any changes are synchronized.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;./watch.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+From this point forward, any changes you make &lt;strong&gt;(step 1 in diagram)&lt;/strong&gt;, trigger a Docker Image build, and you should see the output of that build command in your terminal as it happens.
+&lt;/div&gt;
+
+&lt;p&gt;Once you are happy with changes to your app, you go to &lt;strong&gt;(step 2 in diagram)&lt;/strong&gt; and check-in your code, create a &lt;code&gt;Pull Request&lt;/code&gt; at which point a &lt;code&gt;Jenkins X Pipeline&lt;/code&gt; is triggered immediately to promote your changes to &lt;code&gt;Staging&lt;/code&gt; enviornment.&lt;/p&gt;
+&lt;h2 id=&#34;develop-using-devpods-and-a-web-based-ide&#34;&gt;Develop Using DevPods and a Web-based IDE&lt;/h2&gt;
+&lt;p&gt;If you prefer not to use an IDE on your desktop using a similar workflow as above.  To edit the app code, you use the well known &lt;a href=&#34;https://www.theia-ide.org/&#34;&gt;Theia&lt;/a&gt; IDE.&lt;/p&gt;
+&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/developing/developer_workflow_theia.png&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Developer Workflow - Develop Using DevPods and Web-based IDE Theia&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;p&gt;Using this approach, you execute the following on your terminal.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;
+jx create devpod --verbose true
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# some output us removed for brevity&lt;/span&gt;
+Creating a DevPod of label: nodejs
+Created pod me-nodejs - waiting &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; it to be ready...
+Using helmBinary helm with feature flag: none
+Updating Helm repository...
+Helm repository update &lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;.
+...
+Pod me-nodejs is now ready!
+You can open other shells into this DevPod via jx create devpod
+
+You can edit your app using Theia &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;a browser based IDE&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; at http://me-nodejs-theia.jx.yourdomain.com
+
+Attempting to install Bash Completion into DevPod
+Running command: kubectl exec -it -n jx -c theia me-nodejs -- /bin/sh -c mkdir -p /workspace
+cd /workspace
+...
+&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;root@me-nodejs node-app&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;#
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+&lt;strong&gt;NOTE&lt;/strong&gt;: We are not passing the &lt;code&gt;--sync&lt;/code&gt; flag because we plan on using the web based IDE
+&lt;/div&gt;
+
+&lt;p&gt;A succesful execution of the command above, will ensure the following has happened:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;DevPod is created, and exposed for you to access app via URL&lt;/li&gt;
+&lt;li&gt;Theia Docker container is running&lt;/li&gt;
+&lt;li&gt;App folder is mounted to Theia Docker container at &lt;code&gt;/workspace&lt;/code&gt; folder.&lt;/li&gt;
+&lt;li&gt;You have a terminal session into the &lt;code&gt;DevPod&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To see your changes in real-time, you must also execute the following command within your terminal session connected to the Pod:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;./watch.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;promote-to-staging&#34;&gt;Promote to Staging&lt;/h3&gt;
+&lt;p&gt;Once you are happy with the changes you made to the app, you can simply check-in your code and create a &lt;code&gt;pull request&lt;/code&gt;.  This will trigger the pipeline to promote your changes to the &lt;code&gt;Staging&lt;/code&gt; environment (&lt;strong&gt;Step 2 and 3 in diagram&lt;/strong&gt;)&lt;/p&gt;
+&lt;h3 id=&#34;promote-to-production&#34;&gt;Promote to Production&lt;/h3&gt;
+&lt;p&gt;Most of the time,the Production environment in &lt;strong&gt;Jenkins X&lt;/strong&gt; will have its &lt;code&gt;Promote&lt;/code&gt; setting set to &lt;code&gt;MANUAL&lt;/code&gt;.  Therefore, promoting your app can happen manually after stakeholders have reviewed the staging envionment, for example.&lt;/p&gt;
+&lt;p&gt;To promote the app to production, you can execute the following commands:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;first get the app version from this output&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get apps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;promote app version 0.0.2 from staging to production&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx promote --version 0.0.2 --env production
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;additional-learning&#34;&gt;Additional Learning&lt;/h1&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
