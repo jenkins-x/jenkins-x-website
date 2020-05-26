@@ -287,6 +287,19 @@ Status:       Active
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Delete any repositories created by &lt;code&gt;jx&lt;/code&gt; on your Github organisations account.&lt;/p&gt;
 &lt;p&gt;Delete the local git &lt;code&gt;jenkins-x-boot-config&lt;/code&gt; repository.&lt;/p&gt;
 &lt;p&gt;That should leave your Kubernetes provider and your local environment in a clean state.&lt;/p&gt;
+&lt;h2 id=&#34;no-external-ip-assigned-to-the-ingress-in-eks&#34;&gt;No External IP assigned to the ingress in EKS&lt;/h2&gt;
+&lt;p&gt;If you have never created an Elastic Load Balancer (ELB) in AWS, then the &lt;code&gt;jx boot&lt;/code&gt; command will fail to assign an ip to the ingress controller.&lt;/p&gt;
+&lt;p&gt;In this case, the output from &lt;code&gt;jx boot&lt;/code&gt; might look like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;error: failed to discover the Ingress domain: getting a domain &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ingress service kube-system/jxing-nginx-ingress-controller: Timed out after 5m0s, last error: %!s&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&amp;lt;nil&amp;gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To verify this is the case, run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get svc --all-namespaces
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you see &lt;code&gt;pending&lt;/code&gt; for external IP for &lt;code&gt;jxing-nginx-ingress-controller&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;NAMESPACE     NAME                                  TYPE           CLUSTER-IP      EXTERNAL-IP   PORT&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;S&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;                      AGE
+.....
+kube-system   jxing-nginx-ingress-controller        LoadBalancer   X.X.X.X         &amp;lt;pending&amp;gt;     80:32632/TCP,443:32036/TCP   4h45m
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then create an ELB manually outside of EKS, and tear it down.&lt;/p&gt;
+&lt;p&gt;After that, run &lt;code&gt;jx boot&lt;/code&gt; again.&lt;/p&gt;
 &lt;h2 id=&#34;other-issues&#34;&gt;Other issues&lt;/h2&gt;
 &lt;p&gt;Please &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/new&#34;&gt;let us know&lt;/a&gt; and see if we can help? Good luck!&lt;/p&gt;
 
