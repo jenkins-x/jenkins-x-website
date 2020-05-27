@@ -1662,16 +1662,16 @@ By default, Jenkins X will expose the ingress via the &lt;em&gt;nip.io&lt;/em&gt
     
     <item>
       <title>Docs: Create custom Builder</title>
-      <link>https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/create-custom-builder/</link>
+      <link>https://jenkins-x.io/docs/resources/guides/managing-jx/old/create-custom-builder/</link>
       <pubDate>Mon, 01 Jul 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/create-custom-builder/</guid>
+      <guid>https://jenkins-x.io/docs/resources/guides/managing-jx/old/create-custom-builder/</guid>
       <description>
         
         
-        &lt;p&gt;In Jenkins X, it is possible to create your custom Builders (aka &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34;&gt;POD templates&lt;/a&gt;) or overwrite existing onces. You just need to base your Docker
-image on this &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders-base/blob/master/Dockerfile.common&#34;&gt;builder-base&lt;/a&gt; image.
-These images contain a number of pre-installed tools which get constantly updated and published to &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/builder-base/&#34;&gt;Docker Hub&lt;/a&gt;.&lt;/p&gt;
+        &lt;p&gt;In Jenkins X, using the deprecated static master installation type, it is possible to create your custom Builders (aka &lt;a href=&#34;https://github.com/jenkinsci/kubernetes-plugin&#34;&gt;POD templates&lt;/a&gt;) or overwrite existing ones.
+To do so, you need to base your Docker image on this &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders-base/blob/master/Dockerfile.common&#34;&gt;builder-base&lt;/a&gt; image.
+This image contain a number of pre-installed tools which get constantly updated and published to &lt;a href=&#34;https://hub.docker.com/r/jenkinsxio/builder-base/&#34;&gt;Docker Hub&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;create-a-custom-builder-from-scratch&#34;&gt;Create a custom Builder from scratch&lt;/h2&gt;
 &lt;h3 id=&#34;builder-image&#34;&gt;Builder image&lt;/h3&gt;
 &lt;p&gt;First you need to create a docker image for your builder. For instance a starting &lt;code&gt;Dockerfile&lt;/code&gt; can look like this:&lt;/p&gt;
@@ -1685,10 +1685,9 @@ These images contain a number of pre-installed tools which get constantly update
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;export BUILDER_IMAGE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;YOUR_REGISTRY&amp;gt;/&amp;lt;YOUR_BUILDER_IMAGE&amp;gt;:&amp;lt;VERSION&amp;gt;
 docker build -t &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;BUILDER_IMAGE&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; .
 docker push &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;BUILDER_IMAGE&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do not worry, you do not have to run manually these steps every time when a new image needs to be built.
-Jenkins X can manage this for you. You just need to push your &lt;code&gt;Dockerfile&lt;/code&gt; in a repository similar with &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders/tree/master/builder-go&#34;&gt;this
-&lt;/a&gt; one. Adjust the &lt;code&gt;Jenkinsfile&lt;/code&gt; according with your organization and
-application name, and then import the repository into your Jenkins X platform with:&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do not worry, you do not have to run these steps manually every time when a new image needs to be built.
+Jenkins X can manage this for you. You just need to push your &lt;code&gt;Dockerfile&lt;/code&gt; in a repository similar with &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders/tree/master/builder-go&#34;&gt;this&lt;/a&gt; one.
+Adjust the &lt;code&gt;Jenkinsfile&lt;/code&gt; according with your organization and application name, and then import the repository into your Jenkins X platform with:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx import --url &amp;lt;REPOSITORY_URL&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;From now on, every time you push a change, Jenkins X will build and publish automatically the image.&lt;/p&gt;
 &lt;h3 id=&#34;install-the-builder&#34;&gt;Install the Builder&lt;/h3&gt;
@@ -1756,10 +1755,8 @@ application name, and then import the repository into your Jenkins X platform wi
     &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
 &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;overwrite-existing-builders&#34;&gt;Overwrite existing Builders&lt;/h2&gt;
-&lt;p&gt;Jenkins X comes with a number of &lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/jenkins-x-platform/values.yaml&#34;&gt;pre-installed builders&lt;/a&gt;
-which you can overwrite if required during installation or upgrade.&lt;/p&gt;
-&lt;p&gt;You just need to build your custom image either based on &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders-base/blob/master/Dockerfile.common&#34;&gt;builder-base&lt;/a&gt;
-image or the &lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34;&gt;builder image&lt;/a&gt; you want to overwrite. See more details above.&lt;/p&gt;
+&lt;p&gt;Jenkins X comes with a number of &lt;a href=&#34;https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/jenkins-x-platform/values.yaml&#34;&gt;pre-installed builders&lt;/a&gt; which you can overwrite if required during installation or upgrade.&lt;/p&gt;
+&lt;p&gt;You just need to build your custom image either based on the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-builders-base/blob/master/Dockerfile.common&#34;&gt;builder-base&lt;/a&gt; image or the &lt;a href=&#34;https://hub.docker.com/u/jenkinsxio/&#34;&gt;builder image&lt;/a&gt; you want to overwrite. See more details above.&lt;/p&gt;
 &lt;p&gt;Then you can create a &lt;code&gt;myvalues.yaml&lt;/code&gt; file in your &lt;code&gt;~/.jx/&lt;/code&gt; folder with the following content:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;jenkins&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;Agent&lt;/span&gt;:
