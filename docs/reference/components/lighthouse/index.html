@@ -24,11 +24,11 @@
 <meta property="og:description" content="lightweight webhook and [ChatOps](/docs/resources/guides/using-jx/faq/chatops/) handling for multiple git providers" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/reference/components/lighthouse/" />
-<meta property="article:modified_time" content="2020-06-08T09:45:45+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-08T15:37:58+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Lighthouse">
 <meta itemprop="description" content="lightweight webhook and [ChatOps](/docs/resources/guides/using-jx/faq/chatops/) handling for multiple git providers">
-<meta itemprop="dateModified" content="2020-06-08T09:45:45&#43;00:00" />
-<meta itemprop="wordCount" content="763">
+<meta itemprop="dateModified" content="2020-06-08T15:37:58&#43;00:00" />
+<meta itemprop="wordCount" content="719">
 
 
 
@@ -2003,9 +2003,8 @@ if (!doNotTrack) {
 <div class="td-content">
 	<h1>Lighthouse</h1>
 	<div class="lead">lightweight webhook and <a href="/docs/resources/guides/using-jx/faq/chatops/">ChatOps</a> handling for multiple git providers</div>
-	<p><a href="/docs/reference/components/prow/">Prow</a> is a great way to do <a href="/docs/resources/guides/using-jx/faq/chatops/">ChatOps</a> with <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipelines</a> though unfortunately its only supported for GitHub.com and is quite heavy and complex. To work around this we&rsquo;ve created <a href="https://github.com/jenkins-x/lighthouse">Lighthouse</a>.</p>
-<p><a href="https://github.com/jenkins-x/lighthouse">Lighthouse</a> is a lightweight <a href="/docs/resources/guides/using-jx/faq/chatops/">ChatOps</a> based webhook handler which can trigger <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipelines</a> on webhooks from multiple git providers such as: GitHub, GitHub Enterprise, BitBucket Server, BitBucket Cloud, GitLab, Gogs and Gitea.</p>
-<p>Currently Lighthouse is focussed on using <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipelines</a> with tekton though longer term it could be reused with tekton orchestrating Jenkins pipelines via the <a href="/docs/resources/guides/managing-jx/common-tasks/custom-jenkins/">Custom Jenkins Server App</a></p>
+	<p><a href="https://github.com/jenkins-x/lighthouse">Lighthouse</a> is a lightweight <a href="/docs/resources/guides/using-jx/faq/chatops/">ChatOps</a> based webhook handler which can trigger <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipelines</a> on webhooks from multiple git providers such as: GitHub, GitHub Enterprise, GitLab, and BitBucket Server. It is a successor to <a href="/docs/reference/components/prow/">Prow</a>, providing support for more SCM providers, a smaller footprint, and an easier path to adding features going forward. Lighthouse has been the default webhook handler in Jenkins X since early May, 2020.</p>
+<p>Currently Lighthouse is focused on using <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipelines</a> with tekton though longer term it could be reused with tekton orchestrating Jenkins pipelines via the <a href="/docs/resources/guides/managing-jx/common-tasks/custom-jenkins/">Custom Jenkins Server App</a></p>
 <h2 id="features">Features</h2>
 <p>Currently Lighthouse supports the common <a href="https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins">prow plugins</a> and handles push webhooks to branches &amp; Pull Request webhooks to then trigger Jenkins X pipelines.</p>
 <p>Lighthouse uses the same <code>config.yaml</code> and <code>plugins.yaml</code> file structure from Prow so that we can easily migrate from <code>prow &lt;-&gt; lighthouse</code>.</p>
@@ -2042,20 +2041,18 @@ if (!doNotTrack) {
   <span style="color:#66d9ef">gitServer</span>: https://my-gitlab-server.com
 <span style="color:#66d9ef">webhook</span>: lighthouse
 </code></pre></div><h2 id="comparisons-to-prow">Comparisons to Prow</h2>
-<p>Lighthouse is very prow-like and currently reuses the Prow plugin source code and a bunch of <a href="https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow/plugins">plugins from prow</a></p>
-<p>Its got a few differences though:</p>
+<p>Lighthouse is based on a fork of Prow&rsquo;s source code, including most of the built-in <a href="https://github.com/jenkins-x/lighthouse/tree/master/pkg/plugins">plugins from prow</a></p>
+<p>The most noteworthy differences are:</p>
 <ul>
-<li>rather than be GitHub specific lighthouse uses <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> so it can support any git provider</li>
-<li>lighthouse is mostly like <code>hook</code> from Prow; an auto scaling webhook handler - to keep the footprint small. This also means if anything goes wrong handling webhooks you only have one pod to look into.</li>
-<li>lighthouse is also very light. In Jenkins X we have about 10 pods related to prow; with lighthouse we have just 1 along with the tekton controller itself. That one lighthouse pod could easily be auto scaled too from 0 to many as it starts up very quickly.</li>
-<li>lighthouse focuses purely on Tekton pipelines so it does not require a <code>ProwJob</code> CRD; instead a push webhook to a release or pull request branch can trigger zero to many <code>PipelineRun</code> CRDs instead</li>
+<li>In order to support multiple SCM providers, Lighthouse uses <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> as an abstraction layer, allowing additional provider support to be implemented without needing significant changes within Lighthouse itself.</li>
+<li>Lighthouse has less moving parts and potential configuration than Prow, resulting in only four pods being run for Lighthouse: two webhook receiver replicas, a Keeper pod, which handles deciding when to merge and actually merging pull requests, and a Foghorn pod, which handles reporting commit statuses back to the provider.</li>
 </ul>
 <h2 id="porting-prow-commands">Porting Prow commands</h2>
-<p>If there are any prow commands you want which we&rsquo;ve not yet ported over, its relatively easy to port prow plugins.</p>
-<p>We&rsquo;ve reused the prow plugin code and configuration code; so its mostly a case of switching imports of <code>k8s.io/test-infra/prow</code> to <code>github.com/jenkins-x/lighthouse/pkg/prow</code> - then modifying the github client structs from, say, <code>github.PullRequest</code> to <code>scm.PullRequest</code>.</p>
-<p>Most of the github structs map 1-1 with the <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> equivalents (e.g. Issue, Commit, PullRequest) though the go-scm API does tend to return slices to pointers to resources by default. There are some naming differences at different parts of the API though.</p>
-<p>e.g. compare the <code>githubClient</code> API for the <a href="https://github.com/kubernetes/test-infra/blob/344024d30165cda6f4691cc178f25b16f1a1f5af/prow/plugins/lgtm/lgtm.go#L134-L150">prow lgtm</a> versus the <a href="https://github.com/jenkins-x/lighthouse/blob/master/pkg/prow/plugins/lgtm/lgtm.go#L135-L150">lighthouse lgtm</a>.</p>
-<p>All the prow plugin related code lives in the <a href="https://github.com/jenkins-x/lighthouse/tree/master/pkg/prow">pkg/prow</a> tree of packages. Mostly all we&rsquo;ve done is switch to using <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> and switch out the current prow agents and instead use a single <code>tekton</code> agent using the <a href="https://github.com/jenkins-x/lighthouse/blob/master/pkg/plumber/interface.go#L3-L6">PlumberClient</a> to trigger pipelines.</p>
+<p>If there are any Prow commands you want which we&rsquo;ve not yet ported over, it&rsquo;s relatively easy to port Prow plugins.</p>
+<p>We&rsquo;ve reused the Prow plugin code and configuration code as the basis for Lighthouse; so its mostly a case of switching imports of <code>k8s.io/test-infra/prow</code> to <code>github.com/jenkins-x/lighthouse</code> - then modifying the github client structs from, say, <code>github.PullRequest</code> to <code>scm.PullRequest</code>.</p>
+<p>Most of the GitHub structs map 1-1 with the <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> equivalents (e.g. Issue, Commit, PullRequest) though the go-scm API does tend to return slices to pointers to resources by default. There are some naming differences at different parts of the API though.</p>
+<p>e.g. compare the <code>githubClient</code> API for the <a href="https://github.com/kubernetes/test-infra/blob/344024d30165cda6f4691cc178f25b16f1a1f5af/prow/plugins/lgtm/lgtm.go#L134-L150">Prow lgtm</a> versus the <code>scmProviderClient</code> API for the <a href="https://github.com/jenkins-x/lighthouse/blob/b2090082db828fb2d4c11095c5e59bf4a828c8de/pkg/plugins/lgtm/lgtm.go#L135-L151">Lighthouse lgtm</a>.</p>
+<p>All the Prow-descended plugin related code lives in the <a href="https://github.com/jenkins-x/lighthouse/tree/master/pkg/plugins">pkg/plugins</a> tree of packages. Mostly all we&rsquo;ve done is switch to using <a href="https://github.com/jenkins-x/go-scm">jenkins-x/go-scm</a> and switch out the current Prow agents and instead use a single <code>tekton</code> agent using the <a href="https://github.com/jenkins-x/lighthouse/blob/master/pkg/launcher/interface.go#L12">PipelineLauncher</a> to trigger pipelines.</p>
 <h2 id="environment-variables">Environment variables</h2>
 <p>The following environment variables are used:</p>
 <table>
@@ -2155,7 +2152,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 8, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/4dfef5befef10ae17a9a67b23bb0aa856dba6838">release 0.0.1749 (4dfef5b)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 8, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/6cc6ed81d699877c6758b3ebb032e9e4a2551c3a">release 0.0.1750 (6cc6ed8)</a>
 </div>
 </div>
 
