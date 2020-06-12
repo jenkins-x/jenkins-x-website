@@ -31,7 +31,7 @@ Finally, use the &lt;code&gt;jx&lt;/code&gt; CLI to run &lt;code&gt;jx boot&lt;/
     </item>
     
     <item>
-      <title>Docs: Upgrading Jenkins X</title>
+      <title>Docs: Upgrade Jenkins X</title>
       <link>https://jenkins-x.io/docs/install-setup/upgrade-jx/</link>
       <pubDate>Wed, 01 May 2019 00:00:00 +0000</pubDate>
       
@@ -109,42 +109,7 @@ command.&lt;/a&gt;&lt;/p&gt;
     </item>
     
     <item>
-      <title>Docs: Securing Jenkins X</title>
-      <link>https://jenkins-x.io/docs/install-setup/security-features/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/install-setup/security-features/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X has a few useful addons that can aid with ensuring the ongoing security of your deployed applications. There are static and container security, as well as dynamic security addons available.&lt;/p&gt;
-&lt;h3 id=&#34;static-security&#34;&gt;Static security&lt;/h3&gt;
-&lt;p&gt;The &lt;a href=&#34;https://github.com/anchore/anchore-engine&#34;&gt;Anchore Engine&lt;/a&gt; is used to provide image security, by examining contents of containers either in pull request/review state, or on running containers.&lt;/p&gt;
-&lt;p&gt;This was introduced &lt;a href=&#34;https://jenkins.io/blog/2018/05/08/jenkins-x-anchore/&#34;&gt;in this blog post&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;To enable this run the following command and let it prepare the services:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon anchore
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will launch the require engine and services, and make it available to run on any of your teams environments, and on any running preview applications.&lt;/p&gt;
-&lt;p&gt;To try it out, you can use the following command to report on any problems found:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get cve --environment&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;staging
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is a video &lt;a href=&#34;https://youtu.be/rB8Sw0FqCQk&#34;&gt;showing it in action&lt;/a&gt;. To remove this addon:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx delete addon anchore
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;dynamic-security&#34;&gt;Dynamic security&lt;/h3&gt;
-&lt;p&gt;The Open Web Application Security Project publishes a tool called ZAP: the &lt;a href=&#34;https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project&#34;&gt;Zed Attack Proxy&lt;/a&gt;. This provides various tools including a baseline command that can be run against an application endpoint looking for a base set of problems.&lt;/p&gt;
-&lt;p&gt;In Jenkins X this can be run against a Preview Application (that each application gets) by creating a post-preview hook:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon owasp-zap
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Any pull requests will then have their preview application run through the ZAP baseline scan, and should any failures be detected it will fail the CI pipeline automatically. The pipelines do not be changed to run this test, and they will apply to all pull requests for the team.&lt;/p&gt;
-&lt;p&gt;To remove the ZAP test:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx delete post preview job --name owasp-zap
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The post preview hook can also be configured with a command like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create post preview job --name owasp --image owasp/zap2docker-weekly:latest -c &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;zap-baseline.py&amp;#34;&lt;/span&gt; -c &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;-I&amp;#34;&lt;/span&gt; -c &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;-t&amp;#34;&lt;/span&gt; -c &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;\$(JX_PREVIEW_URL)&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can have multiple hooks configured, so if you had specific containers that had probes/tests you would like to run against every preview app (ie every pull request) you could add it this way.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/reference/preview/&#34;&gt;Preview Environments&lt;/a&gt;&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Configuring SCMs</title>
+      <title>Docs: Configure SCM</title>
       <link>https://jenkins-x.io/docs/install-setup/configure-scm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
