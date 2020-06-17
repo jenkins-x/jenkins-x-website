@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/installing/boot/clouds/google/" />
 <meta property="article:published_time" content="2017-02-01T00:00:00+00:00" />
-<meta property="article:modified_time" content="2020-06-17T10:18:57+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-17T10:26:54+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Google">
 <meta itemprop="description" content="Using Boot on Google Cloud (GCP)">
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2020-06-17T10:18:57&#43;00:00" />
-<meta itemprop="wordCount" content="64">
+<meta itemprop="dateModified" content="2020-06-17T10:26:54&#43;00:00" />
+<meta itemprop="wordCount" content="534">
 
 
 
@@ -310,7 +310,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/docs/install-setup/installing/install-binary/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Install the jx binary</a>
+    <a  href="/docs/install-setup/installing/install-binary/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Download jx</a>
   </li>
   <ul>
     <li class="collapse " id="docsinstall-setupinstallinginstall-binary">
@@ -333,7 +333,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/docs/install-setup/installing/boot/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">Jenkins X Boot</a>
+    <a  href="/docs/install-setup/installing/boot/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">Run Boot</a>
   </li>
   <ul>
     <li class="collapse show" id="docsinstall-setupinstallingboot">
@@ -379,6 +379,48 @@ if (!doNotTrack) {
   </ul>
 </ul>
 
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingboothow-it-works" href="/docs/install-setup/installing/boot/how-it-works/">How it works</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootsecrets" href="/docs/install-setup/installing/boot/secrets/">Secrets</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootgit-provider" href="/docs/install-setup/installing/boot/git-provider/">Git Provider</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootstorage" href="/docs/install-setup/installing/boot/storage/">Storage</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootingress" href="/docs/install-setup/installing/boot/ingress/">Ingress</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootwebhooks" href="/docs/install-setup/installing/boot/webhooks/">Webhooks</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootrepository" href="/docs/install-setup/installing/boot/repository/">Artifact Repository</a>
       
       
     </li>
@@ -2098,6 +2140,18 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#configuring-dns-and-tls">Configuring DNS and TLS</a>
+      <ul>
+        <li><a href="#configuring-google-cloud-dns">Configuring Google Cloud DNS</a></li>
+        <li><a href="#configuring-external-dns-in-jenkins-x">Configuring External DNS in Jenkins X</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
 
 
           </div>
@@ -2149,7 +2203,7 @@ if (!doNotTrack) {
 
 
 <li class="breadcrumb-item" >
-	<a href="https://jenkins-x.io/docs/install-setup/installing/boot/">Jenkins X Boot</a>
+	<a href="https://jenkins-x.io/docs/install-setup/installing/boot/">Run Boot</a>
 </li>
 
 
@@ -2179,6 +2233,115 @@ if (!doNotTrack) {
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">clusterConfig</span>:
     <span style="color:#66d9ef">provider</span>: gke
 </code></pre></div><p>We also recommend using <a href="/architecture/jenkins-x-pipelines/">Jenkins X Pipelines</a> as this works out of the box with kaniko for creating container images without needing a docker daemon and works well with GCR.</p>
+<h2 id="configuring-dns-and-tls">Configuring DNS and TLS</h2>
+<p>For a secure Jenkins X installation, you must enable TLS when interacting with the vault service.
+To configure TLS, you must first configure Zone DNS settings within Google Cloud Platform, and then configure external DNS settings for Ingress and TLS in the <code>jx-requirements.yml</code> configuration file.</p>
+<h3 id="configuring-google-cloud-dns">Configuring Google Cloud DNS</h3>
+<p>You should have a domain name registered with a name registrar, for example <code>www.acmecorp.example</code> before configuring DNS Zone settings.
+For more information, refer to <a href="https://cloud.google.com/dns/docs/quickstart#create_a_managed_public_zone">Creating a managed public zone</a> from the Google documentation.</p>
+<ol>
+<li>
+<p>Navigate via browser to the <a href="https://console.cloud.google.com/projectselector2/home/dashboard">Project
+Selector</a>
+page. and choose your Google Cloud Platform project.</p>
+</li>
+<li>
+<p><a href="https://console.cloud.google.com/networking/dns/zones/~new">Create a DNS
+zone</a></p>
+<ol>
+<li>
+<p>Choose Public as your <em>Zone Type</em>.</p>
+</li>
+<li>
+<p>Type a <em>Zone Name</em> for your zone.</p>
+</li>
+<li>
+<p>Input a DNS suffix in <em>DNS name</em>, for example <code>acmecorp.example</code>.</p>
+</li>
+<li>
+<p>Choose your <em>DNSSEC</em> or DNS Security state, which should be set to <code>Off</code> for this configuration.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>(Optional) Input a <em>Description</em> for your DNS zone.</p>
+</li>
+<li>
+<p>Click <code>Create</code>.</p>
+</li>
+</ol>
+<p>Once created, the <em>Zone Details</em> page loads.
+<em>NS</em> (Name server) and <em>SOA</em> (Start of authority) records are automatically created for your domain (for example <code>acmecorp.example</code>)</p>
+<h3 id="configuring-external-dns-in-jenkins-x">Configuring External DNS in Jenkins X</h3>
+<p>Once you have configured Google Cloud DNS, you can use browse the <a href="https://console.cloud.google.com/net-services/dns/zones">Zones</a> page in your Google Cloud Platform project to setup your external domain.</p>
+
+
+<div class="alert alert-primary" role="alert">
+
+NOTE: External DNS will automatically update DNS records if you reuse the domain name, so if you delete an old cluster and create a new one it will preserve the same domain configuration for the new cluster.
+</div>
+
+<p>To setup External DNS:</p>
+<ol>
+<li>
+<p>Choose a unique DNS name; you can use nested domains (for example, <code>cluster1.acmecorp.example</code>). Enter the name in the <code>DNS Name</code> field</p>
+</li>
+<li>
+<p>Run the <code>jx create domain</code> command against your domain name, for example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create domain gke --domain cluster1.acmecorp.example
+</code></pre></div><p>You will be prompted for information as needed during the setup:</p>
+<ol>
+<li>
+<p>Choose your Google Cloud Platform project from the available list.</p>
+</li>
+<li>
+<p>Update your existing managed servers to use the displayed list of Cloud DNS nameservers. Copy the list for use in the next steps.</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>Next up is configuring GCP:</p>
+<ol>
+<li>
+<p>From the Google Cloud Platform <a href="https://console.cloud.google.com/net-services/dns/zones">Zones</a> page, change the <em>Resource Record Type</em> to <code>NS</code>) and use the default values for your domain for for <em>TTL</em> (<code>5</code>) and <em>TTL Unit</em> (<code>minutes</code>).</p>
+</li>
+<li>
+<p>Add the first nameserver to the <em>Name server</em> field</p>
+</li>
+<li>
+<p>Click <code>Add item</code> and add any subsequent nameservers.</p>
+</li>
+<li>
+<p>Click <code>Create</code>.</p>
+</li>
+</ol>
+<p>Finally, configure Jenkins X for the new domain names:</p>
+<ol>
+<li>
+<p>Edit the <code>jx-requirements.yml</code> file and update the <code>domain</code> field (in <code>ingress</code>) to your domain name, for example <code>cluster1.acmecorp.example</code></p>
+</li>
+<li>
+<p>In the <em>tls</em> setting, enable TLS with <code>enabled: true</code></p>
+<p>The resulting <code>jx-requirements.yml</code> entries for these settings should look similar to the example below:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"> <span style="color:#66d9ef">gitops</span>: <span style="color:#66d9ef">true</span>
+ <span style="color:#66d9ef">ingress</span>:
+   <span style="color:#66d9ef">domain</span>: cluster1.acmecorp.example
+   <span style="color:#66d9ef">externalDNS</span>: <span style="color:#66d9ef">true</span>
+   <span style="color:#66d9ef">namespaceSubDomain</span>: -jx.
+   <span style="color:#66d9ef">tls</span>:
+     <span style="color:#66d9ef">email</span>: certifiable@acmecorp.example
+     <span style="color:#66d9ef">enabled</span>: <span style="color:#66d9ef">true</span>
+     <span style="color:#66d9ef">production</span>: <span style="color:#66d9ef">true</span>
+ <span style="color:#66d9ef">secretStorage</span>: vault
+</code></pre></div></li>
+</ol>
+
+
+<div class="alert alert-primary" role="alert">
+
+Remember to run <code>jx boot</code> for the changes to take effect in your environment.
+</div>
+
 
 	
 		<style>
@@ -2242,7 +2405,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/ae901582d915c2e5be8e4ec445e13d90a3b50ecd">release 0.0.1772 (ae90158)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5057efd5d50297ea104a42ef596759c31e800148">release 0.0.1773 (5057efd)</a>
 </div>
 </div>
 

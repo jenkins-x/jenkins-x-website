@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/reference/components/vault/" />
 <meta property="article:published_time" content="2019-01-08T00:00:00+00:00" />
-<meta property="article:modified_time" content="2020-06-17T10:18:57+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-17T10:26:54+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Vault">
 <meta itemprop="description" content="Manage your secrets">
 <meta itemprop="datePublished" content="2019-01-08T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2020-06-17T10:18:57&#43;00:00" />
-<meta itemprop="wordCount" content="1278">
+<meta itemprop="dateModified" content="2020-06-17T10:26:54&#43;00:00" />
+<meta itemprop="wordCount" content="562">
 
 
 
@@ -306,7 +306,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/docs/install-setup/installing/install-binary/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Install the jx binary</a>
+    <a  href="/docs/install-setup/installing/install-binary/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Download jx</a>
   </li>
   <ul>
     <li class="collapse " id="docsinstall-setupinstallinginstall-binary">
@@ -329,7 +329,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/docs/install-setup/installing/boot/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Jenkins X Boot</a>
+    <a  href="/docs/install-setup/installing/boot/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Run Boot</a>
   </li>
   <ul>
     <li class="collapse " id="docsinstall-setupinstallingboot">
@@ -375,6 +375,48 @@ if (!doNotTrack) {
   </ul>
 </ul>
 
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingboothow-it-works" href="/docs/install-setup/installing/boot/how-it-works/">How it works</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootsecrets" href="/docs/install-setup/installing/boot/secrets/">Secrets</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootgit-provider" href="/docs/install-setup/installing/boot/git-provider/">Git Provider</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootstorage" href="/docs/install-setup/installing/boot/storage/">Storage</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootingress" href="/docs/install-setup/installing/boot/ingress/">Ingress</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootwebhooks" href="/docs/install-setup/installing/boot/webhooks/">Webhooks</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-docsinstall-setupinstallingbootrepository" href="/docs/install-setup/installing/boot/repository/">Artifact Repository</a>
       
       
     </li>
@@ -2096,12 +2138,20 @@ if (!doNotTrack) {
 
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#vault-features">Vault features</a></li>
-  </ul>
-
-  <ul>
-    <li><a href="#configuring-google-cloud-dns">Configuring Google Cloud DNS</a></li>
-    <li><a href="#configuring-external-dns-in-jenkins-x">Configuring External DNS in Jenkins X</a></li>
+    <li><a href="#what-is-vault">What is Vault</a></li>
+    <li><a href="#configuration">Configuration</a>
+      <ul>
+        <li><a href="#security">Security</a></li>
+      </ul>
+    </li>
+    <li><a href="#accessing-secrets">Accessing secrets</a>
+      <ul>
+        <li><a href="#listing-secrets">Listing secrets</a></li>
+        <li><a href="#reading-secrets">Reading secrets</a></li>
+        <li><a href="#updating-secrets">Updating secrets</a></li>
+      </ul>
+    </li>
+    <li><a href="#rotating-secrets">Rotating secrets</a></li>
   </ul>
 </nav>
 
@@ -2160,249 +2210,65 @@ if (!doNotTrack) {
 <div class="td-content">
 	<h1>Vault</h1>
 	<div class="lead">Manage your secrets</div>
-	
-
-<div class="pageinfo pageinfo-primary">
-<p>Note that currently Vault only works on Google Cloud Platform (GCP) with Google Kubernetes Engine (GKE). We&rsquo;re working on expanding support to other cloud providers.</p>
-<p>In addition, we don&rsquo;t currently support pointing to an existing Vault instance, but there is an open issue to address this.</p>
-
-</div>
-
-<h1 id="what-is-vault">What is Vault?</h1>
-<p><a href="https://www.vaultproject.io">Vault</a> is an open source project for securely managing secrets and is our preferred way to manage secrets across your environments in Jenkins X.</p>
-<p>In traditional computing infrastructures, all of the resources and
-components (hardware, networking, availability, security and deployment)
-as well as associated labor costs are locally managed. Third-party
-computing environments such as cloud service providers and Git hosts
-offer decentralized solutions with distinct advantages in service
-reliability and costs over the traditional solutions.</p>
-<p>However, one issue with using cloud services, distributed storage, and
-remote repositories is the lack of trusted networks, vetted hardware,
-and other closely observed security measures practiced in locally-hosted
-infrastructure. For the sake of convenience, users often store sensitive
-information like authentication credentials in open, public
-repositories, exposed to potential malicious activity.</p>
-<p><a href="https://www.vaultproject.io/">Hashicorp <em>Vault</em></a> is one tool that
-centralizes the management of <em>secrets</em>: resources that provide
-authentication to your computing environment such as tokens, keys,
-passwords, and certificates.</p>
-<p>Jenkins X handles security and authentication
-resources through the integration of Vault. Users can deploy Vault to
-securely store and manage all aspects of their development platform.</p>
-<p>Jenkins X installs and configures Vault for your
-cluster by default through the cluster creation process.</p>
-<h2 id="vault-features">Vault features</h2>
-<p>Vault is a tool for accessing and storing user secrets. It manages the
-complexity of secure resource access:</p>
-<ul>
-<li>
-<p>Storing secrets - Vault places secrets in an encrypted format in a
-remote storage bucket.</p>
-</li>
-<li>
-<p>Secret creation and deletion - Vault creates secrets for dynamic
-access to storage buckets, ephemeral access that are
-created/destroyed as needed for temporary data access, and
-generating keys for database authentication.</p>
-</li>
-<li>
-<p>Encrypting data - Vault stores secrets in a remote storage bucket in
-secure directories using strong encryption.</p>
-</li>
-</ul>
-<p>Jenkins X interacts with Vault via the <code>jx</code>
-command line program. There are commands for creating, deleting, and
-managing secrets and vaults.</p>
-<p>Jenkins X uses Vault to store all Jenkins X
-secrets, such as the GitHub personal access token generated for the
-pipeline bot when <a href="/docs/getting-started/setup/boot/">creating a Jenkins X
-cluster</a>. It also stores
-any GitOps secrets, such as passwords for storage buckets, and keys for
-secure server access.</p>
-<p>Secrets can be retrieved by the pipeline or via command-line if logged
-into the account associated with the kubernetes service as well as any
-secrets stored in the <code>jx</code> namespace for the pipeline.</p>
-<p>Vaults are provisioned in kubernetes using <code>vault-operator</code>, an
-open-source Kubernetes controller installed when Vault is configured
-during cluster creation and Jenkins X installation on the cluster.</p>
-<h1 id="using-vault-on-the-cli">Using Vault on the CLI</h1>
-<p>First you need to download an install the <a href="https://github.com/starkandwayne/safe">safe</a> CLI for Vault.</p>
-<p>Once you have installed <a href="https://github.com/starkandwayne/safe">safe</a> you can run:</p>
-<pre><code>eval `jx get vault-config`
-</code></pre><p>you should now be able to use the <a href="https://github.com/starkandwayne/safe">safe</a> CLI to  access your vault.</p>
-<p>You can then get a secret via:</p>
-<pre><code>safe get /secret/my-cluster-name/creds/my-secret
-</code></pre><p>or you can update a secret via:</p>
-<pre><code>safe set /secret/my-cluster-name/creds/my-secret username=myname password=mytoken
-</code></pre><p>If you have a blob of JSON to encode as a secret, such as a service account key then convert the file to base64 first then set it&hellip;</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cat my-service-account.json | base64 &gt; myfile.txt
-safe set /secret/my-cluster-name/creds/my-secret json<span style="color:#f92672">=</span>@myfile.txt
-</code></pre></div><h1 id="configuring-dns-and-tls-settings-for-vault">Configuring DNS and TLS settings for Vault</h1>
-<p>For a secure Jenkins X installation, you must
-enable TLS when interacting with the vault service. To configure TLS,
-you must first configure Zone DNS settings within Google Cloud Platform,
-and then configure external DNS settings for Ingress and TLS in the
-<code>jx-requirements.yml</code> configuration file.</p>
-<h2 id="configuring-google-cloud-dns">Configuring Google Cloud DNS</h2>
-<p>In order to configure Vault for the proper DNS and TLS access, you must
-configure Google Cloud DNS settings appropriately.</p>
-<p>You should have a domain name registered with a name
-registrar, for example <code>www.acmecorp.example</code> before configuring DNS
-Zone settings. For more information, refer to <a href="https://cloud.google.com/dns/docs/quickstart#create_a_managed_public_zone">Creating a managed public
-zone</a>
-from the Google documentation.</p>
-<ol>
-<li>
-<p>Navigate via browser to the <a href="https://console.cloud.google.com/projectselector2/home/dashboard">Project
-Selector</a>
-page. and choose your Google Cloud Platform project.</p>
-</li>
-<li>
-<p><a href="https://console.cloud.google.com/networking/dns/zones/~new">Create a DNS
-zone</a></p>
-</li>
-<li>
-<p>Choose Public as your <em>Zone Type</em>.</p>
-</li>
-<li>
-<p>Type a <em>Zone Name</em> for your zone.</p>
-</li>
-<li>
-<p>Input a DNS suffix in <em>DNS name</em>, for example
-<code>acmecorp.example</code>.</p>
-</li>
-<li>
-<p>Choose your <em>DNSSEC</em> or DNS Security state, which should be set
-to <code>Off</code> for this configuration.</p>
-</li>
-<li>
-<p>(Optional) Input a <em>Description</em> for your DNS zone.</p>
-</li>
-<li>
-<p>Click <code>Create</code>.</p>
-</li>
-</ol>
-<p>Once created, the <em>Zone Details</em> page loads. <em>NS</em> (Name server) and
-<em>SOA</em> (Start of autority) records are automatically created for your
-domain (for example <code>acmecorp.example</code>)</p>
-<h2 id="configuring-external-dns-in-jenkins-x">Configuring External DNS in Jenkins X</h2>
-<p>Once you have configured Google Cloud DNS, you can use browse the
-<a href="https://console.cloud.google.com/net-services/dns/zones">Zones</a> page in
-your Google Cloud Platform project to setup your external domain.</p>
+	<h2 id="what-is-vault">What is Vault</h2>
+<p><a href="https://www.vaultproject.io">Hashicorp Vault</a> is an open source project for securely managing secrets.
+Secrets are resources that provide authentication to your computing environment such as tokens, keys, passwords, and certificates.
+Vault is the preferred way in Jenkins X to manage these secrets.
+For example, the GitHub personal access token generated for the pipeline bot is stored in Vault.</p>
+<p>There are two ways you can use Vault in Jenkins X.
+If you are already a Vault instance, you can configure Jenkins X to use this instance to store its secrets.
+This way you have a central location for managing all secrets of your infrastucture.
+If you do not have a Vault instance, Jenkins X can, depending on where you run your cluster, install Vault as part of the installation process.
+In this case, the Banzai Cloud <a href="https://github.com/banzaicloud/bank-vaults">Bank-Vaults operator</a> is provisioned in the Jenkins X development namespace.</p>
 
 
 <div class="alert alert-primary" role="alert">
 
-NOTE: External DNS will automatically updates DNS records if you reuse the
-domain name, so if you delete an old cluster and create a new one it
-will preserve the same domain configuration for the new cluster.
+The Bank-Vaults operator is currently only supported with GKE or EKS.
 </div>
 
-<p>To setup External DNS:</p>
-<ol>
-<li>
-<p>Choose a unique DNS name; you can use nested domains (for example,
- <code>cluster1.acmecorp.example</code>). Enter the name in the <code>DNS Name</code>
-field</p>
-</li>
-<li>
-<p>Run the <code>jx create domain</code> command against your domain name, for example:</p>
-</li>
-</ol>
-<pre><code>jx create domain gke --domain cluster1.acmecorp.example
-</code></pre><pre><code>You will be prompted for information as needed during the setup:
+<h2 id="configuration">Configuration</h2>
+<p>The configuration of Vault occurs during Jenkins X <a href="/docs/install-setup/installing/boot">Boot</a>.
+Refer to the <a href="/docs/install-setup/installing/boot/secrets/#vault">Boot setup instructions for Vault</a> to see how to configure Jenkins X to use an internal or external Vault instance.</p>
+<h3 id="security">Security</h3>
+<p>From a security point of view it is important that the communication with the Vault API is secured by TLS.
+If you use your own external Vault instance, TLS configuration is in your hands and hopefully already setup.
+If you let Jenkins X install and manage the Bank-Vaults operator, TLS is per default not enabled.
+Refer to <a href="/docs/install-setup/installing/boot/clouds/google">Configuring DNS and TLS on GKE</a> and <a href="/docs/install-setup/installing/boot/clouds/amazon/#configuring-dns-and-tls-on-eks">Configuring DNS and TLS on EKS</a> for more information on how to secure your Jenkins X installation using TLS for the cloud providers Google and AWS.</p>
+<h2 id="accessing-secrets">Accessing secrets</h2>
+<p>You can read and write secrets stored in Vault from the command line.
+To do so, you need first to download an install the <a href="https://learn.hashicorp.com/vault/getting-started/install"><code>vault</code></a> CLI.
+Once you have <code>vault</code> installed you can configure your terminal session to connect to Vault by running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">eval <span style="color:#e6db74">`</span>jx get vault-config<span style="color:#e6db74">`</span>
+</code></pre></div><h3 id="listing-secrets">Listing secrets</h3>
+<p>You can start exploring the Jenkins X secrets stored in Vault by runnning:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">vault kv list secret
+</code></pre></div><p><em>secret</em> is the default <a href="https://www.vaultproject.io/docs/secrets">mount point</a> for the Jenkins X secrets.
+If you are using an external Vault instance this mount point is configurable via the <em>secretEngineMountPoint</em> option in <em>jx-requirements.yml</em>.
+You find more information in the Vault configuration paragraph of the <a href="/docs/install-setup/installing/boot">Boot</a> documentation.</p>
 
-1.  Choose your Google Cloud Platform project from the available list.
 
-2.  Update your existing managed servers to use the displayed list of Cloud DNS nameservers. Copy the list for use in the next steps.
-</code></pre>
-<p>Next up is configuring GCP:</p>
-<ol>
-<li>
-<p>From the Google Cloud Platform <a href="https://console.cloud.google.com/net-services/dns/zones">Zones</a> page, change the <em>Resource Record Type</em> to <code>NS</code>) and use the default values for your domain for for <em>TTL</em> (<code>5</code>) and <em>TTL Unit</em> (<code>minutes</code>).</p>
-</li>
-<li>
-<p>Add the first nameserver to the <em>Name server</em> field</p>
-</li>
-<li>
-<p>Click <code>Add item</code> and add any subsequent nameservers.</p>
-</li>
-<li>
-<p>Click <code>Create</code>.</p>
-</li>
-</ol>
-<p>Finally, configure Jenkins X for the new domain names:</p>
-<ol>
-<li>
-<p>Edit the <code>jx-requirements.yml</code> file and update the <code>domain</code> field (in <code>ingress</code>) to your domain name, for example <code>cluster1.acmecorp.example</code></p>
-</li>
-<li>
-<p>In the <em>tls</em> setting, enable TLS with <code>enabled: true</code></p>
-</li>
-</ol>
-<p>The resulting <code>jx-requirements.yml</code> entries for these settings should look similar to the example below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">gitops</span>: <span style="color:#66d9ef">true</span>
-<span style="color:#66d9ef">ingress</span>:
-  <span style="color:#66d9ef">domain</span>: cluster1.acmecorp.example
-  <span style="color:#66d9ef">externalDNS</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#66d9ef">namespaceSubDomain</span>: -jx.
-  <span style="color:#66d9ef">tls</span>:
-    <span style="color:#66d9ef">email</span>: certifiable@acmecorp.example
-    <span style="color:#66d9ef">enabled</span>: <span style="color:#66d9ef">true</span>
-    <span style="color:#66d9ef">production</span>: <span style="color:#66d9ef">true</span>
-<span style="color:#66d9ef">secretStorage</span>: vault
+<div class="alert alert-primary" role="alert">
+
+<p>The Vault configuration is also stored in the <em>jx-install-config</em> ConfigMap of your Jenkins X development namespace.
+You can retrieve it by running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl get cm jx-install-config -o<span style="color:#f92672">=</span>jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{.data[&#39;vaultSecretEngineMountPoint&#39;]}&#34;</span>
 </code></pre></div>
-
-<div class="alert alert-primary" role="alert">
-
-Remember to run <code>jx boot</code> for the changes to take effect in your
-environment.
 </div>
 
-<h1 id="creating-a-vault">Creating a Vault</h1>
-<p>A vault is created by default using <a href="/getting-started/boot/">jx boot</a> to create your cluster, unless you specified during the cluster configuration not to create the vault. In this case, you can create one post-installation
-with the <code>jx create</code> command-line interface:</p>
-<p>jx create vault</p>
-<ol>
-<li>
-<p>The program will ask you the name you want for your vault (for
-example, <code>acmevault</code>)</p>
-</li>
-<li>
-<p>The program will ask you for your Google Cloud Zone of choice. Refer
-to <a href="https://cloud.google.com/compute/docs/regions-zones/">Regions and
-Zones</a> in the
-Google Cloud documentation for more information. In this example,
-<code>us-east1-c</code> is chosen for proximity to Acme Headquarters.</p>
-</li>
-<li>
-<p>If you have a storage bucket account configured from creating a
-cluster with <code>jx boot</code>, then the <code>jx create vault</code> command will scan
-your installation for Vault-related storage buckets and, if found,
-prompt you to approve deleting and recreating the Vault from
-scratch.</p>
-</li>
-<li>
-<p>The program will ask you the <em>Expose type</em> for your vault in order
-to create rules and routes for cluster load balancer and other
-services. Default is <code>Ingress</code>.</p>
-</li>
-<li>
-<p>The program will ask for a cluster domain. Default is the one
-created in <a href="/docs/getting-started/setup/boot/">the Cluster creation
-process</a> such as
-<code>192.168.1.100.nip.io</code>.</p>
-</li>
-<li>
-<p>The program will ask for an <code>URLTemplate</code>. Press <code>Enter</code> to
-use the default value.</p>
-</li>
-<li>
-<p>The program will verify your answers to the previous questions in
-summary and prompt you to approve the Vault creation (default is
-<code>Yes</code>).</p>
-</li>
-</ol>
+<h3 id="reading-secrets">Reading secrets</h3>
+<p>You can then read a secret via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"> vault kv get secret/&lt;cluster-name&gt;/pipelineUser
+</code></pre></div><h3 id="updating-secrets">Updating secrets</h3>
+<p>You can update a secret via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">vault kv put secret/&lt;cluster-name&gt;/pipelineUser token<span style="color:#f92672">=</span>&lt;token-value&gt;
+</code></pre></div><p>If you have a blob of JSON to encode as a secret, such as a service account key then base64 encode the data first:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cat my-service-account.json | base64 &gt; my-service-account-base64.txt
+vault kv put secret/&lt;cluster-name&gt;/my-secret token<span style="color:#f92672">=</span>my-service-account-base64.txt
+</code></pre></div><h2 id="rotating-secrets">Rotating secrets</h2>
+<p>To rotate a secret, follow the steps described in the <a href="/docs/reference/components/vault#updating-secrets">Updating a secret</a> section followed by rerunning <a href="/docs/install-setup/installing/boot">Boot</a> (<code>jx boot</code>).
+The reason you need to run Boot, either locally or kicking of the master pipline of the dev repository, is that as part of the Boot process the secrets within Vault get copied into appropriate Kubernetes Secrets which then are accessed by the various components of Jenkins X.
+Without running Boot the changes to Vault will not take effect yet.</p>
 
 	
 		<style>
@@ -2466,7 +2332,7 @@ summary and prompt you to approve the Vault creation (default is
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/ae901582d915c2e5be8e4ec445e13d90a3b50ecd">release 0.0.1772 (ae90158)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5057efd5d50297ea104a42ef596759c31e800148">release 0.0.1773 (5057efd)</a>
 </div>
 </div>
 

@@ -29,6 +29,115 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
     &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We also recommend using &lt;a href=&#34;https://jenkins-x.io/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; as this works out of the box with kaniko for creating container images without needing a docker daemon and works well with GCR.&lt;/p&gt;
+&lt;h2 id=&#34;configuring-dns-and-tls&#34;&gt;Configuring DNS and TLS&lt;/h2&gt;
+&lt;p&gt;For a secure Jenkins X installation, you must enable TLS when interacting with the vault service.
+To configure TLS, you must first configure Zone DNS settings within Google Cloud Platform, and then configure external DNS settings for Ingress and TLS in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; configuration file.&lt;/p&gt;
+&lt;h3 id=&#34;configuring-google-cloud-dns&#34;&gt;Configuring Google Cloud DNS&lt;/h3&gt;
+&lt;p&gt;You should have a domain name registered with a name registrar, for example &lt;code&gt;www.acmecorp.example&lt;/code&gt; before configuring DNS Zone settings.
+For more information, refer to &lt;a href=&#34;https://cloud.google.com/dns/docs/quickstart#create_a_managed_public_zone&#34;&gt;Creating a managed public zone&lt;/a&gt; from the Google documentation.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Navigate via browser to the &lt;a href=&#34;https://console.cloud.google.com/projectselector2/home/dashboard&#34;&gt;Project
+Selector&lt;/a&gt;
+page. and choose your Google Cloud Platform project.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://console.cloud.google.com/networking/dns/zones/~new&#34;&gt;Create a DNS
+zone&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Choose Public as your &lt;em&gt;Zone Type&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Type a &lt;em&gt;Zone Name&lt;/em&gt; for your zone.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Input a DNS suffix in &lt;em&gt;DNS name&lt;/em&gt;, for example &lt;code&gt;acmecorp.example&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Choose your &lt;em&gt;DNSSEC&lt;/em&gt; or DNS Security state, which should be set to &lt;code&gt;Off&lt;/code&gt; for this configuration.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;(Optional) Input a &lt;em&gt;Description&lt;/em&gt; for your DNS zone.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Click &lt;code&gt;Create&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Once created, the &lt;em&gt;Zone Details&lt;/em&gt; page loads.
+&lt;em&gt;NS&lt;/em&gt; (Name server) and &lt;em&gt;SOA&lt;/em&gt; (Start of authority) records are automatically created for your domain (for example &lt;code&gt;acmecorp.example&lt;/code&gt;)&lt;/p&gt;
+&lt;h3 id=&#34;configuring-external-dns-in-jenkins-x&#34;&gt;Configuring External DNS in Jenkins X&lt;/h3&gt;
+&lt;p&gt;Once you have configured Google Cloud DNS, you can use browse the &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34;&gt;Zones&lt;/a&gt; page in your Google Cloud Platform project to setup your external domain.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+NOTE: External DNS will automatically update DNS records if you reuse the domain name, so if you delete an old cluster and create a new one it will preserve the same domain configuration for the new cluster.
+&lt;/div&gt;
+
+&lt;p&gt;To setup External DNS:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Choose a unique DNS name; you can use nested domains (for example, &lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;). Enter the name in the &lt;code&gt;DNS Name&lt;/code&gt; field&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Run the &lt;code&gt;jx create domain&lt;/code&gt; command against your domain name, for example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create domain gke --domain cluster1.acmecorp.example
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You will be prompted for information as needed during the setup:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Choose your Google Cloud Platform project from the available list.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Update your existing managed servers to use the displayed list of Cloud DNS nameservers. Copy the list for use in the next steps.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Next up is configuring GCP:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;From the Google Cloud Platform &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34;&gt;Zones&lt;/a&gt; page, change the &lt;em&gt;Resource Record Type&lt;/em&gt; to &lt;code&gt;NS&lt;/code&gt;) and use the default values for your domain for for &lt;em&gt;TTL&lt;/em&gt; (&lt;code&gt;5&lt;/code&gt;) and &lt;em&gt;TTL Unit&lt;/em&gt; (&lt;code&gt;minutes&lt;/code&gt;).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Add the first nameserver to the &lt;em&gt;Name server&lt;/em&gt; field&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Click &lt;code&gt;Add item&lt;/code&gt; and add any subsequent nameservers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Click &lt;code&gt;Create&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Finally, configure Jenkins X for the new domain names:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and update the &lt;code&gt;domain&lt;/code&gt; field (in &lt;code&gt;ingress&lt;/code&gt;) to your domain name, for example &lt;code&gt;cluster1.acmecorp.example&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In the &lt;em&gt;tls&lt;/em&gt; setting, enable TLS with &lt;code&gt;enabled: true&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The resulting &lt;code&gt;jx-requirements.yml&lt;/code&gt; entries for these settings should look similar to the example below:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+ &lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: cluster1.acmecorp.example
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: -jx.
+   &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
+     &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;: certifiable@acmecorp.example
+     &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+     &lt;span style=&#34;color:#66d9ef&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+ &lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: vault
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+Remember to run &lt;code&gt;jx boot&lt;/code&gt; for the changes to take effect in your environment.
+&lt;/div&gt;
+
 
       </description>
     </item>
@@ -435,14 +544,16 @@
 &lt;p&gt;Then once you have something working, incrementally try enabling each of those in turn.&lt;/p&gt;
 &lt;p&gt;If a helm step fails some resources may have already been created, running the step again will result in a conflict (resource already exists). To delete all created resource:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;configure jx to keep the tmp folder with compiled helm files:&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;configure jx to keep the tmp folder with compiled helm files:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;export JX_NO_DELETE_TMP_DIR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;go to the tmp folder visible in the logs and execute&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;helm template jenkins-x . --namespace jx | kubectl delete -f -
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;pre&gt;&lt;code&gt;export JX_NO_DELETE_TMP_DIR=true
-&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
-&lt;li&gt;go to the tmp folder visible in the logs and execute:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code&gt;helm template jenkins-x . --namespace jx | kubectl delete -f -
-&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
