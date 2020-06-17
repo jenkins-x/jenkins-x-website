@@ -67,18 +67,18 @@ terraform apply
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This creates a cluster within the specified Google Cloud project with all possible configuration options defaulted.&lt;/p&gt;
 
 
-&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
 &lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
 This example is for getting up and running quickly.
 It is not intended for a production cluster.
-Refer to &lt;a href=&#34;#production-cluster-considerations&#34;&gt;Production cluster considerations&lt;/a&gt; for things to consider when creating a production cluster.
+Refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#production-cluster-considerations&#34;&gt;Production cluster considerations&lt;/a&gt; for things to consider when creating a production cluster.
 &lt;/div&gt;
 
 &lt;p&gt;On completion of &lt;code&gt;terraform apply&lt;/code&gt; there will be a &lt;em&gt;jx-requirements.yml&lt;/em&gt; in the working directory which can be used as input to &lt;code&gt;jx boot&lt;/code&gt;.
 Refer to &lt;a href=&#34;#running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/a&gt; for more information.&lt;/p&gt;
-&lt;p&gt;No custom domain is used.
-Instead DNS resolution occurs via &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt;.
-For more information on how to configure and use a custom domain, refer to &lt;a href=&#34;#using-a-custom-domain&#34;&gt;Using a custom domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;In the default configuration, no custom domain is used.
+DNS resolution occurs via &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt;.
+For more information on how to configure and use a custom domain, refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#using-a-custom-domain&#34;&gt;Using a custom domain&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you just want to experiment with Jenkins X, you can set &lt;code&gt;force_destroy&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt;.
 This allows you to remove all generated resources when running &lt;code&gt;terraform destroy&lt;/code&gt;, including any generated buckets including their content.&lt;/p&gt;
 &lt;p&gt;The following two paragraphs provide the full list of configuration and output variables of this Terraform module.&lt;/p&gt;
@@ -95,6 +95,20 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
+&lt;td&gt;bucket_location&lt;/td&gt;
+&lt;td&gt;Bucket location for storage&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;US&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_location&lt;/td&gt;
+&lt;td&gt;The location (region or zone) in which the cluster master will be created. If you specify a zone (such as us-central1-a), the cluster will be a zonal cluster with a single cluster master. If you specify a region (such as us-west1), the cluster will be a regional cluster with multiple masters spread across zones in the region&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;us-central1-a&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
 &lt;td&gt;cluster_name&lt;/td&gt;
 &lt;td&gt;Name of the Kubernetes cluster to create&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
@@ -106,6 +120,13 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;td&gt;List of git users allowed to approve pull request for dev enviornment repository&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;list(string)&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;[]&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_backup&lt;/td&gt;
+&lt;td&gt;Whether or not Velero backups should be enabled&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bool&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
@@ -179,6 +200,13 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
+&lt;td&gt;release_channel&lt;/td&gt;
+&lt;td&gt;GKE &lt;a href=&#34;https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels&#34;&gt;Release Channel&lt;/a&gt; to subscribe to.&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;UNSPECIFIED&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
 &lt;td&gt;resource_labels&lt;/td&gt;
 &lt;td&gt;Set of labels to be applied to the cluster&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;map&lt;/code&gt;&lt;/td&gt;
@@ -187,7 +215,14 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;tls_email&lt;/td&gt;
-&lt;td&gt;Email used by Let&amp;rsquo;s Encrypt. Required for TLS when parent_domain is specified.&lt;/td&gt;
+&lt;td&gt;Email used by Let&amp;rsquo;s Encrypt. Required for TLS when parent_domain is specified&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;vault_url&lt;/td&gt;
+&lt;td&gt;URL to an external Vault instance in case Jenkins X shall not create its own system Vault&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
@@ -215,14 +250,14 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;version_stream_ref&lt;/td&gt;
-&lt;td&gt;The git ref for version stream to use when booting Jenkins X. See &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;https://jenkins-x.io/about/concepts/version-stream/&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;The git ref for version stream to use when booting Jenkins X. See &lt;a href=&#34;https://jenkins-x.io/docs/concepts/version-stream/&#34;&gt;https://jenkins-x.io/docs/concepts/version-stream/&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;&amp;quot;master&amp;quot;&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;version_stream_url&lt;/td&gt;
-&lt;td&gt;The URL for the version stream to use when booting Jenkins X. See &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;https://jenkins-x.io/about/concepts/version-stream/&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;The URL for the version stream to use when booting Jenkins X. See &lt;a href=&#34;https://jenkins-x.io/docs/concepts/version-stream/&#34;&gt;https://jenkins-x.io/docs/concepts/version-stream/&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;&amp;quot;https://github.com/jenkins-x/jenkins-x-versions.git&amp;quot;&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
@@ -231,14 +266,14 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;td&gt;webhook&lt;/td&gt;
 &lt;td&gt;Jenkins X webhook handler for git provider&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;&lt;code&gt;&amp;quot;prow&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;lighthouse&amp;quot;&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;zone&lt;/td&gt;
-&lt;td&gt;Zone in which to create the cluster&lt;/td&gt;
+&lt;td&gt;Zone in which to create the cluster (deprecated, use cluster_location instead)&lt;/td&gt;
 &lt;td&gt;&lt;code&gt;string&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;&lt;code&gt;&amp;quot;us-central1-a&amp;quot;&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;&lt;/td&gt;
 &lt;td align=&#34;center&#34;&gt;no&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
@@ -255,6 +290,10 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;tr&gt;
 &lt;td&gt;backup_bucket_url&lt;/td&gt;
 &lt;td&gt;The URL to the bucket for backup storage&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;cluster_location&lt;/td&gt;
+&lt;td&gt;The location of the created Kubernetes cluster&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;cluster_name&lt;/td&gt;
@@ -280,14 +319,10 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;td&gt;vault_bucket_url&lt;/td&gt;
 &lt;td&gt;The URL to the bucket for secret storage&lt;/td&gt;
 &lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;zone&lt;/td&gt;
-&lt;td&gt;The zone of the created Kubernetes cluster&lt;/td&gt;
-&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id=&#34;using-a-custom-domain&#34;&gt;Using a custom domain&lt;/h2&gt;
-&lt;p&gt;If you want to use a custom domain with your Jenkins X installation, you need to provide values for the &lt;a href=&#34;#inputs&#34;&gt;variables&lt;/a&gt; &lt;em&gt;parent_domain&lt;/em&gt; and &lt;em&gt;tls_email&lt;/em&gt;.
+&lt;p&gt;If you want to use a custom domain with your Jenkins X installation, you need to provide values for the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#inputs&#34;&gt;variables&lt;/a&gt; &lt;em&gt;parent_domain&lt;/em&gt; and &lt;em&gt;tls_email&lt;/em&gt;.
 &lt;em&gt;parent_domain&lt;/em&gt; is the fully qualified domain name you want to use and &lt;em&gt;tls_email&lt;/em&gt; is the email address you want to use for issuing Let&amp;rsquo;s Encrypt TLS certificates.&lt;/p&gt;
 &lt;p&gt;Before you apply the Terraform configuration, you also need to create a &lt;a href=&#34;https://cloud.google.com/dns/zones&#34;&gt;Cloud DNS managed zone&lt;/a&gt;, with the DNS name in the managed zone matching your custom domain name, for example in the case of &lt;em&gt;example.jenkins-x.rocks&lt;/em&gt; as domain:&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/getting-started/create_managed_zone.png&#34; alt=&#34;Creating a Managed Zone&#34;&gt;&lt;/p&gt;
@@ -298,7 +333,7 @@ You can use &lt;a href=&#34;https://dnschecker.org/&#34;&gt;DNS checker&lt;/a&gt
 &lt;p&gt;When a custom domain is provided, Jenkins X uses &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;ExternalDNS&lt;/a&gt; together with &lt;a href=&#34;https://github.com/jetstack/cert-manager&#34;&gt;cert-manager&lt;/a&gt; to create A record entries in your managed zone for the various exposed applications.&lt;/p&gt;
 &lt;p&gt;If &lt;em&gt;parent_domain&lt;/em&gt; id not set, your cluster will use &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; in order to create publicly resolvable URLs of the form ht&lt;span&gt;tp://&amp;lt;app-name&amp;gt;-&amp;lt;environment-name&amp;gt;.&amp;lt;cluster-ip&amp;gt;.nip.io.&lt;/p&gt;
 &lt;h2 id=&#34;production-cluster-considerations&#34;&gt;Production cluster considerations&lt;/h2&gt;
-&lt;p&gt;The configuration as seen in &lt;a href=&#34;#cluster-provisioning&#34;&gt;Cluster provisioning&lt;/a&gt; is not suited for creating and maintaining a production Jenkins X cluster.
+&lt;p&gt;The configuration as seen in &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#cluster-provisioning&#34;&gt;Cluster provisioning&lt;/a&gt; is not suited for creating and maintaining a production Jenkins X cluster.
 The following is a list of considerations for a production usecase.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -321,8 +356,7 @@ The following is a list of considerations for a production usecase.&lt;/p&gt;
 &lt;p&gt;A &amp;ldquo;&lt;a href=&#34;https://www.terraform.io/docs/backends/index.html&#34;&gt;backend&lt;/a&gt;&amp;rdquo; in Terraform determines how state is loaded and how an operation such as &lt;em&gt;apply&lt;/em&gt; is executed.
 By default, Terraform uses the &lt;em&gt;local&lt;/em&gt; backend which keeps the state of the created resources on the local file system.
 This is problematic since sensitive information will be stored on disk and it is not possible to share state across a team.
-When working with Google Cloud a good choice for your Terraform backend is the &lt;a href=&#34;https://www.terraform.io/docs/backends/types/gcs.html&#34;&gt;&lt;em&gt;gcs&lt;/em&gt; backend&lt;/a&gt;  which stores the Terraform state in a Google Cloud Storage bucket.
-The &lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx/examples&#34;&gt;examples&lt;/a&gt; directory of the &lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx/pulls&#34;&gt;terraform-google-jx&lt;/a&gt; repository contains configuration examples for using the gcs backed with and without optionally configured customer supplied encryption key.&lt;/p&gt;
+When working with Google Cloud a good choice for your Terraform backend is the &lt;a href=&#34;https://www.terraform.io/docs/backends/types/gcs.html&#34;&gt;&lt;em&gt;gcs&lt;/em&gt; backend&lt;/a&gt;  which stores the Terraform state in a Google Cloud Storage bucket.&lt;/p&gt;
 &lt;p&gt;To use the gcs backend you will need to create the bucket upfront.
 You can use &lt;code&gt;gsutil&lt;/code&gt; to create the bucket:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;gsutil mb gs://&amp;lt;my-bucket-name&amp;gt;/
@@ -331,10 +365,22 @@ You can use &lt;code&gt;gsutil&lt;/code&gt; to create the bucket:&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can verify whether a bucket has versioning enabled via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;gsutil versioning get gs://&amp;lt;my-bucket-name&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/h2&gt;
-&lt;p&gt;Applying this Terraform module will not only create the &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/create-cluster/required-cloud-resources&#34;&gt;required cloud resources&lt;/a&gt;, but also create a &lt;em&gt;jx-requirements.yml&lt;/em&gt; file.
-From within an empty directory run:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt; jx boot -r &amp;lt;path-to-generated-jx-requirements.yml&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;More information about the boot process can be found in the &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot&#34;&gt;Run Boot&lt;/a&gt; section.&lt;/p&gt;
+&lt;p&gt;An output of applying the Terraform module is a &lt;em&gt;jx-requirements.yml&lt;/em&gt; file in the current directory.
+This file can be used as input to &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;Jenkins X Boot&lt;/a&gt; which is responsible for installing all the required Jenkins X components into the cluster.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
+The generated &lt;em&gt;jx-requirements.yml&lt;/em&gt; is only used for the first run of &lt;code&gt;jx boot&lt;/code&gt;.
+During this first run a git repository containing the source code for Jenkins X Boot is created.
+This repository contains the &lt;em&gt;jx-requirements.yml&lt;/em&gt; used by successive runs of &lt;code&gt;jx boot&lt;/code&gt;.
+&lt;/div&gt;
+
+&lt;p&gt;Change into  an empty directory and execute:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx boot --requirements &amp;lt;path-to-jx-requirements.yml&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You are prompted for any further required configuration.
+The number of prompts depends on how much you have &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#inputs&#34;&gt;pre-configured&lt;/a&gt; via your Terraform variables.&lt;/p&gt;
+&lt;p&gt;More information about the boot process can be found in the &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot&#34;&gt;Jenkins X Boot&lt;/a&gt; configuration section.&lt;/p&gt;
 
       </description>
     </item>

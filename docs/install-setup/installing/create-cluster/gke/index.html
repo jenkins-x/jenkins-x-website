@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to create a GKE cluster?" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/" />
-<meta property="article:modified_time" content="2020-06-17T10:26:54+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-17T12:47:48+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Create GKE cluster">
 <meta itemprop="description" content="How to create a GKE cluster?">
-<meta itemprop="dateModified" content="2020-06-17T10:26:54&#43;00:00" />
-<meta itemprop="wordCount" content="1286">
+<meta itemprop="dateModified" content="2020-06-17T12:47:48&#43;00:00" />
+<meta itemprop="wordCount" content="1472">
 
 
 
@@ -2263,18 +2263,18 @@ terraform apply
 </code></pre></div><p>This creates a cluster within the specified Google Cloud project with all possible configuration options defaulted.</p>
 
 
-<div class="alert alert-primary" role="alert">
+<div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
 This example is for getting up and running quickly.
 It is not intended for a production cluster.
-Refer to <a href="#production-cluster-considerations">Production cluster considerations</a> for things to consider when creating a production cluster.
+Refer to <a href="/docs/install-setup/installing/create-cluster/gke/#production-cluster-considerations">Production cluster considerations</a> for things to consider when creating a production cluster.
 </div>
 
 <p>On completion of <code>terraform apply</code> there will be a <em>jx-requirements.yml</em> in the working directory which can be used as input to <code>jx boot</code>.
 Refer to <a href="#running-jx-boot">Running <code>jx boot</code></a> for more information.</p>
-<p>No custom domain is used.
-Instead DNS resolution occurs via <a href="https://nip.io/">nip.io</a>.
-For more information on how to configure and use a custom domain, refer to <a href="#using-a-custom-domain">Using a custom domain</a>.</p>
+<p>In the default configuration, no custom domain is used.
+DNS resolution occurs via <a href="https://nip.io/">nip.io</a>.
+For more information on how to configure and use a custom domain, refer to <a href="/docs/install-setup/installing/create-cluster/gke/#using-a-custom-domain">Using a custom domain</a>.</p>
 <p>If you just want to experiment with Jenkins X, you can set <code>force_destroy</code> to <code>true</code>.
 This allows you to remove all generated resources when running <code>terraform destroy</code>, including any generated buckets including their content.</p>
 <p>The following two paragraphs provide the full list of configuration and output variables of this Terraform module.</p>
@@ -2291,6 +2291,20 @@ This allows you to remove all generated resources when running <code>terraform d
 </thead>
 <tbody>
 <tr>
+<td>bucket_location</td>
+<td>Bucket location for storage</td>
+<td><code>string</code></td>
+<td><code>&quot;US&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>cluster_location</td>
+<td>The location (region or zone) in which the cluster master will be created. If you specify a zone (such as us-central1-a), the cluster will be a zonal cluster with a single cluster master. If you specify a region (such as us-west1), the cluster will be a regional cluster with multiple masters spread across zones in the region</td>
+<td><code>string</code></td>
+<td><code>&quot;us-central1-a&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>cluster_name</td>
 <td>Name of the Kubernetes cluster to create</td>
 <td><code>string</code></td>
@@ -2302,6 +2316,13 @@ This allows you to remove all generated resources when running <code>terraform d
 <td>List of git users allowed to approve pull request for dev enviornment repository</td>
 <td><code>list(string)</code></td>
 <td><code>[]</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>enable_backup</td>
+<td>Whether or not Velero backups should be enabled</td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -2375,6 +2396,13 @@ This allows you to remove all generated resources when running <code>terraform d
 <td align="center">no</td>
 </tr>
 <tr>
+<td>release_channel</td>
+<td>GKE <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels">Release Channel</a> to subscribe to.</td>
+<td><code>string</code></td>
+<td><code>UNSPECIFIED</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>resource_labels</td>
 <td>Set of labels to be applied to the cluster</td>
 <td><code>map</code></td>
@@ -2383,7 +2411,14 @@ This allows you to remove all generated resources when running <code>terraform d
 </tr>
 <tr>
 <td>tls_email</td>
-<td>Email used by Let&rsquo;s Encrypt. Required for TLS when parent_domain is specified.</td>
+<td>Email used by Let&rsquo;s Encrypt. Required for TLS when parent_domain is specified</td>
+<td><code>string</code></td>
+<td><code>&quot;&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>vault_url</td>
+<td>URL to an external Vault instance in case Jenkins X shall not create its own system Vault</td>
 <td><code>string</code></td>
 <td><code>&quot;&quot;</code></td>
 <td align="center">no</td>
@@ -2411,14 +2446,14 @@ This allows you to remove all generated resources when running <code>terraform d
 </tr>
 <tr>
 <td>version_stream_ref</td>
-<td>The git ref for version stream to use when booting Jenkins X. See <a href="https://jenkins-x.io/about/concepts/version-stream/">https://jenkins-x.io/about/concepts/version-stream/</a></td>
+<td>The git ref for version stream to use when booting Jenkins X. See <a href="https://jenkins-x.io/docs/concepts/version-stream/">https://jenkins-x.io/docs/concepts/version-stream/</a></td>
 <td><code>string</code></td>
 <td><code>&quot;master&quot;</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
 <td>version_stream_url</td>
-<td>The URL for the version stream to use when booting Jenkins X. See <a href="https://jenkins-x.io/about/concepts/version-stream/">https://jenkins-x.io/about/concepts/version-stream/</a></td>
+<td>The URL for the version stream to use when booting Jenkins X. See <a href="https://jenkins-x.io/docs/concepts/version-stream/">https://jenkins-x.io/docs/concepts/version-stream/</a></td>
 <td><code>string</code></td>
 <td><code>&quot;https://github.com/jenkins-x/jenkins-x-versions.git&quot;</code></td>
 <td align="center">no</td>
@@ -2427,14 +2462,14 @@ This allows you to remove all generated resources when running <code>terraform d
 <td>webhook</td>
 <td>Jenkins X webhook handler for git provider</td>
 <td><code>string</code></td>
-<td><code>&quot;prow&quot;</code></td>
+<td><code>&quot;lighthouse&quot;</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
 <td>zone</td>
-<td>Zone in which to create the cluster</td>
+<td>Zone in which to create the cluster (deprecated, use cluster_location instead)</td>
 <td><code>string</code></td>
-<td><code>&quot;us-central1-a&quot;</code></td>
+<td><code>&quot;&quot;</code></td>
 <td align="center">no</td>
 </tr>
 </tbody>
@@ -2451,6 +2486,10 @@ This allows you to remove all generated resources when running <code>terraform d
 <tr>
 <td>backup_bucket_url</td>
 <td>The URL to the bucket for backup storage</td>
+</tr>
+<tr>
+<td>cluster_location</td>
+<td>The location of the created Kubernetes cluster</td>
 </tr>
 <tr>
 <td>cluster_name</td>
@@ -2476,14 +2515,10 @@ This allows you to remove all generated resources when running <code>terraform d
 <td>vault_bucket_url</td>
 <td>The URL to the bucket for secret storage</td>
 </tr>
-<tr>
-<td>zone</td>
-<td>The zone of the created Kubernetes cluster</td>
-</tr>
 </tbody>
 </table>
 <h2 id="using-a-custom-domain">Using a custom domain</h2>
-<p>If you want to use a custom domain with your Jenkins X installation, you need to provide values for the <a href="#inputs">variables</a> <em>parent_domain</em> and <em>tls_email</em>.
+<p>If you want to use a custom domain with your Jenkins X installation, you need to provide values for the <a href="/docs/install-setup/installing/create-cluster/gke/#inputs">variables</a> <em>parent_domain</em> and <em>tls_email</em>.
 <em>parent_domain</em> is the fully qualified domain name you want to use and <em>tls_email</em> is the email address you want to use for issuing Let&rsquo;s Encrypt TLS certificates.</p>
 <p>Before you apply the Terraform configuration, you also need to create a <a href="https://cloud.google.com/dns/zones">Cloud DNS managed zone</a>, with the DNS name in the managed zone matching your custom domain name, for example in the case of <em>example.jenkins-x.rocks</em> as domain:</p>
 <p><img src="/images/getting-started/create_managed_zone.png" alt="Creating a Managed Zone"></p>
@@ -2494,7 +2529,7 @@ You can use <a href="https://dnschecker.org/">DNS checker</a> to check whether y
 <p>When a custom domain is provided, Jenkins X uses <a href="https://github.com/kubernetes-sigs/external-dns">ExternalDNS</a> together with <a href="https://github.com/jetstack/cert-manager">cert-manager</a> to create A record entries in your managed zone for the various exposed applications.</p>
 <p>If <em>parent_domain</em> id not set, your cluster will use <a href="https://nip.io/">nip.io</a> in order to create publicly resolvable URLs of the form ht<span>tp://&lt;app-name&gt;-&lt;environment-name&gt;.&lt;cluster-ip&gt;.nip.io.</p>
 <h2 id="production-cluster-considerations">Production cluster considerations</h2>
-<p>The configuration as seen in <a href="#cluster-provisioning">Cluster provisioning</a> is not suited for creating and maintaining a production Jenkins X cluster.
+<p>The configuration as seen in <a href="/docs/install-setup/installing/create-cluster/gke/#cluster-provisioning">Cluster provisioning</a> is not suited for creating and maintaining a production Jenkins X cluster.
 The following is a list of considerations for a production usecase.</p>
 <ul>
 <li>
@@ -2517,8 +2552,7 @@ The following is a list of considerations for a production usecase.</p>
 <p>A &ldquo;<a href="https://www.terraform.io/docs/backends/index.html">backend</a>&rdquo; in Terraform determines how state is loaded and how an operation such as <em>apply</em> is executed.
 By default, Terraform uses the <em>local</em> backend which keeps the state of the created resources on the local file system.
 This is problematic since sensitive information will be stored on disk and it is not possible to share state across a team.
-When working with Google Cloud a good choice for your Terraform backend is the <a href="https://www.terraform.io/docs/backends/types/gcs.html"><em>gcs</em> backend</a>  which stores the Terraform state in a Google Cloud Storage bucket.
-The <a href="https://github.com/jenkins-x/terraform-google-jx/examples">examples</a> directory of the <a href="https://github.com/jenkins-x/terraform-google-jx/pulls">terraform-google-jx</a> repository contains configuration examples for using the gcs backed with and without optionally configured customer supplied encryption key.</p>
+When working with Google Cloud a good choice for your Terraform backend is the <a href="https://www.terraform.io/docs/backends/types/gcs.html"><em>gcs</em> backend</a>  which stores the Terraform state in a Google Cloud Storage bucket.</p>
 <p>To use the gcs backend you will need to create the bucket upfront.
 You can use <code>gsutil</code> to create the bucket:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gsutil mb gs://&lt;my-bucket-name&gt;/
@@ -2527,10 +2561,22 @@ You can use <code>gsutil</code> to create the bucket:</p>
 </code></pre></div><p>You can verify whether a bucket has versioning enabled via:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gsutil versioning get gs://&lt;my-bucket-name&gt;
 </code></pre></div><h2 id="running-jx-boot">Running <code>jx boot</code></h2>
-<p>Applying this Terraform module will not only create the <a href="/docs/getting-started/setup/create-cluster/required-cloud-resources">required cloud resources</a>, but also create a <em>jx-requirements.yml</em> file.
-From within an empty directory run:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> jx boot -r &lt;path-to-generated-jx-requirements.yml&gt;
-</code></pre></div><p>More information about the boot process can be found in the <a href="/docs/getting-started/setup/boot">Run Boot</a> section.</p>
+<p>An output of applying the Terraform module is a <em>jx-requirements.yml</em> file in the current directory.
+This file can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster.</p>
+
+
+<div class="alert alert-warning" role="alert">
+<h4 class="alert-heading">Warning</h4>
+The generated <em>jx-requirements.yml</em> is only used for the first run of <code>jx boot</code>.
+During this first run a git repository containing the source code for Jenkins X Boot is created.
+This repository contains the <em>jx-requirements.yml</em> used by successive runs of <code>jx boot</code>.
+</div>
+
+<p>Change into  an empty directory and execute:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx boot --requirements &lt;path-to-jx-requirements.yml&gt;
+</code></pre></div><p>You are prompted for any further required configuration.
+The number of prompts depends on how much you have <a href="/docs/install-setup/installing/create-cluster/gke/#inputs">pre-configured</a> via your Terraform variables.</p>
+<p>More information about the boot process can be found in the <a href="/docs/getting-started/setup/boot">Jenkins X Boot</a> configuration section.</p>
 
 	
 		<style>
@@ -2594,7 +2640,7 @@ From within an empty directory run:</p>
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5057efd5d50297ea104a42ef596759c31e800148">release 0.0.1773 (5057efd)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 17, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/acadc01eb99c21bc12cf53c11bc33222cf052c56">release 0.0.1774 (acadc01)</a>
 </div>
 </div>
 
