@@ -24,11 +24,11 @@
 <meta property="og:description" content="Configuring your docker registry" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/reference/components/docker-registry/" />
-<meta property="article:modified_time" content="2020-06-22T08:24:00+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-22T10:30:04+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Docker Registry">
 <meta itemprop="description" content="Configuring your docker registry">
-<meta itemprop="dateModified" content="2020-06-22T08:24:00&#43;00:00" />
-<meta itemprop="wordCount" content="503">
+<meta itemprop="dateModified" content="2020-06-22T10:30:04&#43;00:00" />
+<meta itemprop="wordCount" content="918">
 
 
 
@@ -1733,16 +1733,15 @@ if (!doNotTrack) {
 
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#using-a-different-docker-registry">Using a different Docker Registry</a>
+    <li><a href="#configure-docker-registry">Configure Docker registry</a></li>
+    <li><a href="#ensure-authentication-parameters">Ensure authentication parameters</a></li>
+    <li><a href="#update-secret-store">Update secret store</a></li>
+    <li><a href="#update-kubernetes-provider-configuration">Update Kubernetes provider configuration</a>
       <ul>
-        <li><a href="#if-you-are-using-static-jenkins-master">If you are using Static Jenkins Master</a></li>
-      </ul>
-    </li>
-    <li><a href="#update-the-configjson-secret">Update the config.json secret</a></li>
-    <li><a href="#using-docker-hub">Using Docker Hub</a></li>
-    <li><a href="#using-jfrog-bintray-artifactory">Using jFrog BinTray (Artifactory)</a>
-      <ul>
-        <li><a href="#mount-a-secret-for-your-registry">Mount a Secret for your registry</a></li>
+        <li><a href="#google-container-registry-gcr">Google Container Registry (GCR)</a></li>
+        <li><a href="#elastic-container-registry-ecr">Elastic Container Registry (ECR)</a></li>
+        <li><a href="#docker-hub">Docker Hub</a></li>
+        <li><a href="#jfrog-bintray-artifactory">jFrog BinTray (Artifactory)</a></li>
       </ul>
     </li>
   </ul>
@@ -1803,62 +1802,155 @@ if (!doNotTrack) {
 <div class="td-content">
 	<h1>Docker Registry</h1>
 	<div class="lead">Configuring your docker registry</div>
-	<p>To be able to create and publish docker images we need to use a Docker Registry.</p>
-<p>By default Jenkins X ships with a Docker Registry which is included in the system namespace for Jenkins X along with Jenkins and Nexus. Since this docker registry is running inside your kubernetes cluster and is used internally inside your cluster its hard to expose it via HTTPS with self signed certificates - so we default to using insecure docker registries for the IP range of service IPs in your kubernetes cluster.</p>
-<h2 id="using-a-different-docker-registry">Using a different Docker Registry</h2>
-<p>If you are using the public cloud you may wish to take advantage of your cloud providers docker registry; or reuse your own existing docker registry.</p>
-<h3 id="if-you-are-using-static-jenkins-master">If you are using Static Jenkins Master</h3>
-<p>To specify the Docker Registry host/port you can use the Jenkins Console:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx console
-</code></pre></div><p>Then navigate to <code>Manage Jenkins -&gt; Configure System</code> and change the <code>DOCKER_REGISTRY</code> environment variable to point to your docker registry of choice.</p>
-<p>Another approach is to add the following to your <code>values.yaml</code> file for your customization of the Jenkins X platform helm charts:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">jenkins</span>:
-  <span style="color:#66d9ef">Servers</span>:
-    <span style="color:#66d9ef">Global</span>:
-      <span style="color:#66d9ef">EnvVars</span>:
-        <span style="color:#66d9ef">DOCKER_REGISTRY</span>: <span style="color:#e6db74">&#34;gcr.io&#34;</span>
-</code></pre></div><h2 id="update-the-configjson-secret">Update the config.json secret</h2>
-<p>Next you will need to update the <code>config.json</code> secret for docker.</p>
-<p>You can do this via the <a href="/commands/jx_create_docker/">jx create docker auth</a> command line tool:</p>
-<pre><code>jx create docker auth --host &quot;foo.private.docker.registry&quot; --user &quot;foo&quot; --secret &quot;FooDockerHubToken&quot; --email &quot;fakeemail@gmail.com&quot;
+	<p>To be able to create and publish Docker images, we use a Docker Registry.
+If you want to change the default registry, you need to:</p>
+<ol>
+<li>tell Jenkins X, which Docker registry host to use.</li>
+<li>ensure <code>env/parameters.yaml</code> contains the required authentication parameters</li>
+<li>ensure your secret store contains the necessary secret</li>
+<li>ensure <code>values.tmpl.yaml</code> for your Kubernetes provider contains the correct <em>DockerConfig</em> configuration</li>
+</ol>
+<p>The following sections provide more details around these steps.</p>
 
-</code></pre><p>If you create a <code>config.json</code> file for your docker registry provider. e.g. for GCR on Google Cloud its probably something like:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#f92672">&#34;credHelpers&#34;</span>: {
-        <span style="color:#f92672">&#34;gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;us.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;eu.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;asia.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;staging-k8s.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>
-    }
+
+<div class="alert alert-primary" role="alert">
+
+This guide assumes that you already have a Jenkins X cluster using the default registry and you want to switch to a custom, non-default one.
+If you are installing Jenkins X on a fresh cluster, not all steps are necessary and handled interactively after you answer <em>yes</em> to the question: &ldquo;Do you want to configure an external Docker Registry?&quot;.
+</div>
+
+
+
+<div class="alert alert-primary" role="alert">
+
+You need a checkout of your Boot configuration repository in which you run <code>jx boot</code> locally or create a pull request.
+For more information refer to <a href="/docs/install-setup/installing/boot/#changing-your-installation">Changing your installation</a> in the Boot documentation.
+</div>
+
+<h2 id="configure-docker-registry">Configure Docker registry</h2>
+<p>To change the default Docker registry, you need set the registry host in the <code>registry</code> property of your <code>jx-requirements.yml</code> file.
+In case you want to use Docker Hub, the configuration would look like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+  <span style="color:#66d9ef">registry</span>: docker.io
+</code></pre></div><h2 id="ensure-authentication-parameters">Ensure authentication parameters</h2>
+<p>Next, you have to check the file <code>env/parameters.yaml</code> in your checkout of the Boot repository.
+It needs to contain a <em>docker</em> configuration section, similar to this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">enableDocker</span>: <span style="color:#66d9ef">true</span>
+<span style="color:#66d9ef">docker</span>:
+  <span style="color:#66d9ef">email</span>: &lt;email<span style="color:#e6db74">&gt;
+</span><span style="color:#e6db74">  password: vault:&lt;cluster-name&gt;/docker:password</span>
+  <span style="color:#66d9ef">url</span>: &lt;url<span style="color:#e6db74">&gt;
+</span><span style="color:#e6db74">  username: &lt;username&gt;</span>
+</code></pre></div><p>If you have been using the default registry your <code>env/parameters.yaml</code> might not contain a <em>docker</em> section at all.
+If so, add the required configuration and make sure to set <code>enableDocker: true</code>.</p>
+<p>The password uses a special format which allows to reference secrets from your configured <a href="/docs/install-setup/installing/boot/secrets/">secret store</a>.
+<a href="/docs/install-setup/installing/boot/how-it-works/#injecting-secrets-into-the-parameters">Injecting secrets into the parameters</a> describes in more detail how secrets work in conjunction with <code>env/parameters.yaml</code>.</p>
+
+
+<div class="alert alert-primary" role="alert">
+
+An alternative approach is to just set <code>enableDocker: true</code> and run <code>jx boot</code> locally.
+In this case, it will interactively ask for the required parameters again and persist them into <code>env/parameters.yaml</code> and the underlying secret store.
+</div>
+
+<h2 id="update-secret-store">Update secret store</h2>
+<p>The next step is to make sure the password is stored in the secret store.
+Assuming you are using <a href="/docs/install-setup/installing/boot/secrets/#vault">Vault</a> as the secret store, you need to make sure the secret identified by the URI <em>vault:&lt;cluster-name&gt;/docker:password</em> exists.
+This can be achieved by running (you need the <code>vault</code> CLI installed for that):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">eval <span style="color:#66d9ef">$(</span>jx get vault-config<span style="color:#66d9ef">)</span>
+vault kv put /secret/&lt;cluster-name&gt;/docker passwor<span style="color:#f92672">=</span>&lt;my-password&gt;
+</code></pre></div><p>You can find more information on how to interact with Vault secrets in the <a href="/docs/reference/components/vault/">Manage your secrets</a> section.</p>
+<h2 id="update-kubernetes-provider-configuration">Update Kubernetes provider configuration</h2>
+<p>Finally, you need to make sure that the correct Docker authentication <code>config.json</code> gets generated and stored in the Kubernetes Secret <code>jenkins-docker-cfg</code> (within your development namespace).
+Ultimately, this secret is mounted into the Pod executing the <code>docker push</code> and is responsible for authenticating against the configured Docker registry.</p>
+
+
+<div class="alert alert-primary" role="alert">
+
+<p>If you are running an old <code>jx install</code> based cluster, changing your Docker registry credentials comes just down to changing the <code>jenkins-docker-cfg</code> Secret.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl delete secret jenkins-docker-cfg -n jx
+kubectl create secret generic jenkins-docker-cfg -n jx --from-file<span style="color:#f92672">=</span>./config.json
+</code></pre></div>
+</div>
+
+<p>With Jenkins X Boot, the <code>jenkins-docker-cfg</code> Secret is created in the Kubernetes provider-specific file <code>values.tmpl.yaml</code>.
+You can find this file in the <a href="https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/kubeProviders"><em>kubeProviders</em></a> subdirectory of your Boot configuration repository.
+The Docker specific configuration in <code>values.tmpl.yaml</code> for GKE looks like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">jenkins-x-platform</span>:
+  <span style="color:#66d9ef">PipelineSecrets</span>:
+
+{{- if eq .Parameters.enableDocker <span style="color:#66d9ef">true</span> }}
+    <span style="color:#66d9ef">DockerConfig</span>: |<span style="color:#e6db74">-
+</span><span style="color:#e6db74">      {</span>
+        <span style="color:#e6db74">&#34;auths&#34;</span>:{
+          {{ <span style="color:#66d9ef">.Parameters.docker.url | quote }}</span>:
+            {
+              <span style="color:#66d9ef">&#34;auth&#34;: </span>{{ printf <span style="color:#e6db74">&#34;%s:%s&#34;</span> .Parameters.docker.username .Parameters.docker.password | b64enc | quote}},
+              <span style="color:#66d9ef">&#34;email&#34;: </span>{{ .Parameters.docker.email | quote}}
+            }
+        }
+      }
+{{- else}}
+    <span style="color:#75715e"># lets enable GCR Docker builds</span>
+    <span style="color:#66d9ef">DockerConfig</span>: |<span style="color:#e6db74">-
+</span><span style="color:#e6db74">      {</span>
+          <span style="color:#66d9ef">&#34;credHelpers&#34;: </span>{
+              <span style="color:#66d9ef">&#34;gcr.io&#34;: </span><span style="color:#e6db74">&#34;gcr&#34;</span>,
+              <span style="color:#66d9ef">&#34;us.gcr.io&#34;: </span><span style="color:#e6db74">&#34;gcr&#34;</span>,
+              <span style="color:#66d9ef">&#34;eu.gcr.io&#34;: </span><span style="color:#e6db74">&#34;gcr&#34;</span>,
+              <span style="color:#66d9ef">&#34;asia.gcr.io&#34;: </span><span style="color:#e6db74">&#34;gcr&#34;</span>,
+              <span style="color:#66d9ef">&#34;staging-k8s.gcr.io&#34;: </span><span style="color:#e6db74">&#34;gcr&#34;</span>
+          }
+      }
+{{- end}}
+</code></pre></div><p>You can see how the <em>enableDocker</em> parameter discussed in <a href="/docs/reference/components/docker-registry/#ensure-authentication-parameters">Ensure authentication parameters</a> is used to switch between the different formats of <code>config.json</code>.
+You need to ensure that the enabled <em>DockerConfig</em> matches your requirements.
+If that is not the case adjust <code>values.tmpl.yaml</code> to match the format required by your registry.</p>
+<p>The following sections describe some of the typical <code>config.json</code> formats used by various Docker registries.</p>
+<h3 id="google-container-registry-gcr">Google Container Registry (GCR)</h3>
+<p>If you want to use GCR, you can create your <code>config.json</code> by running:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gcloud auth configure-docker
+</code></pre></div><p>The above command will ask you to confirm writing a <em>credHelpers</em> section to your <code>config.json</code> in your home directory under <code>.docker/config.json</code>.
+It is sufficient to place the <em>credHelpers</em> section into a new <code>config.json</code>.
+The content should look similar to:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"> {
+  <span style="color:#f92672">&#34;credHelpers&#34;</span>: {
+    <span style="color:#f92672">&#34;gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+    <span style="color:#f92672">&#34;marketplace.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+    <span style="color:#f92672">&#34;eu.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+    <span style="color:#f92672">&#34;us.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+    <span style="color:#f92672">&#34;staging-k8s.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+    <span style="color:#f92672">&#34;asia.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>
+  }
 }
-</code></pre></div><p>For AWS its more like</p>
+</code></pre></div><h3 id="elastic-container-registry-ecr">Elastic Container Registry (ECR)</h3>
+<p>For AWS and its  Elastic Container Registry (ECR), the <code>config.json</code> looks like:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-	<span style="color:#f92672">&#34;credsStore&#34;</span>: <span style="color:#e6db74">&#34;ecr-login&#34;</span>
+    <span style="color:#f92672">&#34;credsStore&#34;</span>: <span style="color:#e6db74">&#34;ecr-login&#34;</span>
 }
-</code></pre></div><p>Then to update the <code>jenkins-docker-cfg</code> secret you can do the following:</p>
-<pre><code>kubectl delete secret jenkins-docker-cfg
-kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
-</code></pre><p><strong>NOTE</strong> that the file must be called <code>config.json</code> as the file name is used in the key of the underlying <code>Secret</code> in kubernetes</p>
-<h2 id="using-docker-hub">Using Docker Hub</h2>
-<p>If you want to publish images to docker hub then you need to modify your <code>config.json</code> as described above to something like:</p>
+</code></pre></div><h3 id="docker-hub">Docker Hub</h3>
+<p>If you want to publish images to Docker Hub, then you need a <code>config.json</code> with and <em>auth</em> section containing your Docker Hub auth token.
+For example:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
     <span style="color:#f92672">&#34;auths&#34;</span>: {
         <span style="color:#f92672">&#34;https://index.docker.io/v1/&#34;</span>: {
-            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;MyDockerHubToken&#34;</span>,
-            <span style="color:#f92672">&#34;email&#34;</span>: <span style="color:#e6db74">&#34;myemail@acme.com&#34;</span>
+            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;MyDockerHubToken&#34;</span>
         }
     }
 }
-</code></pre></div><h2 id="using-jfrog-bintray-artifactory">Using jFrog BinTray (Artifactory)</h2>
-<p>Using the jFrog BinTray as a private registry is possible.  This has only been tested when creating a new cluster and passing the <code>--docker-registry=private-reg.bintray.io</code>.  After creating your cluster, you will want to do the following:</p>
-<ol>
-<li>Delete the existing <code>Secret</code> called <code>jenkins-docker-cfg</code> by executing</li>
-</ol>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl delete secret jenkins-docker-cfg
-</code></pre></div><ol start="2">
-<li>Create a local file called <code>config.json</code> and its value should be in this format (update values based on your registry user account and FQDN).</li>
-</ol>
+</code></pre></div><p>Check <code>.docker/config.json</code> in your home directory to see whether it contains the required configuration.</p>
+<p>If you don&rsquo;t have a <code>.docker/config.json</code>, you can run:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker login -u &lt;username&gt; -p &lt;password&gt;
+</code></pre></div><p>On macOS you might find something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#e6db74">&#34;credsStore&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#e6db74">&#34;osxkeychain&#34;</span>
+</code></pre></div><p>in <code>.docker/config.json</code> without an <em>auths</em> section.
+In this case, you can edit the <em>credsStore</em> line and set the value of this property to &ldquo;&quot;.
+Then run:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker logout
+docker login -u &lt;username&gt; -p &lt;password&gt;
+</code></pre></div><h3 id="jfrog-bintray-artifactory">jFrog BinTray (Artifactory)</h3>
+<p>It is also possible to use jFrog BinTray as a private registry.
+The content should look similar to:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
     <span style="color:#f92672">&#34;auths&#34;</span>: {
         <span style="color:#f92672">&#34;https://private-reg.bintray.io&#34;</span>: {
@@ -1867,14 +1959,7 @@ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
         }
     }
 }
-</code></pre></div><ol start="2">
-<li>Create the new <code>jenkins-docker-cfg</code> <code>Secret</code> with the contents of the <code>config.json</code> as follows:</li>
-</ol>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl create secret generic jenkins-docker-cfg --from-file<span style="color:#f92672">=</span>./config.json
-</code></pre></div><p>That should do it, you should now be able to run pipelines and store images in the jFrog BinTray Registry.</p>
-<h3 id="mount-a-secret-for-your-registry">Mount a Secret for your registry</h3>
-<p>Your docker registry will require a Secret to be mounted into the <a href="/docs/resources/guides/managing-jx/common-tasks/pod-templates/">Pod Templates</a>.</p>
-
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1937,7 +2022,7 @@ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 22, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/c7b37505641589863311c0e74405533aee6ee62a">release 0.0.1787 (c7b3750)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 22, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/432e7a9ad38986c0cf0d634b1d34eb8dd1c6ee7e">release 0.0.1788 (432e7a9)</a>
 </div>
 </div>
 
