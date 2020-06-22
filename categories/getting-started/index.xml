@@ -74,7 +74,7 @@ It is not intended for a production cluster.
 Refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/create-cluster/gke/#production-cluster-considerations&#34;&gt;Production cluster considerations&lt;/a&gt; for things to consider when creating a production cluster.
 &lt;/div&gt;
 
-&lt;p&gt;On completion of &lt;code&gt;terraform apply&lt;/code&gt; there will be a &lt;em&gt;jx-requirements.yml&lt;/em&gt; in the working directory which can be used as input to &lt;code&gt;jx boot&lt;/code&gt;.
+&lt;p&gt;On completion of &lt;code&gt;terraform apply&lt;/code&gt; there will be a &lt;em&gt;jx_requirements&lt;/em&gt; output available which can be used as input to &lt;code&gt;jx boot&lt;/code&gt; using the &lt;code&gt;--requirements&lt;/code&gt; option.
 Refer to &lt;a href=&#34;#running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/a&gt; for more information.&lt;/p&gt;
 &lt;p&gt;In the default configuration, no custom domain is used.
 DNS resolution occurs via &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt;.
@@ -319,6 +319,10 @@ This allows you to remove all generated resources when running &lt;code&gt;terra
 &lt;td&gt;vault_bucket_url&lt;/td&gt;
 &lt;td&gt;The URL to the bucket for secret storage&lt;/td&gt;
 &lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;jx_requirements&lt;/td&gt;
+&lt;td&gt;The yaml formatted output for use with &lt;code&gt;jx boot&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id=&#34;using-a-custom-domain&#34;&gt;Using a custom domain&lt;/h2&gt;
@@ -365,17 +369,20 @@ You can use &lt;code&gt;gsutil&lt;/code&gt; to create the bucket:&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can verify whether a bucket has versioning enabled via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;gsutil versioning get gs://&amp;lt;my-bucket-name&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;running-jx-boot&#34;&gt;Running &lt;code&gt;jx boot&lt;/code&gt;&lt;/h2&gt;
-&lt;p&gt;An output of applying the Terraform module is a &lt;em&gt;jx-requirements.yml&lt;/em&gt; file in the current directory.
-This file can be used as input to &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;Jenkins X Boot&lt;/a&gt; which is responsible for installing all the required Jenkins X components into the cluster.&lt;/p&gt;
 
 
 &lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
 &lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
-The generated &lt;em&gt;jx-requirements.yml&lt;/em&gt; is only used for the first run of &lt;code&gt;jx boot&lt;/code&gt;.
+The generated output &lt;em&gt;jx_requirements&lt;/em&gt; is only used for the first run of &lt;code&gt;jx boot&lt;/code&gt;.
 During this first run a git repository containing the source code for Jenkins X Boot is created.
 This repository contains the &lt;em&gt;jx-requirements.yml&lt;/em&gt; used by successive runs of &lt;code&gt;jx boot&lt;/code&gt;.
+See the diagram below for more information on the typical lifecycle.
 &lt;/div&gt;
 
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/getting-started/terraform_google_jx_boot.png&#34; alt=&#34;Jenkins X Boot Lifecyckle&#34;&gt;&lt;/p&gt;
+&lt;p&gt;An output (&lt;em&gt;jx_requirements&lt;/em&gt;) is available after applying the Terraform module, it can be retrieved and pipped to a file.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;terraform output jx_requirements &amp;gt; jx-requirements.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This file can be used as input to &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;Jenkins X Boot&lt;/a&gt; which is responsible for installing all the required Jenkins X components into the cluster.&lt;/p&gt;
 &lt;p&gt;Change into  an empty directory and execute:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx boot --requirements &amp;lt;path-to-jx-requirements.yml&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You are prompted for any further required configuration.
