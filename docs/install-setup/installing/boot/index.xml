@@ -83,7 +83,7 @@ It also means longer term we can generate JSON schema files for each &lt;code&gt
     </item>
     
     <item>
-      <title>Docs: Secrets</title>
+      <title>Docs: Configure Secret Storage</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/secrets/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -225,7 +225,7 @@ vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubern
     </item>
     
     <item>
-      <title>Docs: Git Provider</title>
+      <title>Docs: Configure Git Provider</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/git-provider/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -233,135 +233,66 @@ vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubern
       <description>
         
         
-        &lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
-&lt;p&gt;Jenkins X supports a number of different Git providers.
-You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
-&lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
-&lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.&lt;/p&gt;
+        &lt;p&gt;Jenkins X supports several different Git providers via webhooks (user-defined HTTP callbacks).
+These webhooks trigger the Jenkins X Pipeline execution, based on repository events such as a push to the master branch or the creation of a pull request.&lt;/p&gt;
+&lt;p&gt;The default webhook handler for Jenkins X is &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt;, which manages webhooks similarly to &lt;a href=&#34;https://github.com/kubernetes/test-infra/tree/master/prow&#34;&gt;Prow&lt;/a&gt;.
+However, contrary to Prow, which only supports GitHub, Lighthouse supports a variety of Git providers.&lt;/p&gt;
+&lt;p&gt;The following sections describe how you change the Boot configuration to use the various supported Git providers.
+The configuration occurs in all cases via &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/#requirements&#34;&gt;&lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+
+
+&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
+
+After changing the configuration you need to make sure it gets applied by running the Boot pipeline.
+Either by running &lt;code&gt;jx boot&lt;/code&gt; locally or by creating a pull request against the development repository.
+Refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/#changing-your-installation&#34;&gt;changing your installation&lt;/a&gt; for more information.
+&lt;/div&gt;
+
+&lt;h2 id=&#34;github&#34;&gt;GitHub&lt;/h2&gt;
+&lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.
+Explicitly it is configured by &lt;em&gt;gitKind: github&lt;/em&gt; such as the following example:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
-&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: prow
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h3&gt;
-&lt;p&gt;The configuration is similar to the above but you need to specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; (if it differs from &lt;a href=&#34;https://github.com&#34;&gt;https://github.com&lt;/a&gt;) and &lt;code&gt;gitKind: github&lt;/code&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: github
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: ghe
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://github.myserver.com
-&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
-&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h3&gt;
-&lt;p&gt;For Bitbucket Server specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;.
-If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/enterprise&#34;&gt;GitHub Enterprise&lt;/a&gt; supports the same features as the github.com service but scaled for on-premises deployment on local networks.&lt;/p&gt;
+&lt;p&gt;The configuration is similar to the above but you need to specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: github&lt;/code&gt;.
+For example:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: github
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://github.myserver.com
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h2&gt;
+&lt;p&gt;For Bitbucket Server specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: bitbucketserver
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: bs
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://bitbucket.myserver.com
-&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
-&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h3&gt;
-&lt;p&gt;For Bitbucket Cloud specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;.
-If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h2&gt;
+&lt;p&gt;For Bitbucket Cloud specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: bitbucketcloud
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: bc
-&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
-&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;gitlab&#34;&gt;GitLab&lt;/h3&gt;
-&lt;p&gt;For GitLab specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;.
-If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; then make sure you specify the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse webhook&lt;/a&gt; via &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;gitlab&#34;&gt;GitLab&lt;/h2&gt;
+&lt;p&gt;For &lt;a href=&#34;https://about.gitlab.com/stages-devops-lifecycle/source-code-management/&#34;&gt;GitLab&lt;/a&gt; specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
   &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: gitlab
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: gl
   &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://gitlab.com
-&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
-&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+
       </description>
     </item>
     
     <item>
-      <title>Docs: Storage</title>
+      <title>Docs: Configure Storage</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/storage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -494,7 +425,7 @@ There&amp;rsquo;s a complete example below.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Docs: Ingress</title>
+      <title>Docs: Configure Ingress</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/ingress/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -575,7 +506,7 @@ There&amp;rsquo;s a complete example below.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Docs: Webhooks</title>
+      <title>Docs: Configure Webhooks</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/webhooks/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -630,7 +561,7 @@ There&amp;rsquo;s a complete example below.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Docs: Artifact Repository</title>
+      <title>Docs: Configure Artifact Repositories</title>
       <link>https://jenkins-x.io/docs/install-setup/installing/boot/repository/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
