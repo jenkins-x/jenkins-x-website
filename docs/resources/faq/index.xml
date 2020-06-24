@@ -201,46 +201,6 @@ jx create git token -n GitHub admin
 &lt;li&gt;view the last webhook - did it succeed? Try re-trigger it? That should highlight any network issues etc&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;If you cannot use public webhooks you could look at something like &lt;a href=&#34;http://www.ultrahook.com/&#34;&gt;ultrahook&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;cannot-create-cluster-minikube&#34;&gt;Cannot create cluster minikube&lt;/h2&gt;
-&lt;p&gt;If you are using a Mac then &lt;code&gt;hyperkit&lt;/code&gt; is the best VM driver to use - but does require you to install a recent &lt;a href=&#34;https://docs.docker.com/docker-for-mac/install/&#34;&gt;Docker for Mac&lt;/a&gt; first. Maybe try that then retry &lt;code&gt;jx create cluster minikube&lt;/code&gt;?&lt;/p&gt;
-&lt;p&gt;If your minikube is failing to startup then you could try:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;minikube delete
-rm -rf ~/.minikube
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If the &lt;code&gt;rm&lt;/code&gt; fails you may need to do:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;sudo rm -rf ~/.minikube
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now try &lt;code&gt;jx create cluster minikube&lt;/code&gt; again - did that help? Sometimes there are stale certs or files hanging around from old installations of minikube that can break things.&lt;/p&gt;
-&lt;p&gt;Sometimes a reboot can help in cases where virtualisation goes wrong ;)&lt;/p&gt;
-&lt;p&gt;Otherwise you could try follow the minikube instructions&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes/minikube#installation&#34;&gt;install minikube&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes/minikube#quickstart&#34;&gt;run minikube start&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;minkube-and-hyperkit-could-not-find-an-ip-address&#34;&gt;Minkube and hyperkit: Could not find an IP address&lt;/h2&gt;
-&lt;p&gt;If you are using minikube on a mac with hyperkit and find minikube fails to start with a log like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;Temporary Error: Could not find an IP address &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; 46:0:41:86:41:6e
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It could be you have hit &lt;a href=&#34;https://github.com/kubernetes/minikube/issues/1926#issuecomment-356378525&#34;&gt;this issue in minikube and hyperkit&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The work around is to try the following:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;rm ~/.minikube/machines/minikube/hyperkit.pid
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then try again. Hopefully this time it will work!&lt;/p&gt;
-&lt;h2 id=&#34;cannot-access-services-on-minikube&#34;&gt;Cannot access services on minikube&lt;/h2&gt;
-&lt;p&gt;When running minikube locally &lt;code&gt;jx&lt;/code&gt; defaults to using &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; as a way of using nice-isn DNS names for services and working around the fact that most laptops can&amp;rsquo;t do wildcard DNS. However sometimes &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; has issues and does not work.&lt;/p&gt;
-&lt;p&gt;To avoid using &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; you can do the following:&lt;/p&gt;
-&lt;p&gt;Edit the file &lt;code&gt;~/.jx/cloud-environments/env-minikube/myvalues.yaml&lt;/code&gt; and add the following content:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;expose&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;Args&lt;/span&gt;:
-    - --exposer
-    - NodePort
-    - --http
-    - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;true&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then re-run &lt;code&gt;jx install&lt;/code&gt; and this will switch the services to be exposed on &lt;code&gt;node ports&lt;/code&gt; instead of using ingress and DNS.&lt;/p&gt;
-&lt;p&gt;So if you type:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx open
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You&amp;rsquo;ll see all the URs of the form &lt;code&gt;http://$(minikube ip):somePortNumber&lt;/code&gt; which then avoids going through &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; - it just means the URLs are a little more cryptic using magic port numbers rather than simple host names.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-get-the-password-and-username-for-jenkins&#34;&gt;How do I get the Password and Username for Jenkins?&lt;/h2&gt;
-&lt;p&gt;Install &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34;&gt;KSD&lt;/a&gt; by running &lt;code&gt;go get github.com/mfuentesg/ksd&lt;/code&gt; and then run &lt;code&gt;kubectl get secret jenkins -o yaml | ksd&lt;/code&gt;&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-see-the-log-of-exposecontroller&#34;&gt;How do I see the log of exposecontroller?&lt;/h2&gt;
 &lt;p&gt;Usually we run the &lt;a href=&#34;&#34;&gt;exposecontroller&lt;/a&gt; as a post install &lt;code&gt;Job&lt;/code&gt; when we perform promotion to &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; to expose services over Ingress and possibly inject external URLs into applications configuration.&lt;/p&gt;
 &lt;p&gt;So the &lt;code&gt;Job&lt;/code&gt; will trigger a short lived &lt;code&gt;Pod&lt;/code&gt; to run in the namespace of your environment, then the pod will be deleted.&lt;/p&gt;

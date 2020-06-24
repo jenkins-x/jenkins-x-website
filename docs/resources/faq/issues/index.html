@@ -24,11 +24,11 @@
 <meta property="og:description" content="Questions on common issues setting up Jenkins X." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/resources/faq/issues/" />
-<meta property="article:modified_time" content="2020-06-24T17:17:04+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-24T17:30:04+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Common Problems">
 <meta itemprop="description" content="Questions on common issues setting up Jenkins X.">
-<meta itemprop="dateModified" content="2020-06-24T17:17:04&#43;00:00" />
-<meta itemprop="wordCount" content="2690">
+<meta itemprop="dateModified" content="2020-06-24T17:30:04&#43;00:00" />
+<meta itemprop="wordCount" content="2301">
 
 
 
@@ -1741,10 +1741,6 @@ if (!doNotTrack) {
     <li><a href="#i-cannot-connect-to-nodes-on-aws">I cannot connect to nodes on AWS</a></li>
     <li><a href="#how-can-i-diagnose-exposecontroller-issues">How can I diagnose exposecontroller issues?</a></li>
     <li><a href="#why-is-promotion-really-slow">Why is promotion really slow?</a></li>
-    <li><a href="#cannot-create-cluster-minikube">Cannot create cluster minikube</a></li>
-    <li><a href="#minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</a></li>
-    <li><a href="#cannot-access-services-on-minikube">Cannot access services on minikube</a></li>
-    <li><a href="#how-do-i-get-the-password-and-username-for-jenkins">How do I get the Password and Username for Jenkins?</a></li>
     <li><a href="#how-do-i-see-the-log-of-exposecontroller">How do I see the log of exposecontroller?</a></li>
     <li><a href="#cannot-create-tls-certificates-during-ingress-setup">Cannot create TLS certificates during Ingress setup</a></li>
     <li><a href="#recreating-a-cluster-with-the-same-name">Recreating a cluster with the same name</a></li>
@@ -1950,46 +1946,6 @@ jx create git token -n GitHub admin
 <li>view the last webhook - did it succeed? Try re-trigger it? That should highlight any network issues etc</li>
 </ul>
 <p>If you cannot use public webhooks you could look at something like <a href="http://www.ultrahook.com/">ultrahook</a></p>
-<h2 id="cannot-create-cluster-minikube">Cannot create cluster minikube</h2>
-<p>If you are using a Mac then <code>hyperkit</code> is the best VM driver to use - but does require you to install a recent <a href="https://docs.docker.com/docker-for-mac/install/">Docker for Mac</a> first. Maybe try that then retry <code>jx create cluster minikube</code>?</p>
-<p>If your minikube is failing to startup then you could try:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">minikube delete
-rm -rf ~/.minikube
-</code></pre></div><p>If the <code>rm</code> fails you may need to do:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">sudo rm -rf ~/.minikube
-</code></pre></div><p>Now try <code>jx create cluster minikube</code> again - did that help? Sometimes there are stale certs or files hanging around from old installations of minikube that can break things.</p>
-<p>Sometimes a reboot can help in cases where virtualisation goes wrong ;)</p>
-<p>Otherwise you could try follow the minikube instructions</p>
-<ul>
-<li><a href="https://github.com/kubernetes/minikube#installation">install minikube</a></li>
-<li><a href="https://github.com/kubernetes/minikube#quickstart">run minikube start</a></li>
-</ul>
-<h2 id="minkube-and-hyperkit-could-not-find-an-ip-address">Minkube and hyperkit: Could not find an IP address</h2>
-<p>If you are using minikube on a mac with hyperkit and find minikube fails to start with a log like:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Temporary Error: Could not find an IP address <span style="color:#66d9ef">for</span> 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address <span style="color:#66d9ef">for</span> 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address <span style="color:#66d9ef">for</span> 46:0:41:86:41:6e
-Temporary Error: Could not find an IP address <span style="color:#66d9ef">for</span> 46:0:41:86:41:6e
-</code></pre></div><p>It could be you have hit <a href="https://github.com/kubernetes/minikube/issues/1926#issuecomment-356378525">this issue in minikube and hyperkit</a>.</p>
-<p>The work around is to try the following:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">rm ~/.minikube/machines/minikube/hyperkit.pid
-</code></pre></div><p>Then try again. Hopefully this time it will work!</p>
-<h2 id="cannot-access-services-on-minikube">Cannot access services on minikube</h2>
-<p>When running minikube locally <code>jx</code> defaults to using <a href="http://nip.io/">nip.io</a> as a way of using nice-isn DNS names for services and working around the fact that most laptops can&rsquo;t do wildcard DNS. However sometimes <a href="http://nip.io/">nip.io</a> has issues and does not work.</p>
-<p>To avoid using <a href="http://nip.io/">nip.io</a> you can do the following:</p>
-<p>Edit the file <code>~/.jx/cloud-environments/env-minikube/myvalues.yaml</code> and add the following content:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">expose</span>:
-  <span style="color:#66d9ef">Args</span>:
-    - --exposer
-    - NodePort
-    - --http
-    - <span style="color:#e6db74">&#34;true&#34;</span>
-</code></pre></div><p>Then re-run <code>jx install</code> and this will switch the services to be exposed on <code>node ports</code> instead of using ingress and DNS.</p>
-<p>So if you type:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx open
-</code></pre></div><p>You&rsquo;ll see all the URs of the form <code>http://$(minikube ip):somePortNumber</code> which then avoids going through <a href="http://nip.io/">nip.io</a> - it just means the URLs are a little more cryptic using magic port numbers rather than simple host names.</p>
-<h2 id="how-do-i-get-the-password-and-username-for-jenkins">How do I get the Password and Username for Jenkins?</h2>
-<p>Install <a href="https://github.com/mfuentesg/ksd">KSD</a> by running <code>go get github.com/mfuentesg/ksd</code> and then run <code>kubectl get secret jenkins -o yaml | ksd</code></p>
 <h2 id="how-do-i-see-the-log-of-exposecontroller">How do I see the log of exposecontroller?</h2>
 <p>Usually we run the <a href="">exposecontroller</a> as a post install <code>Job</code> when we perform promotion to <code>Staging</code> or <code>Production</code> to expose services over Ingress and possibly inject external URLs into applications configuration.</p>
 <p>So the <code>Job</code> will trigger a short lived <code>Pod</code> to run in the namespace of your environment, then the pod will be deleted.</p>
@@ -2113,7 +2069,7 @@ kube-system   jxing-nginx-ingress-controller        LoadBalancer   X.X.X.X      
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/a34aa1290e507001c5a938092e1d2bfd9f0f48c6">release 0.0.1793 (a34aa12)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/45d8f0f9c068b6df38eded953d963e90c646bf92">release 0.0.1794 (45d8f0f)</a>
 </div>
 </div>
 
