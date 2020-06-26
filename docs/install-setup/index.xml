@@ -258,5 +258,148 @@ command.&lt;/a&gt;&lt;/p&gt;
       </description>
     </item>
     
+    <item>
+      <title>Docs: OpenShift</title>
+      <link>https://jenkins-x.io/docs/install-setup/installing/boot/clouds/openshift/</link>
+      <pubDate>Wed, 06 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/install-setup/installing/boot/clouds/openshift/</guid>
+      <description>
+        
+        
+        
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
+&lt;p&gt;This documentation will help you getting Jenkins X installed on OpenShift with minimum supported features as it&amp;rsquo;s still a work in progress.&lt;/p&gt;
+&lt;p&gt;Features like Vault integration and Long Term Storage for logs and artifacts are still not supported.&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;The OpenShift installation documentation will be split in two categories:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Installing OpenShift with admin permissions.&lt;/li&gt;
+&lt;li&gt;Installing OpenShift with restricted permissions.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here are some recommendations to hopefully get you started. If you hit any issues please &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;join our community&lt;/a&gt; we can hopefully help you.&lt;/p&gt;
+&lt;h2 id=&#34;common-configuration&#34;&gt;Common configuration&lt;/h2&gt;
+&lt;p&gt;Please set your provider to &lt;code&gt;openshift&lt;/code&gt; via this in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: openshift
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;routes&#34;&gt;Routes&lt;/h3&gt;
+&lt;p&gt;With OpenShift, during the installation with Ansible, you are asked to provide an existing domain, the management of Routes is done directly by the cluster.&lt;/p&gt;
+&lt;p&gt;This means that, even if &lt;code&gt;nginx-ingress-controller&lt;/code&gt; is installed, it will not be taken into account when managing routes.&lt;/p&gt;
+&lt;p&gt;To make Jenkins X work with your &lt;code&gt;Routes&lt;/code&gt; and your defined cluster &lt;code&gt;Domain&lt;/code&gt;, you will need to modify the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: &amp;lt;your_openshift_domain&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  exposer: Route&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;ExposeController&lt;/code&gt; will be configured to use Routes with the domain that you provided.&lt;/p&gt;
+&lt;h3 id=&#34;tls&#34;&gt;TLS&lt;/h3&gt;
+&lt;p&gt;As the domain will be created and managed by the cluster before Jenkins X is installed, the domain will need to be secured independently.&lt;/p&gt;
+&lt;p&gt;This means that the usual Jenkins X &lt;code&gt;cert-manager&lt;/code&gt; integration will do nothing on OpenShift.&lt;/p&gt;
+&lt;p&gt;If you need your OpenShift domain to be secured, you will need to manage &lt;code&gt;cert-manager&lt;/code&gt; and your &lt;code&gt;Issuer&lt;/code&gt; and &lt;code&gt;Certificate&lt;/code&gt; yourself.&lt;/p&gt;
+&lt;h3 id=&#34;external-docker-registry&#34;&gt;External Docker Registry&lt;/h3&gt;
+&lt;p&gt;Right now, the supported way to store your docker images is using an external Docker registry like Docker Hub.&lt;/p&gt;
+&lt;p&gt;To configure it, you&amp;rsquo;ll need to modify &lt;code&gt;jx-requirements.yml&lt;/code&gt; like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;registry&lt;/span&gt;: docker.io
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;During the boot process, you will be asked &lt;code&gt;Do you want to configure non default Docker Registry?&lt;/code&gt;. You&amp;rsquo;ll need to answer yes and provide extra information to connect to Docker Hub.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;? Docker Registry Url https://index.docker.io/v1/
+? Docker Registry username &amp;lt;your_dockerhub_username&amp;gt;
+? Docker Registry password [? for help] &amp;lt;your_dockerhub_password&amp;gt;
+? Docker Registry email &amp;lt;your_dockerhub_email&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;general-advice&#34;&gt;General advice&lt;/h2&gt;
+&lt;p&gt;We recommend starting with the most simple possible installation and get that working, then gradually try to be more complex. e.g. start off by ignoring these features:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;vault&lt;/li&gt;
+&lt;li&gt;cloud storage for artifacts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Then once you have something working, incrementally try enabling each of those in turn.&lt;/p&gt;
+&lt;h2 id=&#34;installing-jenkins-x-with-admin-rights&#34;&gt;Installing Jenkins X with admin rights&lt;/h2&gt;
+&lt;p&gt;If you have admin rights in your OpenShift cluster and no restrictions to use cluster-wide permissions on services, this will be the preferred way to proceed.&lt;/p&gt;
+&lt;p&gt;You&amp;rsquo;ll simply need to modify the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file with the recommended configuration explained above and run &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;installing-jenkins-x-with-restricted-permissions&#34;&gt;Installing Jenkins X with restricted permissions&lt;/h2&gt;
+&lt;p&gt;While the preferred way to install Jenkins X is with admin rights, OpenShift is aimed for the enterprise user.&lt;/p&gt;
+&lt;p&gt;This usually means having very limited permissions like not being able to create namespaces, not being able to use cluster-wide permissions etc.&lt;/p&gt;
+&lt;p&gt;In this case, the installation will need to be split in two phases:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cluster admin phase&lt;/li&gt;
+&lt;li&gt;Restricted permissions phase&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Your user may have admin rights and still want to install Jenkins X with limited permissions, so there will just be a phase in this case, but it will need to be configured to let Jenkins X know how to install itself.&lt;/p&gt;
+&lt;h3 id=&#34;basic-configuration&#34;&gt;Basic configuration&lt;/h3&gt;
+&lt;p&gt;In order to let Jenkins X know that it should install all of its resources with limited permissions, you&amp;rsquo;ll need to edit &lt;code&gt;jx-requirements.yml&lt;/code&gt; like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;clusterConfig&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;strictPermissions&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;What this flag will do is the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;It will default to &lt;code&gt;Roles&lt;/code&gt; and &lt;code&gt;RoleBindings&lt;/code&gt; instead of &lt;code&gt;ClusterRoles&lt;/code&gt; and &lt;code&gt;ClusterRoleBindings&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It will avoid creating any resource that needs to have cluster level permissions.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It will create additional &lt;code&gt;Roles&lt;/code&gt; in configured namespaces so certain controllers can work on different namespaces like &lt;code&gt;jx&lt;/code&gt;, &lt;code&gt;jx-staging&lt;/code&gt; and &lt;code&gt;jx-production&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It will use the &lt;code&gt;ControllerRole&lt;/code&gt; and &lt;code&gt;EnvironmentRoleBindings&lt;/code&gt; to copy the &lt;code&gt;tekton-bot&lt;/code&gt; role to configured namespaces.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For now, it also comes with a limitation: Previews will not work on this kind of cluster. We are working on enabling them using a different mechanism.&lt;/p&gt;
+&lt;h3 id=&#34;cluster-admin-phase&#34;&gt;Cluster Admin phase&lt;/h3&gt;
+&lt;p&gt;This phase will need to be executed by an user with cluster-admin role or with enough permissions to install &lt;code&gt;CustomResourceDefinitions&lt;/code&gt;, &lt;code&gt;SecurityContextConstraints&lt;/code&gt;, &lt;code&gt;ClusterRoles&lt;/code&gt;, &lt;code&gt;ClusterRoleBindings&lt;/code&gt; etc.&lt;/p&gt;
+&lt;h4 id=&#34;jenkins-x-crds&#34;&gt;Jenkins X CRDS:&lt;/h4&gt;
+&lt;p&gt;The admin will need to install Jenkins X &lt;code&gt;CustomResourceDefinitions&lt;/code&gt; by executing:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;jx upgrade crd
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;manifests&#34;&gt;Manifests&lt;/h4&gt;
+&lt;p&gt;These manifest files will need to be executed in order:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Tekton CRDS:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;kubectl apply --wait -f https://raw.githubusercontent.com/jenkins-x/jenkins-x-boot-config/master/kubeProviders/openshift/templates/tekton-crds.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;Namespaces:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;kubectl apply --wait -f https://raw.githubusercontent.com/jenkins-x/jenkins-x-boot-config/master/kubeProviders/openshift/templates/namespaces.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;Service Accounts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;kubectl apply --wait -f https://raw.githubusercontent.com/jenkins-x/jenkins-x-boot-config/master/kubeProviders/openshift/templates/service-accounts.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;JX Admin Role&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;kubectl apply --wait -f https://raw.githubusercontent.com/jenkins-x/jenkins-x-boot-config/master/kubeProviders/openshift/templates/jx-admin-role.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;ControllerBuild SecurityContextConstraint&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;kubectl apply --wait -f https://raw.githubusercontent.com/jenkins-x/jenkins-x-boot-config/master/kubeProviders/openshift/templates/controller-build-scc.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;After running these manifests, the admin will need to provide an user with the &lt;code&gt;jx-admin&lt;/code&gt; role in different namespaces:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;oc adm policy add-role-to-user jx-admin &amp;lt;username&amp;gt; --role-namespace jx --namespace jx
+oc adm policy add-role-to-user jx-admin &amp;lt;username&amp;gt; --role-namespace jx-staging --namespace jx-staging
+oc adm policy add-role-to-user jx-admin &amp;lt;username&amp;gt; --role-namespace jx-production --namespace jx-production
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;restricted-permissions-phase&#34;&gt;Restricted permissions phase&lt;/h3&gt;
+&lt;p&gt;After the cluster admin has created all the necessary resources, the restricted permissions phase can begin.&lt;/p&gt;
+&lt;p&gt;This can now be executed by the user that was assigned the &lt;code&gt;jx-admin&lt;/code&gt; role in the Cluster Admin phase.&lt;/p&gt;
+&lt;h4 id=&#34;preparation&#34;&gt;Preparation&lt;/h4&gt;
+&lt;p&gt;Just one more small change is needed.&lt;/p&gt;
+&lt;p&gt;There are certain steps within &lt;code&gt;jenkins-x.yaml&lt;/code&gt; that will fail to execute in this phase. Right now, there&amp;rsquo;s no way to conditionally skip steps so these steps will need to be manually removed from the file.&lt;/p&gt;
+&lt;p&gt;These steps are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;install-jx-crds&lt;/li&gt;
+&lt;li&gt;install-velero&lt;/li&gt;
+&lt;li&gt;install-velero-backups&lt;/li&gt;
+&lt;li&gt;install-nginx-controller&lt;/li&gt;
+&lt;li&gt;install-external-dns&lt;/li&gt;
+&lt;li&gt;install-cert-manager-crds&lt;/li&gt;
+&lt;li&gt;install-cert-manager&lt;/li&gt;
+&lt;li&gt;install-acme-issuer-and-certificate&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once this is done, the installation can proceed as usual, by executing:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-console&#34; data-lang=&#34;console&#34;&gt;jx boot
+&lt;/code&gt;&lt;/pre&gt;
+      </description>
+    </item>
+    
   </channel>
 </rss>
