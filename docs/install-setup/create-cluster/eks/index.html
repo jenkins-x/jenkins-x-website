@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to create an EKS cluster?" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/create-cluster/eks/" />
-<meta property="article:modified_time" content="2020-06-25T15:09:48+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-26T12:12:47+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Create EKS cluster">
 <meta itemprop="description" content="How to create an EKS cluster?">
-<meta itemprop="dateModified" content="2020-06-25T15:09:48&#43;00:00" />
-<meta itemprop="wordCount" content="1819">
+<meta itemprop="dateModified" content="2020-06-26T12:12:47&#43;00:00" />
+<meta itemprop="wordCount" content="1894">
 
 
 
@@ -1710,16 +1710,10 @@ if (!doNotTrack) {
       </ul>
     </li>
     <li><a href="#long-term-storage">Long Term Storage</a></li>
-    <li><a href="#using-spot-instances">Using Spot Instances</a></li>
     <li><a href="#vault">Vault</a></li>
     <li><a href="#externaldns">ExternalDNS</a></li>
-    <li><a href="#cert-manager">cert-manager</a>
-      <ul>
-        <li><a href="#running-jx-boot">Running <code>jx boot</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#production-cluster-considerations">Production cluster considerations</a></li>
-    <li><a href="#configuring-a-terraform-backend">Configuring a Terraform backend</a></li>
+    <li><a href="#cert-manager">cert-manager</a></li>
+    <li><a href="#running-jx-boot">Running <code>jx boot</code></a></li>
   </ul>
 </nav>
 
@@ -1790,7 +1784,7 @@ The source is in the <a href="https://github.com/jenkins-x/terraform-aws-eks-jx"
 <p>The EKS Terraform module for Jenkins X allows you to create an <a href="https://aws.amazon.com/eks/">EKS</a> cluster for installation of Jenkins X.
 You need the following binaries locally installed and configured on your <em>PATH</em>:</p>
 <ul>
-<li><code>terraform</code> (=&gt; 0.12.17)</li>
+<li><code>terraform</code> (~&gt; 0.12.17)</li>
 <li><code>kubectl</code> (&gt;=1.10)</li>
 <li><code>aws-iam-authenticator</code></li>
 <li><code>wget</code></li>
@@ -1799,6 +1793,10 @@ You need the following binaries locally installed and configured on your <em>PAT
 <p>A default Jenkins X ready cluster can be provisioned by creating a <em>main.tf</em> file in an empty directory with the following content:</p>
 <pre><code>module &quot;eks-jx&quot; {
   source  = &quot;jenkins-x/eks-jx/aws&quot;
+}
+
+output &quot;jx_requirements&quot; {
+   value = module.eks-jx.jx_requirements
 }
 
 output &quot;vault_user_id&quot; {
@@ -1810,12 +1808,18 @@ output &quot;vault_user_secret&quot; {
   value       = module.eks-jx.vault_user_secret
   description = &quot;The Vault IAM user secret&quot;
 }
-</code></pre><p>Due to the Vault issue <a href="https://github.com/hashicorp/vault/issues/7450">7450</a>, the Terraform module needs to create a new IAM user for installing Vault.
+
+</code></pre><p>Due to the Vault issue <a href="https://github.com/hashicorp/vault/issues/7450">7450</a>, this Terraform module needs for now to create a new IAM user for installing Vault.
 It also creates an IAM access key whose id and secret are defined in the output above.
-You need the id and secret for running <a href="#running-jx-boot"><code>jx boot</code></a>.</p>
-<p>If you do not want Terraform to create a new IAM user, or you do not have permissions to create one, you need to provide the name of an existing IAM user.</p>
+You need the id and secret for running <a href="/docs/install-setup/create-cluster/eks/#running-jx-boot"><code>jx boot</code></a>.</p>
+<p>The <em>jx_requirements</em> output is a helper for creating the initial input for <code>jx boot</code>.</p>
+<p>If you do not want Terraform to create a new IAM user or you do not have permissions to create one, you need to provide the name of an existing IAM user.</p>
 <pre><code>module &quot;eks-jx&quot; {
   source  = &quot;jenkins-x/eks-jx/aws&quot;
+
+  output &quot;jx_requirements&quot; {
+    value = module.eks-jx.jx_requirements
+  }
 
   vault_user=&quot;&lt;your_vault_iam_username&gt;&quot;
 }
@@ -1831,11 +1835,11 @@ export VAULT_AWS_SECRET_ACCESS_KEY<span style="color:#f92672">=</span><span styl
 </code></pre></div><p>If you specified <em>vault_user</em> you need to provide the access key id and secret for the specified user.</p>
 
 
-<div class="alert alert-primary" role="alert">
+<div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
 This example is for getting up and running quickly.
 It is not intended for a production cluster.
-Refer to <a href="#production-cluster-considerations">Production cluster considerations</a> for things to consider when creating a production cluster.
+Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-considerations">Production cluster considerations</a> for things to consider when creating a production cluster.
 </div>
 
 <p>The following sections provide a full list of configuration in- and output variables.</p>
@@ -1894,10 +1898,24 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 <td align="center">no</td>
 </tr>
 <tr>
+<td>enable_key_rotation</td>
+<td>Flag to enable kms key rotation</td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>enable_logs_storage</td>
 <td>Flag to enable or disable long term storage for logs</td>
 <td><code>bool</code></td>
 <td><code>true</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>enable_node_group</td>
+<td>Flag to enable node group</td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -1916,7 +1934,7 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 </tr>
 <tr>
 <td>enable_spot_instances</td>
-<td>Flag to enable Spot Instances</td>
+<td>Flag to enable spot instances</td>
 <td><code>bool</code></td>
 <td><code>false</code></td>
 <td align="center">no</td>
@@ -1926,6 +1944,13 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 <td>Flag to enable TLS in the final <code>jx-requirements.yml</code> file</td>
 <td><code>bool</code></td>
 <td><code>false</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>enable_worker_group</td>
+<td>Flag to enable worker group</td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -1947,6 +1972,20 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 <td>The minimum number of worker nodes to use for the cluster</td>
 <td><code>number</code></td>
 <td><code>3</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>node_group_ami</td>
+<td>ami type for the node group worker intances</td>
+<td><code>string</code></td>
+<td><code>&quot;AL2_x86_64&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>node_group_disk_size</td>
+<td>node group worker disk size</td>
+<td><code>string</code></td>
+<td><code>&quot;50&quot;</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -1972,7 +2011,7 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 </tr>
 <tr>
 <td>spot_price</td>
-<td>The ceiling price for spot instances</td>
+<td>The spot price ceiling for spot instances</td>
 <td><code>string</code></td>
 <td><code>&quot;0.1&quot;</code></td>
 <td align="center">no</td>
@@ -1987,6 +2026,13 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 <tr>
 <td>tls_email</td>
 <td>The email to register the LetsEncrypt certificate with. Added to the <code>jx-requirements.yml</code> file</td>
+<td><code>string</code></td>
+<td><code>&quot;&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>vault_url</td>
+<td>URL to an external Vault instance in case Jenkins X does not create its own system Vault</td>
 <td><code>string</code></td>
 <td><code>&quot;&quot;</code></td>
 <td align="center">no</td>
@@ -2051,6 +2097,10 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 <td>The IAM Role that the External DNS pod will assume to authenticate</td>
 </tr>
 <tr>
+<td>jx_requirements</td>
+<td>The jx-requirements rendered output</td>
+</tr>
+<tr>
 <td>jxui_iam_role</td>
 <td>The IAM Role that the Jenkins X UI pod will assume to authenticate</td>
 </tr>
@@ -2093,8 +2143,8 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
 </tbody>
 </table>
 <h2 id="long-term-storage">Long Term Storage</h2>
-<p>You can choose to create S3 buckets for long term storage and enable them in the generated <em>jx-requirements.yml</em> file with <code>enable_logs_storage</code>, <code>enable_reports_storage</code> and <code>enable_repository_storage</code>.</p>
-<p>During <code>terraform apply</code> the enabledS3 buckets are created, and the generated <code>jx-requirements.yml</code> will contain the following section:</p>
+<p>You can choose to create S3 buckets for <a href="/docs/install-setup/boot/storage/">long term storage</a> with <code>enable_logs_storage</code>, <code>enable_reports_storage</code> and <code>enable_repository_storage</code>.</p>
+<p>During <code>terraform apply</code> the enabledS3 buckets are created, and the <em>jx_requirements</em> output will contain the following section:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">    <span style="color:#66d9ef">storage</span>:
       <span style="color:#66d9ef">logs</span>:
         <span style="color:#66d9ef">enabled</span>: ${enable_logs_storage}
@@ -2105,34 +2155,26 @@ Refer to <a href="#production-cluster-considerations">Production cluster conside
       <span style="color:#66d9ef">repository</span>:
         <span style="color:#66d9ef">enabled</span>: ${enable_repository_storage}
         <span style="color:#66d9ef">url</span>: s3://${repository_storage_bucket}
-</code></pre></div><p>If you just want to experiment with Jenkins X, you can set force_destroy to true. This allows you to remove all generated buckets when running terraform destroy.</p>
+</code></pre></div><p>If you just want to experiment with Jenkins X, you can set the variable <em>force_destroy</em> to true.
+This allows you to remove all generated buckets when running terraform destroy.</p>
 
 
-<div class="alert alert-primary" role="alert">
+<div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
-<strong>Note</strong>: If you set <code>force_destroy</code> to false, and run a <code>terraform destroy</code>, it will fail. In that case empty the s3 buckets from the aws s3 console, and re run <code>terraform destroy</code>.
-</div>
-
-<p>For more information refer to the <a href="/docs/resources/guides/managing-jx/common-tasks/storage/">Storage</a> section.</p>
-<h2 id="using-spot-instances">Using Spot Instances</h2>
-<p>You can save up to 90% of cost when you use Spot Instances. You just need to make sure your applications are resilient. You can set the ceiling <code>spot_price</code> of what you want to pay then set <code>enable_spot_instances</code> to <code>true</code>.</p>
-
-
-<div class="alert alert-primary" role="alert">
-
-<strong>Note</strong>: If the price of the instance reaches this point it will be terminated.
+If you set <code>force_destroy</code> to false, and run a <code>terraform destroy</code>, it will fail. In that case empty the s3 buckets from the aws s3 console, and re run <code>terraform destroy</code>.
 </div>
 
 <h2 id="vault">Vault</h2>
 <p>Vault is used by Jenkins X for managing secrets.
 Part of this module&rsquo;s responsibilities is the creation of all resources required to run the <a href="https://github.com/banzaicloud/bank-vaults">Vault Operator</a>.
 These resources are An S3 Bucket, a DynamoDB Table and a KMS Key.</p>
-<p>For more information refer around Vault refer to the <a href="/docs/reference/components/vault/">Vault</a> section.</p>
+<p>You can also configure an existing Vault instance for the use with Jenkins X.
+In this case provide the Vault URL via the <em>vault_url</em> via the input variable and follow the Jenkins X documentation around the instllation of an <a href="https://jenkins-x.io/docs/install-setup/installing/boot/secrets/#external">external Vault</a> instance.</p>
 <h2 id="externaldns">ExternalDNS</h2>
 <p>You can enable <a href="https://github.com/kubernetes-sigs/external-dns">ExternalDNS</a> with the <code>enable_external_dns</code> variable. This modifies the generated <em>jx-requirements.yml</em> file to enable External DNS when running <code>jx boot</code>.</p>
 <p>If <code>enable_external_dns</code> is <em>true</em>, additional configuration is required.</p>
 <p>If you want to use a domain with an already existing Route 53 Hosted Zone, you can provide it through the <code>apex_domain</code> variable:</p>
-<p>This domain will be configured in the resulting <em>jx-requirements.yml</em> file in the following section:</p>
+<p>This domain will be configured in the <em>jx_requirements</em> output in the following section:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">    <span style="color:#66d9ef">ingress</span>:
       <span style="color:#66d9ef">domain</span>: ${domain}
       <span style="color:#66d9ef">ignoreLoadBalancer</span>: <span style="color:#66d9ef">true</span>
@@ -2149,29 +2191,22 @@ This is done by creating a <code>NS</code> RecordSet in the apex domain&rsquo;s 
 <p>If you use staging, you will receive self-signed certificates, but you are not rate-limited, if you use the <code>production</code> environment, you receive certificates signed by LetsEncrypt, but you can be rate limited.</p>
 <p>You can choose to use the <code>production</code> environment with the <code>production_letsencrypt</code> variable:</p>
 <p>You need to provide a valid email to register your domain in LetsEncrypt with <code>tls_email</code>.</p>
-<h3 id="running-jx-boot">Running <code>jx boot</code></h3>
-<p>An output of applying this Terraform module is a <em>jx-requirements.yml</em> file in the current directory.
-This file can be used as input to <a href="/docs/install-setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster created by this module.</p>
+<h2 id="running-jx-boot">Running <code>jx boot</code></h2>
+<p>A terraform output (<em>jx_requirements</em>) is available after applying this Terraform module.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements
+</code></pre></div><p>This <em>jx_requirements</em> output can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster created by this module.</p>
 
 
-<div class="alert alert-primary" role="alert">
+<div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
-<strong>Note</strong>: The generated <em>jx-requirements.yml</em> is only used for the first run of <code>jx boot</code>.
-During this first run a git repository containing the source code for Jenkins X Boot is created.
-This repository contains the <em>jx-requirements.yml</em> used by successive runs of <code>jx boot</code>.
-</div>
-
-<p>Change into  an empty directory and execute:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx boot --requirements &lt;path-to-jx-requirements.yml&gt;
-</code></pre></div>
-
-<div class="alert alert-primary" role="alert">
-
-Remember you need to export <em>VAULT_AWS_ACCESS_KEY_ID</em> and <em>VAULT_AWS_SECRET_ACCESS_KEY</em>.
-</div>
-
-<p>See <a href="#cluster-provisioning">Cluster provisioning</a>.</p>
-<p>You are prompted for any further required configuration.
+<p>The generated <em>jx-requirements</em> is only used for the first run of <code>jx boot</code>.
+During this first run of <code>jx boot</code> a git repository containing the source code for Jenkins X Boot is created.
+This (<em>new</em>) repository contains a <em>jx-requirements.yml</em> (<em>which is now ahead of the jx-requirements output from terraform</em>) used by successive runs of <code>jx boot</code>.</p>
+<p>Execute:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements &gt; &lt;some_empty_dir&gt;/jx-requirements.yml
+cd &lt;some_empty_dir&gt;
+jx boot --requirements jx-requirements.yml
+</code></pre></div><p>You are prompted for any further required configuration.
 The number of prompts depends on how much you have <a href="#inputs">pre-configured</a> via your Terraform variables.</p>
 <p>More information about the boot process can be found in the <a href="/docs/install-setup/boot/">Run Boot</a> section.</p>
 <h2 id="production-cluster-considerations">Production cluster considerations</h2>
@@ -2180,12 +2215,15 @@ The following is a list of considerations for a production use case.</p>
 <ul>
 <li>
 <p>Specify the version attribute of the module, for example:</p>
-<pre><code>module &quot;jx&quot; {
+<pre><code>module &quot;eks-jx&quot; {
   source  = &quot;jenkins-x/eks-jx/aws&quot;
   version = &quot;1.0.0&quot;
   # insert your configuration
 }
-</code></pre><p>Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.</p>
+<p>output &quot;jx_requirements&quot; {
+value = module.eks-jx.jx_requirements
+}<br>
+</code></pre><p>Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.</p></p>
 </li>
 <li>
 <p>Keep the Terraform configuration under version control by creating a dedicated repository for your cluster configuration or by adding it to an already existing infrastructure repository.</p>
@@ -2202,7 +2240,10 @@ When working with AWS a good choice for your Terraform backend is the <a href="h
 The <a href="https://github.com/jenkins-x/terraform-aws-eks-jx/examples">examples</a> directory of the <a href="https://github.com/jenkins-x/terraform-aws-eks-jx">terraform-aws-eks-jx</a> repository contains configuration examples for using the <em>s3</em> backed.</p>
 <p>To use the <em>s3</em> backend, you will need to create the bucket upfront.
 You need the S3 bucket as well as a Dynamo table for state locks.
-You can use <a href="https://github.com/cloudposse/terraform-aws-tfstate-backend">terraform-aws-tfstate-backend</a> to create these resources.</p>
+You can use <a href="https://github.com/cloudposse/terraform-aws-tfstate-backend">terraform-aws-tfstate-backend</a> to create these required resources.</p>
+
+</div>
+
 
 	
 		<style>
@@ -2266,7 +2307,7 @@ You can use <a href="https://github.com/cloudposse/terraform-aws-tfstate-backend
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 25, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/b450f7f727edd294cc12cef86dc25e1ddc9128ec">release 0.0.1802 (b450f7f)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/8fc7a9b79c5d53d5115b469b1280e708969dd15b">release 0.0.1803 (8fc7a9b)</a>
 </div>
 </div>
 

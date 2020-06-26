@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to create a GKE cluster?" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/create-cluster/gke/" />
-<meta property="article:modified_time" content="2020-06-25T15:09:48+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-26T12:12:47+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Create GKE cluster">
 <meta itemprop="description" content="How to create a GKE cluster?">
-<meta itemprop="dateModified" content="2020-06-25T15:09:48&#43;00:00" />
-<meta itemprop="wordCount" content="1505">
+<meta itemprop="dateModified" content="2020-06-26T12:12:47&#43;00:00" />
+<meta itemprop="wordCount" content="1509">
 
 
 
@@ -1809,6 +1809,10 @@ You find instructions on how to install and authenticate in the <a href="https:/
 
   gcp_project = &quot;&lt;my-gcp-project-id&gt;&quot;
 }
+
+output &quot;jx_requirements&quot; {
+  value = module.jx.jx_requirements
+}  
 </code></pre><p>You can then apply this Terraform configuration via:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform init
 terraform apply
@@ -1822,8 +1826,6 @@ It is not intended for a production cluster.
 Refer to <a href="/docs/install-setup/create-cluster/gke/#production-cluster-considerations">Production cluster considerations</a> for things to consider when creating a production cluster.
 </div>
 
-<p>On completion of <code>terraform apply</code> there will be a <em>jx_requirements</em> output available which can be used as input to <code>jx boot</code> using the <code>--requirements</code> option.
-Refer to <a href="#running-jx-boot">Running <code>jx boot</code></a> for more information.</p>
 <p>In the default configuration, no custom domain is used.
 DNS resolution occurs via <a href="https://nip.io/">nip.io</a>.
 For more information on how to configure and use a custom domain, refer to <a href="/docs/install-setup/create-cluster/gke/#using-a-custom-domain">Using a custom domain</a>.</p>
@@ -1934,6 +1936,13 @@ This allows you to remove all generated resources when running <code>terraform d
 <td align="center">no</td>
 </tr>
 <tr>
+<td>node_disk_type</td>
+<td>Node disk type, either pd-standard or pd-ssd</td>
+<td><code>string</code></td>
+<td><code>&quot;pd-standard&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>node_machine_type</td>
 <td>Node type for the Kubernetes cluster</td>
 <td><code>string</code></td>
@@ -1949,9 +1958,9 @@ This allows you to remove all generated resources when running <code>terraform d
 </tr>
 <tr>
 <td>release_channel</td>
-<td>GKE <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels">Release Channel</a> to subscribe to.</td>
+<td>The GKE release channel to subscribe to.  See <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels">https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels</a></td>
 <td><code>string</code></td>
-<td><code>UNSPECIFIED</code></td>
+<td><code>&quot;UNSPECIFIED&quot;</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -2052,6 +2061,10 @@ This allows you to remove all generated resources when running <code>terraform d
 <td>The GCP project in which the resources got created</td>
 </tr>
 <tr>
+<td>jx_requirements</td>
+<td>The jx-requirements rendered output</td>
+</tr>
+<tr>
 <td>log_storage_url</td>
 <td>The URL to the bucket for log storage</td>
 </tr>
@@ -2066,10 +2079,6 @@ This allows you to remove all generated resources when running <code>terraform d
 <tr>
 <td>vault_bucket_url</td>
 <td>The URL to the bucket for secret storage</td>
-</tr>
-<tr>
-<td>jx_requirements</td>
-<td>The yaml formatted output for use with <code>jx boot</code></td>
 </tr>
 </tbody>
 </table>
@@ -2095,6 +2104,10 @@ The following is a list of considerations for a production usecase.</p>
   version = &quot;1.2.4&quot;
   # insert your configuration
 }
+
+output &quot;jx_requirements&quot; {
+ value = module.jx.jx_requirements
+}
 </code></pre><p>Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintented.</p>
 </li>
 <li>
@@ -2117,22 +2130,23 @@ You can use <code>gsutil</code> to create the bucket:</p>
 </code></pre></div><p>You can verify whether a bucket has versioning enabled via:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">gsutil versioning get gs://&lt;my-bucket-name&gt;
 </code></pre></div><h2 id="running-jx-boot">Running <code>jx boot</code></h2>
+<p>A terraform output (<em>jx_requirements</em>) is available after applying this Terraform module.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements
+</code></pre></div><p>This <code>jx_requirements</code> output can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster created by this module.</p>
 
 
 <div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
-The generated output <em>jx_requirements</em> is only used for the first run of <code>jx boot</code>.
-During this first run a git repository containing the source code for Jenkins X Boot is created.
-This repository contains the <em>jx-requirements.yml</em> used by successive runs of <code>jx boot</code>.
-See the diagram below for more information on the typical lifecycle.
+The generated <em>jx-requirements</em> is only used for the first run of <code>jx boot</code>.
+During this first run of <code>jx boot</code> a git repository containing the source code for Jenkins X Boot is created.
+This (<em>new</em>) repository contains a <em>jx-requirements.yml</em> (<em>which is now ahead of the jx-requirements output from terraform</em>) used by successive runs of <code>jx boot</code>.
 </div>
 
-<p><img src="/images/getting-started/terraform_google_jx_boot.png" alt="Jenkins X Boot Lifecyckle"></p>
-<p>An output (<em>jx_requirements</em>) is available after applying the Terraform module, it can be retrieved and pipped to a file.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements &gt; jx-requirements.yml
-</code></pre></div><p>This file can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster.</p>
-<p>Change into  an empty directory and execute:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx boot --requirements &lt;path-to-jx-requirements.yml&gt;
+<p>Execute:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements &gt; &lt;some_empty_dir&gt;/jx-requirements.yml
+<span style="color:#75715e"># jenkins-x creates the environment repository directory localy before pushing to the Git server of choice</span>
+cd &lt;some_empty_dir&gt;
+jx boot --requirements jx-requirements.yml
 </code></pre></div><p>You are prompted for any further required configuration.
 The number of prompts depends on how much you have <a href="/docs/install-setup/create-cluster/gke/#inputs">pre-configured</a> via your Terraform variables.</p>
 <p>More information about the boot process can be found in the <a href="/docs/getting-started/setup/boot">Jenkins X Boot</a> configuration section.</p>
@@ -2199,7 +2213,7 @@ The number of prompts depends on how much you have <a href="/docs/install-setup/
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 25, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/b450f7f727edd294cc12cef86dc25e1ddc9128ec">release 0.0.1802 (b450f7f)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/8fc7a9b79c5d53d5115b469b1280e708969dd15b">release 0.0.1803 (8fc7a9b)</a>
 </div>
 </div>
 
