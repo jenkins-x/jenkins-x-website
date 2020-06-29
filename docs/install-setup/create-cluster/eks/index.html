@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to create an EKS cluster?" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/create-cluster/eks/" />
-<meta property="article:modified_time" content="2020-06-29T08:00:06+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-06-29T13:53:25+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Create EKS cluster">
 <meta itemprop="description" content="How to create an EKS cluster?">
-<meta itemprop="dateModified" content="2020-06-29T08:00:06&#43;00:00" />
-<meta itemprop="wordCount" content="1894">
+<meta itemprop="dateModified" content="2020-06-29T13:53:25&#43;00:00" />
+<meta itemprop="wordCount" content="2134">
 
 
 
@@ -1720,6 +1720,13 @@ if (!doNotTrack) {
     <li><a href="#externaldns">ExternalDNS</a></li>
     <li><a href="#cert-manager">cert-manager</a></li>
     <li><a href="#running-jx-boot">Running <code>jx boot</code></a></li>
+    <li><a href="#production-cluster-considerations">Production cluster considerations</a></li>
+    <li><a href="#configuring-a-terraform-backend">Configuring a Terraform backend</a></li>
+    <li><a href="#using-spot-instances">Using spot instances</a>
+      <ul>
+        <li><a href="#eks-node-groups">EKS node groups</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
 
@@ -2201,14 +2208,16 @@ This is done by creating a <code>NS</code> RecordSet in the apex domain&rsquo;s 
 <p>A terraform output (<em>jx_requirements</em>) is available after applying this Terraform module.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements
 </code></pre></div><p>This <em>jx_requirements</em> output can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster created by this module.</p>
-
+<p>
 
 <div class="alert alert-warning" role="alert">
 <h4 class="alert-heading">Warning</h4>
-<p>The generated <em>jx-requirements</em> is only used for the first run of <code>jx boot</code>.
+The generated <em>jx-requirements</em> is only used for the first run of <code>jx boot</code>.
 During this first run of <code>jx boot</code> a git repository containing the source code for Jenkins X Boot is created.
-This (<em>new</em>) repository contains a <em>jx-requirements.yml</em> (<em>which is now ahead of the jx-requirements output from terraform</em>) used by successive runs of <code>jx boot</code>.</p>
-<p>Execute:</p>
+This (<em>new</em>) repository contains a <em>jx-requirements.yml</em> (<em>which is now ahead of the jx-requirements output from terraform</em>) used by successive runs of <code>jx boot</code>.
+</div>
+
+Execute:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements &gt; &lt;some_empty_dir&gt;/jx-requirements.yml
 cd &lt;some_empty_dir&gt;
 jx boot --requirements jx-requirements.yml
@@ -2226,10 +2235,11 @@ The following is a list of considerations for a production use case.</p>
   version = &quot;1.0.0&quot;
   # insert your configuration
 }
-<p>output &quot;jx_requirements&quot; {
-value = module.eks-jx.jx_requirements
-}<br>
-</code></pre><p>Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.</p></p>
+
+output &quot;jx_requirements&quot; {
+  value = module.eks-jx.jx_requirements
+}  
+</code></pre><p>Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.</p>
 </li>
 <li>
 <p>Keep the Terraform configuration under version control by creating a dedicated repository for your cluster configuration or by adding it to an already existing infrastructure repository.</p>
@@ -2247,7 +2257,52 @@ The <a href="https://github.com/jenkins-x/terraform-aws-eks-jx/examples">example
 <p>To use the <em>s3</em> backend, you will need to create the bucket upfront.
 You need the S3 bucket as well as a Dynamo table for state locks.
 You can use <a href="https://github.com/cloudposse/terraform-aws-tfstate-backend">terraform-aws-tfstate-backend</a> to create these required resources.</p>
+<h2 id="using-spot-instances">Using spot instances</h2>
+<p>You can save up to 90% of cost when you use Spot Instances.
+You just need to make sure your applications are resilient.
+You can set the ceiling <code>spot_price</code> of what you want to pay then set <code>enable_spot_instances</code> to <code>true</code>.</p>
 
+
+<div class="alert alert-warning" role="alert">
+<h4 class="alert-heading">Warning</h4>
+If the price of the instance reaches this point it will be terminated.
+</div>
+
+<h3 id="eks-node-groups">EKS node groups</h3>
+<p>This module provisions self-managed worker nodes by default.
+If you want AWS to manage the provisioning and lifecycle of worker nodes for EKS, you can opt for <a href="https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html">managed node groups</a>.
+They have the added benefit of running the latest Amazon EKS-optimized AMIs and gracefully drain nodes before termination to ensure that your applications stay available.
+In order to provision EKS node groups create a <em>main.tf</em> with the following content:</p>
+<pre><code>
+module &quot;eks-jx&quot; {
+  source  = &quot;jenkins-x/eks-jx/aws&quot;
+  enable_node_group   = true
+  enable_worker_group = false
+}
+
+output &quot;jx_requirements&quot; {
+  value = module.eks-jx.jx_requirements
+}
+
+output &quot;vault_user_id&quot; {
+  value       = module.eks-jx.vault_user_id
+  description = &quot;The Vault IAM user id&quot;
+}
+
+output &quot;vault_user_secret&quot; {
+  value       = module.eks-jx.vault_user_secret
+  description = &quot;The Vault IAM user secret&quot;
+}
+</code></pre>
+
+<div class="alert alert-warning" role="alert">
+<h4 class="alert-heading">Warning</h4>
+These things are important to keep in mind when provisioning eks node groups:</p>
+<ul>
+<li>If you forget to set <code>enable_worker_group = false</code>, then the module will provision both self managed worker groups and node groups.</li>
+<li>EKS node groups are supported in kubernetes v1.14+ and platform version eks.3</li>
+<li>Spot instances are not supported for EKS node groups. Check this AWS <a href="https://github.com/aws/containers-roadmap/issues/583">issue</a> for more details.</li>
+</ul>
 </div>
 
 
@@ -2313,7 +2368,7 @@ You can use <a href="https://github.com/cloudposse/terraform-aws-tfstate-backend
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 29, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/0cdd520c1566ad16c634b11388cdf3986318fd98">release 0.0.1809 (0cdd520)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 29, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/25b6ea3cd4c987e1a96a95312754ed976a562361">release 0.0.1810 (25b6ea3)</a>
 </div>
 </div>
 

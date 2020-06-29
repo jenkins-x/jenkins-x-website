@@ -838,14 +838,16 @@ This is done by creating a &lt;code&gt;NS&lt;/code&gt; RecordSet in the apex dom
 &lt;p&gt;A terraform output (&lt;em&gt;jx_requirements&lt;/em&gt;) is available after applying this Terraform module.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;terraform output jx_requirements
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This &lt;em&gt;jx_requirements&lt;/em&gt; output can be used as input to &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;Jenkins X Boot&lt;/a&gt; which is responsible for installing all the required Jenkins X components into the cluster created by this module.&lt;/p&gt;
-
+&lt;p&gt;
 
 &lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
 &lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
-&lt;p&gt;The generated &lt;em&gt;jx-requirements&lt;/em&gt; is only used for the first run of &lt;code&gt;jx boot&lt;/code&gt;.
+The generated &lt;em&gt;jx-requirements&lt;/em&gt; is only used for the first run of &lt;code&gt;jx boot&lt;/code&gt;.
 During this first run of &lt;code&gt;jx boot&lt;/code&gt; a git repository containing the source code for Jenkins X Boot is created.
-This (&lt;em&gt;new&lt;/em&gt;) repository contains a &lt;em&gt;jx-requirements.yml&lt;/em&gt; (&lt;em&gt;which is now ahead of the jx-requirements output from terraform&lt;/em&gt;) used by successive runs of &lt;code&gt;jx boot&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Execute:&lt;/p&gt;
+This (&lt;em&gt;new&lt;/em&gt;) repository contains a &lt;em&gt;jx-requirements.yml&lt;/em&gt; (&lt;em&gt;which is now ahead of the jx-requirements output from terraform&lt;/em&gt;) used by successive runs of &lt;code&gt;jx boot&lt;/code&gt;.
+&lt;/div&gt;
+
+Execute:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;terraform output jx_requirements &amp;gt; &amp;lt;some_empty_dir&amp;gt;/jx-requirements.yml
 cd &amp;lt;some_empty_dir&amp;gt;
 jx boot --requirements jx-requirements.yml
@@ -863,10 +865,11 @@ The following is a list of considerations for a production use case.&lt;/p&gt;
   version = &amp;quot;1.0.0&amp;quot;
   # insert your configuration
 }
-&lt;p&gt;output &amp;quot;jx_requirements&amp;quot; {
-value = module.eks-jx.jx_requirements
-}&lt;br&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.&lt;/p&gt;&lt;/p&gt;
+
+output &amp;quot;jx_requirements&amp;quot; {
+  value = module.eks-jx.jx_requirements
+}  
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Specifying the version ensures that you are using a fixed version and that version upgrades cannot occur unintended.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Keep the Terraform configuration under version control by creating a dedicated repository for your cluster configuration or by adding it to an already existing infrastructure repository.&lt;/p&gt;
@@ -884,7 +887,52 @@ The &lt;a href=&#34;https://github.com/jenkins-x/terraform-aws-eks-jx/examples&#
 &lt;p&gt;To use the &lt;em&gt;s3&lt;/em&gt; backend, you will need to create the bucket upfront.
 You need the S3 bucket as well as a Dynamo table for state locks.
 You can use &lt;a href=&#34;https://github.com/cloudposse/terraform-aws-tfstate-backend&#34;&gt;terraform-aws-tfstate-backend&lt;/a&gt; to create these required resources.&lt;/p&gt;
+&lt;h2 id=&#34;using-spot-instances&#34;&gt;Using spot instances&lt;/h2&gt;
+&lt;p&gt;You can save up to 90% of cost when you use Spot Instances.
+You just need to make sure your applications are resilient.
+You can set the ceiling &lt;code&gt;spot_price&lt;/code&gt; of what you want to pay then set &lt;code&gt;enable_spot_instances&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt;.&lt;/p&gt;
 
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
+If the price of the instance reaches this point it will be terminated.
+&lt;/div&gt;
+
+&lt;h3 id=&#34;eks-node-groups&#34;&gt;EKS node groups&lt;/h3&gt;
+&lt;p&gt;This module provisions self-managed worker nodes by default.
+If you want AWS to manage the provisioning and lifecycle of worker nodes for EKS, you can opt for &lt;a href=&#34;https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html&#34;&gt;managed node groups&lt;/a&gt;.
+They have the added benefit of running the latest Amazon EKS-optimized AMIs and gracefully drain nodes before termination to ensure that your applications stay available.
+In order to provision EKS node groups create a &lt;em&gt;main.tf&lt;/em&gt; with the following content:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+module &amp;quot;eks-jx&amp;quot; {
+  source  = &amp;quot;jenkins-x/eks-jx/aws&amp;quot;
+  enable_node_group   = true
+  enable_worker_group = false
+}
+
+output &amp;quot;jx_requirements&amp;quot; {
+  value = module.eks-jx.jx_requirements
+}
+
+output &amp;quot;vault_user_id&amp;quot; {
+  value       = module.eks-jx.vault_user_id
+  description = &amp;quot;The Vault IAM user id&amp;quot;
+}
+
+output &amp;quot;vault_user_secret&amp;quot; {
+  value       = module.eks-jx.vault_user_secret
+  description = &amp;quot;The Vault IAM user secret&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+&lt;h4 class=&#34;alert-heading&#34;&gt;Warning&lt;/h4&gt;
+These things are important to keep in mind when provisioning eks node groups:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If you forget to set &lt;code&gt;enable_worker_group = false&lt;/code&gt;, then the module will provision both self managed worker groups and node groups.&lt;/li&gt;
+&lt;li&gt;EKS node groups are supported in kubernetes v1.14+ and platform version eks.3&lt;/li&gt;
+&lt;li&gt;Spot instances are not supported for EKS node groups. Check this AWS &lt;a href=&#34;https://github.com/aws/containers-roadmap/issues/583&#34;&gt;issue&lt;/a&gt; for more details.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/div&gt;
 
 
