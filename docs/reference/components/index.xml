@@ -92,10 +92,6 @@
 &lt;h2 id=&#34;skaffold&#34;&gt;Skaffold&lt;/h2&gt;
 &lt;p&gt;Jenkins X uses &lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34;&gt;Skaffold&lt;/a&gt; to perform the build and push image actions in a pipeline.  Skaffold allows us to implement different image builder and registries services like &lt;a href=&#34;https://cloud.google.com/container-builder/&#34;&gt;Google Container Builder&lt;/a&gt;, &lt;a href=&#34;https://github.com/Azure/acr-builder&#34;&gt;Azure Container Builder&lt;/a&gt; and &lt;a href=&#34;https://aws.amazon.com/ecr/&#34;&gt;ECR&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For folks that aren&amp;rsquo;t running on a public cloud with container builder or registry services then Skaffold can also work with &lt;a href=&#34;https://github.com/GoogleContainerTools/kaniko&#34;&gt;kaniko&lt;/a&gt;, this allows pipelines to build docker images using rootless containers.  This is significantly more secure than mounting the docker socket from each node in the cluster.&lt;/p&gt;
-&lt;h2 id=&#34;jenkins&#34;&gt;Jenkins&lt;/h2&gt;
-&lt;p&gt;Jenkins as a large JVM that isn&amp;rsquo;t highly available, may seem a surprise to be selected as the pipeline engine to use in the Cloud, however the adoption of Jenkins by developers and the community it has means it is ideal to use and evolve it&amp;rsquo;s own cloud native story.  Already Jenkins X generates Kubernetes Custom Resource Definitions for pipeline activities that our IDE and CLI tooling uses rather than querying Jenkins.  We will be storing Jenkins builds and runs objects in Kubernetes rather than in the &lt;code&gt;$JENKINS_HOME&lt;/code&gt; which means we can scale Jenkins masters.  We are also switching to Prow to intercept Git webhook events rather than using Jenkins, this means we can have a highly available solution as well as hand off the scheduling of builds to Kubernetes.&lt;/p&gt;
-&lt;p&gt;TL;DR we are pushing more of the Jenkins master functionality down into the Kubernetes platform.&lt;/p&gt;
-&lt;p&gt;Taking this approach also means we will be able to support other pipeline engines in the future as well.&lt;/p&gt;
 &lt;h2 id=&#34;prow&#34;&gt;Prow&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/kubernetes/test-infra/tree/master/prow&#34;&gt;Prow&lt;/a&gt; handles Git events and can trigger workflows in Kubernetes.&lt;/p&gt;
 &lt;p&gt;Prow can run in a highly available mode where multiple pods for a webhook ingress URL.  In contrast with Jenkins if you perform an upgrade then Jenkins has some downtime where webhook events can be missed.  This is in our future plans and we hope to be available soon.&lt;/p&gt;
@@ -118,43 +114,6 @@
 &lt;p&gt;Maven has some tooling that a lot of folks are used to using which doesn&amp;rsquo;t suit CD particularly well.  For example the &lt;a href=&#34;http://maven.apache.org/maven-release/maven-release-plugin/&#34;&gt;maven release plugin&lt;/a&gt; will version a project and commit directly back to master the new next SNAPSHOT version which in CD world would trigger another release resulting in a recursive loop.&lt;/p&gt;
 &lt;p&gt;For Java projects Jenkins X uses the &lt;a href=&#34;https://www.mojohaus.org/versions-maven-plugin/set-mojo.html&#34;&gt;maven version:set plugin&lt;/a&gt; to update all poms in a project using the next release version following the #Versioning step mentioned above.&lt;/p&gt;
 &lt;p&gt;If a new major or minor version increment is needed users can create a new Git tag with the new major / minor number and Jenkins X will respect that.  Alternatively you can update the parent &lt;code&gt;pom.xml&lt;/code&gt; and any child pom files yourself and Jenkins X will detect and use the new major or minor version.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Cloud Native Jenkins</title>
-      <link>https://jenkins-x.io/docs/reference/components/cloud-native-jenkins/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/reference/components/cloud-native-jenkins/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X helps to support &lt;em&gt;cloud native Jenkins&lt;/em&gt; via:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;orchestrating either &lt;a href=&#34;https://jenkins-x.io/news/serverless-jenkins/&#34;&gt;serverless Jenkins&lt;/a&gt; using &lt;a href=&#34;https://jenkins-x.io/architecture/prow/&#34;&gt;prow&lt;/a&gt; or a Static Jenkins masters per team. This lets teams move towards serverless while bring along static masters too.&lt;/li&gt;
-&lt;li&gt;each team can install its own Jenkins X in its own namespace (via &lt;code&gt;jx install --namespace myteam&lt;/code&gt;)&lt;/li&gt;
-&lt;li&gt;support for different workloads per team (see &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_buildpack/&#34;&gt;jx edit buildpack&lt;/a&gt;).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;different-workloads&#34;&gt;Different workloads&lt;/h2&gt;
-&lt;p&gt;Some teams develop cloud native applications on kubernetes and so should use the &lt;code&gt;kubernetes workloads&lt;/code&gt; option.&lt;/p&gt;
-&lt;p&gt;For teams that do not deploy applications to kubernetes - such as delivering libraries or binaries - there&amp;rsquo;s a new &lt;code&gt;library workloads&lt;/code&gt; option which has CI and automated releases but no CD.&lt;/p&gt;
-&lt;p&gt;When you &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/create-cluster/&#34;&gt;create a cluster&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/install-on-cluster/&#34;&gt;install Jenkins X&lt;/a&gt; you are prompted to pick between the available build packs.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;? Pick workload build pack:   &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;Use arrows to move, type to filter&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
-&amp;gt; Kubernetes Workloads: Automated CI+CD with GitOps Promotion
-  Library Workloads: CI+Release but no CD
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can change this configuration at any time via &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_buildpack/&#34;&gt;jx edit buildpack&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;By default just hit enter to stick to the &lt;code&gt;kubernetes workloads&lt;/code&gt; option. Though if you have a significant number of libraries you wish to manage you could setup a separate team for this and import your various library projects there.&lt;/p&gt;
-&lt;h2 id=&#34;current-workloads&#34;&gt;Current workloads&lt;/h2&gt;
-&lt;p&gt;We store our build packs in &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/&#34;&gt;jenkins-x-buildpacks&lt;/a&gt; organization at GitHub. Currently we support:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-classic&#34;&gt;jenkins-x-classic&lt;/a&gt; build pack supports CI+Releases but does not include CD. e.g. do CI and release of your Java libraries or Node modules but don&amp;rsquo;t deploy to Kubernetes&lt;/li&gt;
-&lt;li&gt;the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;jenkins-x-kubernetes&lt;/a&gt; build pack supports automated CI+CD with GitOps promotion and Preview Environments for &lt;code&gt;kubernetes workloads&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;However you should be able to extend either of these build packs to add alternative platforms and capabilities.&lt;/p&gt;
-&lt;h2 id=&#34;writing-your-own-build-pack&#34;&gt;Writing your own build pack&lt;/h2&gt;
-&lt;p&gt;We want you to &lt;a href=&#34;https://jenkins-x.io/docs/contributing/addons/&#34;&gt;extend Jenkins X&lt;/a&gt; so please check out the &lt;a href=&#34;https://jenkins-x.io/docs/create-project/build-packs/#creating-new-build-packs&#34;&gt;documentation on creating your own build packs&lt;/a&gt;&lt;/p&gt;
 
       </description>
     </item>
