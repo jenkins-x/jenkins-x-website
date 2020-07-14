@@ -429,7 +429,104 @@ Moving forward we can either automatically update the Terraform &lt;code&gt;jx-r
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Pipelines&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/garethjevans/enhancements/blob/decomposition/proposals/5/README.md&#34;&gt;Decomposition of Jenkins X&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Community: </title>
+      <link>https://jenkins-x.io/community/labs/enhancements/proposals/5/readme/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/5/readme/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;weight-50&#34;&gt;****&amp;mdash;
+title: Decomposition of Jenkins X
+linktitle: Decomposition of Jenkins X
+description: Decomposition of Jenkins X
+type: docs
+weight: 50&lt;/h2&gt;
+&lt;h2 id=&#34;1-overview&#34;&gt;1. Overview&lt;/h2&gt;
+&lt;p&gt;This document outlines the work for decomposing Jenkins X into a series of reusable libraries.&lt;/p&gt;
+&lt;h2 id=&#34;11-motivation&#34;&gt;1.1 Motivation&lt;/h2&gt;
+&lt;p&gt;At the moment, the source code that comprises the main JX binary is tightly coupled and difficult to work on.  Changes have
+unintended consequences and this makes the codebase fragile.&lt;/p&gt;
+&lt;p&gt;One of the design goals in Accelerate is to have a &lt;strong&gt;Loosely Coupled Architecture&lt;/strong&gt; - in particular:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;The goal is for your architecture to support the ability of teams to get their work done—from design through to deployment—without requiring high-bandwidth communication between teams.&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;12-background&#34;&gt;1.2 Background&lt;/h2&gt;
+&lt;p&gt;The main &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;JX repository&lt;/a&gt; contains over 250k lines of code, creating Apps / Extensions / Binary Plugins is difficult without adding a dependency back onto the JX repo.&lt;/p&gt;
+&lt;p&gt;It should be possible to separate the repository out into a series of reusable libraries so only what is needed can be imported.&lt;/p&gt;
+&lt;h2 id=&#34;2-design&#34;&gt;2. Design&lt;/h2&gt;
+&lt;p&gt;There are currently a number of proposed repositories/modules, some of these are currently in flight.&lt;/p&gt;
+&lt;h3 id=&#34;existing-modules&#34;&gt;Existing Modules&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-api&#34;&gt;jx-api&lt;/a&gt;: JX CRDs / Installation Requirements&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-kube-client&#34;&gt;jx-kube-client&lt;/a&gt;: A helper module to create a Kubernetes rest config&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-vault-client&#34;&gt;jx-vault-client&lt;/a&gt;: &lt;strong&gt;Deprecated&lt;/strong&gt; this has been implemented to aid decomposition, it will not be supported longer term.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34;&gt;go-scm&lt;/a&gt;: All SCM operations&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse-config&#34;&gt;lighthouse-config&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;proposed-modules&#34;&gt;Proposed Modules&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;jx-kube/jx-helpers: It may make sense to refactor some of the higher level utils/kube functions within JX into its own package to make them reusable.&lt;/li&gt;
+&lt;li&gt;Metapipeline Client&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-codegen&#34;&gt;codegen&lt;/a&gt;: this currently exists within the JX repository and is often copied between projects.&lt;/li&gt;
+&lt;li&gt;Version Streams: Would these make sense to be moved out of JX?&lt;/li&gt;
+&lt;li&gt;Updatebot (jx create pr)? This would have value outside of the core JX codebase&lt;/li&gt;
+&lt;li&gt;Storage APIs?&lt;/li&gt;
+&lt;li&gt;Cloud APIs?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;21-action-plan&#34;&gt;2.1. Action Plan&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;em&gt;Agree on a way forward!&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;Ensure &lt;a href=&#34;https://github.com/jenkins-x/jx/pull/7313&#34;&gt;Kubernetes Dependency Updates PR&lt;/a&gt; is merged.&lt;/li&gt;
+&lt;li&gt;Re-introduce &lt;a href=&#34;https://github.com/jenkins-x/jx-api&#34;&gt;jx-api&lt;/a&gt; as a dependency within &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;jx&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Test and Release&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Once we have completed this once, we should be able to repeat the following process a number of times&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Identify code to be extracted&lt;/li&gt;
+&lt;li&gt;Extract code into new repo&lt;/li&gt;
+&lt;li&gt;Release new repository&lt;/li&gt;
+&lt;li&gt;Reintroduce library as a dependency inside JX&lt;/li&gt;
+&lt;li&gt;Repeat as required.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;22-considerations-for-new-repositories&#34;&gt;2.2 Considerations for New Repositories&lt;/h2&gt;
+&lt;p&gt;All new repositories should aim for the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Basic documentation to explain how the module should be used&lt;/li&gt;
+&lt;li&gt;A full set of &lt;a href=&#34;https://golangci-lint.run/usage/linters&#34;&gt;linters&lt;/a&gt;, suggesting (asciicheck bodyclose deadcode dogsled dupl errcheck goconst gofmt goimports gosec gosimple govet ineffassign interfacer misspell staticcheck structcheck typecheck unconvert unparam unused varcheck), ideally add gocyclo, nestif &amp;amp; gocritic&lt;/li&gt;
+&lt;li&gt;Tests (we should define a base level for code coverage, I&amp;rsquo;d expect this to be quite low initially)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://goreportcard.com/&#34;&gt;Go Report Card&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Should aim to use &lt;a href=&#34;https://semver.org/&#34;&gt;Semantic Versioning&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Change Logs&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Q: It may be possible to template this out? or even use a buildpack to create this?&lt;/p&gt;
+&lt;h2 id=&#34;3-acceptance-criteria&#34;&gt;3. Acceptance Criteria&lt;/h2&gt;
+&lt;p&gt;I think we can say that this has been successful when new Apps / Operators / Plugins can be created for Jenkins-X without
+having to depend on the JX repository.  We must provide all the wiring to make this easy.&lt;/p&gt;
+&lt;p&gt;It should be easier to do the right thing, than the wrong thing.&lt;/p&gt;
+&lt;h2 id=&#34;4-faq&#34;&gt;4. FAQ&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;When should we start this?&lt;/strong&gt; We should aim to start this immediately, new functionality should be written in this decomposed way, if
+we ultimately decide that this is a bad idea, Its far easier to refactor something into the JX codebase than it is to refactor something out.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;I have an idea for a module?&lt;/strong&gt; Great, add it to the list.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Shouldn&amp;rsquo;t we plan out what modules we are going to need first?&lt;/strong&gt; It&amp;rsquo;s very hard to understand exactly what we can
+extract in a timely manner, without trying to do it.  I&amp;rsquo;m expecting there to be a number of failed attempts / false starts
+on this - and this is ok.  For instance, we may discover that we need to perform a refactor inside JX before we can pull out
+a module, this is ok. It&amp;rsquo;s all part of continuously improving.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Won&amp;rsquo;t extra modules add additional overhead?&lt;/strong&gt; Yes they will, but they will also bring much larger advantages.  We should aim
+to use &lt;code&gt;dependabot&lt;/code&gt; (on a weekly schedule) to update dependencies in sub projects, afterall, this is what we would expect
+the community to use.  If we find that we are constantly version chasing from one module to the next, then that code is too
+highly coupled and we need to rethink (refactor or take a different approach)&lt;/p&gt;
+&lt;h2 id=&#34;5-additional-benefits&#34;&gt;5. Additional Benefits&lt;/h2&gt;
+&lt;p&gt;It may make sense to use this as an opportunity to dog-food Jenkins-X. We should create a buildpack to allow the easy
+creation of new modules that contains all of the build &amp;amp; lint configuration required.&lt;/p&gt;
 
       </description>
     </item>
