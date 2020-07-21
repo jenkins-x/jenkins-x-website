@@ -33,9 +33,137 @@
 &lt;p&gt;&lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Pipelines&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/vbehar/enhancements/blob/preview-helmfile/proposals/4/README.md&#34;&gt;Preview with Helmfile&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/garethjevans/enhancements/blob/decomposition/proposals/5/README.md&#34;&gt;Decomposition of Jenkins X&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Community: </title>
+      <link>https://jenkins-x.io/community/labs/enhancements/proposals/4/readme/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/4/readme/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;jx-enhancement-4-preview-with-helmfile&#34;&gt;JX Enhancement 4: Preview with Helmfile&lt;/h1&gt;
+&lt;h2 id=&#34;1-overview&#34;&gt;1. Overview&lt;/h2&gt;
+&lt;p&gt;This document outlines the work for deploying &lt;a href=&#34;https://jenkins-x.io/docs/reference/preview/&#34;&gt;Jenkins X Preview Environments&lt;/a&gt; using &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt; - instead of raw &lt;a href=&#34;https://helm.sh/&#34;&gt;Helm&lt;/a&gt; - and the benefits.&lt;/p&gt;
+&lt;h3 id=&#34;11-motivation&#34;&gt;1.1 Motivation&lt;/h3&gt;
+&lt;p&gt;Preview Environments are currently (April 2020) implemented using an &amp;ldquo;umbrella (Helm) chart&amp;rdquo;, named &lt;code&gt;preview&lt;/code&gt;, located in the &lt;code&gt;charts/preview&lt;/code&gt; directory of applications repositories. This umbrella chart usually has no templates, just a dependency on the &amp;ldquo;main&amp;rdquo; application chart, and maybe on some other charts. Values for the main application can be customized by using the &lt;code&gt;values.yaml&lt;/code&gt; file of the preview chart.&lt;/p&gt;
+&lt;p&gt;This implementation works, but has a number of limitations:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;no templating of the preview&amp;rsquo;s &lt;code&gt;values.yaml&lt;/code&gt; - the workaround is to use Helm&amp;rsquo;s &lt;code&gt;tpl&lt;/code&gt; function in the main chart&amp;rsquo;s templates when using values customized by the preview chart.&lt;/li&gt;
+&lt;li&gt;no easy way to use an environment variable in the values, although it&amp;rsquo;s very easy to add some in the pipeline&lt;/li&gt;
+&lt;li&gt;the preview chart needs to be hacked before being used, this is done with a &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/go/preview/Makefile&#34;&gt;Makefile&lt;/a&gt; which uses &lt;code&gt;sed&lt;/code&gt; commands to replace values in the &lt;code&gt;Chart.yaml&lt;/code&gt; and &lt;code&gt;values.yaml&lt;/code&gt; files, and this &lt;code&gt;Makefile&lt;/code&gt; can quickly grow if people re-use this hack as a workaround the templating limitations.&lt;/li&gt;
+&lt;li&gt;adding new charts dependencies in a preview environment can easily be done by updating the &lt;code&gt;requirements.yaml&lt;/code&gt; file&amp;hellip; as long as you respect the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/go/preview/requirements.yaml&#34;&gt;strict formatting rules of this file&lt;/a&gt;, and you don&amp;rsquo;t need charts from a specific repository. Otherwise, you&amp;rsquo;ll need to update the &lt;code&gt;Makefile&lt;/code&gt; to add your repositories first.&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;values.yaml&lt;/code&gt; file is confusing for newcomers, because the values for the main chart are placed under the &lt;code&gt;preview&lt;/code&gt; definition - because the main chart is aliased as &lt;code&gt;preview&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;jx&lt;/code&gt; uses the same Helm settings to deploy its own charts and the preview charts. So by default its Helm 2 in templating mode. Which makes it harder to debug a preview environment, because in templating mode we don&amp;rsquo;t store the Helm release secret with the values.&lt;/li&gt;
+&lt;li&gt;another issue with Helm 2 in templating mode is the limited support for Helm hooks - which have been re-implmented in Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;12-background&#34;&gt;1.2 Background&lt;/h3&gt;
+&lt;p&gt;Helm is currently used by Jenkins X to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;deploy its own components / charts: prow/lighthouse, tekton, controllers, &amp;hellip;&lt;/li&gt;
+&lt;li&gt;deploy the preview environments - in the pullrequest pipelines&lt;/li&gt;
+&lt;li&gt;package the application&amp;rsquo;s chart - in the release pipeline&lt;/li&gt;
+&lt;li&gt;install the applications in the staging/prod environments&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There is already work being done to re-implement the staging/prod charts installation, using &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt;, which would also bring in Helm 3 support. This work might also be used for the &amp;ldquo;jx boot&amp;rdquo; part.&lt;/p&gt;
+&lt;p&gt;So it means there are 2 &amp;ldquo;direct&amp;rdquo; use of Helm left: the previews and the chart packaging. This proposal is focused on the previews use-case, and coherent with what is being done in other parts of Jenkins X.&lt;/p&gt;
+&lt;h2 id=&#34;2-proposal&#34;&gt;2. Proposal&lt;/h2&gt;
+&lt;h3 id=&#34;21-helmfile&#34;&gt;2.1 Helmfile&lt;/h3&gt;
+&lt;p&gt;Why &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt;?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;already being integrated in Jenkins X&lt;/li&gt;
+&lt;li&gt;some Jenkins X users (Dailymotion) have experience using it to deploy applications in (remote) staging/prod environments&lt;/li&gt;
+&lt;li&gt;support templated values files&lt;/li&gt;
+&lt;li&gt;support secrets from various backends: &lt;a href=&#34;https://github.com/mozilla/sops&#34;&gt;sops&lt;/a&gt;, &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Vault&lt;/a&gt;, &amp;hellip; - see &lt;a href=&#34;https://github.com/variantdev/vals&#34;&gt;github.com/variantdev/vals&lt;/a&gt; which is used by Helmfile&lt;/li&gt;
+&lt;li&gt;declarative definition of the releases of course, but also the Helm repositories and the Helm settings: timeout, force, wait, &amp;hellip;&lt;/li&gt;
+&lt;li&gt;supports Helm 2 with or without Tiller, and Helm 3&lt;/li&gt;
+&lt;li&gt;lots of features, including
+&lt;ul&gt;
+&lt;li&gt;hooks&lt;/li&gt;
+&lt;li&gt;nested helmfile, which can be remote files using the Terraform-module-like URL: &lt;code&gt;git::https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git@packs/go/helmfile.yaml?ref=0.40.0&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;written in Go&lt;/li&gt;
+&lt;li&gt;actively developed and growing usage - used for Jenkins&amp;rsquo;s own infrastructure for example&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;22-design&#34;&gt;2.2 Design&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;charts/preview&lt;/code&gt; directory won&amp;rsquo;t be a Helm chart anymore, but an Helmfile project. And instead of using raw Helm commands to deploy the preview, jx will use Helmfile commands.&lt;/p&gt;
+&lt;p&gt;The only required file in this folder is &lt;a href=&#34;helmfile.yaml&#34;&gt;helmfile.yaml&lt;/a&gt; - which defines all the releases we want to install. Custom values can either be written directly in this file, or in other files - such as &lt;a href=&#34;values.yaml.gotmpl&#34;&gt;values.yaml.gotmpl&lt;/a&gt; - which are defined in the main &lt;code&gt;helmfile.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command will have to be modified to execute the &lt;code&gt;helmfile apply&lt;/code&gt; command on this directory. This command will take care of:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;adding required Helm repositories&lt;/li&gt;
+&lt;li&gt;calculates the &amp;ldquo;diff&amp;rdquo; of what needs to be done, and print it&lt;/li&gt;
+&lt;li&gt;apply the diff&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We will also need to pass some values calculated by Jenkins X - such as the &lt;code&gt;extraValues.yaml&lt;/code&gt; generated for Helm. The same file can also be passed to Helmfile, using the &lt;code&gt;--state-values-file&lt;/code&gt; flag.&lt;/p&gt;
+&lt;h3 id=&#34;23-implementation&#34;&gt;2.3 Implementation&lt;/h3&gt;
+&lt;h4 id=&#34;231-quick-and-dirty-implementation&#34;&gt;2.3.1 Quick and dirty implementation&lt;/h4&gt;
+&lt;p&gt;I already have a working implementation which we are already using at Dailymotion. It&amp;rsquo;s just a quick and dirty implementation that works for our use-case, so it will need more work to handle more use-cases.&lt;/p&gt;
+&lt;p&gt;It is in the &lt;a href=&#34;https://github.com/vbehar/jx/tree/preview-helmfile&#34;&gt;preview-helmfile branch&lt;/a&gt;, and you can see the &lt;a href=&#34;https://github.com/jenkins-x/jx/compare/master...vbehar:preview-helmfile&#34;&gt;diff with jx master&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A few notes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it is based on v2.0.1245 because we are using CJXD 8&lt;/li&gt;
+&lt;li&gt;I&amp;rsquo;ve updated the &lt;code&gt;extraValues.yaml&lt;/code&gt; file to include:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;name&lt;/code&gt; of the preview&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;releaseName&lt;/code&gt; of the preview&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;namespace&lt;/code&gt; of the preview&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;jx preview&lt;/code&gt; command has a new &lt;code&gt;--helmfile&lt;/code&gt; flag to give it the name of a helmfile.yaml&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;helmfile&lt;/code&gt; command being used is &lt;code&gt;helmfile --file=helmfile.yaml --state-values-file=extraValues.yaml --state-values-set=tags.jx-ns-NAMESPACE=true,global.jxNsNAMESPACE=true,...,global.jxNs=NAMESPACE,... --namespace=NAMESPACE apply&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We call it with the following flags: &lt;code&gt;jx preview --app &amp;quot;${APP_NAME}&amp;quot; --namespace &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --name &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --release &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --helmfile &amp;quot;helmfile.yaml&amp;quot; --verbose&lt;/code&gt; - see &lt;a href=&#34;jenkins-x.yml&#34;&gt;jenkins-x.yml&lt;/a&gt; for the jx pipeline.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;--app&lt;/code&gt; flag is &amp;ldquo;mandatory&amp;rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&amp;rsquo;t exist anymore.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command is now run in a specific container image, which contains:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;jx&lt;/code&gt; built from the &lt;a href=&#34;https://github.com/vbehar/jx/tree/preview-helmfile&#34;&gt;preview-helmfile branch&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;helmfile&lt;/code&gt; version 0.111.0 - it needs a recent version to support the &lt;code&gt;helmBinary&lt;/code&gt; config flag&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;helm3&lt;/code&gt; binary, we used version 3.2.0&lt;/li&gt;
+&lt;li&gt;a few Helm plugins
+see the &lt;a href=&#34;Dockerfile&#34;&gt;Dockerfile&lt;/a&gt; for more details. This image has both &lt;code&gt;helm&lt;/code&gt; and &lt;code&gt;helm3&lt;/code&gt; binaries. We might have plugins compatibility issues. For now in this quick-and-dirty implementation we ignored this issue, because this image is only used to run &lt;code&gt;jx preview&lt;/code&gt; with helmfile and helm 3, so it never uses Helm 2.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can see the output:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;output-1.txt&#34;&gt;for the first run&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;output-2.txt&#34;&gt;for the second run&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;233-proposed-implementation&#34;&gt;2.3.3 Proposed implementation&lt;/h4&gt;
+&lt;p&gt;The real implementation should:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;include a recent version of helmfile and helm 3 in the official jx container image, along with helmfile&amp;rsquo;s required plugins (diff)&lt;/li&gt;
+&lt;li&gt;use a global flag in &lt;code&gt;jx-requirements.yaml&lt;/code&gt; to enable Helmfile for preview environment&lt;/li&gt;
+&lt;li&gt;don&amp;rsquo;t fail if it doesn&amp;rsquo;t find a preview chart&lt;/li&gt;
+&lt;li&gt;maybe generate a &lt;code&gt;helmfile.yaml&lt;/code&gt; with good default values if none can be found in the repository?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;3-benefits&#34;&gt;3. Benefits&lt;/h2&gt;
+&lt;p&gt;There are quite a few benefits:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;very easy to add charts in a preview env, including ones from custom repos&lt;/li&gt;
+&lt;li&gt;values files can now be templatized, using (almost) the same functions as Helm templates&lt;/li&gt;
+&lt;li&gt;can use secrets from multiple backends, including &lt;a href=&#34;https://github.com/mozilla/sops&#34;&gt;sops&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;using Helm 3, which brings support for library charts - but it can also use Helm 2, in tiller-less mode&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;4-migration&#34;&gt;4. Migration&lt;/h2&gt;
+&lt;p&gt;It is a relatively small change but with a big impact, because it will impact the organization of all repositories using Jenkins X. Here is a migration plan proposal:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Use a new &amp;ldquo;alpha&amp;rdquo; command to allow a few users to try out this new feature, without impacting other users. This would still require a change in the container image, to bundle Helmfile and Helm 3 along with jx and Helm 2.&lt;/li&gt;
+&lt;li&gt;Use an auto-detection mechanism to see if the &lt;code&gt;charts/preview&lt;/code&gt; directory contains a &lt;code&gt;Chart.yaml&lt;/code&gt; or an &lt;code&gt;helmfile.yaml&lt;/code&gt; file, and use the right tool - Helm or Helmfile - based on that. This would allow users to migrate their repositories one by one.&lt;/li&gt;
+&lt;li&gt;Update the buildpacks to generate the &lt;code&gt;charts/preview&lt;/code&gt; with an &lt;code&gt;helmfile.yaml&lt;/code&gt; file instead of an &amp;ldquo;umbrella&amp;rdquo; chart. At this point new repositories will use Helmfile by default.&lt;/li&gt;
+&lt;li&gt;Write a migration tool / command to migrate from an umbrella chart to an Helmfile structure?&lt;/li&gt;
+&lt;li&gt;Deprecate the support for the umbrella chart: when we detect a &lt;code&gt;Chart.yaml&lt;/code&gt; print a warning message in the logs.&lt;/li&gt;
+&lt;li&gt;Remove support for the umbrella chart.&lt;/li&gt;
+&lt;/ol&gt;
 
       </description>
     </item>
