@@ -14,256 +14,7 @@
     
     
     <item>
-      <title>Community: Proposals</title>
-      <link>https://jenkins-x.io/community/labs/enhancements/proposals/proposals/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/proposals/</guid>
-      <description>
-        
-        
-        &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/rawlingsj/enhancements/blob/master/proposals/labs/README.md&#34;&gt;Labs - enable rapid innovation while keeping a stable base platform&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/hferentschik/enhancements/blob/cloud-resources/proposals/3/README.md&#34;&gt;Cloud Resource Creation&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Pipelines&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/vbehar/enhancements/blob/preview-helmfile/proposals/4/README.md&#34;&gt;Preview with Helmfile&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/garethjevans/enhancements/blob/decomposition/proposals/5/README.md&#34;&gt;Decomposition of Jenkins X&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Community: </title>
-      <link>https://jenkins-x.io/community/labs/enhancements/proposals/4/readme/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/4/readme/</guid>
-      <description>
-        
-        
-        &lt;h1 id=&#34;jx-enhancement-4-preview-with-helmfile&#34;&gt;JX Enhancement 4: Preview with Helmfile&lt;/h1&gt;
-&lt;h2 id=&#34;1-overview&#34;&gt;1. Overview&lt;/h2&gt;
-&lt;p&gt;This document outlines the work for deploying &lt;a href=&#34;https://jenkins-x.io/docs/reference/preview/&#34;&gt;Jenkins X Preview Environments&lt;/a&gt; using &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt; - instead of raw &lt;a href=&#34;https://helm.sh/&#34;&gt;Helm&lt;/a&gt; - and the benefits.&lt;/p&gt;
-&lt;h3 id=&#34;11-motivation&#34;&gt;1.1 Motivation&lt;/h3&gt;
-&lt;p&gt;Preview Environments are currently (April 2020) implemented using an &amp;ldquo;umbrella (Helm) chart&amp;rdquo;, named &lt;code&gt;preview&lt;/code&gt;, located in the &lt;code&gt;charts/preview&lt;/code&gt; directory of applications repositories. This umbrella chart usually has no templates, just a dependency on the &amp;ldquo;main&amp;rdquo; application chart, and maybe on some other charts. Values for the main application can be customized by using the &lt;code&gt;values.yaml&lt;/code&gt; file of the preview chart.&lt;/p&gt;
-&lt;p&gt;This implementation works, but has a number of limitations:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;no templating of the preview&amp;rsquo;s &lt;code&gt;values.yaml&lt;/code&gt; - the workaround is to use Helm&amp;rsquo;s &lt;code&gt;tpl&lt;/code&gt; function in the main chart&amp;rsquo;s templates when using values customized by the preview chart.&lt;/li&gt;
-&lt;li&gt;no easy way to use an environment variable in the values, although it&amp;rsquo;s very easy to add some in the pipeline&lt;/li&gt;
-&lt;li&gt;the preview chart needs to be hacked before being used, this is done with a &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/go/preview/Makefile&#34;&gt;Makefile&lt;/a&gt; which uses &lt;code&gt;sed&lt;/code&gt; commands to replace values in the &lt;code&gt;Chart.yaml&lt;/code&gt; and &lt;code&gt;values.yaml&lt;/code&gt; files, and this &lt;code&gt;Makefile&lt;/code&gt; can quickly grow if people re-use this hack as a workaround the templating limitations.&lt;/li&gt;
-&lt;li&gt;adding new charts dependencies in a preview environment can easily be done by updating the &lt;code&gt;requirements.yaml&lt;/code&gt; file&amp;hellip; as long as you respect the &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/blob/master/packs/go/preview/requirements.yaml&#34;&gt;strict formatting rules of this file&lt;/a&gt;, and you don&amp;rsquo;t need charts from a specific repository. Otherwise, you&amp;rsquo;ll need to update the &lt;code&gt;Makefile&lt;/code&gt; to add your repositories first.&lt;/li&gt;
-&lt;li&gt;the &lt;code&gt;values.yaml&lt;/code&gt; file is confusing for newcomers, because the values for the main chart are placed under the &lt;code&gt;preview&lt;/code&gt; definition - because the main chart is aliased as &lt;code&gt;preview&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;jx&lt;/code&gt; uses the same Helm settings to deploy its own charts and the preview charts. So by default its Helm 2 in templating mode. Which makes it harder to debug a preview environment, because in templating mode we don&amp;rsquo;t store the Helm release secret with the values.&lt;/li&gt;
-&lt;li&gt;another issue with Helm 2 in templating mode is the limited support for Helm hooks - which have been re-implmented in Jenkins X.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;12-background&#34;&gt;1.2 Background&lt;/h3&gt;
-&lt;p&gt;Helm is currently used by Jenkins X to:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;deploy its own components / charts: prow/lighthouse, tekton, controllers, &amp;hellip;&lt;/li&gt;
-&lt;li&gt;deploy the preview environments - in the pullrequest pipelines&lt;/li&gt;
-&lt;li&gt;package the application&amp;rsquo;s chart - in the release pipeline&lt;/li&gt;
-&lt;li&gt;install the applications in the staging/prod environments&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;There is already work being done to re-implement the staging/prod charts installation, using &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt;, which would also bring in Helm 3 support. This work might also be used for the &amp;ldquo;jx boot&amp;rdquo; part.&lt;/p&gt;
-&lt;p&gt;So it means there are 2 &amp;ldquo;direct&amp;rdquo; use of Helm left: the previews and the chart packaging. This proposal is focused on the previews use-case, and coherent with what is being done in other parts of Jenkins X.&lt;/p&gt;
-&lt;h2 id=&#34;2-proposal&#34;&gt;2. Proposal&lt;/h2&gt;
-&lt;h3 id=&#34;21-helmfile&#34;&gt;2.1 Helmfile&lt;/h3&gt;
-&lt;p&gt;Why &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;Helmfile&lt;/a&gt;?&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;already being integrated in Jenkins X&lt;/li&gt;
-&lt;li&gt;some Jenkins X users (Dailymotion) have experience using it to deploy applications in (remote) staging/prod environments&lt;/li&gt;
-&lt;li&gt;support templated values files&lt;/li&gt;
-&lt;li&gt;support secrets from various backends: &lt;a href=&#34;https://github.com/mozilla/sops&#34;&gt;sops&lt;/a&gt;, &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Vault&lt;/a&gt;, &amp;hellip; - see &lt;a href=&#34;https://github.com/variantdev/vals&#34;&gt;github.com/variantdev/vals&lt;/a&gt; which is used by Helmfile&lt;/li&gt;
-&lt;li&gt;declarative definition of the releases of course, but also the Helm repositories and the Helm settings: timeout, force, wait, &amp;hellip;&lt;/li&gt;
-&lt;li&gt;supports Helm 2 with or without Tiller, and Helm 3&lt;/li&gt;
-&lt;li&gt;lots of features, including
-&lt;ul&gt;
-&lt;li&gt;hooks&lt;/li&gt;
-&lt;li&gt;nested helmfile, which can be remote files using the Terraform-module-like URL: &lt;code&gt;git::https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git@packs/go/helmfile.yaml?ref=0.40.0&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;written in Go&lt;/li&gt;
-&lt;li&gt;actively developed and growing usage - used for Jenkins&amp;rsquo;s own infrastructure for example&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;22-design&#34;&gt;2.2 Design&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;charts/preview&lt;/code&gt; directory won&amp;rsquo;t be a Helm chart anymore, but an Helmfile project. And instead of using raw Helm commands to deploy the preview, jx will use Helmfile commands.&lt;/p&gt;
-&lt;p&gt;The only required file in this folder is &lt;a href=&#34;helmfile.yaml&#34;&gt;helmfile.yaml&lt;/a&gt; - which defines all the releases we want to install. Custom values can either be written directly in this file, or in other files - such as &lt;a href=&#34;values.yaml.gotmpl&#34;&gt;values.yaml.gotmpl&lt;/a&gt; - which are defined in the main &lt;code&gt;helmfile.yaml&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command will have to be modified to execute the &lt;code&gt;helmfile apply&lt;/code&gt; command on this directory. This command will take care of:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;adding required Helm repositories&lt;/li&gt;
-&lt;li&gt;calculates the &amp;ldquo;diff&amp;rdquo; of what needs to be done, and print it&lt;/li&gt;
-&lt;li&gt;apply the diff&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We will also need to pass some values calculated by Jenkins X - such as the &lt;code&gt;extraValues.yaml&lt;/code&gt; generated for Helm. The same file can also be passed to Helmfile, using the &lt;code&gt;--state-values-file&lt;/code&gt; flag.&lt;/p&gt;
-&lt;h3 id=&#34;23-implementation&#34;&gt;2.3 Implementation&lt;/h3&gt;
-&lt;h4 id=&#34;231-quick-and-dirty-implementation&#34;&gt;2.3.1 Quick and dirty implementation&lt;/h4&gt;
-&lt;p&gt;I already have a working implementation which we are already using at Dailymotion. It&amp;rsquo;s just a quick and dirty implementation that works for our use-case, so it will need more work to handle more use-cases.&lt;/p&gt;
-&lt;p&gt;It is in the &lt;a href=&#34;https://github.com/vbehar/jx/tree/preview-helmfile&#34;&gt;preview-helmfile branch&lt;/a&gt;, and you can see the &lt;a href=&#34;https://github.com/jenkins-x/jx/compare/master...vbehar:preview-helmfile&#34;&gt;diff with jx master&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;A few notes:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;it is based on v2.0.1245 because we are using CJXD 8&lt;/li&gt;
-&lt;li&gt;I&amp;rsquo;ve updated the &lt;code&gt;extraValues.yaml&lt;/code&gt; file to include:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;name&lt;/code&gt; of the preview&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;releaseName&lt;/code&gt; of the preview&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;namespace&lt;/code&gt; of the preview&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;the &lt;code&gt;jx preview&lt;/code&gt; command has a new &lt;code&gt;--helmfile&lt;/code&gt; flag to give it the name of a helmfile.yaml&lt;/li&gt;
-&lt;li&gt;the &lt;code&gt;helmfile&lt;/code&gt; command being used is &lt;code&gt;helmfile --file=helmfile.yaml --state-values-file=extraValues.yaml --state-values-set=tags.jx-ns-NAMESPACE=true,global.jxNsNAMESPACE=true,...,global.jxNs=NAMESPACE,... --namespace=NAMESPACE apply&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We call it with the following flags: &lt;code&gt;jx preview --app &amp;quot;${APP_NAME}&amp;quot; --namespace &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --name &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --release &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --helmfile &amp;quot;helmfile.yaml&amp;quot; --verbose&lt;/code&gt; - see &lt;a href=&#34;jenkins-x.yml&#34;&gt;jenkins-x.yml&lt;/a&gt; for the jx pipeline.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;--app&lt;/code&gt; flag is &amp;ldquo;mandatory&amp;rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&amp;rsquo;t exist anymore.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command is now run in a specific container image, which contains:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;jx&lt;/code&gt; built from the &lt;a href=&#34;https://github.com/vbehar/jx/tree/preview-helmfile&#34;&gt;preview-helmfile branch&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;helmfile&lt;/code&gt; version 0.111.0 - it needs a recent version to support the &lt;code&gt;helmBinary&lt;/code&gt; config flag&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;helm3&lt;/code&gt; binary, we used version 3.2.0&lt;/li&gt;
-&lt;li&gt;a few Helm plugins
-see the &lt;a href=&#34;Dockerfile&#34;&gt;Dockerfile&lt;/a&gt; for more details. This image has both &lt;code&gt;helm&lt;/code&gt; and &lt;code&gt;helm3&lt;/code&gt; binaries. We might have plugins compatibility issues. For now in this quick-and-dirty implementation we ignored this issue, because this image is only used to run &lt;code&gt;jx preview&lt;/code&gt; with helmfile and helm 3, so it never uses Helm 2.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;You can see the output:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;output-1.txt&#34;&gt;for the first run&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;output-2.txt&#34;&gt;for the second run&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;233-proposed-implementation&#34;&gt;2.3.3 Proposed implementation&lt;/h4&gt;
-&lt;p&gt;The real implementation should:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;include a recent version of helmfile and helm 3 in the official jx container image, along with helmfile&amp;rsquo;s required plugins (diff)&lt;/li&gt;
-&lt;li&gt;use a global flag in &lt;code&gt;jx-requirements.yaml&lt;/code&gt; to enable Helmfile for preview environment&lt;/li&gt;
-&lt;li&gt;don&amp;rsquo;t fail if it doesn&amp;rsquo;t find a preview chart&lt;/li&gt;
-&lt;li&gt;maybe generate a &lt;code&gt;helmfile.yaml&lt;/code&gt; with good default values if none can be found in the repository?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;3-benefits&#34;&gt;3. Benefits&lt;/h2&gt;
-&lt;p&gt;There are quite a few benefits:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;very easy to add charts in a preview env, including ones from custom repos&lt;/li&gt;
-&lt;li&gt;values files can now be templatized, using (almost) the same functions as Helm templates&lt;/li&gt;
-&lt;li&gt;can use secrets from multiple backends, including &lt;a href=&#34;https://github.com/mozilla/sops&#34;&gt;sops&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;using Helm 3, which brings support for library charts - but it can also use Helm 2, in tiller-less mode&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;4-migration&#34;&gt;4. Migration&lt;/h2&gt;
-&lt;p&gt;It is a relatively small change but with a big impact, because it will impact the organization of all repositories using Jenkins X. Here is a migration plan proposal:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Use a new &amp;ldquo;alpha&amp;rdquo; command to allow a few users to try out this new feature, without impacting other users. This would still require a change in the container image, to bundle Helmfile and Helm 3 along with jx and Helm 2.&lt;/li&gt;
-&lt;li&gt;Use an auto-detection mechanism to see if the &lt;code&gt;charts/preview&lt;/code&gt; directory contains a &lt;code&gt;Chart.yaml&lt;/code&gt; or an &lt;code&gt;helmfile.yaml&lt;/code&gt; file, and use the right tool - Helm or Helmfile - based on that. This would allow users to migrate their repositories one by one.&lt;/li&gt;
-&lt;li&gt;Update the buildpacks to generate the &lt;code&gt;charts/preview&lt;/code&gt; with an &lt;code&gt;helmfile.yaml&lt;/code&gt; file instead of an &amp;ldquo;umbrella&amp;rdquo; chart. At this point new repositories will use Helmfile by default.&lt;/li&gt;
-&lt;li&gt;Write a migration tool / command to migrate from an umbrella chart to an Helmfile structure?&lt;/li&gt;
-&lt;li&gt;Deprecate the support for the umbrella chart: when we detect a &lt;code&gt;Chart.yaml&lt;/code&gt; print a warning message in the logs.&lt;/li&gt;
-&lt;li&gt;Remove support for the umbrella chart.&lt;/li&gt;
-&lt;/ol&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Community: </title>
-      <link>https://jenkins-x.io/community/labs/enhancements/proposals/5/readme/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/5/readme/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;weight-50&#34;&gt;****&amp;mdash;
-title: Decomposition of Jenkins X
-linktitle: Decomposition of Jenkins X
-description: Decomposition of Jenkins X
-type: docs
-weight: 50&lt;/h2&gt;
-&lt;h2 id=&#34;1-overview&#34;&gt;1. Overview&lt;/h2&gt;
-&lt;p&gt;This document outlines the work for decomposing Jenkins X into a series of reusable libraries.&lt;/p&gt;
-&lt;h2 id=&#34;11-motivation&#34;&gt;1.1 Motivation&lt;/h2&gt;
-&lt;p&gt;At the moment, the source code that comprises the main JX binary is tightly coupled and difficult to work on.  Changes have
-unintended consequences and this makes the codebase fragile.&lt;/p&gt;
-&lt;p&gt;One of the design goals in Accelerate is to have a &lt;strong&gt;Loosely Coupled Architecture&lt;/strong&gt; - in particular:&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;The goal is for your architecture to support the ability of teams to get their work done—from design through to deployment—without requiring high-bandwidth communication between teams.&lt;/em&gt;&lt;/p&gt;
-&lt;h2 id=&#34;12-background&#34;&gt;1.2 Background&lt;/h2&gt;
-&lt;p&gt;The main &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;JX repository&lt;/a&gt; contains over 250k lines of code, creating Apps / Extensions / Binary Plugins is difficult without adding a dependency back onto the JX repo.&lt;/p&gt;
-&lt;p&gt;It should be possible to separate the repository out into a series of reusable libraries so only what is needed can be imported.&lt;/p&gt;
-&lt;h2 id=&#34;2-design&#34;&gt;2. Design&lt;/h2&gt;
-&lt;p&gt;There are currently a number of proposed repositories/modules, some of these are currently in flight.&lt;/p&gt;
-&lt;h3 id=&#34;existing-modules&#34;&gt;Existing Modules&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-api&#34;&gt;jx-api&lt;/a&gt;: JX CRDs / Installation Requirements&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-kube-client&#34;&gt;jx-kube-client&lt;/a&gt;: A helper module to create a Kubernetes rest config&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-vault-client&#34;&gt;jx-vault-client&lt;/a&gt;: &lt;strong&gt;Deprecated&lt;/strong&gt; this has been implemented to aid decomposition, it will not be supported longer term.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/go-scm&#34;&gt;go-scm&lt;/a&gt;: All SCM operations&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse-config&#34;&gt;lighthouse-config&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;proposed-modules&#34;&gt;Proposed Modules&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;jx-kube/jx-helpers: It may make sense to refactor some of the higher level utils/kube functions within JX into its own package to make them reusable.&lt;/li&gt;
-&lt;li&gt;Metapipeline Client&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-codegen&#34;&gt;codegen&lt;/a&gt;: this currently exists within the JX repository and is often copied between projects.&lt;/li&gt;
-&lt;li&gt;Version Streams: Would these make sense to be moved out of JX?&lt;/li&gt;
-&lt;li&gt;Updatebot (jx create pr)? This would have value outside of the core JX codebase&lt;/li&gt;
-&lt;li&gt;Storage APIs?&lt;/li&gt;
-&lt;li&gt;Cloud APIs?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;21-action-plan&#34;&gt;2.1. Action Plan&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;em&gt;Agree on a way forward!&lt;/em&gt;&lt;/li&gt;
-&lt;li&gt;Ensure &lt;a href=&#34;https://github.com/jenkins-x/jx/pull/7313&#34;&gt;Kubernetes Dependency Updates PR&lt;/a&gt; is merged.&lt;/li&gt;
-&lt;li&gt;Re-introduce &lt;a href=&#34;https://github.com/jenkins-x/jx-api&#34;&gt;jx-api&lt;/a&gt; as a dependency within &lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;jx&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Test and Release&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Once we have completed this once, we should be able to repeat the following process a number of times&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Identify code to be extracted&lt;/li&gt;
-&lt;li&gt;Extract code into new repo&lt;/li&gt;
-&lt;li&gt;Release new repository&lt;/li&gt;
-&lt;li&gt;Reintroduce library as a dependency inside JX&lt;/li&gt;
-&lt;li&gt;Repeat as required.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;22-considerations-for-new-repositories&#34;&gt;2.2 Considerations for New Repositories&lt;/h2&gt;
-&lt;p&gt;All new repositories should aim for the following:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Basic documentation to explain how the module should be used&lt;/li&gt;
-&lt;li&gt;A full set of &lt;a href=&#34;https://golangci-lint.run/usage/linters&#34;&gt;linters&lt;/a&gt;, suggesting (asciicheck bodyclose deadcode dogsled dupl errcheck goconst gofmt goimports gosec gosimple govet ineffassign interfacer misspell staticcheck structcheck typecheck unconvert unparam unused varcheck), ideally add gocyclo, nestif &amp;amp; gocritic&lt;/li&gt;
-&lt;li&gt;Tests (we should define a base level for code coverage, I&amp;rsquo;d expect this to be quite low initially)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://goreportcard.com/&#34;&gt;Go Report Card&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Should aim to use &lt;a href=&#34;https://semver.org/&#34;&gt;Semantic Versioning&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Change Logs&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Q: It may be possible to template this out? or even use a buildpack to create this?&lt;/p&gt;
-&lt;h2 id=&#34;3-acceptance-criteria&#34;&gt;3. Acceptance Criteria&lt;/h2&gt;
-&lt;p&gt;I think we can say that this has been successful when new Apps / Operators / Plugins can be created for Jenkins-X without
-having to depend on the JX repository.  We must provide all the wiring to make this easy.&lt;/p&gt;
-&lt;p&gt;It should be easier to do the right thing, than the wrong thing.&lt;/p&gt;
-&lt;h2 id=&#34;4-faq&#34;&gt;4. FAQ&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;When should we start this?&lt;/strong&gt; We should aim to start this immediately, new functionality should be written in this decomposed way, if
-we ultimately decide that this is a bad idea, Its far easier to refactor something into the JX codebase than it is to refactor something out.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;I have an idea for a module?&lt;/strong&gt; Great, add it to the list.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Shouldn&amp;rsquo;t we plan out what modules we are going to need first?&lt;/strong&gt; It&amp;rsquo;s very hard to understand exactly what we can
-extract in a timely manner, without trying to do it.  I&amp;rsquo;m expecting there to be a number of failed attempts / false starts
-on this - and this is ok.  For instance, we may discover that we need to perform a refactor inside JX before we can pull out
-a module, this is ok. It&amp;rsquo;s all part of continuously improving.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Won&amp;rsquo;t extra modules add additional overhead?&lt;/strong&gt; Yes they will, but they will also bring much larger advantages.  We should aim
-to use &lt;code&gt;dependabot&lt;/code&gt; (on a weekly schedule) to update dependencies in sub projects, afterall, this is what we would expect
-the community to use.  If we find that we are constantly version chasing from one module to the next, then that code is too
-highly coupled and we need to rethink (refactor or take a different approach)&lt;/p&gt;
-&lt;h2 id=&#34;5-additional-benefits&#34;&gt;5. Additional Benefits&lt;/h2&gt;
-&lt;p&gt;It may make sense to use this as an opportunity to dog-food Jenkins-X. We should create a buildpack to allow the easy
-creation of new modules that contains all of the build &amp;amp; lint configuration required.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Community: </title>
+      <title>Community: Trigger Jenkins</title>
       <link>https://jenkins-x.io/community/labs/enhancements/proposals/trigger-jenkins/readme/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -271,11 +22,7 @@ creation of new modules that contains all of the build &amp;amp; lint configurat
       <description>
         
         
-        &lt;h2 id=&#34;weight-70&#34;&gt;title: Trigger Jenkins
-linktitle: Trigger Jenkins
-description: Trigger Jenkins Pipelines from Jenkins X and Tekton
-weight: 70&lt;/h2&gt;
-&lt;h1 id=&#34;problem-be-able-to-trigger-pipelines-in-remote-jenkins-servers&#34;&gt;Problem: be able to trigger pipelines in remote Jenkins servers&lt;/h1&gt;
+        &lt;h1 id=&#34;problem-be-able-to-trigger-pipelines-in-remote-jenkins-servers&#34;&gt;Problem: be able to trigger pipelines in remote Jenkins servers&lt;/h1&gt;
 &lt;p&gt;We want to make it easy to reuse existing remote Jenkins servers with Jenkins X / tekton so that folks can work with either 100% cloud native tekton based automated CI/CD from Jenkins X or reuse existing Jenkins pipelines with remote Jenkins servers.&lt;/p&gt;
 &lt;p&gt;Over time we can then bring more value to folks using a mixture of Jenkins + Jenkins X. e.g.&lt;/p&gt;
 &lt;ul&gt;
@@ -323,6 +70,36 @@ weight: 70&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;CloudBees Core - &lt;a href=&#34;https://docs.cloudbees.com/docs/cloudbees-jenkins-distribution/latest/distro-install-guide/kubernetes&#34;&gt;https://docs.cloudbees.com/docs/cloudbees-jenkins-distribution/latest/distro-install-guide/kubernetes&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Google Kubernetes Engine - &lt;a href=&#34;https://cloud.google.com/solutions/jenkins-on-kubernetes-engine-tutorial&#34;&gt;https://cloud.google.com/solutions/jenkins-on-kubernetes-engine-tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Community: Proposals</title>
+      <link>https://jenkins-x.io/community/labs/enhancements/proposals/proposals/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/community/labs/enhancements/proposals/proposals/</guid>
+      <description>
+        
+        
+        &lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/rawlingsj/enhancements/blob/master/proposals/labs/README.md&#34;&gt;Labs - enable rapid innovation while keeping a stable base platform&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/hferentschik/enhancements/blob/cloud-resources/proposals/3/README.md&#34;&gt;Cloud Resource Creation&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Pipelines&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/vbehar/enhancements/blob/preview-helmfile/proposals/4/README.md&#34;&gt;Preview with Helmfile&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/garethjevans/enhancements/blob/decomposition/proposals/5/README.md&#34;&gt;Decomposition of Jenkins X&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 
       </description>
