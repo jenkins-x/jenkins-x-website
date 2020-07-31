@@ -71,7 +71,15 @@ kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 &lt;p&gt;Though if you want our chart to be in another namespace then we use the convention of adding a folder in the &lt;code&gt;system&lt;/code&gt; directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in &lt;code&gt;system&lt;/code&gt; and add the &lt;code&gt;jx step helm apply&lt;/code&gt; step in the pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt; like we do for &lt;code&gt;cert-manager&lt;/code&gt;, &lt;code&gt;nginx&lt;/code&gt;, &lt;code&gt;velero&lt;/code&gt; etc.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-disable-the-ingress-controller&#34;&gt;How do I disable the ingress controller?&lt;/h2&gt;
 &lt;p&gt;If you already have your own ingress controller and do not want &lt;code&gt;jx boot&lt;/code&gt; to install another one you can just delete the &lt;code&gt;install-nginx-controller&lt;/code&gt; step in your dev environment git repository. e.g. &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml#L85-L99&#34;&gt;remove this step&lt;/a&gt; from the &lt;code&gt;jenkins-x.yml&lt;/code&gt; in your dev environment git repository&lt;/p&gt;
-
+&lt;h2 id=&#34;what-do-i-do-if-jx-boot-hangs-on-step-install-jenkins-x&#34;&gt;What do I do if &lt;code&gt;jx boot&lt;/code&gt; hangs on &lt;code&gt;step-install-jenkins-x&lt;/code&gt;?&lt;/h2&gt;
+&lt;p&gt;You may have a problem with Terminating a PVC that is protected.&lt;/p&gt;
+&lt;p&gt;Describe your pvc.  In the case I saw, it was the jenkins pvc.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl -n jx describe pvc jenkins
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If it&amp;rsquo;s stuck in Terminating and you see that the Finalizer has protection:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;Finalizers:    &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;kubernetes.io/pvc-protection&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then, you can remove the protection by issuing the following command and your install should continue.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl -n jx patch pvc jenkins -p &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;metadata&amp;#34;:{&amp;#34;finalizers&amp;#34;: []}}&amp;#39;&lt;/span&gt; --type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;merge
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     

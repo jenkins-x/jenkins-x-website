@@ -24,11 +24,11 @@
 <meta property="og:description" content="Questions on installing and setting up Jenkins X" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/resources/faq/setup/" />
-<meta property="article:modified_time" content="2020-07-31T01:40:48+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-07-31T07:25:13+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Install and setup questions">
 <meta itemprop="description" content="Questions on installing and setting up Jenkins X">
-<meta itemprop="dateModified" content="2020-07-31T01:40:48&#43;00:00" />
-<meta itemprop="wordCount" content="478">
+<meta itemprop="dateModified" content="2020-07-31T07:25:13&#43;00:00" />
+<meta itemprop="wordCount" content="560">
 
 
 
@@ -1738,6 +1738,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-map-sourcerepository-to-a-custom-scheduler">How do I map SourceRepository to a custom Scheduler</a></li>
     <li><a href="#how-do-i-add-more-charts-to-jenkins-x">How do I add more charts to Jenkins X?</a></li>
     <li><a href="#how-do-i-disable-the-ingress-controller">How do I disable the ingress controller?</a></li>
+    <li><a href="#what-do-i-do-if-jx-boot-hangs-on-step-install-jenkins-x">What do I do if <code>jx boot</code> hangs on <code>step-install-jenkins-x</code>?</a></li>
   </ul>
 </nav>
 
@@ -1820,7 +1821,15 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 <p>Though if you want our chart to be in another namespace then we use the convention of adding a folder in the <code>system</code> directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in <code>system</code> and add the <code>jx step helm apply</code> step in the pipeline in <code>jenkins-x.yml</code> like we do for <code>cert-manager</code>, <code>nginx</code>, <code>velero</code> etc.</p>
 <h2 id="how-do-i-disable-the-ingress-controller">How do I disable the ingress controller?</h2>
 <p>If you already have your own ingress controller and do not want <code>jx boot</code> to install another one you can just delete the <code>install-nginx-controller</code> step in your dev environment git repository. e.g. <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml#L85-L99">remove this step</a> from the <code>jenkins-x.yml</code> in your dev environment git repository</p>
-
+<h2 id="what-do-i-do-if-jx-boot-hangs-on-step-install-jenkins-x">What do I do if <code>jx boot</code> hangs on <code>step-install-jenkins-x</code>?</h2>
+<p>You may have a problem with Terminating a PVC that is protected.</p>
+<p>Describe your pvc.  In the case I saw, it was the jenkins pvc.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl -n jx describe pvc jenkins
+</code></pre></div><p>If it&rsquo;s stuck in Terminating and you see that the Finalizer has protection:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Finalizers:    <span style="color:#f92672">[</span>kubernetes.io/pvc-protection<span style="color:#f92672">]</span>
+</code></pre></div><p>Then, you can remove the protection by issuing the following command and your install should continue.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl -n jx patch pvc jenkins -p <span style="color:#e6db74">&#39;{&#34;metadata&#34;:{&#34;finalizers&#34;: []}}&#39;</span> --type<span style="color:#f92672">=</span>merge
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1883,7 +1892,7 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified July 31, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/4e11c2621ffa957fe023b0bcdce0a9d2e8679017">release 0.0.1843 (4e11c26)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified July 31, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/3a99c477be55cfd68904520d41bc0c02a6956036">release 0.0.1844 (3a99c47)</a>
 </div>
 </div>
 
