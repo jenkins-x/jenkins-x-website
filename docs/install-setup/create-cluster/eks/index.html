@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to create an EKS cluster?" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/install-setup/create-cluster/eks/" />
-<meta property="article:modified_time" content="2020-08-03T11:51:50+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-08-03T16:23:52+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Create EKS cluster">
 <meta itemprop="description" content="How to create an EKS cluster?">
-<meta itemprop="dateModified" content="2020-08-03T11:51:50&#43;00:00" />
-<meta itemprop="wordCount" content="2134">
+<meta itemprop="dateModified" content="2020-08-03T16:23:52&#43;00:00" />
+<meta itemprop="wordCount" content="2406">
 
 
 
@@ -1741,7 +1741,11 @@ if (!doNotTrack) {
     <li><a href="#long-term-storage">Long Term Storage</a></li>
     <li><a href="#vault">Vault</a></li>
     <li><a href="#externaldns">ExternalDNS</a></li>
-    <li><a href="#cert-manager">cert-manager</a></li>
+    <li><a href="#cert-manager">cert-manager</a>
+      <ul>
+        <li><a href="#velero-backups">Velero Backups</a></li>
+      </ul>
+    </li>
     <li><a href="#running-jx-boot">Running <code>jx boot</code></a></li>
     <li><a href="#production-cluster-considerations">Production cluster considerations</a></li>
     <li><a href="#configuring-a-terraform-backend">Configuring a Terraform backend</a></li>
@@ -1899,6 +1903,13 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td align="center">no</td>
 </tr>
 <tr>
+<td>cluster_in_private_subnet</td>
+<td>Flag to enable installation of cluster on private subnets</td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>cluster_name</td>
 <td>Variable to provide your desired name for the cluster. The script will create a random name if this is empty</td>
 <td><code>string</code></td>
@@ -1945,6 +1956,13 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td>Flag to enable or disable long term storage for logs</td>
 <td><code>bool</code></td>
 <td><code>true</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>enable_nat_gateway</td>
+<td>Should be true if you want to provision NAT Gateways for each of your private networks</td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -1997,6 +2015,27 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td align="center">no</td>
 </tr>
 <tr>
+<td>map_accounts</td>
+<td>Additional AWS account numbers to add to the aws-auth configmap.</td>
+<td><code>list(string)</code></td>
+<td><code>[]</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>map_roles</td>
+<td>Additional IAM roles to add to the aws-auth configmap.</td>
+<td><pre>list(object({<br>    rolearn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre></td>
+<td><code>[]</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>map_users</td>
+<td>Additional IAM users to add to the aws-auth configmap.</td>
+<td><pre>list(object({<br>    userarn  = string<br>    username = string<br>    groups   = list(string)<br>  }))</pre></td>
+<td><code>[]</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>max_node_count</td>
 <td>The maximum number of worker nodes to use for the cluster</td>
 <td><code>number</code></td>
@@ -2032,6 +2071,13 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td align="center">no</td>
 </tr>
 <tr>
+<td>private_subnets</td>
+<td>The private subnet CIDR block to use in the created VPC</td>
+<td><code>list(string)</code></td>
+<td><pre>[<br>  &ldquo;10.0.4.0/24&rdquo;,<br>  &ldquo;10.0.5.0/24&rdquo;,<br>  &ldquo;10.0.6.0/24&quot;<br>]</pre></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>production_letsencrypt</td>
 <td>Flag to use the production environment of letsencrypt in the <code>jx-requirements.yml</code> file</td>
 <td><code>bool</code></td>
@@ -2039,10 +2085,24 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td align="center">no</td>
 </tr>
 <tr>
+<td>public_subnets</td>
+<td>The public subnet CIDR block to use in the created VPC</td>
+<td><code>list(string)</code></td>
+<td><pre>[<br>  &ldquo;10.0.1.0/24&rdquo;,<br>  &ldquo;10.0.2.0/24&rdquo;,<br>  &ldquo;10.0.3.0/24&quot;<br>]</pre></td>
+<td align="center">no</td>
+</tr>
+<tr>
 <td>region</td>
 <td>The region to create the resources into</td>
 <td><code>string</code></td>
 <td><code>&quot;us-east-1&quot;</code></td>
+<td align="center">no</td>
+</tr>
+<tr>
+<td>single_nat_gateway</td>
+<td>Should be true if you want to provision a single shared NAT Gateway across all of your private networks</td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
 <td align="center">no</td>
 </tr>
 <tr>
@@ -2092,13 +2152,6 @@ Refer to <a href="/docs/install-setup/create-cluster/eks/#production-cluster-con
 <td>The name of the VPC to be created for the cluster</td>
 <td><code>string</code></td>
 <td><code>&quot;tf-vpc-eks&quot;</code></td>
-<td align="center">no</td>
-</tr>
-<tr>
-<td>vpc_subnets</td>
-<td>The subnet CIDR block to use in the created VPC</td>
-<td><code>list(string)</code></td>
-<td><pre>[<br>  &ldquo;10.0.1.0/24&rdquo;,<br>  &ldquo;10.0.2.0/24&rdquo;,<br>  &ldquo;10.0.3.0/24&quot;<br>]</pre></td>
 <td align="center">no</td>
 </tr>
 </tbody>
@@ -2227,7 +2280,15 @@ This is done by creating a <code>NS</code> RecordSet in the apex domain&rsquo;s 
 <p>If you use staging, you will receive self-signed certificates, but you are not rate-limited, if you use the <code>production</code> environment, you receive certificates signed by LetsEncrypt, but you can be rate limited.</p>
 <p>You can choose to use the <code>production</code> environment with the <code>production_letsencrypt</code> variable:</p>
 <p>You need to provide a valid email to register your domain in LetsEncrypt with <code>tls_email</code>.</p>
-<h2 id="running-jx-boot">Running <code>jx boot</code></h2>
+<h3 id="velero-backups">Velero Backups</h3>
+<p>This module can set up the resources required for running backups with Velero on your cluster by setting the flag <code>enable_backup</code> to <code>true</code>.</p>
+<h4 id="enabling-backups-on-pre-existing-clusters">Enabling backups on pre-existing clusters</h4>
+<p>If your cluster is pre-existing and already contains a namespace named <code>velero</code>, then enabling backups will initially fail with an error that you are trying to create a namespace which already exists.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Error: namespaces <span style="color:#e6db74">&#34;velero&#34;</span> already exists
+</code></pre></div><p>If you get this error, consider it a warning - you may then adjust accordingly by importing that namespace to be managed by Terraform, deleting the previously existing ns if it wasn&rsquo;t actually in use, or setting <code>enable_backup</code> back to <code>false</code> to continue managing Velero in the previous manner.</p>
+<p>The recommended way is to import the namespace and then run another Terraform plan and apply:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform import module.eks-jx.module.backup.kubernetes_namespace.velero_namespace velero
+</code></pre></div><h2 id="running-jx-boot">Running <code>jx boot</code></h2>
 <p>A terraform output (<em>jx_requirements</em>) is available after applying this Terraform module.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform output jx_requirements
 </code></pre></div><p>This <em>jx_requirements</em> output can be used as input to <a href="/docs/getting-started/setup/boot/">Jenkins X Boot</a> which is responsible for installing all the required Jenkins X components into the cluster created by this module.</p>
@@ -2391,7 +2452,7 @@ In order to provision EKS node groups create a <em>main.tf</em> with the followi
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified August 3, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/7cb478f88da7be825e03627cd771317aff458fde">release 0.0.1845 (7cb478f)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified August 3, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5f249fc99c09a9ab539a9982b35a8fb80aa71f8a">release 0.0.1846 (5f249fc)</a>
 </div>
 </div>
 
