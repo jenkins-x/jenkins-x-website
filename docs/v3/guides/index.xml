@@ -46,7 +46,13 @@
       <description>
         
         
-        &lt;p&gt;Jenkins X 3.x uses a &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; to manage installing + upgrading of Jenkins X and any other components in any environment.&lt;/p&gt;
+        &lt;p&gt;Jenkins X 3.x uses a &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; to manage installing + upgrading of Jenkins X and any other components in any environment. If you are interested you can read &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/&#34;&gt;how it works&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;git-user-and-token&#34;&gt;Git user and token&lt;/h2&gt;
+&lt;p&gt;To install the &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; you will need a pipeline user and token for the git repository.&lt;/p&gt;
+&lt;p&gt;This user and token needs read and write access to the git repository containing the installation configuration. Ideally the token will also have permissions to be able to create a webhook on the repository (to trigger CI/CD pipelines whenever someone creates a Pull Request on the git repository).&lt;/p&gt;
+&lt;p&gt;You can always setup webhooks by hand yourself whenever a git repository is &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/&#34;&gt;created or imported&lt;/a&gt; or the domain name of your &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; hook endpoint changes via the &lt;a href=&#34;https://github.com/jenkins-x/jx-verify/blob/master/docs/cmd/jx-verify_webhooks.md&#34;&gt;jx verify webhooks&lt;/a&gt; command. Though its easier to get Jenkins X to automate this for you as part of the CI/CD pipelines; it just requires the git user and token to have sufficient permissions to list, create and modify webhooks.&lt;/p&gt;
+&lt;p&gt;Note also that the same pipeline user and token is reused by default for all pipelines on &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/&#34;&gt;all repositories created or imported&lt;/a&gt; which will need read, write and webhook permissions on all of those repositories too. Though if you really want you can change this later on by &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/secrets/#edit-secrets&#34;&gt;editing the pipeline token&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;installing-the-operator&#34;&gt;Installing the operator&lt;/h2&gt;
 &lt;p&gt;To install the operator run the following, passing in the git URL from the &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;git repository&lt;/a&gt; you created previously via &lt;a href=&#34;https://github.com/jenkins-x/jx-admin/blob/master/docs/cmd/jx-admin_operator.md&#34;&gt;jx admin operator&lt;/a&gt; command:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export GIT_USER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;myPipelineUsername&amp;#34;&lt;/span&gt;
 export GIT_TOKEN&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;myPipelineUserToken&amp;#34;&lt;/span&gt;
@@ -95,49 +101,28 @@ jx admin operator
 &lt;h2 id=&#34;vault&#34;&gt;Vault&lt;/h2&gt;
 &lt;p&gt;If you are using Vault as your back end for &lt;a href=&#34;https://github.com/godaddy/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt;  then before you try any of the following commands to populate secrets you need to make sure your termminal can access Vault.&lt;/p&gt;
 &lt;p&gt;To do this you can run the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_vault_portforward.md&#34;&gt;jx secret vault portforward&lt;/a&gt; command in a terminal. You should then be able to run the following &lt;code&gt;jx secret edit&lt;/code&gt; or &lt;code&gt;jx secret import&lt;/code&gt; commands.&lt;/p&gt;
-&lt;h2 id=&#34;populate-secrets&#34;&gt;Populate Secrets&lt;/h2&gt;
-&lt;p&gt;To populate the Secrets run:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret edit
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This will prompt you to enter all the missing Secrets required.&lt;/p&gt;
-&lt;nav&gt;
-  &lt;ul class=&#34;pagination&#34;&gt;
-    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;https://jenkins-x.io/docs/v3/getting-started&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
-    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../config&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/nav&gt;
-&lt;h3 id=&#34;re-enter-all-secrets&#34;&gt;Re-enter all secrets&lt;/h3&gt;
-&lt;p&gt;If you want to re-enter them all again or recreate tokens do the following:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret edit -a
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that once you have booted up a cluster you can omit the &lt;code&gt;--git-url&lt;/code&gt; parameter as it can be discovered from the current kubernetes cluster (via the &lt;code&gt;dev&lt;/code&gt; &lt;code&gt;Environment&lt;/code&gt; resource)&lt;/p&gt;
-&lt;h2 id=&#34;importing-secrets&#34;&gt;Importing Secrets&lt;/h2&gt;
-&lt;p&gt;If you have an existing secrets.yaml file on the file system that looks kinda like this (with the actual values included)&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;secrets&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;adminUser&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;username&lt;/span&gt;: todo
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;password&lt;/span&gt;: todo
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;docker&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;username&lt;/span&gt;: todo
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;password&lt;/span&gt;: todo
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;hmacToken&lt;/span&gt;: todo
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipelineUser&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;username&lt;/span&gt;: todo
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;token&lt;/span&gt;: todo
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;: todo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then you can import this YAML file via:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret import -f /tmp/mysecrets.yaml 
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;migrating-local-secrets&#34;&gt;Migrating Local Secrets&lt;/h3&gt;
+&lt;h2 id=&#34;edit-secrets&#34;&gt;Edit Secrets&lt;/h2&gt;
+&lt;p&gt;To edit the Secrets run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will prompt you to enter all the missing Secrets by default.&lt;/p&gt;
+&lt;p&gt;If you just want to enter a specific secret you can use &lt;code&gt;--filter&lt;/code&gt; or &lt;code&gt;-f&lt;/code&gt; to filter for a specific secret name.&lt;/p&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -f nexus
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;export-secrets&#34;&gt;Export Secrets&lt;/h2&gt;
+&lt;p&gt;You can export the current secrets to the file system via&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret export -f /tmp/mysecrets.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or to view them on the terminal&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret export -c
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;import-secrets&#34;&gt;Import Secrets&lt;/h2&gt;
+&lt;p&gt;If you have previously exported the secrets as shown above you can re-import them again (maybe into a different cluster):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret import -f /tmp/mysecrets.yaml 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;migrating-local-secrets&#34;&gt;Migrating Local Secrets&lt;/h3&gt;
 &lt;p&gt;If you have booted Jenkins X before you may well have secrets in your &lt;code&gt;~/.jx/localSecrets/mycluster/secrets.yaml&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;If the file is valid you can just run:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret import -f ~/.jx/localSecrets/mycluster/secrets.yaml 
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;migrating-secrets-from-vault&#34;&gt;Migrating Secrets from Vault&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret import -f ~/.jx/localSecrets/mycluster/secrets.yaml 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;migrating-secrets-from-vault&#34;&gt;Migrating Secrets from Vault&lt;/h3&gt;
 &lt;p&gt;If you have secrets already in a Vault then use the vault CLI tool to export the secrets to disk, reformat it in the above YAML layout and then import the secrets as above.&lt;/p&gt;
-&lt;h2 id=&#34;exporting-secrets&#34;&gt;Exporting Secrets&lt;/h2&gt;
-&lt;p&gt;You can export the current secrets to the file system via&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret export -f /tmp/mysecrets.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Or to view them on the terminal&amp;hellip;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx secret export -c
-&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
