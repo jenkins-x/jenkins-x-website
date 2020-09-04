@@ -24,11 +24,11 @@
 <meta property="og:description" content="Questions on installing and setting up Jenkins X" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/resources/faq/setup/" />
-<meta property="article:modified_time" content="2020-09-02T15:41:54+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-09-04T10:46:02+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Install and setup questions">
 <meta itemprop="description" content="Questions on installing and setting up Jenkins X">
-<meta itemprop="dateModified" content="2020-09-02T15:41:54&#43;00:00" />
-<meta itemprop="wordCount" content="608">
+<meta itemprop="dateModified" content="2020-09-04T10:46:02&#43;00:00" />
+<meta itemprop="wordCount" content="738">
 
 
 
@@ -2096,6 +2096,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-disable-the-ingress-controller">How do I disable the ingress controller?</a></li>
     <li><a href="#what-do-i-do-if-jx-boot-hangs-on-step-install-jenkins-x">What do I do if <code>jx boot</code> hangs on <code>step-install-jenkins-x</code>?</a></li>
     <li><a href="#how-do-i-debug-issues-with-terraform-and-jenkinsx">How do I debug issues with terraform and JenkinsX?</a></li>
+    <li><a href="#how-to-get-a-clean-terraform-destroy">How to get a clean terraform destroy</a></li>
   </ul>
 </nav>
 
@@ -2191,7 +2192,19 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">TF_LOG<span style="color:#f92672">=</span>TRACE terraform apply
 </code></pre></div><p>Use the global <code>--verbose</code> flag to add more verbosity to the JenkinsX logs:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx boot --verbose
-</code></pre></div>
+</code></pre></div><h2 id="how-to-get-a-clean-terraform-destroy">How to get a clean terraform destroy</h2>
+<p>The following steps need to be performed before a terraform destroy can be executed successfully for the EKS cluster.</p>
+<ul>
+<li>Empty the s3 buckets created by jenkinsX (This is required if <code>force_destroy</code> was set to false, when provisioning
+the EKS cluster)</li>
+<li>Delete the Network load balancer (The load balancer is created outside terraform, so you need to delete it manually
+in the EC2 console before executing a terraform destroy.
+You can also import it to terraform, and then execute destroy)</li>
+</ul>
+<p>If you do not delete the load balancer, you will have issues with detaching the internet gateway (IGW) and deleting it.
+This can lead to a race condition where terraform tries to destroy the auto scaling group and the IGW, and eventually
+times out.</p>
+
 	
 		<style>
   .feedback--answer {
@@ -2254,7 +2267,7 @@ kubectl get sr XXX -oyaml &gt; env/templates/myenv-sr.yaml
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified September 2, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/bab596b1327e3d4517219416e9301a944d6b7fb6">release 0.0.1876 (bab596b)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified September 4, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5c7e570a2a92c50dd6c52e0db606679f42c5c61d">release 0.0.1877 (5c7e570)</a>
 </div>
 </div>
 

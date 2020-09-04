@@ -84,7 +84,19 @@ kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;TF_LOG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;TRACE terraform apply
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Use the global &lt;code&gt;--verbose&lt;/code&gt; flag to add more verbosity to the JenkinsX logs:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx boot --verbose
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-to-get-a-clean-terraform-destroy&#34;&gt;How to get a clean terraform destroy&lt;/h2&gt;
+&lt;p&gt;The following steps need to be performed before a terraform destroy can be executed successfully for the EKS cluster.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Empty the s3 buckets created by jenkinsX (This is required if &lt;code&gt;force_destroy&lt;/code&gt; was set to false, when provisioning
+the EKS cluster)&lt;/li&gt;
+&lt;li&gt;Delete the Network load balancer (The load balancer is created outside terraform, so you need to delete it manually
+in the EC2 console before executing a terraform destroy.
+You can also import it to terraform, and then execute destroy)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you do not delete the load balancer, you will have issues with detaching the internet gateway (IGW) and deleting it.
+This can lead to a race condition where terraform tries to destroy the auto scaling group and the IGW, and eventually
+times out.&lt;/p&gt;
+
       </description>
     </item>
     
