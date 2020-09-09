@@ -133,5 +133,63 @@ Create your infrastructure
       </description>
     </item>
     
+    <item>
+      <title>Docs: Getting Started With On Premise</title>
+      <link>https://jenkins-x.io/docs/v3/getting-started/on-premise/</link>
+      <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/getting-started/on-premise/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;on-premise-kubernetes&#34;&gt;On Premise Kubernetes&lt;/h2&gt;
+&lt;p&gt;If you are using kubernetes we highly recommend you use one of the managed cloud providers like &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/eks/&#34;&gt;Amazon&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/gke/&#34;&gt;Google&lt;/a&gt; as this comes with lots of additional features like:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;container registries and bucket storage&lt;/li&gt;
+&lt;li&gt;IAM and workload identity (e.g. so kubernetes Service Accounts can be assigned roles to be able to read/write to certain buckets or container registries)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However sometimes you need to run kubernetes on your premise. Longer term we hope the cloud providers can run their managed kubernetes and associated infrastructure on your premise too so you get to reuse the same storage + IAM anywhere. But until then, this guide is intended to get you started installing Jenkins X on a vanilla kubernetes cluster on premise.&lt;/p&gt;
+&lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
+&lt;p&gt;The following are the prerequisites of your on-premise kubernetes cluster:&lt;/p&gt;
+&lt;h4 id=&#34;kubectl-access&#34;&gt;kubectl access&lt;/h4&gt;
+&lt;p&gt;You need to be able to connect to your kubernetes cluster via &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; so that you can run commands like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
+kubectl get node
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To view the namespaces and nodes respectively.&lt;/p&gt;
+&lt;h4 id=&#34;ingress&#34;&gt;Ingress&lt;/h4&gt;
+&lt;p&gt;To use Jenkins X we need ingress to work. This means being able to create a kubernetes &lt;code&gt;Ingress&lt;/code&gt;  resource with a domain name which can be resolved outside of kubernetes to network into kubernetes services.&lt;/p&gt;
+&lt;p&gt;Jenkins X installs &lt;code&gt;nginx&lt;/code&gt; which has a &lt;code&gt;LoadBalancer&lt;/code&gt; kubernetes &lt;code&gt;Service&lt;/code&gt; to implement ingress. But the underlying kubernetes platform needs to implement the load balancing network and infrastructure. This comes out of the box on all public clouds.&lt;/p&gt;
+&lt;p&gt;With an on-premise kubernetes cluster you need to install something like &lt;a href=&#34;https://metallb.universe.tf/&#34;&gt;MetalLB&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&#34;storage&#34;&gt;Storage&lt;/h4&gt;
+&lt;p&gt;We need your kubernetes cluster to have a default &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34;&gt;storage class&lt;/a&gt; so that &lt;code&gt;PersistentVolumeClaim&lt;/code&gt; resources in helm charts get resolved to &lt;code&gt;PersistentVolume&lt;/code&gt; resources so that persistent disks can be used.&lt;/p&gt;
+&lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
+&lt;p&gt;This is our current recommended quickstart for on premise kubernetes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/generate&#34; target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create Git Repository&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ensure you are connected to your cluster so you can run the following &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; commands&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
+kubectl get node      
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/operator/&#34; 
+target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34; 
+title=&#34;install the git operator to setup Jenkins X in your cluster&#34;&gt;
+Install the git operator
+&lt;/a&gt; from inside a git clone of your git repository via something like:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone https://github.com/myuser/mygitops-repo.git myrepo
+cd myrepo
+jx admin operator    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
   </channel>
 </rss>

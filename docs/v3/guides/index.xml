@@ -109,7 +109,9 @@
 &lt;p&gt;You can then rotate secrets easily independent of git.&lt;/p&gt;
 &lt;h2 id=&#34;vault&#34;&gt;Vault&lt;/h2&gt;
 &lt;p&gt;If you are using Vault as your back end for &lt;a href=&#34;https://github.com/godaddy/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt;  then before you try any of the following commands to populate secrets you need to make sure your termminal can access Vault.&lt;/p&gt;
-&lt;p&gt;To do this you can run the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_vault_portforward.md&#34;&gt;jx secret vault portforward&lt;/a&gt; command in a terminal. You should then be able to run the following &lt;code&gt;jx secret edit&lt;/code&gt; or &lt;code&gt;jx secret import&lt;/code&gt; commands.&lt;/p&gt;
+&lt;p&gt;To do this you can run the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_vault_portforward.md&#34;&gt;jx secret vault portforward&lt;/a&gt; command in a terminal:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret vault portforward
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should then be able to run the following &lt;code&gt;jx secret edit&lt;/code&gt; or &lt;code&gt;jx secret import&lt;/code&gt; commands.&lt;/p&gt;
 &lt;h2 id=&#34;edit-secrets&#34;&gt;Edit Secrets&lt;/h2&gt;
 &lt;p&gt;To edit the Secrets run:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit
@@ -131,6 +133,12 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret import -f ~/.jx/localSecrets/mycluster/secrets.yaml 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;migrating-secrets-from-vault&#34;&gt;Migrating Secrets from Vault&lt;/h3&gt;
 &lt;p&gt;If you have secrets already in a Vault then use the vault CLI tool to export the secrets to disk, reformat it in the above YAML layout and then import the secrets as above.&lt;/p&gt;
+&lt;h3 id=&#34;replicating-secrets-among-namespaces&#34;&gt;Replicating Secrets among namespaces&lt;/h3&gt;
+&lt;p&gt;Its quite common to need to replicate the same Secrets across namespaces. For example &lt;a href=&#34;https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/&#34;&gt;Image Pull Secrets&lt;/a&gt; to pull images from container registries which may need to be used in dev, staging and production.&lt;/p&gt;
+&lt;p&gt;The Jenkins X boot job does this automatically for any secret labelled with &lt;code&gt;secret.jenkins-x.io/replica-source=true&lt;/code&gt; using the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_replicate.md&#34;&gt;jx secret replicate&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret replicate --selector secret.jenkins-x.io/replica-source&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will replicate the secret to all permanent enivronments in the same cluster (e.g. a local Staging or Production environment).&lt;/p&gt;
+&lt;p&gt;If you want to replicate another secret just add the label &lt;code&gt;secret.jenkins-x.io/replica-source=true&lt;/code&gt; or you can add a new &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_replicate.md&#34;&gt;jx secret replicate&lt;/a&gt; to the &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/#boot-job&#34;&gt;boot makefile&lt;/a&gt;&lt;/p&gt;
 
       </description>
     </item>
