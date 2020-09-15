@@ -896,16 +896,53 @@ option for <code>git commit</code> or by GPG signing the commit. The developer c
 <p>Jenkins X enforces the DCO using the a <a href="https://github.com/probot/dco">bot</a>. You can view the details on the DCO check
 by viewing the <code>Checks</code> tab in the GitHub pull request.</p>
 <p><img src="https://user-images.githubusercontent.com/13410355/42352794-85fe1c9c-8071-11e8-834a-05a4aeb8cc90.png" alt="DCO signoff check"></p>
-<p>You can use a hook to make sure all your commits messages are signed off.</p>
+<h4 id="how-to-sign-your-commits">How to Sign Your Commits</h4>
+<p>There are a couple of ways to ensure your commits are signed.
+Described below are three different ways to sign your commits: using git signoff, using GPG, or using webhooks.</p>
+<h5 id="git-signoff">Git signoff</h5>
+<p>Git signoff adds a line to your commit message with the user.name and user.email values from your git config.
+Use git signoff by adding the <code>--signoff</code> or <code>-s</code> flag when creating your commit.
+This flag must be added to each commit you would like to sign.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git commit -m -s <span style="color:#e6db74">&#34;docs: my commit message&#34;</span>
+</code></pre></div><p>If you&rsquo;d like to keep your personal email address private, you can use a GitHub-provided <code>no-reply</code> email address as your commit email address.
+GitHub provides <a href="https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address">good instructions on setting your commit email address</a>.</p>
+<h5 id="gpg-sign-your-commits">GPG sign your commits</h5>
+<p>A more secure alternative is to GPG sign all your commits.
+This has the advantage that as well as stating your agreement to the DCO it also creates a trust mechanism for your commits.
+There is a good guide from GitHub on how to set this up:</p>
 <ol>
 <li>
-<p>Run <code>mkdir -p ~/.git-templates/hooks</code></p>
+<p>If you don&rsquo;t already have a GPG key, then follow <a href="https://help.github.com/en/articles/generating-a-new-gpg-key">this guide to create one</a>.</p>
 </li>
 <li>
-<p>Run <code>git config --global init.templatedir ~/.git-templates</code></p>
+<p>Now you have a GPG key, tell <a href="https://help.github.com/en/articles/adding-a-new-gpg-key-to-your-github-account">tell GitHub about your key so that it can verify your commits</a>.
+Once you upload your public gpg key to your GitHub account, GitHub will mark commits that you sign with the <code>verified</code> label.</p>
 </li>
 <li>
-<p>Add this to <code>~/.git-templates/hooks/prepare-commit-msg</code>:</p>
+<p>To sign commits locally, you can add the <code>-S</code> flag when creating your commit.
+For more information on signing commits locally, follow <a href="https://help.github.com/en/articles/signing-commits">this guide to see how to sign your commit</a>.</p>
+</li>
+<li>
+<p>You can configure git to always use signed commits by running</p>
+</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git config --global user.signingkey &lt;key id&gt;
+</code></pre></div><p>The process to find the key id is described in <a href="https://help.github.com/en/articles/checking-for-existing-gpg-keys">this guide on checking for existing GPG keys</a>.</p>
+<ol start="5">
+<li>Set up a keychain for your platform.
+This is entirely optional but means you don&rsquo;t need to type your passphrase every time and allows git to run headless.
+If you are using a Mac GPG Suite is a good way to do this. If you are on another platform please open a PR against this document and add your recommendations!</li>
+</ol>
+<h5 id="use-a-webhook-to-sign-your-commits">Use a webhook to sign your commits</h5>
+<p>Alternatively, you can use a hook to make sure all your commits messages are signed off.</p>
+<ol>
+<li>Run:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">mkdir -p ~/.git-templates/hooks
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git config --global init.templatedir ~/.git-templates
+</code></pre></div><ol start="2">
+<li>Then add this to <code>~/.git-templates/hooks/prepare-commit-msg</code>:</li>
+</ol>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/bin/sh
 </span><span style="color:#75715e"></span>
 COMMIT_MSG_FILE<span style="color:#f92672">=</span>$1  <span style="color:#75715e"># The git commit file.</span>
@@ -917,32 +954,15 @@ git interpret-trailers --in-place --trailer <span style="color:#e6db74">&#34;</s
 <span style="color:#66d9ef">if</span> test -z <span style="color:#e6db74">&#34;</span>$COMMIT_SOURCE<span style="color:#e6db74">&#34;</span>; <span style="color:#66d9ef">then</span>
 /usr/bin/perl -i.bak -pe <span style="color:#e6db74">&#39;print &#34;\n&#34; if !$first_line++&#39;</span> <span style="color:#e6db74">&#34;</span>$COMMIT_MSG_FILE<span style="color:#e6db74">&#34;</span>
 <span style="color:#66d9ef">fi</span>
-</code></pre></div></li>
-<li>
-<p>Make sure this file executable <code>chmod u+x ~/.git-templates/hooks/prepare-commit-msg</code></p>
-</li>
-<li>
-<p>Run <code>git init</code> on the repo you want to use the hook on</p>
-</li>
+</code></pre></div><ol start="3">
+<li>Make sure the file is executable:</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">chmod u+x ~/.git-templates/hooks/prepare-commit-msg
+</code></pre></div><ol start="4">
+<li>Run <code>git init</code> on the repo you want to use the hook on.</li>
 </ol>
 <p>Note that this will not override the hooks already defined on your local repo. It adds the <code>Signed-off-by: ...</code> line
 after the commit message has been created by the user.</p>
-<p>A better alternative is to GPG sign all your commits. This has the advantage that as well as stating your agreement to
-the DCO it also creates a trust mechanism for your commits. It&rsquo;s a little harder to set up but there is a
-good guide from GitHub:</p>
-<ol>
-<li>If you don&rsquo;t already have a GPG key then follow <a href="https://help.github.com/en/articles/generating-a-new-gpg-key">this guide to create one</a></li>
-<li>Now you have a GPG key follow <a href="https://help.github.com/en/articles/signing-commits">this guide to see how to sign your commit</a></li>
-<li>Next, tell <a href="https://help.github.com/en/articles/adding-a-new-gpg-key-to-your-github-account">tell GitHub about your key so that it can verify your commits</a></li>
-<li>Now, configure git to always use sign commits by running</li>
-</ol>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git config --global user.signingkey &lt;key id&gt;
-</code></pre></div><p>The process to find the key id is described in <a href="https://help.github.com/en/articles/checking-for-existing-gpg-keys">https://help.github.com/en/articles/checking-for-existing-gpg-keys</a></p>
-<ol start="5">
-<li>Set up a keychain for your platform. This is entirely optional but means you don&rsquo;t need to type your passphrase every
-time and allows git to run headless. If you are using a Mac GPG Suite is a good way to do this. If you are on another
-platform please open a PR against this document and add your recommendations!</li>
-</ol>
 <h3 id="the-commit-message">The commit message</h3>
 <p>Jenkins X uses <a href="https://www.conventionalcommits.org/en/v1.0.0-beta.4/">conventional commits</a> as it&rsquo;s commit message format. These are particularly important as semantic releases are in use, and they use the commit messages to determine the type of changes in the codebase. Following formalized conventions for commit messages the semantic release automatically determines the next <a href="https://semver.org">semantic version</a> number and generates a changelog based on the conventional commit.</p>
 <p>Semantic releases originate in the <a href="https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines">Angular Commit Message Conventions</a>, and the rules described there are the ones used by Jenkins X.</p>
@@ -1260,7 +1280,7 @@ If the code generation is not up to date (running <code>make generate</code> pro
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified September 9, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/16ee45bd1e7cb6f6e7ee26a91a9b4b9906da32c6">release 0.0.1883 (16ee45b)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified September 15, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/fee0ea131313114ed8af36fea966c35268255bdb">release 0.0.1884 (fee0ea1)</a>
 </div>
 </div>
 
