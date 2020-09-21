@@ -541,7 +541,67 @@ git push
     </item>
     
     <item>
-      <title>Docs: Apps framework</title>
+      <title>Docs: Migrate</title>
+      <link>https://jenkins-x.io/docs/v3/guides/migrate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/migrate/</guid>
+      <description>
+        
+        
+        &lt;p&gt;If you wish to migrate from older versions of Jenkins X to v3 we recommend &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;spinning up a new cluster for v3&lt;/a&gt; and then incrementally moving projects from the old cluster to the new cluster.&lt;/p&gt;
+&lt;p&gt;This might sound heavy handed but the issue with working with multiple versions of a number of charts like &lt;code&gt;lighthouse&lt;/code&gt; and &lt;code&gt;tekton&lt;/code&gt; is that they use cluster scoped resources (CRDs and &lt;code&gt;clusterrole&lt;/code&gt; resources for example) which can compete with each other. e.g. installing a new version of a chart may well break an old installation.&lt;/p&gt;
+&lt;p&gt;So its safer to &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;spin up a new cluster and install v3 there&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Once you have a new cluster you can just &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/#import-an-existing-project&#34;&gt;import projects&lt;/a&gt; into the new cluster via &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/#import-an-existing-project&#34;&gt;jx project import&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can then test the projects work fine in the new v3 cluster. If they do you can remove them from the old cluster via &lt;code&gt;jx delete application&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;batch-importing&#34;&gt;Batch importing&lt;/h2&gt;
+&lt;p&gt;To batch import lots of projects from the old cluster:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;git clone the new cluster&amp;rsquo;s cluster git repository (with the &lt;code&gt;helmfile.yaml&lt;/code&gt; file inside) and &lt;code&gt;cd&lt;/code&gt; into the directory&lt;/li&gt;
+&lt;li&gt;verify you are in the correct git clone by running this command&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ls -al helmfile.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;you should see the &lt;code&gt;helmfile.yaml&lt;/code&gt; file from the v3 installation&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;now connect to your old Jenkins X cluster. Using jx v2 you can use &lt;code&gt;jx ctx&lt;/code&gt; to switch contexts or refer to your cloud providers documentation on how to switch &lt;code&gt;kubectl&lt;/code&gt; to point to different clsuters&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;verify you can see the old source repositories via:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;now run the &lt;a href=&#34;&#34;&gt;jx gitops repository export&lt;/a&gt; command&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;the local file &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; should have been modified with the exported repositories&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;review the changes to this file - remove any projects you don&amp;rsquo;t want to import&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;now git commit this file:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add .jx
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: import repositories&amp;#34;&lt;/span&gt;
+git push 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;connect to your new cluster&lt;/li&gt;
+&lt;li&gt;you can watch the setup pipeline run via &lt;code&gt;jx admin log&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;once complete you should see the imported projects:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Apps</title>
       <link>https://jenkins-x.io/docs/v3/guides/apps/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -561,20 +621,6 @@ git push
 &lt;p&gt;You can also use a file called &lt;code&gt;values.yaml.gotmpl&lt;/code&gt; if you wish to use go templating of the values file. For example this lets you reference properties from the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file via expressions like &lt;code&gt;{{ .Values.jxRequirements.ingress.domain }}&lt;/code&gt;. You can also reference the shared secrets in your &lt;code&gt;values.yaml.gotmpl&lt;/code&gt; file via &lt;code&gt;{{ .Values.secrets.pipelineUser.username }}&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;To see an example of this in action check out the &lt;a href=&#34;https://github.com/jenkins-x/jxr-versions/tree/master/apps/jenkins-x/tekton/values.yaml.gotmpl&#34;&gt;apps/jenkins-x/tekton/values.yaml.gotmpl&lt;/a&gt; file in the &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Note that many apps are already configured to make use of the &lt;code&gt;jx-requirements.yml&lt;/code&gt; settings via the &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; - but you are free to add your own custom configuration.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: Jenkins</title>
-      <link>https://jenkins-x.io/docs/v3/guides/jenkins/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/v3/guides/jenkins/</guid>
-      <description>
-        
-        
-        &lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; includes the initial version of the &lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Proposal&lt;/a&gt; to improve the interoperability of Jenkins and Jenkins X&lt;/p&gt;
 
       </description>
     </item>
@@ -680,6 +726,20 @@ prometheus-b47d8c58c-n974m              2/2     Running   &lt;span style=&#34;co
 &lt;li&gt;if anything goes bad during the rollout time period the old version is restored&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;There is an excellent &lt;a href=&#34;https://youtu.be/7eePqtxW7NM&#34;&gt;video showing this in action&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Jenkins</title>
+      <link>https://jenkins-x.io/docs/v3/guides/jenkins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/jenkins/</guid>
+      <description>
+        
+        
+        &lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; includes the initial version of the &lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Proposal&lt;/a&gt; to improve the interoperability of Jenkins and Jenkins X&lt;/p&gt;
 
       </description>
     </item>
