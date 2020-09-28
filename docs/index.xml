@@ -18225,43 +18225,6 @@ In order to provision EKS node groups create a &lt;em&gt;main.tf&lt;/em&gt; with
     </item>
     
     <item>
-      <title>Docs: Overview</title>
-      <link>https://jenkins-x.io/docs/v3/guides/jenkins/overview/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/v3/guides/jenkins/overview/</guid>
-      <description>
-        
-        
-        &lt;p&gt;The &lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Proposal&lt;/a&gt; aims to improve the interoperability of Jenkins and Jenkins X so you can use both together to solve all of your CI/CD needs.&lt;/p&gt;
-&lt;p&gt;We want to make it easy to reuse existing remote Jenkins servers with Jenkins X / tekton so that folks can work with either 100% cloud native tekton based automated CI/CD from Jenkins X or reuse existing Jenkins pipelines with remote Jenkins servers.&lt;/p&gt;
-&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
-&lt;p&gt;We maintain registry of Jenkins Servers using  Kubernetes &lt;code&gt;Secrets&lt;/code&gt; for each Jenkins Server with details of the URL, username and API Token.&lt;/p&gt;
-&lt;p&gt;We then have a command line tool and container image which can then invoke a &lt;code&gt;Jenkinsfile&lt;/code&gt; based pipeline in any of the Jenkins Servers in the registry.&lt;/p&gt;
-&lt;p&gt;This allows any Jenkins pipelines to be triggered from:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;any Jenkins X Pipeline&lt;/li&gt;
-&lt;li&gt;Tekton&lt;/li&gt;
-&lt;li&gt;Kubernetes Job&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Over time we can then bring more value to folks using a mixture of Jenkins + Jenkins X. e.g.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Reuse ChatOps from Jenkins X for existing projects that use Jenkins pipelines&lt;/li&gt;
-&lt;li&gt;Reuse Jenkins X Apps / Build Packs on projects released by Jenkins
-&lt;ul&gt;
-&lt;li&gt;E.g. reuse Jenkins X Apps / Pipelines for linting, code quality, security scanning - while preserving the existing Jenkins pipelines&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;known-issues&#34;&gt;Known issues&lt;/h2&gt;
-&lt;p&gt;If you see this error when trying to trigger a pipeline:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;403 No valid crumb was included in the request
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then until we figure out a better workaround you need to go into &lt;code&gt;Manage Jenkins&lt;/code&gt; -&amp;gt; &lt;code&gt;Configure Global Security&lt;/code&gt; then make sure you uncheck &lt;code&gt;Prevent Cross Site Request Forgery exploits&lt;/code&gt;&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: Pipelines Questions</title>
       <link>https://jenkins-x.io/docs/resources/faq/using/pipelines/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -19709,28 +19672,16 @@ You can now edit the code in your IDE and run build/test commands inside the &lt
       <description>
         
         
-        &lt;p&gt;Make sure you have got the &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; before proceeding.&lt;/p&gt;
+        &lt;p&gt;Make sure you have got the &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; and you have installed &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;version 3&lt;/a&gt; before proceeding.&lt;/p&gt;
 &lt;h2 id=&#34;adding-jenkins-servers-into-jenkins-x&#34;&gt;Adding Jenkins Servers into Jenkins X&lt;/h2&gt;
-&lt;p&gt;You can use Jenkins X to install one or more Jenkins servers by adding the following YAML to your &lt;code&gt;helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;You can use Jenkins X to install one or more Jenkins servers by adding the following YAML to your &lt;code&gt;helmfile.yaml&lt;/code&gt; in your cluster git repository you used to install Jenkins X:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
 - &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jenkinsci/jenkins
   &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jenkins
   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: jx
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can create as many Jenkins servers you wish, give them any release &lt;code&gt;name&lt;/code&gt; value you wish and put them in whatever namespaces you wish.&lt;/p&gt;
 &lt;p&gt;You can also add &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/apps/#customising-charts&#34;&gt;customize the charts&lt;/a&gt; by adding a &lt;code&gt;values.yaml&lt;/code&gt; file via the &lt;code&gt;values:&lt;/code&gt; entry in the helmfile to configure whatever you need (e.g. Jenkins plugins and jobs etc).&lt;/p&gt;
-&lt;h2 id=&#34;registering-external-jenkins-servers&#34;&gt;Registering external Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;You can register any Jenkins servers you wish to the Jenkins Server Registry via the &lt;code&gt;jx jenkins add&lt;/code&gt; command:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins add 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you already know the name, URL, username and API Token then you can use:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins add -u https://myjenkins.com/ --username myuser
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;removing-jenkins-servers&#34;&gt;Removing Jenkins Servers&lt;/h3&gt;
-&lt;p&gt;You can remove a Jenkins server via:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins remove
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that this only removes it from the registry; it doesn&amp;rsquo;t affect the actual Jenkins Server.&lt;/p&gt;
-&lt;h2 id=&#34;listing-the-available-jenkins-servers&#34;&gt;Listing the available Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;To list the servers you can use try:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins list
-&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
@@ -19801,6 +19752,71 @@ origin    git@github.com:&amp;lt;YOUR_USERNAME&amp;gt;/jx-docs.git &lt;span styl
 upstream  https://github.com/jenkins-x/jx-docs.git &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;fetch&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
 upstream  https://github.com/jenkins-x/jx-docs.git &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;push&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Install and setup questions</title>
+      <link>https://jenkins-x.io/docs/resources/faq/setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/resources/faq/setup/</guid>
+      <description>
+        
+        
+        &lt;p&gt;For more detail check out how to use &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/&#34;&gt;jx boot&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-upgrade-boot&#34;&gt;How do I upgrade boot?&lt;/h2&gt;
+&lt;p&gt;If you are using &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/&#34;&gt;jx boot&lt;/a&gt; you can upgrade via &lt;code&gt;jx upgrade boot&lt;/code&gt;.
+Refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/upgrade-jx/#upgrading-jenkins-x&#34;&gt;Upgrading Jenkins X&lt;/a&gt; for more information.&lt;/p&gt;
+&lt;p&gt;If anything ever goes wrong (e.g. your cluster, namespace or tekton gets deleted), you can always re-run &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/&#34;&gt;jx boot&lt;/a&gt; on your laptop to restore your cluster.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-more-resources&#34;&gt;How do I add more resources?&lt;/h2&gt;
+&lt;p&gt;Add more resources (e.g. &lt;code&gt;Ingress, ConfigMap, Secret&lt;/code&gt;) to your development environment by adding YAML files to the boot &lt;code&gt;env/templates&lt;/code&gt; directory.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-new-environments&#34;&gt;How do I add new Environments?&lt;/h2&gt;
+&lt;p&gt;Add a new &lt;code&gt;SourceRepository&lt;/code&gt; and &lt;code&gt;Environment&lt;/code&gt; resource to the &lt;code&gt;env/templates&lt;/code&gt; folder for each new environment you want tto create. We’ve only added &lt;code&gt;dev, staging, production&lt;/code&gt; currently.&lt;/p&gt;
+&lt;p&gt;From your running cluster you can always grab the staging &lt;code&gt;SourceRepository&lt;/code&gt; and &lt;code&gt;Environment&lt;/code&gt; resource via the following (where XXX is the name of the staging repository returned via &lt;code&gt;kubectl get sr&lt;/code&gt;):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get env staging -oyaml &amp;gt; env/templates/myenv.yaml
+kubectl get sr XXX -oyaml &amp;gt; env/templates/myenv-sr.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then modify the YAML to suit, changing the names of the resources to avoid clashing with your staging repository.&lt;/p&gt;
+&lt;h2 id=&#34;how-to-to-manage-sourcerepository-resources&#34;&gt;How to to manage SourceRepository resources?&lt;/h2&gt;
+&lt;p&gt;See how to update your &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/how-it-works/#source-repositories&#34;&gt;boot configuration with the latest SourceRepository resources&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-map-sourcerepository-to-a-custom-scheduler&#34;&gt;How do I map SourceRepository to a custom Scheduler&lt;/h2&gt;
+&lt;p&gt;You need to map your &lt;code&gt;SourceRepository&lt;/code&gt; to a &lt;code&gt;Scheduler&lt;/code&gt; via either specifying &lt;code&gt;--scheduler&lt;/code&gt; when you &lt;code&gt;jx create quickstart / jx import&lt;/code&gt; your repository or modifying the &lt;code&gt;SourceRepository&lt;/code&gt; CRD&amp;rsquo;s &lt;code&gt;spec.scheduler.name&lt;/code&gt; in your development git repository or specifying a different default scheduler on the &lt;code&gt;dev environment.spec.teamSettings.defaultScheduler.name&lt;/code&gt; then the next time the prow configuration is generated (on &lt;code&gt;jx create quickstart / jx import / jx boot&lt;/code&gt; it&amp;rsquo;ll update the prow config to use your scheduler&lt;/p&gt;
+&lt;p&gt;See also &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/using/chatops/#how-do-i-add-multiple-parallel-pipelines-to-a-project&#34;&gt;How do I add multiple parallel pipelines to a project?&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-more-charts-to-jenkins-x&#34;&gt;How do I add more charts to Jenkins X?&lt;/h2&gt;
+&lt;p&gt;It depends on which namespace you want the charts to be installed.&lt;/p&gt;
+&lt;p&gt;If its in the development environment (the &lt;code&gt;jx&lt;/code&gt; namespace by default) then &lt;code&gt;env/requirements.yaml&lt;/code&gt; is where to add the chart and for a chart &lt;code&gt;foo&lt;/code&gt; you can add &lt;code&gt;env/foo/values.yaml&lt;/code&gt; to configure it. (or &lt;code&gt;env/foo/values.tmpl.yaml&lt;/code&gt; if you want to use some &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/how-it-works/#improvements-to-valuesyaml&#34;&gt;templating&lt;/a&gt; of the &lt;code&gt;values.yaml&lt;/code&gt;)&lt;/p&gt;
+&lt;p&gt;Though if you want our chart to be in another namespace then we use the convention of adding a folder in the &lt;code&gt;system&lt;/code&gt; directory in the boot configuration (e.g. like we do for ingress, cert manager, velero, service mesh etc). So make a new folder in &lt;code&gt;system&lt;/code&gt; and add the &lt;code&gt;jx step helm apply&lt;/code&gt; step in the pipeline in &lt;code&gt;jenkins-x.yml&lt;/code&gt; like we do for &lt;code&gt;cert-manager&lt;/code&gt;, &lt;code&gt;nginx&lt;/code&gt;, &lt;code&gt;velero&lt;/code&gt; etc.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-disable-the-ingress-controller&#34;&gt;How do I disable the ingress controller?&lt;/h2&gt;
+&lt;p&gt;If you already have your own ingress controller and do not want &lt;code&gt;jx boot&lt;/code&gt; to install another one you can just delete the &lt;code&gt;install-nginx-controller&lt;/code&gt; step in your dev environment git repository. e.g. &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml#L85-L99&#34;&gt;remove this step&lt;/a&gt; from the &lt;code&gt;jenkins-x.yml&lt;/code&gt; in your dev environment git repository&lt;/p&gt;
+&lt;h2 id=&#34;what-do-i-do-if-jx-boot-hangs-on-step-install-jenkins-x&#34;&gt;What do I do if &lt;code&gt;jx boot&lt;/code&gt; hangs on &lt;code&gt;step-install-jenkins-x&lt;/code&gt;?&lt;/h2&gt;
+&lt;p&gt;You may have a problem with Terminating a PVC that is protected.&lt;/p&gt;
+&lt;p&gt;Describe your pvc.  In the case I saw, it was the jenkins pvc.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl -n jx describe pvc jenkins
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If it&amp;rsquo;s stuck in Terminating and you see that the Finalizer has protection:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;Finalizers:    &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;kubernetes.io/pvc-protection&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then, you can remove the protection by issuing the following command and your install should continue.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl -n jx patch pvc jenkins -p &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;metadata&amp;#34;:{&amp;#34;finalizers&amp;#34;: []}}&amp;#39;&lt;/span&gt; --type&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;merge
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-debug-issues-with-terraform-and-jenkinsx&#34;&gt;How do I debug issues with terraform and JenkinsX?&lt;/h2&gt;
+&lt;p&gt;Set the &lt;code&gt;TF_LOG&lt;/code&gt; environment variable to &lt;code&gt;TRACE&lt;/code&gt;, and then run your terraform commands such as &lt;code&gt;terraform apply&lt;/code&gt; or &lt;code&gt;terraform plan&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;TF_LOG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;TRACE terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Use the global &lt;code&gt;--verbose&lt;/code&gt; flag to add more verbosity to the JenkinsX logs:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx boot --verbose
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-to-get-a-clean-terraform-destroy&#34;&gt;How to get a clean terraform destroy&lt;/h2&gt;
+&lt;p&gt;The following steps need to be performed before a terraform destroy can be executed successfully for the EKS cluster.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Empty the s3 buckets created by jenkinsX (This is required if &lt;code&gt;force_destroy&lt;/code&gt; was set to false, when provisioning
+the EKS cluster)&lt;/li&gt;
+&lt;li&gt;Delete the Network load balancer (The load balancer is created outside terraform, so you need to delete it manually
+in the EC2 console before executing a terraform destroy.
+You can also import it to terraform, and then execute destroy)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you do not delete the load balancer, you will have issues with detaching the internet gateway (IGW) and deleting it.
+This can lead to a race condition where terraform tries to destroy the auto scaling group and the IGW, and eventually
+times out.&lt;/p&gt;
+&lt;h2 id=&#34;does-jenkins-x-install-a-load-balancer&#34;&gt;Does Jenkins X install a load balancer?&lt;/h2&gt;
+&lt;p&gt;Jenkins X installs &lt;code&gt;nginx&lt;/code&gt; which has a &lt;code&gt;LoadBalancer&lt;/code&gt; kubernetes &lt;code&gt;Service&lt;/code&gt;. But the underlying kubernetes platform needs to implement the load balancing network and infrastructure. This comes OOTB on all public clouds.&lt;/p&gt;
+&lt;p&gt;On premise you need to install something like &lt;a href=&#34;https://metallb.universe.tf/&#34;&gt;MetalLB&lt;/a&gt;&lt;/p&gt;
+
       </description>
     </item>
     

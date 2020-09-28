@@ -14,43 +14,6 @@
     
     
     <item>
-      <title>Docs: Overview</title>
-      <link>https://jenkins-x.io/docs/v3/guides/jenkins/overview/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/v3/guides/jenkins/overview/</guid>
-      <description>
-        
-        
-        &lt;p&gt;The &lt;a href=&#34;https://github.com/jstrachan/enhancements/blob/jenkins-trigger/proposals/trigger-jenkins/README.md&#34;&gt;Trigger Jenkins Proposal&lt;/a&gt; aims to improve the interoperability of Jenkins and Jenkins X so you can use both together to solve all of your CI/CD needs.&lt;/p&gt;
-&lt;p&gt;We want to make it easy to reuse existing remote Jenkins servers with Jenkins X / tekton so that folks can work with either 100% cloud native tekton based automated CI/CD from Jenkins X or reuse existing Jenkins pipelines with remote Jenkins servers.&lt;/p&gt;
-&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
-&lt;p&gt;We maintain registry of Jenkins Servers using  Kubernetes &lt;code&gt;Secrets&lt;/code&gt; for each Jenkins Server with details of the URL, username and API Token.&lt;/p&gt;
-&lt;p&gt;We then have a command line tool and container image which can then invoke a &lt;code&gt;Jenkinsfile&lt;/code&gt; based pipeline in any of the Jenkins Servers in the registry.&lt;/p&gt;
-&lt;p&gt;This allows any Jenkins pipelines to be triggered from:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;any Jenkins X Pipeline&lt;/li&gt;
-&lt;li&gt;Tekton&lt;/li&gt;
-&lt;li&gt;Kubernetes Job&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Over time we can then bring more value to folks using a mixture of Jenkins + Jenkins X. e.g.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Reuse ChatOps from Jenkins X for existing projects that use Jenkins pipelines&lt;/li&gt;
-&lt;li&gt;Reuse Jenkins X Apps / Build Packs on projects released by Jenkins
-&lt;ul&gt;
-&lt;li&gt;E.g. reuse Jenkins X Apps / Pipelines for linting, code quality, security scanning - while preserving the existing Jenkins pipelines&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;known-issues&#34;&gt;Known issues&lt;/h2&gt;
-&lt;p&gt;If you see this error when trying to trigger a pipeline:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;403 No valid crumb was included in the request
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then until we figure out a better workaround you need to go into &lt;code&gt;Manage Jenkins&lt;/code&gt; -&amp;gt; &lt;code&gt;Configure Global Security&lt;/code&gt; then make sure you uncheck &lt;code&gt;Prevent Cross Site Request Forgery exploits&lt;/code&gt;&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: Getting Started</title>
       <link>https://jenkins-x.io/docs/v3/guides/jenkins/getting-started/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -59,28 +22,16 @@
       <description>
         
         
-        &lt;p&gt;Make sure you have got the &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; before proceeding.&lt;/p&gt;
+        &lt;p&gt;Make sure you have got the &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; and you have installed &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;version 3&lt;/a&gt; before proceeding.&lt;/p&gt;
 &lt;h2 id=&#34;adding-jenkins-servers-into-jenkins-x&#34;&gt;Adding Jenkins Servers into Jenkins X&lt;/h2&gt;
-&lt;p&gt;You can use Jenkins X to install one or more Jenkins servers by adding the following YAML to your &lt;code&gt;helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;You can use Jenkins X to install one or more Jenkins servers by adding the following YAML to your &lt;code&gt;helmfile.yaml&lt;/code&gt; in your cluster git repository you used to install Jenkins X:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
 - &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jenkinsci/jenkins
   &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jenkins
   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: jx
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can create as many Jenkins servers you wish, give them any release &lt;code&gt;name&lt;/code&gt; value you wish and put them in whatever namespaces you wish.&lt;/p&gt;
 &lt;p&gt;You can also add &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/apps/#customising-charts&#34;&gt;customize the charts&lt;/a&gt; by adding a &lt;code&gt;values.yaml&lt;/code&gt; file via the &lt;code&gt;values:&lt;/code&gt; entry in the helmfile to configure whatever you need (e.g. Jenkins plugins and jobs etc).&lt;/p&gt;
-&lt;h2 id=&#34;registering-external-jenkins-servers&#34;&gt;Registering external Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;You can register any Jenkins servers you wish to the Jenkins Server Registry via the &lt;code&gt;jx jenkins add&lt;/code&gt; command:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins add 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you already know the name, URL, username and API Token then you can use:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins add -u https://myjenkins.com/ --username myuser
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;removing-jenkins-servers&#34;&gt;Removing Jenkins Servers&lt;/h3&gt;
-&lt;p&gt;You can remove a Jenkins server via:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins remove
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Note that this only removes it from the registry; it doesn&amp;rsquo;t affect the actual Jenkins Server.&lt;/p&gt;
-&lt;h2 id=&#34;listing-the-available-jenkins-servers&#34;&gt;Listing the available Jenkins Servers&lt;/h2&gt;
-&lt;p&gt;To list the servers you can use try:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx jenkins list
-&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
@@ -93,7 +44,7 @@
       <description>
         
         
-        &lt;p&gt;Once you have &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jenkins/getting-started/#adding-jenkins-servers-into-jenkins-x&#34;&gt;added one or more Jenkins Servers to the registry&lt;/a&gt; you can import a &lt;code&gt;Jenksinfile&lt;/code&gt; based project.&lt;/p&gt;
+        &lt;p&gt;Once you have &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jenkins/getting-started/&#34;&gt;added one or more Jenkins Servers to Jenkins X&lt;/a&gt; you can import a &lt;code&gt;Jenksinfile&lt;/code&gt; based project in the usual way.&lt;/p&gt;
 &lt;h2 id=&#34;import-the-code&#34;&gt;Import the code&lt;/h2&gt;
 &lt;p&gt;First you need to import the code via one of these approaches:&lt;/p&gt;
 &lt;h3 id=&#34;from-inside-the-source-code&#34;&gt;From inside the source code&lt;/h3&gt;
@@ -104,37 +55,6 @@
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx project import --git-url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;https://github.com/myorg/myrepo.git
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;choose-the-remote-jenkins-server&#34;&gt;Choose the remote Jenkins server&lt;/h2&gt;
 &lt;p&gt;Next the wizard will prompt you to pick which Jenkins server you wish to use (if you have more than one).&lt;/p&gt;
-&lt;p&gt;In addition you get to pick between:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;importing the project directly into the Jenkins server as a Jenkins &lt;em&gt;multi branch project&lt;/em&gt; where Jenkins performs the webhook handling (the default)&lt;/li&gt;
-&lt;li&gt;using &lt;code&gt;lighthouse&lt;/code&gt;  for ChatOps and webhook handling but when a pipeline is triggered we then trigger the pipeline directly into the remote Jenkins server&lt;/li&gt;
-&lt;/ul&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: FAQ</title>
-      <link>https://jenkins-x.io/docs/v3/guides/jenkins/faq/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/docs/v3/guides/jenkins/faq/</guid>
-      <description>
-        
-        
-        &lt;h3 id=&#34;jenkins-x-used-to-install-a-jenkins-server-into-kubernetes-for-me-how-do-i-install-jenkins-now&#34;&gt;Jenkins X used to install a Jenkins Server into Kubernetes for me. How do I install Jenkins now?&lt;/h3&gt;
-&lt;p&gt;Jenkins is to Jenkins X as Java is to Javascript - all they share is a name. You don&amp;rsquo;t need Jenkins installed to use Jenkins X. That said, you may want to install Jenkins in the same Kubernetes cluster as Jenkins X. Here&amp;rsquo;s some links that explain how you can do it:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Jenkins Operator - &lt;a href=&#34;https://jenkinsci.github.io/kubernetes-operator/docs/installation/&#34;&gt;https://jenkinsci.github.io/kubernetes-operator/docs/installation/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Jenkins Helm Chart - &lt;a href=&#34;https://github.com/helm/charts/tree/master/stable/jenkins&#34;&gt;https://github.com/helm/charts/tree/master/stable/jenkins&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;As well as some commercial offerings:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;CloudBees Core - &lt;a href=&#34;https://docs.cloudbees.com/docs/cloudbees-jenkins-distribution/latest/distro-install-guide/kubernetes&#34;&gt;https://docs.cloudbees.com/docs/cloudbees-jenkins-distribution/latest/distro-install-guide/kubernetes&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Google Kubernetes Engine - &lt;a href=&#34;https://cloud.google.com/solutions/jenkins-on-kubernetes-engine-tutorial&#34;&gt;https://cloud.google.com/solutions/jenkins-on-kubernetes-engine-tutorial&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;how-can-i-connect-to-a-remote-jenkins-server&#34;&gt;How can I connect to a remote Jenkins server?&lt;/h2&gt;
-&lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jenkins/getting-started/#adding-jenkins-servers-into-jenkins-x&#34;&gt;how to add Jenkins into Jenkins X&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jenkins/getting-started/#registering-external-jenkins-servers&#34;&gt;registering external Jenkins servers&lt;/a&gt;&lt;/p&gt;
 
       </description>
     </item>
