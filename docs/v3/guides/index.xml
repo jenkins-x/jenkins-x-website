@@ -609,6 +609,43 @@ By default the &lt;code&gt;versionStream&lt;/code&gt; directory has a Kpt strate
     </item>
     
     <item>
+      <title>Docs: Health</title>
+      <link>https://jenkins-x.io/docs/v3/guides/health/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/health/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X v3.x now has a CLI plugin that works with &lt;a href=&#34;https://github.com/Comcast/kuberhealthy&#34;&gt;Kuberhealthy&lt;/a&gt; to check the health of a working Jenkins X.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx health&lt;/code&gt; plugin is self contained in the git repository &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health&#34;&gt;https://github.com/jenkins-x-plugins/jx-health&lt;/a&gt;.  This provides a way to query teh result of health checks that run periodically in each Kubernetes namespace.&lt;/p&gt;
+&lt;p&gt;The plugin is also useful in a more locked down cluster for developers with reduced RBAC permissions.  A user only needs permissions to read the Kuberhealth state custom resources &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&#34;&gt;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Kuberhealthy provides an easy way to extend using custom health checks to report errors.  To see how to write your own check see the docs &lt;a href=&#34;https://github.com/Comcast/kuberhealthy/blob/master/docs/EXTERNAL_CHECK_CREATION.md&#34;&gt;here&lt;/a&gt;.  Jenkins X already comes with a set of custom health checks that can be installed that report errors, for example with webhooks, missing secrets, a bad install or invalid bot token.  For more details take a look here &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&#34;&gt;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It is early days but we&amp;rsquo;d like to encourrage contributions to add extra checks as Jenkins X v3 matures.  If you have a check that you would like to add please reach out in the community channels or create an issue or pull request.&lt;/p&gt;
+&lt;h1 id=&#34;try-it-out&#34;&gt;Try it out&lt;/h1&gt;
+&lt;p&gt;We havn&amp;rsquo;t enabled Kuberhealthy by default yet as we&amp;rsquo;d like more feedback but to enable on your existing v3 installation:&lt;/p&gt;
+&lt;p&gt;Get the plugin by running&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx upgrade cli
+jx upgrade plugins
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You will also need to upgrade your clusters version stream which updates the cluster to the latest release&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx gitops upgrade
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;git commit / push then check the git operator job is successful&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then to add the new server side checks (kuberhealthy ) again from a cloned copy of your cluster git repo, run&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx gitops helmfile add --chart kuberhealthy/kuberhealthy
+jx gitops helmfile add --chart jx3/jx-kh-check
+jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-jx
+jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-install 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;review the local changes, you should see four new charts added to your helmfile.yaml
+git commit / push then check the git operator job is successful&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;once completed you can use the new health CLI plugin to get health statuses that run periodically checking different things, our favorite is the watch for checks across all namespaces…&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx health get status --all-namespaces --watch
+&lt;/code&gt;&lt;/pre&gt;
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Migrate</title>
       <link>https://jenkins-x.io/docs/v3/guides/migrate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
