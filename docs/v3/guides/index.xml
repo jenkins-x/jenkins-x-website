@@ -590,7 +590,12 @@ kubectl get secret jx-basic-auth-user-password -o jsonpath&lt;span style=&#34;co
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: upgrade versions&amp;#34;&lt;/span&gt;
 git push
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It is possible that you will have merge conflicts.  You can follow the inline git helper messages to resolve conflicts - or use your IDE to help figure out the merge issues. Usually if there are conflicts its safest to use the upstream version; particularly from the &lt;code&gt;versionStream&lt;/code&gt; dir.&lt;/p&gt;
-&lt;p&gt;Once ready, make a pull request onto your cluster repository, review changes and merge.  The &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;Jenkins X git operator&lt;/a&gt; will automatically apply the upgrades into your cluster.&lt;/p&gt;
+&lt;p&gt;Under the hood Kpt is used to fetch changes from the upstream defined in each Kptfile.&lt;br&gt;
+By default the &lt;code&gt;versionStream&lt;/code&gt; directory has a Kpt strategy of &lt;code&gt;force-delete-replace&lt;/code&gt; which removes all your changes in that folder. In order to merge your changes with the ones coming from upstream, add a file: &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; with the following content:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;config&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;relativePath&lt;/span&gt;: versionStream
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;strategy&lt;/span&gt;: resource-merge
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once ready, make a pull request onto your cluster repository, review changes and merge.  The &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;Jenkins X git operator&lt;/a&gt; will automatically apply the upgrades into your cluster.&lt;/p&gt;
 &lt;h3 id=&#34;configure-merge-strategy&#34;&gt;Configure merge strategy&lt;/h3&gt;
 &lt;p&gt;You can configure the &lt;code&gt;kpt&lt;/code&gt; strategy used to apply changes from the version stream into your &lt;code&gt;versionStream&lt;/code&gt; folder via a custom configuration file.&lt;/p&gt;
 &lt;p&gt;Create a file called &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; in your dev cluster git repository that looks like this:&lt;/p&gt;
