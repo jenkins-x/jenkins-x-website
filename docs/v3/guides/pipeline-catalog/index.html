@@ -24,11 +24,11 @@
 <meta property="og:description" content="Pipeline Catalogs for better integration with Tekton" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/v3/guides/pipeline-catalog/" />
-<meta property="article:modified_time" content="2020-10-26T15:46:18+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-10-27T15:02:57+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Pipeline Catalogs">
 <meta itemprop="description" content="Pipeline Catalogs for better integration with Tekton">
-<meta itemprop="dateModified" content="2020-10-26T15:46:18&#43;00:00" />
-<meta itemprop="wordCount" content="566">
+<meta itemprop="dateModified" content="2020-10-27T15:02:57&#43;00:00" />
+<meta itemprop="wordCount" content="728">
 
 
 
@@ -2274,7 +2274,9 @@ if (!doNotTrack) {
   <ul>
     <li><a href="#source-changes">Source changes</a></li>
     <li><a href="#editing-pipelines">Editing pipelines</a></li>
-    <li><a href="#add-new-pipelines">Add new pipelines</a></li>
+    <li><a href="#ide-support">IDE support</a></li>
+    <li><a href="#adding-tasks-from-the-tekton-catalog">Adding Tasks from the Tekton Catalog</a></li>
+    <li><a href="#add-new-taskspipelines-by-hand">Add new tasks/pipelines by hand</a></li>
     <li><a href="#changing-the-triggers">Changing the triggers</a></li>
     <li><a href="#upgrading-pipelines-and-helm-charts">Upgrading pipelines and helm charts</a></li>
   </ul>
@@ -2338,8 +2340,8 @@ if (!doNotTrack) {
 	       
 	<p>As part of the <a href="https://github.com/jenkins-x/enhancements/issues/37">Tekton Catalog enhancement proposal</a> we&rsquo;ve improved support for Tekton in Jenkins X so that you can</p>
 <ul>
-<li>easily <a href="/docs/v3/guides/pipeline-catalog/#editing-pipelines">edit any pipeline in any git repository</a> by just modifying the <code>PipelineRun</code> files in your <code>.ligthhouse/jenkins-x</code> folder</li>
-<li><a href="/docs/v3/guides/pipeline-catalog/#add-new-pipelines">add new pipelines to any git repository</a> to reuse any <code>PipelineRun</code> files you find from places like the <a href="https://github.com/tektoncd/catalog">tekton catalog</a> into your repositories</li>
+<li>easily <a href="/docs/v3/guides/pipeline-catalog/#editing-pipelines">edit any pipeline in any git repository</a> by just modifying the <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a> files in your <code>.ligthhouse/jenkins-x</code> folder</li>
+<li><a href="#add-new-taskspipelines-by-hand">add new pipelines to any git repository</a> to reuse any <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a> files you find from places like the <a href="https://github.com/tektoncd/catalog">tekton catalog</a> in your repositories</li>
 </ul>
 <h2 id="source-changes">Source changes</h2>
 <p>If you <a href="/docs/v3/guides/upgrade/#cluster">upgrade your cluster to the latest version stream</a> then you will find if you <a href="/docs/v3/create-project/#create-a-new-project-from-a-quickstart">create a new quickstart</a> that:</p>
@@ -2347,33 +2349,42 @@ if (!doNotTrack) {
 <li>
 <p><code>.lighthouse/jenkins-x</code> directory contains the default CI/CD pipelines for Jenkins X with these files:</p>
 <ul>
-<li><code>triggers.yaml</code> to define the <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> <code>presubmits</code> and <code>postsubmits</code> (i.e. Pull Request pipelines and releases).</li>
-<li><code>pullrequest.yaml</code> defines the Pull Request pipeline using a Tekton <code>PipelineRun</code></li>
-<li><code>release.yaml</code> defines the Release pipeline using a Tekton <code>PipelineRun</code></li>
+<li><code>triggers.yaml</code> to define the <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#Config">TriggerConfig</a> which has a <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#ConfigSpec">spec field</a> which defines <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Presubmit">presubmits</a> and <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit">postsubmits</a> (i.e. Pull Request pipelines and releases).</li>
+<li><code>pullrequest.yaml</code> defines the Pull Request pipeline using a Tekton <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a></li>
+<li><code>release.yaml</code> defines the Release pipeline using a Tekton Tekton <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a></li>
 </ul>
 </li>
 <li>
-<p><code>jenkins-x.yml</code> files are no longer used by default in new quickstarts instead we use the above. Note if you have projects using <code>jenkins-x.yml</code> files they are still supported if you <a href="/docs/v3/create-project/#import-an-existing-project">import them into v3</a></p>
+<p><code>jenkins-x.yml</code> files are no longer used by default in new quickstarts instead we use the above. Note if you have projects using <code>jenkins-x.yml</code> files they are still supported if you <a href="/docs/v3/create-project/#import-an-existing-project">import them into v3</a> or you can <a href="https://github.com/jenkins-x-plugins/jx-v2-tekton-converter/blob/main/README.md">use this tool to migrate them to tekton pipelines</a></p>
 </li>
 </ul>
 <h2 id="editing-pipelines">Editing pipelines</h2>
-<p>You can now easily modify any of the <code>PipelineRun</code> resources in any git repository. Just look in the <code>.lighthouse</code> folder, for each sub folder edit the YAML files.</p>
+<p>You can now easily modify any of the <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a> resources in any git repository - just look in each folder inside <code>.lighthouse</code> for the YAML files to edit.</p>
 <p>e.g. for the default Jenkins X CI/CD pipelines edit either:</p>
 <ul>
 <li><code>.lighthouse/jenkins-x</code>
 <ul>
-<li><code>pullrequest.yaml</code> to edit the Pull Request pipeline</li>
-<li><code>release.yaml</code> to edit the Release pipeline</li>
+<li><code>pullrequest.yaml</code> to edit the Pull Request <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a></li>
+<li><code>release.yaml</code> to edit the Release <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a></li>
 </ul>
 </li>
 </ul>
 <p>You can test out changes to the Pull Request pipeline by submitting changes in a Pull Request. Changes to a release only take place after merging the change to the main branch.</p>
-<h2 id="add-new-pipelines">Add new pipelines</h2>
-<p>You can add new pipelines into a new folder inside <code>.lighthouse</code> at any time to reuse any tekton <code>PipelineRun</code> files you find from places like the <a href="https://github.com/tektoncd/catalog">tekton catalog</a> or to add new <code>PipelineRun</code> resources you write by hand.</p>
-<p>To setup a <em>trigger</em> so that <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> will start your pipeline on a <code>presubmit</code> (i.e. for Pull Requests) or for <code>postsubmits</code> (i.e. releases on main branches) you need to also add a <code>triggers.yaml</code> file which uses the lighthouse configuration file format.</p>
-<p>You could look a the default <code>.lighthouse/jenkins-x</code> directory to see how all this works. The <code>triggers.yaml</code> file then refers to the tekton <code>PipelineRun</code> files via the <code>source:</code> attribute in a <code>presubmits:</code> or <code>postsubmits:</code> entry.</p>
+<h2 id="ide-support">IDE support</h2>
+<p>If you use <a href="https://www.jetbrains.com/idea/">IntelliJ IDEA</a> or <a href="https://www.jetbrains.com/go/">Goland</a> you might find the <a href="https://plugins.jetbrains.com/plugin/14096-tekton-pipelines-by-red-hat">RedHat&rsquo;s intellij-tekton plugin</a> useful for editing pipelines.</p>
+<p>Though until <a href="https://github.com/redhat-developer/intellij-tekton/issues/263">this issue is fixed</a> you can&rsquo;t use it at the same time as the excellent <a href="https://plugins.jetbrains.com/plugin/10485-kubernetes">intellij-kubernetes plugin</a></p>
+<p>If you use <a href="https://code.visualstudio.com/">VS Code</a> you may want to try <a href="https://github.com/redhat-developer/vscode-tekton#tekton-pipelines-extension--">Red Hat&rsquo;s Tekton Pipelines Extension tekton</a></p>
+<h2 id="adding-tasks-from-the-tekton-catalog">Adding Tasks from the Tekton Catalog</h2>
+<p>The new <a href="https://github.com/jenkins-x/jx-pipeline/blob/master/docs/cmd/jx-pipeline_import.md">jx pipeline import</a> command can be used to import <code>Task</code> resources from the <a href="https://github.com/tektoncd/catalog">Tekton Catalog</a> and using them inside your project.</p>
+<p>Here&rsquo;s a <a href="https://asciinema.org/a/368282">demo of this in action</a>:</p>
+<script src="https://asciinema.org/a/368282.js" id="asciicast-368282" async></script>
+<p>The tekton Task resources are copied into your <code>.lighthouse</code> directory in a folder using <code>kpt</code> so that you can modify things locally if you need to and can <a href="#upgrading-pipelines-and-helm-charts">upgrade your local copy with upstream changes</a> via the <code>jx gitops upgrade</code> command described below.</p>
+<h2 id="add-new-taskspipelines-by-hand">Add new tasks/pipelines by hand</h2>
+<p>You can add new pipelines by hand into a new folder inside <code>.lighthouse</code> at any time.</p>
+<p>To setup a <em>trigger</em> so that <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> will start your pipeline on a <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Presubmit">presubmits</a> (i.e. for Pull Requests) or for <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit">postsubmits</a> (i.e. releases on main branches) you need to also add a <code>triggers.yaml</code> file which uses the lighthouse <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#Config">trigger config file file format</a> with <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#ConfigSpec">this spec field</a>.</p>
+<p>You could look at the default <code>.lighthouse/jenkins-x</code> directory to see how all this works. The <code>triggers.yaml</code> file then refers to the tekton <a href="https://tekton.dev/docs/pipelines/tasks/#configuring-a-task">Task</a>, <a href="https://tekton.dev/docs/pipelines/pipelines/#configuring-a-pipeline">Pipeline</a> or <a href="https://tekton.dev/docs/pipelines/pipelineruns/#configuring-a-pipelinerun">PipelineRun</a> files via the <code>source:</code> attribute in a <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Presubmit">presubmits</a> or <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit">postsubmits</a> entry.</p>
 <h2 id="changing-the-triggers">Changing the triggers</h2>
-<p>You can modify the <code>.lighthouse/*/triggers.yaml</code> file to modify the  <code>presubmits:</code> and/or <code>postsubmits:</code> entries to do things like:</p>
+<p>You can modify the <code>.lighthouse/*/triggers.yaml</code> file to modify the  <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Presubmit">presubmits</a> and/or <a href="https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit">postsubmits</a> entries to do things like:</p>
 <ul>
 <li>customise the <code>rerun_command</code> or <code>trigger</code> ChatOps comments for <code>presubmits</code></li>
 <li>configure the <code>branches</code> patterns for <code>postsubmit</code> triggers</li>
@@ -2453,7 +2464,7 @@ git push
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/9e0dd306022b2e5afca792aac071a4d0dcfbe933">release 0.0.1924 (9e0dd30)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 27, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/68e521c3d15feebe624ca162b60eaa20ef0152ee">release 0.0.1926 (68e521c)</a>
 </div>
 </div>
 
