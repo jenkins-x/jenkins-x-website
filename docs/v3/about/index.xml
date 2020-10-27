@@ -292,10 +292,60 @@
 &lt;p&gt;One change from Jenkins X 2.x is we default to including the specific kubernetes resources in git; rather than, say, just the name of a helm chart and the version.&lt;/p&gt;
 &lt;p&gt;So what tends to happen is:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;the promote step in a pipeline creates a Pull Request on the GitOps repository for the cluster to add or upgrade a helm chart and version&lt;/li&gt;
-&lt;li&gt;The above Generate and Apply steps run to fill in more details to the Pull Request of the actual kubernetes resources that will be added, modified or removed&lt;/li&gt;
+&lt;li&gt;the promote step in a pipeline creates a Pull Request on the cluster repository for the cluster to add or upgrade a helm chart and version&lt;/li&gt;
+&lt;li&gt;The above &lt;a href=&#34;#generate-step&#34;&gt;Generate&lt;/a&gt; and &lt;a href=&#34;#apply-step&#34;&gt;Apply step&lt;/a&gt; runs to fill in more details to the Pull Request of the actual kubernetes resources that will be added, modified or removed&lt;/li&gt;
+&lt;li&gt;a second git commit is added to the Pull Request with the title &lt;code&gt;chore: regenerated&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;updatebot&lt;/code&gt; label is added to the Pull Request so that the Pull Request can be considered for automatic merging if all of the git checks are green (including the Pull Request pipelines)&lt;/li&gt;
+&lt;li&gt;once the Pull Request merges to the main branch the &lt;code&gt;git operator&lt;/code&gt; will trigger to apply the kubernetes resources to the cluster via the above apply step&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;So you will see 2 commits on a typical promotion pull request; the high level change of the helm chart(s) and versions then the detail of the actual changes that will apply to kubernetes.&lt;/p&gt;
+&lt;p&gt;So you will see 2 commits on a typical promotion pull request:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the high level change of the helm chart(s) and versions. e.g. to change &lt;code&gt;myapp&lt;/code&gt; to version &lt;code&gt;1.2.3&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the detail of the actual changes that will apply to kubernetes resources. e.g. a new &lt;code&gt;Deployment&lt;/code&gt; or changes to the &lt;code&gt;image:&lt;/code&gt; of an existing &lt;code&gt;Deployment&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;importing--creating-quickstarts&#34;&gt;Importing / Creating Quickstarts&lt;/h3&gt;
+&lt;p&gt;Due to the new GitOps model this is a little more complex than in v2 since imports are done via GitOps and the changes in git result in a Job / Pipeline running in the cluster to effect change.&lt;/p&gt;
+&lt;p&gt;Here are the steps involved in &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/&#34;&gt;creating projects&lt;/a&gt; via importing / creating quickstarts:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Run the &lt;code&gt;jx project quickstart&lt;/code&gt; or &lt;code&gt;jx project import&lt;/code&gt; command as &lt;a href=&#34;https://jenkins-x.io/docs/v3/create-project/&#34;&gt;described here&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;New git repository is created if:
+&lt;ul&gt;
+&lt;li&gt;you are creating a quickstart via &lt;code&gt;jx project quickstart&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;you are running &lt;code&gt;jx project import&lt;/code&gt; inside a directory which has never been pushed to a git repository before&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;A Pull Request is created on your cluster repo that registers your app&amp;rsquo;s repository to the cluster
+&lt;ul&gt;
+&lt;li&gt;this Pull Request will create or modify a file called &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;jx project&lt;/code&gt; command now waits for:
+&lt;ul&gt;
+&lt;li&gt;the Pull Request to merge&lt;/li&gt;
+&lt;li&gt;Lighthhouse configuration to be updated to include the new repository&lt;/li&gt;
+&lt;li&gt;a webhook to be setup for the new repository&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The Pull Request on your cluster repo triggers a pipeline like the above &lt;a href=&#34;#promotion&#34;&gt;Promotion flow&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;a second git commit is generated and pushed to the Pull Request with the title &lt;code&gt;chore: regenerated&lt;/code&gt; to add the git repository to the Lighthouse configuration&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;When the Pull Request merges the above &lt;a href=&#34;#apply-step&#34;&gt;Apply step&lt;/a&gt; runs
+&lt;ul&gt;
+&lt;li&gt;Lighthouse configuration is updated&lt;/li&gt;
+&lt;li&gt;a Webhook is registered for Lighthouse on the app&amp;rsquo;s repository&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;jx project&lt;/code&gt; command now continues and pushes the new &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/pipeline-catalog/&#34;&gt;tekton pipelines for your app&lt;/a&gt; to the main branch of the git repository
+&lt;ul&gt;
+&lt;li&gt;this triggers a new pipeline to run on your app which creates a new release of your app&lt;/li&gt;
+&lt;li&gt;once the release is complete a Pull Request is created to start the &lt;a href=&#34;#promotion&#34;&gt;Promotion flow&lt;/a&gt; of the new app version&lt;/li&gt;
+&lt;li&gt;when this Promote Pull Request merges your application will be running in &lt;code&gt;Staging&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can see an example of this in the &lt;a href=&#34;https://jenkins-x.io/blog/2020/09/16/jx-v3-alpha/&#34;&gt;demo of Jenkins X V3&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;comparison-to-2x&#34;&gt;Comparison to 2.x&lt;/h2&gt;
 &lt;p&gt;From a high level Jenkins X 3.x similar to 2.x in that:&lt;/p&gt;
 &lt;ul&gt;

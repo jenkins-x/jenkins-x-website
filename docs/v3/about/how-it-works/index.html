@@ -24,11 +24,11 @@
 <meta property="og:description" content="How Jenkins X 3.x works under the covers" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/v3/about/how-it-works/" />
-<meta property="article:modified_time" content="2020-10-27T15:02:57+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-10-27T18:38:07+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="How it works">
 <meta itemprop="description" content="How Jenkins X 3.x works under the covers">
-<meta itemprop="dateModified" content="2020-10-27T15:02:57&#43;00:00" />
-<meta itemprop="wordCount" content="787">
+<meta itemprop="dateModified" content="2020-10-27T18:38:07&#43;00:00" />
+<meta itemprop="wordCount" content="1197">
 
 
 
@@ -2277,6 +2277,7 @@ if (!doNotTrack) {
         <li><a href="#git-operator">Git Operator</a></li>
         <li><a href="#boot-job">Boot Job</a></li>
         <li><a href="#promotion">Promotion</a></li>
+        <li><a href="#importing--creating-quickstarts">Importing / Creating Quickstarts</a></li>
       </ul>
     </li>
     <li><a href="#comparison-to-2x">Comparison to 2.x</a></li>
@@ -2392,10 +2393,60 @@ if (!doNotTrack) {
 <p>One change from Jenkins X 2.x is we default to including the specific kubernetes resources in git; rather than, say, just the name of a helm chart and the version.</p>
 <p>So what tends to happen is:</p>
 <ul>
-<li>the promote step in a pipeline creates a Pull Request on the GitOps repository for the cluster to add or upgrade a helm chart and version</li>
-<li>The above Generate and Apply steps run to fill in more details to the Pull Request of the actual kubernetes resources that will be added, modified or removed</li>
+<li>the promote step in a pipeline creates a Pull Request on the cluster repository for the cluster to add or upgrade a helm chart and version</li>
+<li>The above <a href="#generate-step">Generate</a> and <a href="#apply-step">Apply step</a> runs to fill in more details to the Pull Request of the actual kubernetes resources that will be added, modified or removed</li>
+<li>a second git commit is added to the Pull Request with the title <code>chore: regenerated</code></li>
+<li>the <code>updatebot</code> label is added to the Pull Request so that the Pull Request can be considered for automatic merging if all of the git checks are green (including the Pull Request pipelines)</li>
+<li>once the Pull Request merges to the main branch the <code>git operator</code> will trigger to apply the kubernetes resources to the cluster via the above apply step</li>
 </ul>
-<p>So you will see 2 commits on a typical promotion pull request; the high level change of the helm chart(s) and versions then the detail of the actual changes that will apply to kubernetes.</p>
+<p>So you will see 2 commits on a typical promotion pull request:</p>
+<ul>
+<li>the high level change of the helm chart(s) and versions. e.g. to change <code>myapp</code> to version <code>1.2.3</code></li>
+<li>the detail of the actual changes that will apply to kubernetes resources. e.g. a new <code>Deployment</code> or changes to the <code>image:</code> of an existing <code>Deployment</code></li>
+</ul>
+<h3 id="importing--creating-quickstarts">Importing / Creating Quickstarts</h3>
+<p>Due to the new GitOps model this is a little more complex than in v2 since imports are done via GitOps and the changes in git result in a Job / Pipeline running in the cluster to effect change.</p>
+<p>Here are the steps involved in <a href="/docs/v3/create-project/">creating projects</a> via importing / creating quickstarts:</p>
+<ul>
+<li>Run the <code>jx project quickstart</code> or <code>jx project import</code> command as <a href="/docs/v3/create-project/">described here</a></li>
+<li>New git repository is created if:
+<ul>
+<li>you are creating a quickstart via <code>jx project quickstart</code></li>
+<li>you are running <code>jx project import</code> inside a directory which has never been pushed to a git repository before</li>
+</ul>
+</li>
+<li>A Pull Request is created on your cluster repo that registers your app&rsquo;s repository to the cluster
+<ul>
+<li>this Pull Request will create or modify a file called <code>.jx/gitops/source-config.yaml</code></li>
+</ul>
+</li>
+<li>The <code>jx project</code> command now waits for:
+<ul>
+<li>the Pull Request to merge</li>
+<li>Lighthhouse configuration to be updated to include the new repository</li>
+<li>a webhook to be setup for the new repository</li>
+</ul>
+</li>
+<li>The Pull Request on your cluster repo triggers a pipeline like the above <a href="#promotion">Promotion flow</a>
+<ul>
+<li>a second git commit is generated and pushed to the Pull Request with the title <code>chore: regenerated</code> to add the git repository to the Lighthouse configuration</li>
+</ul>
+</li>
+<li>When the Pull Request merges the above <a href="#apply-step">Apply step</a> runs
+<ul>
+<li>Lighthouse configuration is updated</li>
+<li>a Webhook is registered for Lighthouse on the app&rsquo;s repository</li>
+</ul>
+</li>
+<li>The <code>jx project</code> command now continues and pushes the new <a href="/docs/v3/guides/pipeline-catalog/">tekton pipelines for your app</a> to the main branch of the git repository
+<ul>
+<li>this triggers a new pipeline to run on your app which creates a new release of your app</li>
+<li>once the release is complete a Pull Request is created to start the <a href="#promotion">Promotion flow</a> of the new app version</li>
+<li>when this Promote Pull Request merges your application will be running in <code>Staging</code></li>
+</ul>
+</li>
+</ul>
+<p>You can see an example of this in the <a href="/blog/2020/09/16/jx-v3-alpha/">demo of Jenkins X V3</a></p>
 <h2 id="comparison-to-2x">Comparison to 2.x</h2>
 <p>From a high level Jenkins X 3.x similar to 2.x in that:</p>
 <ul>
@@ -2483,7 +2534,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified October 27, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/68e521c3d15feebe624ca162b60eaa20ef0152ee">release 0.0.1926 (68e521c)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified October 27, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/30b91325cb9aa8854d58f6f5cca3ffc8078b1b60">release 0.0.1927 (30b9132)</a>
 </div>
 </div>
 
