@@ -557,6 +557,11 @@ ns-cloud-e4.googledomains.com.
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx upgrade plugins
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;cluster&#34;&gt;Cluster&lt;/h2&gt;
 &lt;p&gt;You can upgrade your Jenkins X installation at any time by running the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_update.md&#34;&gt;jx gitops upgrade&lt;/a&gt; command inside a git checkout of your cluster GitOps repository:&lt;/p&gt;
+&lt;p&gt;First make sure you have the latest git contents as the &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/#boot-job&#34;&gt;boot job will push changes&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git pull
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Make sure you have no pending git commits&amp;hellip;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git status
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now if your git clone is clean run the following:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops upgrade
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will:&lt;/p&gt;
 &lt;ul&gt;
@@ -567,13 +572,19 @@ ns-cloud-e4.googledomains.com.
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add *
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: upgrade versions&amp;#34;&lt;/span&gt;
 git push
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It is possible that you will have merge conflicts.  You can follow the inline git helper messages to resolve conflicts - or use your IDE to help figure out the merge issues. Usually if there are conflicts its safest to use the upstream version; particularly from the &lt;code&gt;versionStream&lt;/code&gt; dir.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;merge-conflicts&#34;&gt;Merge conflicts&lt;/h3&gt;
+&lt;p&gt;It is possible that you will have merge conflicts.  You can follow the inline git helper messages to resolve conflicts - or use your IDE to help figure out the merge issues. Usually if there are conflicts its safest to use the upstream version; particularly from the &lt;code&gt;versionStream&lt;/code&gt; dir.&lt;/p&gt;
 &lt;p&gt;Under the hood Kpt is used to fetch changes from the upstream defined in each Kptfile.&lt;br&gt;
 By default the &lt;code&gt;versionStream&lt;/code&gt; directory has a Kpt strategy of &lt;code&gt;force-delete-replace&lt;/code&gt; which removes all your changes in that folder. In order to merge your changes with the ones coming from upstream, add a file: &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; with the following content:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;config&lt;/span&gt;:
   - &lt;span style=&#34;color:#66d9ef&#34;&gt;relativePath&lt;/span&gt;: versionStream
     &lt;span style=&#34;color:#66d9ef&#34;&gt;strategy&lt;/span&gt;: resource-merge
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once ready, make a pull request onto your cluster repository, review changes and merge.  The &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;Jenkins X git operator&lt;/a&gt; will automatically apply the upgrades into your cluster.&lt;/p&gt;
+&lt;h3 id=&#34;replacing-your-local-versionstream&#34;&gt;Replacing your local versionStream&lt;/h3&gt;
+&lt;p&gt;If you are having merge conflicts trying to upgrade your installation you could just replace the &lt;code&gt;versionStream&lt;/code&gt;  directory with the latest version stream folder. *&lt;em&gt;NOTE&lt;/em&gt; this will overwrite any local changes you have made inside the &lt;code&gt;verisonStream&lt;/code&gt; folder. Though everything is versioned in git so you can always review the changes.&lt;/p&gt;
+&lt;p&gt;Inside your cluster git repository run this command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kpt pkg update --strategy force-delete-replace versionStream
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That will update your &lt;code&gt;versionStream&lt;/code&gt; directory to be in line with the latest version stream. You can always then review the changes before committing them.&lt;/p&gt;
 &lt;h3 id=&#34;configure-merge-strategy&#34;&gt;Configure merge strategy&lt;/h3&gt;
 &lt;p&gt;You can configure the &lt;code&gt;kpt&lt;/code&gt; strategy used to apply changes from the version stream into your &lt;code&gt;versionStream&lt;/code&gt; folder via a custom configuration file.&lt;/p&gt;
 &lt;p&gt;Create a file called &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; in your dev cluster git repository that looks like this:&lt;/p&gt;
