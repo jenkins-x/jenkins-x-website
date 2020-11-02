@@ -24,11 +24,11 @@
 <meta property="og:description" content="Overview of the architecture, concepts and motivations for Jenkins X 3.x" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/v3/about/overview/" />
-<meta property="article:modified_time" content="2020-11-02T13:53:57+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-02T15:14:20+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Overview">
 <meta itemprop="description" content="Overview of the architecture, concepts and motivations for Jenkins X 3.x">
-<meta itemprop="dateModified" content="2020-11-02T13:53:57&#43;00:00" />
-<meta itemprop="wordCount" content="488">
+<meta itemprop="dateModified" content="2020-11-02T15:14:20&#43;00:00" />
+<meta itemprop="wordCount" content="461">
 
 
 
@@ -2299,6 +2299,21 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#microservices">Microservices</a>
+      <ul>
+        <li><a href="#jx-git-operator"><code>jx-git-operator</code></a></li>
+        <li><a href="#jx"><code>jx</code></a></li>
+        <li><a href="#kuberhealthy"><code>kuberhealthy</code></a></li>
+        <li><a href="#nginx"><code>nginx</code></a></li>
+        <li><a href="#secret-infra"><code>secret-infra</code></a></li>
+        <li><a href="#tekton-pipelines"><code>tekton-pipelines</code></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
 
 
           </div>
@@ -2358,26 +2373,51 @@ if (!doNotTrack) {
 	<p>Jenkins X 3.x creates clearer separation of concerns between conceptual areas and releasable components.</p>
 <iframe style="border:none" width="800" height="450" src="https://whimsical.com/embed/SnJBgXG6jz9pqQewiDTNRt@2Ux7TurymNDXVRa4FpLk"></iframe>
 <p><strong>NOTE</strong> The diagram shows intent, as Jenkins X 3 is still in <strong>alpha</strong> not all integrations are complete.</p>
-<p>Jenkins X 3 focuses on a few main areas:</p>
-<h1 id="infrastructure">Infrastructure</h1>
-<p>Moving management of infrastructure outside of Jenkins X, favouring solutions like Terraform.  This reduces the surface area of Jenkins X and leverages expert OSS projects and communities around managing infrastructure and cloud resources.</p>
-<h1 id="secret-management">Secret Management</h1>
-<p>Adding an abstraction layer above secret management solutions so users can choose where the source of secrets can be stored, preferably outside of the Kubernetes cluster.  This is a good practice for disaster recovery scenarios.</p>
-<h1 id="developer-experience">Developer experience</h1>
-<p>Jenkins X 3.x includes a revived focus on developer experience.  The introduction of Jenkins X plugins for <a href="https://octant.dev/">Octant</a> has addressed a long standing request from the open source community.  Jenkins X 3.x will be focussing on new visualisations  to help developers, operators and cross functioning teams.</p>
-<p>With the jx CLI refactoring described below Jenkins X 3.x is reviewing consistency and usability around CLI experience, please continue to raise <a href="https://github.com/jenkins-x/jx-docs/issues">issues</a> and reach out in slack / <a href="https://jenkinsx.discourse.group/">discourse</a> to help improve.</p>
-<h1 id="maintainability">Maintainability</h1>
-<p>Created a new <code>jx</code> CLI which includes an extensible plugin model where each main subcommand off the jx base is it&rsquo;s own releasable git repository.  This has significantly improved the Jenkins X codebase which helps with maintainability and contributions.</p>
-<h1 id="removing-complexity-and-magic">Removing complexity and magic</h1>
-<p>Removing complexity out of Jenkins X and reusing other solutions wherever possible.  Jenkins X 2.x was tightly coupled to helm 2 for example.  There were <code>jx</code> CLI steps that wrapped helm commands when installing applications into the cluster which injected secrets from an internal Vault and ultimately made it very confusing for users and maintainers.</p>
-<p>Jenkins X 3.x prefers to avoid wrapping other CLIs unless a consistent higher level UX is being provided say around managing secrets and underlying commands being executed are clearly printed in users terminals.</p>
-<h1 id="documentation">Documentation</h1>
-<p>We had lots of feedback from users about the Jenkins X documentation was incomplete, inconsistent, old, not relevant or claimed to work but simply did not.</p>
-<p>Jenkins X 3.x will clearly mark areas that have not been tested and are more experimental while also providing a clearer capability matrix indicating to users the maturity of features and supported platforms.  Added to this we plan to make it easier for users, teams, companies to contribute to Jenkins X.</p>
-<p>A <a href="https://github.com/jenkins-x/jx-community/tree/master/sig-docs">special interest group</a> for docs has been set up with the focus on Jenkins X 3.x and will continue to evolve.</p>
-<h1 id="open-source">Open source</h1>
-<p>Jenkins X 3.x is not only open source but developed and maintained in open source communities. Slack, Discourse and focused special interest groups provide ways for developers, users or keen people to be part of the Jenkins X journey.</p>
-<p>Jenkins X 3.x will provide clear extension points for non open source functionality to be added but not affect the OSS core.</p>
+<h2 id="microservices">Microservices</h2>
+<p>Jenkins X uses the following microservices by namespace.</p>
+<p>Note that if you have a working Jenkins X installation you can browse all the actual kubernetes resources used across each namespace via the <code>config-root/namespaces/$namespace/$chartName</code> folder in your cluster git repository.</p>
+<h3 id="jx-git-operator"><code>jx-git-operator</code></h3>
+<p>Contains the <a href="/docs/v3/about/how-it-works/#git-operator">git operator</a> from <a href="https://github.com/jenkins-x/jx-git-operator">jenkins-x/git-operator</a> microservice and the associated <a href="/docs/v3/about/how-it-works/#boot-job">boot jobs</a>.</p>
+<h3 id="jx"><code>jx</code></h3>
+<p>Contains the main development services of Jenkins X:</p>
+<ul>
+<li><strong>jx-build-controller</strong> watches for <code>PipelineRun</code> resources and creates/updates the associated <code>PipelineActivity</code> resources used by <code>jx get build log</code>, <a href="/docs/v3/develop/ui/#octant">octant</a> and the <a href="/docs/v3/develop/ui/#pipeline-visualizer">pipelines visualizer</a></li>
+<li><strong>jx-pipelines-visualizer</strong> visualises <code>PipelineActivity</code> resources and the associated build logs in a read only UI</li>
+<li><strong>jx-preview-gc-jobs</strong> periodically garbage collects <code>Preview</code> resources and their associated preview environments created by <a href="https://github.com/jenkins-x/jx-preview">jx preview</a></li>
+<li><strong>jxboot-helmfile-resources-gcactivities</strong> periodically garbage collects old and completed <code>PipelineActivity</code> resources</li>
+<li><strong>jxboot-helmfile-resources-gcpods</strong> periodically garbage collects completed <code>Pods</code></li>
+<li><strong>jx-kh-check</strong> supports additional <a href="https://github.com/Comcast/kuberhealthy">kuberhealthy</a> based <a href="/docs/v3/guides/health/">health checks</a> for Jenkins X specific resources</li>
+</ul>
+<p><a href="https://github.com/jenkins-x/lighthouse">jenkins-x/lighthouse</a> creates <a href="https://tekton.dev/">tekton pipelines</a> and triggers <a href="/docs/resources/faq/using/chatops/">ChatOps</a> on Pull Requests. Its made up of the following components:</p>
+<ul>
+<li><strong>lighthouse-webhooks</strong> converts webhooks from your git provider into <code>LighthouseJob</code> custom resources</li>
+<li><strong>lighthouse-tekton-controller</strong> converts <code>LighthouseJob</code> custom resources into <a href="https://tekton.dev/">tekton</a> <code>PipelineRun</code> resources (the <a href="https://tekton.dev/">tekton controller</a> converts <code>PipelineRun</code> resources into kubernetes <code>Pods</code></li>
+<li><strong>lighthouse-foghorn</strong> watches the execution of <code>PipelineRun</code> resources triggered by lighthouse and updates the pipeline status in git so that you see pipelines start, complete or fail on your git provider along with having links the <a href="/docs/v3/develop/ui/#pipeline-visualizer">pipelines visualizer</a> on each context on a Pull Request</li>
+<li><strong>lighthouse-keeper</strong> looks for open Pull Requests with green pipelines and the necessary <strong>approve</strong> labels to be able to auto merge</li>
+<li><strong>lighthouse-gc-jobs</strong> periodically garbage collects <code>LighthouseJob</code> resources and their associated resources (e.g. <code>PipelineRun</code> and <code>Pods</code></li>
+</ul>
+<p>the following are optional extras:</p>
+<ul>
+<li><a href="https://github.com/jenkins-x/bucketrepo">bucket repository</a> a lightweight cloud native artifact, chart repository and maven proxy that can be configured to use cloud storage. It&rsquo;s a lightweight cloud native alternative to <a href="https://www.sonatype.com/nexus/repository-oss">nexus</a></li>
+<li><a href="https://github.com/helm/chartmuseum">chart museum</a> an optional chart repository</li>
+<li><a href="https://www.sonatype.com/nexus/repository-oss">nexus</a> if used as an artifact repository and maven proxy</li>
+</ul>
+<h3 id="kuberhealthy"><code>kuberhealthy</code></h3>
+<p>Contains the <a href="https://github.com/Comcast/kuberhealthy">kuberhealthy</a> service to support <a href="/docs/v3/guides/health/">health and improve observability</a> which used by <a href="https://github.com/jenkins-x-plugins/jx-health">jx health</a></p>
+<h3 id="nginx"><code>nginx</code></h3>
+<p>Contains the <a href="https://github.com/helm/charts/tree/master/stable/nginx-ingress">nginx-ingress</a> provider if enabled</p>
+<h3 id="secret-infra"><code>secret-infra</code></h3>
+<ul>
+<li><strong>kubernetes-external-secrets</strong> contains the <a href="https://github.com/godaddy/kubernetes-external-secrets">godaddy/kubernetes-external-secrets</a> service for handling <code>ExternalSecrets</code>. See <a href="/docs/v3/guides/secrets/">how we use secrets</a>)</li>
+<li><strong>pusher-wave</strong> contains the <a href="https://github.com/pusher/wave">pusher/wave</a> service for performing a rolling upgrade of any microservice which consumes <code>Secret</code> resources from either vault or a cloud providers secret store and the secrets change in the underlying store</li>
+</ul>
+<p>the following are optional extras if not using your cloud providers native secret manager:</p>
+<ul>
+<li><strong>vault-operator</strong> contains the <a href="https://banzaicloud.com/docs/bank-vaults/operator/">vault operator</a> which converts <code>Vault</code> resources into instances of <a href="https://www.vaultproject.io/">HashiCorp Vault</a></li>
+<li><strong>vault-instance</strong> contains the <a href="https://github.com/jenkins-x-charts/vault-instance">vault instance</a> which creates the default <code>Vault</code> resource</li>
+</ul>
+<h3 id="tekton-pipelines"><code>tekton-pipelines</code></h3>
+<p>Contains the <a href="https://tekton.dev/">tekton pipelines</a> controllers</p>
 
 	
 		<style>
@@ -2441,7 +2481,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 2, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/1b93004723e60c404fae28a0f572d6c3d3955e37">release 0.0.1934 (1b93004)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 2, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/6f791d4baadb0ebe553e3011c80e9b80bc6182f6">release 0.0.1935 (6f791d4)</a>
 </div>
 </div>
 
