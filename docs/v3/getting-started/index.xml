@@ -143,7 +143,6 @@ Create your infrastructure
 &lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Ensure you are logged into GitHub else you will get a 404 error when clicking the links below&lt;/p&gt;
 &lt;hr&gt;
-&lt;h3 id=&#34;minikube--vault&#34;&gt;Minikube + Vault&lt;/h3&gt;
 &lt;p&gt;This is our current recommended quickstart for Minikube:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -157,7 +156,7 @@ Create your infrastructure
 target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34; 
 title=&#34;use your new git repository to create your cloud infrastructure and install Jenkins X&#34;&gt;
 Create your infrastructure
-&lt;/a&gt;&lt;/p&gt;
+&lt;/a&gt; to setup minikube and configure webhooks&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/p&gt;
@@ -181,7 +180,7 @@ Create your infrastructure
 &lt;p&gt;Ensure you are logged into GitHub else you will get a 404 error when clicking the links below&lt;/p&gt;
 &lt;hr&gt;
 &lt;h2 id=&#34;on-premise-kubernetes&#34;&gt;On Premise Kubernetes&lt;/h2&gt;
-&lt;p&gt;If you are using kubernetes we highly recommend you use one of the managed cloud providers like &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/eks/&#34;&gt;Amazon&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/gke/&#34;&gt;Google&lt;/a&gt; as this comes with lots of additional features like:&lt;/p&gt;
+&lt;p&gt;If you are using kubernetes we highly recommend you use one of the &lt;a href=&#34;https://jenkins-x.io/docs/v3/#administration&#34;&gt;managed cloud providers&lt;/a&gt; as this comes with lots of additional features like:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;container registries and bucket storage&lt;/li&gt;
 &lt;li&gt;IAM and workload identity (e.g. so kubernetes Service Accounts can be assigned roles to be able to read/write to certain buckets or container registries)&lt;/li&gt;
@@ -189,6 +188,9 @@ Create your infrastructure
 &lt;p&gt;However sometimes you need to run kubernetes on your premise. Longer term we hope the cloud providers can run their managed kubernetes and associated infrastructure on your premise too so you get to reuse the same storage + IAM anywhere. But until then, this guide is intended to get you started installing Jenkins X on a vanilla kubernetes cluster on premise.&lt;/p&gt;
 &lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
 &lt;p&gt;The following are the prerequisites of your on-premise kubernetes cluster:&lt;/p&gt;
+&lt;h4 id=&#34;kubernetes-cluster&#34;&gt;Kubernetes cluster&lt;/h4&gt;
+&lt;p&gt;We obviously need a working kubernetes cluster. There are many approaches to &lt;a href=&#34;https://kubernetes.io/docs/setup/production-environment/tools/&#34;&gt;setting up on premise clusters&lt;/a&gt; obviously the easiest approach is to use the &lt;a href=&#34;https://jenkins-x.io/docs/v3/#administration&#34;&gt;cloud&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you are going the bare metal route you could try &lt;a href=&#34;https://007ba7.us/howto/k8s-install/&#34;&gt;these instructions&lt;/a&gt;&lt;/p&gt;
 &lt;h4 id=&#34;kubectl-access&#34;&gt;kubectl access&lt;/h4&gt;
 &lt;p&gt;You need to be able to connect to your kubernetes cluster via &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; so that you can run commands like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
@@ -198,8 +200,10 @@ kubectl get node
 &lt;p&gt;To use Jenkins X we need ingress to work. This means being able to create a kubernetes &lt;code&gt;Ingress&lt;/code&gt;  resource with a domain name which can be resolved outside of kubernetes to network into kubernetes services.&lt;/p&gt;
 &lt;p&gt;Jenkins X installs &lt;code&gt;nginx&lt;/code&gt; which has a &lt;code&gt;LoadBalancer&lt;/code&gt; kubernetes &lt;code&gt;Service&lt;/code&gt; to implement ingress. But the underlying kubernetes platform needs to implement the load balancing network and infrastructure. This comes out of the box on all public clouds.&lt;/p&gt;
 &lt;p&gt;With an on-premise kubernetes cluster you need to install something like &lt;a href=&#34;https://metallb.universe.tf/&#34;&gt;MetalLB&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you are on bare metal you could try &lt;a href=&#34;https://007ba7.us/howto/metallb/&#34;&gt;these instructions&lt;/a&gt;&lt;/p&gt;
 &lt;h4 id=&#34;storage&#34;&gt;Storage&lt;/h4&gt;
 &lt;p&gt;We need your kubernetes cluster to have a default &lt;a href=&#34;https://kubernetes.io/docs/concepts/storage/storage-classes/&#34;&gt;storage class&lt;/a&gt; so that &lt;code&gt;PersistentVolumeClaim&lt;/code&gt; resources in helm charts get resolved to &lt;code&gt;PersistentVolume&lt;/code&gt; resources so that persistent disks can be used.&lt;/p&gt;
+&lt;p&gt;You may find &lt;a href=&#34;https://007ba7.us/howto/nfs-storage/&#34;&gt;these instructions useful&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;getting-started&#34;&gt;Getting Started&lt;/h3&gt;
 &lt;p&gt;This is our current recommended quickstart for on premise kubernetes:&lt;/p&gt;
 &lt;ul&gt;
@@ -207,8 +211,22 @@ kubectl get node
 &lt;p&gt;&lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/generate&#34; target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create the cluster Git Repository&lt;/a&gt; based on the &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/generate&#34;&gt;jx3-gitops-repositories/jx3-kubernetes&lt;/a&gt; template&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;ensure you are connected to your cluster so you can run the following &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; commands&lt;/p&gt;
+&lt;p&gt;find out what your ingress domain is for your cluster then modify the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and modify the &lt;code&gt;ingress.domain&lt;/code&gt; section&amp;hellip;&lt;/p&gt;
 &lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+...
+&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;git add, commit and push your changes:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add *
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: added domain&amp;#34;&lt;/span&gt;
+git push origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;ensure you are connected to your cluster so you can run the following &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; commands&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
 kubectl get node      
@@ -228,7 +246,29 @@ Install the git operator
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-
+&lt;h2 id=&#34;enable-webhooks&#34;&gt;Enable WebHooks&lt;/h2&gt;
+&lt;p&gt;If your cluster is not accessible on the internet and you can&amp;rsquo;t open a firewall to allow services like GitHub to access your ingress then you will need to enable webhooks as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://ngrok.com/&#34;&gt;install and setup ngrok&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;setup a webhook tunnel to your laptop find your hook host name:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;copy the hook host name into&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ngrok http http://yourHookHost
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;copy your personal ngrok domain name of the form &lt;code&gt;abcdef1234.ngrok.io&lt;/code&gt; into the &lt;code&gt;charts/jenkins-x/jxboot-helmfile-resources/values.yaml&lt;/code&gt; file in the &lt;code&gt;ingress.customHosts.hosts&lt;/code&gt; file so that your file looks like this&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;customHosts&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;hook&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;abcdef1234.ngrok.io&amp;#34;&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -299,10 +339,14 @@ git push origin master
 &lt;p&gt;&lt;a href=&#34;https://ngrok.com/&#34;&gt;install and setup ngrok&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;setup a webhook tunnel to your laptop:&lt;/p&gt;
+&lt;p&gt;setup a webhook tunnel to your laptop find your hook host name:&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ngrok http yourDomainURL
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;copy the hook host name into&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ngrok http http://yourHookHost
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;copy your personal ngrok domain name of the form &lt;code&gt;abcdef1234.ngrok.io&lt;/code&gt; into the &lt;code&gt;charts/jenkins-x/jxboot-helmfile-resources/values.yaml&lt;/code&gt; file in the &lt;code&gt;ingress.customHosts.hosts&lt;/code&gt; file so that your file looks like this&amp;hellip;&lt;/li&gt;
 &lt;/ul&gt;

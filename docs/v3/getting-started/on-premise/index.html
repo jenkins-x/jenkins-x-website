@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/docs/v3/getting-started/on-premise/" />
 <meta property="article:published_time" content="2017-02-01T00:00:00+00:00" />
-<meta property="article:modified_time" content="2020-11-03T20:48:15+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-04T10:24:21+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="On Premise">
 <meta itemprop="description" content="Setup Jenkins X on vanilla Kubernetes">
 <meta itemprop="datePublished" content="2017-02-01T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2020-11-03T20:48:15&#43;00:00" />
-<meta itemprop="wordCount" content="374">
+<meta itemprop="dateModified" content="2020-11-04T10:24:21&#43;00:00" />
+<meta itemprop="wordCount" content="568">
 
 
 
@@ -2321,6 +2321,7 @@ if (!doNotTrack) {
         <li><a href="#getting-started">Getting Started</a></li>
       </ul>
     </li>
+    <li><a href="#enable-webhooks">Enable WebHooks</a></li>
   </ul>
 </nav>
 
@@ -2385,7 +2386,7 @@ if (!doNotTrack) {
 <p>Ensure you are logged into GitHub else you will get a 404 error when clicking the links below</p>
 <hr>
 <h2 id="on-premise-kubernetes">On Premise Kubernetes</h2>
-<p>If you are using kubernetes we highly recommend you use one of the managed cloud providers like <a href="/docs/v3/getting-started/eks/">Amazon</a> or <a href="/docs/v3/getting-started/gke/">Google</a> as this comes with lots of additional features like:</p>
+<p>If you are using kubernetes we highly recommend you use one of the <a href="/docs/v3/#administration">managed cloud providers</a> as this comes with lots of additional features like:</p>
 <ul>
 <li>container registries and bucket storage</li>
 <li>IAM and workload identity (e.g. so kubernetes Service Accounts can be assigned roles to be able to read/write to certain buckets or container registries)</li>
@@ -2393,6 +2394,9 @@ if (!doNotTrack) {
 <p>However sometimes you need to run kubernetes on your premise. Longer term we hope the cloud providers can run their managed kubernetes and associated infrastructure on your premise too so you get to reuse the same storage + IAM anywhere. But until then, this guide is intended to get you started installing Jenkins X on a vanilla kubernetes cluster on premise.</p>
 <h3 id="prerequisites">Prerequisites</h3>
 <p>The following are the prerequisites of your on-premise kubernetes cluster:</p>
+<h4 id="kubernetes-cluster">Kubernetes cluster</h4>
+<p>We obviously need a working kubernetes cluster. There are many approaches to <a href="https://kubernetes.io/docs/setup/production-environment/tools/">setting up on premise clusters</a> obviously the easiest approach is to use the <a href="/docs/v3/#administration">cloud</a>.</p>
+<p>If you are going the bare metal route you could try <a href="https://007ba7.us/howto/k8s-install/">these instructions</a></p>
 <h4 id="kubectl-access">kubectl access</h4>
 <p>You need to be able to connect to your kubernetes cluster via <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">kubectl</a> so that you can run commands like:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ns
@@ -2402,8 +2406,10 @@ kubectl get node
 <p>To use Jenkins X we need ingress to work. This means being able to create a kubernetes <code>Ingress</code>  resource with a domain name which can be resolved outside of kubernetes to network into kubernetes services.</p>
 <p>Jenkins X installs <code>nginx</code> which has a <code>LoadBalancer</code> kubernetes <code>Service</code> to implement ingress. But the underlying kubernetes platform needs to implement the load balancing network and infrastructure. This comes out of the box on all public clouds.</p>
 <p>With an on-premise kubernetes cluster you need to install something like <a href="https://metallb.universe.tf/">MetalLB</a></p>
+<p>If you are on bare metal you could try <a href="https://007ba7.us/howto/metallb/">these instructions</a></p>
 <h4 id="storage">Storage</h4>
 <p>We need your kubernetes cluster to have a default <a href="https://kubernetes.io/docs/concepts/storage/storage-classes/">storage class</a> so that <code>PersistentVolumeClaim</code> resources in helm charts get resolved to <code>PersistentVolume</code> resources so that persistent disks can be used.</p>
+<p>You may find <a href="https://007ba7.us/howto/nfs-storage/">these instructions useful</a></p>
 <h3 id="getting-started">Getting Started</h3>
 <p>This is our current recommended quickstart for on premise kubernetes:</p>
 <ul>
@@ -2411,8 +2417,22 @@ kubectl get node
 <p><a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/generate" target="github" class="btn bg-primary text-light">Create the cluster Git Repository</a> based on the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/generate">jx3-gitops-repositories/jx3-kubernetes</a> template</p>
 </li>
 <li>
-<p>ensure you are connected to your cluster so you can run the following <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">kubectl</a> commands</p>
+<p>find out what your ingress domain is for your cluster then modify the <code>jx-requirements.yml</code> file and modify the <code>ingress.domain</code> section&hellip;</p>
 </li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+...
+<span style="color:#66d9ef">ingress</span>:
+  <span style="color:#66d9ef">domain</span>: mydomain.com
+...
+</code></pre></div><ul>
+<li>git add, commit and push your changes:</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add *
+git commit -a -m <span style="color:#e6db74">&#34;fix: added domain&#34;</span>
+git push origin master
+</code></pre></div><ul>
+<li>ensure you are connected to your cluster so you can run the following <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">kubectl</a> commands</li>
 </ul>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ns
 kubectl get node      
@@ -2432,7 +2452,29 @@ Install the git operator
 </code></pre></div><ul>
 <li><a href="/docs/v3/develop/create-project/" class="btn bg-primary text-light">Create or import projects</a></li>
 </ul>
-
+<h2 id="enable-webhooks">Enable WebHooks</h2>
+<p>If your cluster is not accessible on the internet and you can&rsquo;t open a firewall to allow services like GitHub to access your ingress then you will need to enable webhooks as follows:</p>
+<ul>
+<li>
+<p><a href="https://ngrok.com/">install and setup ngrok</a></p>
+</li>
+<li>
+<p>setup a webhook tunnel to your laptop find your hook host name:</p>
+</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ing
+</code></pre></div><ul>
+<li>copy the hook host name into&hellip;</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ngrok http http://yourHookHost
+</code></pre></div><ul>
+<li>copy your personal ngrok domain name of the form <code>abcdef1234.ngrok.io</code> into the <code>charts/jenkins-x/jxboot-helmfile-resources/values.yaml</code> file in the <code>ingress.customHosts.hosts</code> file so that your file looks like this&hellip;</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">ingress</span>:
+  <span style="color:#66d9ef">customHosts</span>:
+    <span style="color:#66d9ef">hook</span>: <span style="color:#e6db74">&#34;abcdef1234.ngrok.io&#34;</span>
+...
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -2495,7 +2537,7 @@ Install the git operator
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 3, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/807075337dd4dc96c95e9486903755ae244d1547">release 0.0.1940 (8070753)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 4, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/9d6b5bc2c16a4fc14fd6bd7b503a75dc47de1253">release 0.0.1941 (9d6b5bc)</a>
 </div>
 </div>
 
