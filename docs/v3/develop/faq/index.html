@@ -2347,6 +2347,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-customise-an-app-in-an-environment">How do I customise an App in an Environment</a></li>
     <li><a href="#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production">How do I configure the ingress domain in Dev, Staging or Production?</a></li>
     <li><a href="#how-do-i-configure-the-ingress-tls-certificate-in-dev-staging-or-production">How do I configure the ingress TLS certificate in Dev, Staging or Production?</a></li>
+    <li><a href="#how-do-i-use-a-custom-container-registry">How do I use a custom container registry?</a></li>
     <li><a href="#how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</a></li>
     <li><a href="#why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</a></li>
   </ul>
@@ -2447,6 +2448,20 @@ if (!doNotTrack) {
     <span style="color:#66d9ef">tls</span>:
       <span style="color:#66d9ef">enabled</span>:
       <span style="color:#66d9ef">secretName</span>: my-tls-secret-name
+</code></pre></div><h2 id="how-do-i-use-a-custom-container-registry">How do I use a custom container registry?</h2>
+<p>To allow a pipeline to be able to push to a container registry you can add this secret&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl create secret generic container-registry-auth  <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --from-literal<span style="color:#f92672">=</span>url<span style="color:#f92672">=</span>myserver.com <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --from-literal<span style="color:#f92672">=</span>username<span style="color:#f92672">=</span>myuser <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>  --from-literal<span style="color:#f92672">=</span>password<span style="color:#f92672">=</span>mypwd
+</code></pre></div><p>This will then take effect the next time a commit merges on your cluster git repository e.g. next time you <a href="/docs/v3/guides/upgrade/#cluster">upgrade your cluster</a>.</p>
+<p>The various container registry secrets get merged into a <code>Secret</code> called <code>tekton-container-registry-auth</code> in the <code>jx</code> namespace which is associated with the default pipeline <code>ServiceAccount</code> <code>tekton-bot</code>.</p>
+<p>If you want all pipelines to use this container registry then modify the <code>cluster.registry</code> field in your <code>jx-requirements.yml</code> file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">cluster</span>:
+  <span style="color:#66d9ef">registry</span>: myserver.com 
+...
+</code></pre></div><p>Otherwise you can enable this new container registry on a specific application/repository by adding this <code>.jx/variables.sh</code> file into the git repository if it doesn&rsquo;t exist&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export DOCKER_REGISTRY<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;myserver.com&#34;</span>
 </code></pre></div><h2 id="how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</h2>
 <p>We don&rsquo;t yet have a nice uninstall command</p>
 <h2 id="why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</h2>
@@ -3492,7 +3507,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 6, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/677c56d87e6c0315666598d1084ab551fdd8dbdf">release 0.0.1943 (677c56d)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 6, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/522648cb2be91a4ca14cc6d8e91f045436095856">release 0.0.1944 (522648c)</a>
 </div>
 </div>
 

@@ -336,6 +336,20 @@ git push
     &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
       &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;:
       &lt;span style=&#34;color:#66d9ef&#34;&gt;secretName&lt;/span&gt;: my-tls-secret-name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-use-a-custom-container-registry&#34;&gt;How do I use a custom container registry?&lt;/h2&gt;
+&lt;p&gt;To allow a pipeline to be able to push to a container registry you can add this secret&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl create secret generic container-registry-auth  &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;myserver.com &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;username&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;myuser &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;password&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;mypwd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then take effect the next time a commit merges on your cluster git repository e.g. next time you &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/upgrade/#cluster&#34;&gt;upgrade your cluster&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The various container registry secrets get merged into a &lt;code&gt;Secret&lt;/code&gt; called &lt;code&gt;tekton-container-registry-auth&lt;/code&gt; in the &lt;code&gt;jx&lt;/code&gt; namespace which is associated with the default pipeline &lt;code&gt;ServiceAccount&lt;/code&gt; &lt;code&gt;tekton-bot&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If you want all pipelines to use this container registry then modify the &lt;code&gt;cluster.registry&lt;/code&gt; field in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;registry&lt;/span&gt;: myserver.com 
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Otherwise you can enable this new container registry on a specific application/repository by adding this &lt;code&gt;.jx/variables.sh&lt;/code&gt; file into the git repository if it doesn&amp;rsquo;t exist&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export DOCKER_REGISTRY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;myserver.com&amp;#34;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-uninstall-jenkins-x&#34;&gt;How do I uninstall Jenkins X?&lt;/h2&gt;
 &lt;p&gt;We don&amp;rsquo;t yet have a nice uninstall command&lt;/p&gt;
 &lt;h2 id=&#34;why-does-jenkins-x-fail-to-download-plugins&#34;&gt;Why does Jenkins X fail to download plugins?&lt;/h2&gt;
