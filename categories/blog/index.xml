@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 23 Sep 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 11 Nov 2020 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,125 @@
         
       
     
+    
+    <item>
+      <title>Blog: Accelerate your Tekton with Jenkins X</title>
+      <link>https://jenkins-x.io/blog/2020/11/11/accelerate-tekton/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2020/11/11/accelerate-tekton/</guid>
+      <description>
+        
+        
+        &lt;p&gt;One of the goals of &lt;a href=&#34;https://jenkins-x.io/&#34;&gt;Jenkins X&lt;/a&gt; has always been to help &lt;a href=&#34;https://jenkins-x.io/about/overview/accelerate/&#34;&gt;accelerate&lt;/a&gt; and automate Continuous Delivery so that developers can focus on delivering value to their customers; either by creating that new microservice or adding features to an existing project and not writing and managing pipelines.&lt;/p&gt;
+&lt;p&gt;Pipeline engines like &lt;a href=&#34;https://www.jenkins.io/&#34;&gt;Jenkins&lt;/a&gt; and &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; are awesome - they can do anything! But they start as a blank sheet of paper where you have to fill in all the details of how to compile your code, test it, verify it, tag it, release, distribute and delivery it to production. Figuring all that stuff out can take a huge amount of time to create and maintain. This gets even more complex as we are all creating more and more microservices each with their own pipelines making more and more things to create and manage.&lt;/p&gt;
+&lt;p&gt;We want to be able to reuse pipelines and tasks to get work done. But at the same time we want flexibility; not all applications are the same and sometimes things need to be changed on a per team or application basis.&lt;/p&gt;
+&lt;h2 id=&#34;version-2x&#34;&gt;Version 2.x&lt;/h2&gt;
+&lt;p&gt;In Jenkins X 2.x we went with a &lt;code&gt;jenkins-x.xml&lt;/code&gt; approach to pipelines which let you inherit pipelines from reuable pipeline library and then use a composition DSL above &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; which lets you add/remove/replace steps.&lt;/p&gt;
+&lt;p&gt;e.g. to use the &lt;code&gt;javascript&lt;/code&gt; pipeline library but override a step you could use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;buildPack&lt;/span&gt;: javascript
+&lt;span style=&#34;color:#66d9ef&#34;&gt;pipelineConfig&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipelines&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;overrides&lt;/span&gt;:
+      - &lt;span style=&#34;color:#66d9ef&#34;&gt;pipeline&lt;/span&gt;: release
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: helm-release
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;step&lt;/span&gt;: 
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: busybox
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;sh&lt;/span&gt;: echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;this command is replaced&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This was a pretty good approach; it lets us reuse common pipelines in a shared git repository and let&amp;rsquo;s reuse a composition DSL.&lt;/p&gt;
+&lt;p&gt;However we&amp;rsquo;ve found that this approach as a few downsides:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we have to create and maintain a DSL above Tekton which adds complexity and can be a leaky abstraction
+&lt;ul&gt;
+&lt;li&gt;e.g. the DSL does not yet support all of the semantics of Tekton yet such as conditions and sidecars&lt;/li&gt;
+&lt;li&gt;tekton moves fast; its hard to keep up ;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;its complex trying to understand how to make local modifications of pipelines
+&lt;ul&gt;
+&lt;li&gt;particularly if you just want to add an environment variable; modify a command line argument or something&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;we can&amp;rsquo;t use &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/#ide-support&#34;&gt;IDE tooling&lt;/a&gt; for &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; to edit/visualise pipelines&lt;/li&gt;
+&lt;li&gt;we can&amp;rsquo;t reuse &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog tasks&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;vision&#34;&gt;Vision&lt;/h2&gt;
+&lt;p&gt;We want developers to have reusable pipelines for all their applications lifecycles:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;continuous integration&lt;/li&gt;
+&lt;li&gt;verification, testing, linting&lt;/li&gt;
+&lt;li&gt;releasing, packaging, promoting, deploying&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We also want to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;automate the generation of pipelines so most of the time developers don&amp;rsquo;t need to care about pipelines&lt;/li&gt;
+&lt;li&gt;reuse pipelines across applications
+&lt;ul&gt;
+&lt;li&gt;usually all, say, spring boot microservices tend to be built and released in the same way&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;make it easy for developers to view/edit the pipelines if required
+&lt;ul&gt;
+&lt;li&gt;maintain those changes over time as everything in the cloud native ecosystem is changing all the time&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;From a technical perspective:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we believe &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; is currently the best cloud native standard way to represent pipelines and tasks for Continuous Delivery and we want that to be the primary DSL for developers and tools&lt;/li&gt;
+&lt;li&gt;we want to work with the &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; so its easy to share tasks among teams&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;version-3x&#34;&gt;Version 3.x&lt;/h2&gt;
+&lt;p&gt;For &lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;Jenkins X 3.x&lt;/a&gt; we really wanted to move closer to this vision: to &lt;em&gt;accelerate&lt;/em&gt; the adoption of Tekton and help give developers Tekton super powers.&lt;/p&gt;
+&lt;p&gt;Re-reading &lt;a href=&#34;https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/declarative-application-management.md&#34;&gt;Brian Grant&amp;rsquo;s document on Declarative application management in Kubernetes&lt;/a&gt; really got us thinking about this problem of how to reuse complex YAML files for pipelines and tasks while also allowing local modifications while also avoiding a complex leaky DSL for composition.&lt;/p&gt;
+&lt;p&gt;Then we tried out &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; (pronounced &lt;code&gt;kept&lt;/code&gt;) and everything fell into place pretty quickly.&lt;/p&gt;
+&lt;h3 id=&#34;using-tekton-in-your-repository&#34;&gt;Using Tekton in your repository&lt;/h3&gt;
+&lt;p&gt;When you &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#create-a-new-project-from-a-quickstart&#34;&gt;create a new quickstart&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#import-an-existing-project&#34;&gt;import a repository&lt;/a&gt; into &lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;Jenkins X 3.x&lt;/a&gt; you get a new folder: &lt;strong&gt;.lighthouse/jenkins-x&lt;/strong&gt; added to your source code which contains the Tekton pipeline files you need for your application.&lt;/p&gt;
+&lt;p&gt;So for a typical application the &lt;strong&gt;.lighthouse/jenkins-x&lt;/strong&gt; folder will contain:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;release.yaml&lt;/strong&gt; the Tekton &lt;code&gt;PipelineRun&lt;/code&gt; for releasing your application&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;pullrequest.yaml&lt;/strong&gt; the Tekton &lt;code&gt;PipelineRun&lt;/code&gt; for perform continuous integration testing, verification and the creation of a Preview Environment for your proposed changes before they merge to the main branch&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;triggers.yaml&lt;/strong&gt; to define the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#Config&#34;&gt;TriggerConfig&lt;/a&gt; which defines the &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/using/chatops/#what-is-chatops&#34;&gt;ChatOps&lt;/a&gt; and triggering configuration via a &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-triggerconfig.md#ConfigSpec&#34;&gt;spec field&lt;/a&gt; which defines &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Presubmit&#34;&gt;presubmits&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit&#34;&gt;postsubmits&lt;/a&gt; (i.e. Pull Request and Release triggers).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;See the &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/&#34;&gt;Pipeline Catalog documentation&lt;/a&gt; for more details on how this works and go to the &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/#reference-guide&#34;&gt;reference guide&lt;/a&gt; if you want to dive into the details.&lt;/p&gt;
+&lt;p&gt;As a developer you can mostly ignore the &lt;code&gt;.lighthouse&lt;/code&gt; folder if you don&amp;rsquo;t care about how the pipelines work. If you are interested you can look inside.&lt;/p&gt;
+&lt;p&gt;If you need to modify anything, just open the Tekton files in your &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/#ide-support&#34;&gt;IDE&lt;/a&gt; and modify them. No complex DSL to understand other than Tekton itself. Then the changes will be used when you submit your local changes via a Pull Request (for the pull request pipeline) or they get merged to the main branch (for release pipeline changes).&lt;/p&gt;
+&lt;p&gt;To handle change going forward from upstream pipeline catalogs while preserving any local modifications we use a generic &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/#upgrading-pipelines-and-helm-charts&#34;&gt;update mechanism on all git repositories&lt;/a&gt; which is powered by &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;reusing-tekton-catalog-tasks&#34;&gt;Reusing Tekton Catalog Tasks&lt;/h3&gt;
+&lt;p&gt;The &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; contains a ton of reusable Tekton &lt;code&gt;Tasks&lt;/code&gt; for doing all kinds of things in the Continuous Delivery landscape with a variety of tools.&lt;/p&gt;
+&lt;p&gt;We want to make it super easy for you to reuse any of them easily in your project.&lt;/p&gt;
+&lt;p&gt;So now the new &lt;a href=&#34;https://github.com/jenkins-x/jx-pipeline/blob/master/docs/cmd/jx-pipeline_import.md&#34;&gt;jx pipeline import&lt;/a&gt; command can be used to import &lt;code&gt;Task&lt;/code&gt; resources from the &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; so you can use them inside your project.&lt;/p&gt;
+&lt;p&gt;Here&amp;rsquo;s a &lt;a href=&#34;https://asciinema.org/a/368282&#34;&gt;demo of this in action&lt;/a&gt;:&lt;/p&gt;
+&lt;script src=&#34;https://asciinema.org/a/368282.js&#34; id=&#34;asciicast-368282&#34; async&gt;&lt;/script&gt;
+&lt;p&gt;The tekton Task resources are copied into your &lt;strong&gt;.lighthouse&lt;/strong&gt; directory in a folder using &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; so that you can modify things locally if you need to and can &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/pipeline-catalog/#upgrading-pipelines-and-helm-charts&#34;&gt;upgrade your local copy with upstream changes&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This lets you work with shared resources from the Tekton community and, when required, modify them to suit and manage them easily over time.&lt;/p&gt;
+&lt;h3 id=&#34;sharing-steps-between-tasks&#34;&gt;Sharing steps between Tasks&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; makes it super easy to share &lt;code&gt;Task&lt;/code&gt; resources between different &lt;code&gt;Pipeline&lt;/code&gt; instances. Though there is a current &lt;a href=&#34;https://github.com/tektoncd/pipeline/issues/3476&#34;&gt;limitation&lt;/a&gt; where splitting a &lt;code&gt;Pipeline&lt;/code&gt; into multiple reusable &lt;code&gt;Task&lt;/code&gt; instances results in the pipeline being split among multiple &lt;code&gt;Pod&lt;/code&gt; resources; which means to share state between the Tasks you need to use a &lt;code&gt;Persistent Volume&lt;/code&gt; for each pipeline run which can be a bit of an overhead.&lt;/p&gt;
+&lt;p&gt;For example: you may think it&amp;rsquo;s a nice idea to have a reusable &lt;code&gt;Task&lt;/code&gt; to git clone your source code then use it with your other &lt;code&gt;Task&lt;/code&gt; to run your tests. It turns out that can be quite expensive infrastructure wise; as it means your cluster will end up making a Persistent Volume for each pipeline invocation so that the git clone pod can clone git and store the state on the PV so that your real Task pod can start and mount the same volume to see the contents of git. Its much easier to just share the git clone steps in each Task; so that there&amp;rsquo;s no need for the PV; just git clone in each separate Task directly.&lt;/p&gt;
+&lt;p&gt;So for cases where you want to reuse a collection of steps inside &lt;code&gt;Task&lt;/code&gt; resources we added an annotation in &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; so that we can import steps from a URL to avoid the copy/paste.&lt;/p&gt;
+&lt;p&gt;e.g. in our &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs&#34;&gt;pipeline catalog&lt;/a&gt; we use this approach to share the git clone Task steps such as &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/master/packs/javascript/.lighthouse/jenkins-x/release.yaml#L4-L5&#34;&gt;this example&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: tekton.dev/v1beta1
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: Task
+&lt;span style=&#34;color:#66d9ef&#34;&gt;metadata&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;annotations&lt;/span&gt;:        
+    &lt;span style=&#34;color:#75715e&#34;&gt;# lets share the git clone tasks as the initial steps in this Task&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;lighthouse.jenkins-x.io/prependStepsURL&lt;/span&gt;: https://raw.githubusercontent.com/jenkins-x/jx3-pipeline-catalog/005e78cf69b643862344397a635736a51dd1bd89/tasks/git-clone/git-clone.yaml
+&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
+  ...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Hopefully we can migrate to a standard tekton based approach &lt;a href=&#34;https://github.com/tektoncd/pipeline/issues/3476&#34;&gt;if this issue is resolved&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;custom-pipeline-catalogs&#34;&gt;Custom Pipeline Catalogs&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; is an awesome way to reuse Tasks but it doesn&amp;rsquo;t help when trying to reuse complete &lt;code&gt;PipelineRun&lt;/code&gt; and &lt;code&gt;Pipeline&lt;/code&gt; resources across projects and repositories while also being able to modify them as needed on a per team or repository basis.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;Jenkins X 3.x&lt;/a&gt; comes with its own default &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs&#34;&gt;pipeline catalog for different languages, tools and frameworks&lt;/a&gt;. This catalog contains reusable steps, Tasks and Pipelines you can use on any project.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s easy for you to fork this catalog to make changes for your team or share between teams in your company. You can make as many catalogs as you like and put whichever catalogs you want in the &lt;code&gt;extensions/pipeline-catalogs.yaml&lt;/code&gt; file of your cluster git repository of your &lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;Jenkins X 3.x install&lt;/a&gt;. For more detail there&amp;rsquo;s the &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/config.md#project.jenkins-x.io/v1alpha1.PipelineCatalog&#34;&gt;configuration reference here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Then when developers &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#create-a-new-project-from-a-quickstart&#34;&gt;create a new quickstart&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#import-an-existing-project&#34;&gt;import a repository&lt;/a&gt; developers will be asked to pick the catalog they want from your list if there is more than one, or the configured catalog is silently used.&lt;/p&gt;
+&lt;p&gt;This gives you complete freedom to configure things at a global, team or repository level while also making it easy to share changes across projects, teams and companies.&lt;/p&gt;
+&lt;h3 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h3&gt;
+&lt;p&gt;We are super excited about the combination of &lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;Jenkins X 3.x&lt;/a&gt;, &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt;, &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; and ChatOps.&lt;/p&gt;
+&lt;p&gt;We hope that you can use the above capabilities to solve your Continuous Delivery needs and over time you can take your Pipelines and make your own Pipeline Catalogs and share them with folks inside and outside of your company.&lt;/p&gt;
+&lt;p&gt;Hopefully this can help us all accelerate our Tekton pipelines and catalogs towards more continuous delivery awesome with flexible reusable tasks and pipelines! If you want to give this a try &lt;a href=&#34;https://jenkins-x.io/docs/v3/&#34;&gt;check out Jenkins X 3.x&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Hacktoberfest</title>
@@ -2816,27 +2935,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;p&gt;James Strachan will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/FlPE/jenkins-x-continuous-delivery-for-kubernetes?iframe=no&amp;amp;w=100%25&amp;amp;sidebar=yes&amp;amp;bg=no&#34;&gt;Jenkins X: Continuous Delivery for Kubernetes&lt;/a&gt; on Tuesday 18 Sep&lt;/p&gt;
 &lt;p&gt;and James Rawlings and Rob Davies will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/GFmE/extending-jenkins-x-for-fun-and-profit?iframe=no&amp;amp;w=100%25&amp;amp;sidebar=yes&amp;amp;bg=no&#34;&gt;Extending Jenkins X for fun&lt;/a&gt; on Tuesday 18 Sep too&lt;/p&gt;
 &lt;p&gt;The Jenkins X team is looking forward to seeing you at Jenkins World this year!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins X does KubeCon</title>
-      <link>https://jenkins-x.io/blog/2018/05/05/jenkins-x-does-kubecon/</link>
-      <pubDate>Sat, 05 May 2018 10:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2018/05/05/jenkins-x-does-kubecon/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;jenkins-x-at-kubecon&#34;&gt;Jenkins X at KubeCon&lt;/h2&gt;
-&lt;p&gt;Here is the &lt;a href=&#34;https://youtu.be/uHe7R_iZSLU?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34;&gt;video of my talk: Jenkins X: Easy CI/CD for Kubernetes&lt;/a&gt; at &lt;a href=&#34;https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2018/&#34;&gt;KubeCon Europe 2018&lt;/a&gt;.&lt;/p&gt;
-&lt;iframe width=&#34;640&#34; height=&#34;360&#34; src=&#34;https://www.youtube.com/embed/uHe7R_iZSLU?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34; frameborder=&#34;0&#34; allow=&#34;autoplay; encrypted-media&#34; allowfullscreen&gt;&lt;/iframe&gt;
-&lt;p&gt;You can also &lt;a href=&#34;https://docs.google.com/presentation/d/19DAFONpT3L4t6sisyTuK2_chHrVorQO_1ijWEo8Euas/edit?usp=sharing&#34;&gt;get the slides from this talk here&lt;/a&gt;&lt;/p&gt;
-&lt;img src=&#34;https://jenkins-x.io/news/jenkins-x-does-kubecon/kubecon-talk.jpg&#34;&gt;
-&lt;p&gt;You can also watch all the other &lt;a href=&#34;https://www.youtube.com/playlist?list=PLj6h78yzYM2N8GdbjmhVU65KYm_68qBmo&#34;&gt;KubeCon videos here&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;You can also register your interest in the &lt;a href=&#34;https://pages.cloudbees.com/K8s&#34;&gt;CloudBees Kubernetes product&lt;/a&gt; that I gave a quick sneak peek at towards the end of the talk.&lt;/p&gt;
-&lt;img src=&#34;https://www.cloudbees.com/sites/default/files/cloudbees-kubernetes.png&#34;&gt;
 
       </description>
     </item>
