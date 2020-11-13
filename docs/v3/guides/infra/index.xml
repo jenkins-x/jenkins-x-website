@@ -1,8 +1,8 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Infrastructure</title>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Infrastructure guides</title>
     <link>https://jenkins-x.io/docs/v3/guides/infra/</link>
-    <description>Recent content in Infrastructure on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <description>Recent content in Infrastructure guides on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
     
 	  <atom:link href="https://jenkins-x.io/docs/v3/guides/infra/index.xml" rel="self" type="application/rss+xml" />
@@ -12,6 +12,124 @@
         
       
     
+    
+    <item>
+      <title>Docs: Cloud Configuration</title>
+      <link>https://jenkins-x.io/docs/v3/guides/infra/cloud-config/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/infra/cloud-config/</guid>
+      <description>
+        
+        
+        &lt;p&gt;There are many configuration options of your cloud infrastructure for example cluster size, regions and resource names to name a few.  Depending on your cloud provider and what method you have used to create the cloud resources there are various ways to apply these configuration changes for cloud resources.&lt;/p&gt;
+&lt;p&gt;This section contains links to the various readmes that will help you configure &lt;strong&gt;cloud infrastructure resources&lt;/strong&gt;, note this is different to Jenkins X own configuration changes which are detailed &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/config/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;terraform&#34;&gt;Terraform&lt;/h1&gt;
+&lt;p&gt;Jenkins X cluster git repositories use cloud specific Terraform modules you can use to configure your cloud resources.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx#inputs&#34; class=&#34;btn bg-primary text-light&#34;&gt;GCP&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/terraform-aws-eks-jx#inputs&#34; class=&#34;btn bg-primary text-light&#34;&gt;AWS&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/terraform-azurerm-jx#inputs&#34; class=&#34;btn bg-primary text-light&#34;&gt;Azure&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: TLS and DNS</title>
+      <link>https://jenkins-x.io/docs/v3/guides/infra/tls_dns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/infra/tls_dns/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This section will describe how to enable automated TLS and DNS for your Jenkins X installation.&lt;/p&gt;
+&lt;p&gt;To achive this we will use a couple of open source projects to help enable automated DNS for your applications.&lt;/p&gt;
+&lt;p&gt;For this guide we are going to assume you own a domain called &lt;code&gt;foo.io&lt;/code&gt; which is managed by Google Cloud DNS, if it is not see &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/infra/google_cloud_dns&#34;&gt;configure cloud dns to manage a domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Jenkins X services will have URLs like &lt;code&gt;https://hook-jx.bar.foo.io&lt;/code&gt;.  The jx-requirements.yml &lt;code&gt;namespaceSubDomain:&lt;/code&gt; of &lt;code&gt;-jx&lt;/code&gt; refers to the Kubernetes namespace the service is running in, this helps avoid clashes of the same application running in different namespaces in the same cluster.&lt;/p&gt;
+&lt;p&gt;To start with we are focussed on GCP but will expand to other cloud providers.&lt;/p&gt;
+&lt;h1 id=&#34;google-cloud-platform&#34;&gt;Google Cloud Platform&lt;/h1&gt;
+&lt;h2 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;cluster created using Jenkins X &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/gke/&#34;&gt;GCP Terraform getting started&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;own a domain, we will use &lt;a href=&#34;https://domains.google.com/registrar/&#34;&gt;Google Domains&lt;/a&gt; in this guide but any provider will work&lt;/li&gt;
+&lt;li&gt;latest Jenkins X CLI, Infrastructure and Cluster git repository updates &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/upgrade&#34;&gt;upgrade&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;cloud-infrastructure&#34;&gt;Cloud Infrastructure&lt;/h3&gt;
+&lt;p&gt;First we will configure the cloud infrastructure requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a GCP Service Account with the &lt;code&gt;dns.admin&lt;/code&gt; role, see &lt;a href=&#34;https://cloud.google.com/iam/docs/understanding-roles#dns-roles&#34;&gt;here&lt;/a&gt; for more information&lt;/li&gt;
+&lt;li&gt;a managed cloud dns zone, see &lt;a href=&#34;https://cloud.google.com/dns/docs/zones&#34;&gt;here&lt;/a&gt; for more information&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To satisfy these requirements go to your infrastructure repository (contains Terraform main.tf) and add to your &lt;code&gt;values.auto.tfvars&lt;/code&gt; the following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;parent_domain = &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo.io&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Most people prefer to use a subdomain for a specific installation rather than purchasing one domain per cluster.  For example in a multi cluster setup you will probably want all using the same parent domain but two clusters using a different subdomain like development.foo.io, staging.foo.io leaving production using just the parent domain foo.io.&lt;/p&gt;
+&lt;p&gt;To use a subdomain for this cluster add the following configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;subdomain     = &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;bar&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now apply these changes:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add values.auto.tfvars
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feat: enable DNS cloud resources&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;terraform plan
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can now see your managed zone in GCP &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;cluster&#34;&gt;Cluster&lt;/h3&gt;
+&lt;p&gt;Next we will configure the cluster requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Install &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns#externaldns&#34;&gt;external-dns&lt;/a&gt; - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propogate globally across the internet&lt;/li&gt;
+&lt;li&gt;Install &lt;a href=&#34;https://cert-manager.io/docs/&#34;&gt;cert-manager&lt;/a&gt; - Kubernetes controller which watches for requests to ask &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s Encrypt&lt;/a&gt; to issue a new wildcard TLS certificate for your domain and will manage this including renewals&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To satisfy these requirements go to your cluster repository (contains helmfile.yaml)&lt;/p&gt;
+&lt;p&gt;Add external-dns to your clusters helmfile.yaml &lt;code&gt;releases&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: bitnami/external-dns
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Add cert-manager to your clusters helmfile.yaml &lt;code&gt;releases&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jetstack/cert-manager
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next we install&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a cluster wide &lt;a href=&#34;https://cert-manager.io/docs/concepts/issuer/&#34;&gt;Issuer&lt;/a&gt; which tells cert-manager how to validate you own your domain&lt;/li&gt;
+&lt;li&gt;a namespaced &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; to request a TLS certificate for services running in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
+  name: acme-jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Cert-manager will use the cluster issuer to request a TLS certificate for each namespaces &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; found.  The advantage here is that the same wildcard certificate is cached and reused for multiple namespaces reducing the risk of being &lt;a href=&#34;https://letsencrypt.org/docs/rate-limits/&#34;&gt;rate limited&lt;/a&gt; by Lets Encrypt.&lt;/p&gt;
+&lt;p&gt;Now install the &lt;code&gt;acme&lt;/code&gt; chart into any namespace you require TLS, e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
+  name: tls-jx-staging
+  namespace: jx-staging
+
+- chart: jx3/acme
+  name: tls-jx-production
+  namespace: jx-production
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The domain from setting up your infrastructure in step one should appear in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; of you cluster git repo.  Next configure your TLS options, update your &lt;code&gt;jx-requirements.yml&lt;/code&gt; with below.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; this is the top level &lt;code&gt;ingress:&lt;/code&gt; section and &lt;strong&gt;NOT&lt;/strong&gt; in the &lt;code&gt;environments:&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ingress:
+  domain: bar.foo.io
+  externalDNS: false &lt;span style=&#34;color:#75715e&#34;&gt;# this is unused and will be deprecated&lt;/span&gt;
+  namespaceSubDomain: -jx.
+  tls:
+    email: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;joe@gmail.com&amp;#34;&lt;/span&gt;
+    enabled: true
+    production: false
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When first installing set &lt;code&gt;tls.production=false&lt;/code&gt; so you use the Lets Encrtpt staging serivce which allows for more API calls before rate limniting requests.  They will issue a self-signed certificate so once happy everything is working change this to &lt;code&gt;tls.production=true&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Jenkins X uses a version stream to rollout tested versions of images, charts and default configuration.  The &lt;code&gt;jx-boot&lt;/code&gt; job will apply these versions to your helmfile but you can also run the step yourself to see the defaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops helmfile resolve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add values.auto.tfvars
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feat: enable DNS cloud resources&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now tail the admin logs and wait for the job to complete&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-to-get-tls-in-my-preview-environment&#34;&gt;How to get TLS in my preview environment?&lt;/h2&gt;
+&lt;p&gt;In your applications preview helm chart you can add a Kubernetes &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; the same as in your &lt;code&gt;jx&lt;/code&gt; namespace and cert-manager will create the secret needed by an Ingress rule for TLS.&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Docs: Minikube</title>
@@ -173,6 +291,40 @@ git push origin master
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: Configure Google Cloud DNS to manage my domain</title>
+      <link>https://jenkins-x.io/docs/v3/guides/infra/google_cloud_dns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs/v3/guides/infra/google_cloud_dns/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This guide will describe how to purchase a domain and configure GCP to manage it with &lt;a href=&#34;https://cloud.google.com/dns&#34;&gt;Cloud DNS&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Setup below is a cut down version of the original docs located &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/gke.md#gke-node-scopes&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Go to &lt;a href=&#34;https://domains.google.com/registrar&#34;&gt;Google Domains&lt;/a&gt; and purchase a domain.&lt;/p&gt;
+&lt;p&gt;Create a DNS zone which will contain the managed DNS records.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud dns managed-zones create &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo-io&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --dns-name &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo.io.&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --description &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Automatically managed zone by kubernetes.io/external-dns&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --project foo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Make a note of the nameservers that were assigned to your new zone.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud dns record-sets list &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --zone &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo-io&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --name &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo.io.&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --type NS &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --project foo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this case it&amp;rsquo;s ns-cloud-{e1-e4}.googledomains.com. but your&amp;rsquo;s could slightly differ, e.g. {a1-a4}, {b1-b4} etc.&lt;/p&gt;
+&lt;p&gt;Update google domains DNS settings and update the nameservers with the list of nameservers from the above step making sure to remove the last dot.
+e.g. in google domains enter the nameservers without the &amp;ldquo;.&amp;rdquo; suffix
+&lt;code&gt;ns-cloud-e1.googledomains.com&lt;/code&gt;
+not
+&lt;code&gt;ns-cloud-e1.googledomains.com.&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/google_domains.png&#34; alt=&#34;Edit Nameservers GCP&#34;&gt;&lt;/p&gt;
 
       </description>
     </item>
