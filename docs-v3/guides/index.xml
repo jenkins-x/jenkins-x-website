@@ -1,0 +1,835 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Admin Guides</title>
+    <link>https://jenkins-x.io/docs-v3/guides/</link>
+    <description>Recent content in Admin Guides on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    
+	  <atom:link href="https://jenkins-x.io/docs-v3/guides/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Docs-V3: Getting jx 3.x alpha</title>
+      <link>https://jenkins-x.io/docs-v3/guides/jx3/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/jx3/</guid>
+      <description>
+        
+        
+        &lt;p&gt;To try out the 3.x Alpha of Jenkins X you will need the 3.x version of the &lt;code&gt;jx&lt;/code&gt; binary.&lt;/p&gt;
+&lt;p&gt;You can download 3.x of &lt;code&gt;jx&lt;/code&gt; from here: &lt;a href=&#34;https://github.com/jenkins-x/jx-cli/releases&#34;&gt;https://github.com/jenkins-x/jx-cli/releases&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s basically a drop in alternative to the usual 2.x version of &lt;code&gt;jx&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Notes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;main development has been done using GitHub and Google Container Engine (GKE) but OSS contributions have been helping to validate and fix issues using other platforms.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;how-jx-3x-is-built&#34;&gt;How jx 3.x is built&lt;/h2&gt;
+&lt;p&gt;We are trying to take a microservices approach to creating improvements to Jenkins X with 3.x.&lt;/p&gt;
+&lt;p&gt;We are trying to keep 2.x of Jenkins X stable; but provide a place where we can rapidly innovate on 3.x.&lt;/p&gt;
+&lt;p&gt;So the main &lt;code&gt;jx&lt;/code&gt; CLI tool for 3.x is defined at &lt;a href=&#34;https://github.com/jenkins-x/jx-cli&#34;&gt;jenkins-x/jx-cli&lt;/a&gt; which is a small core using lots of separate &lt;a href=&#34;https://github.com/jenkins-x/jx-cli#plugins&#34;&gt;plugin binaries&lt;/a&gt;, &lt;a href=&#34;https://github.com/jenkins-x/jx-cli#components&#34;&gt;components&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x/jx-cli#libraries&#34;&gt;libraries&lt;/a&gt; which allows us to go faster improving 3.x, refactoring code, improving quality and code coverage while removing technical debt - without needing to touch 2.x.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Installing the Operator</title>
+      <link>https://jenkins-x.io/docs-v3/guides/operator/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/operator/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 3.x uses a &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; to manage installing + upgrading of Jenkins X and any other components in any environment. If you are interested you can read &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/&#34;&gt;how it works&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;using-terraform&#34;&gt;Using Terraform&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;NOTE&lt;/em&gt; if you are using one of the public clouds to install Jenkins X then Terraform will install the &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; for you so that there is no need for you to do so manually.&lt;/p&gt;
+&lt;p&gt;So the following approaches automatically install the operator for you:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/eks/&#34;&gt;Amazon&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/azure/&#34;&gt;Azure&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/gke/&#34;&gt;Google Cloud&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;git-user-and-token&#34;&gt;Git user and token&lt;/h2&gt;
+&lt;p&gt;To install the &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; you will need a pipeline user and token for the git repository.&lt;/p&gt;
+&lt;p&gt;This user and token needs read and write access to the git repository containing the installation configuration. Ideally the token will also have permissions to be able to create a webhook on the repository (to trigger CI/CD pipelines whenever someone creates a Pull Request on the git repository).&lt;/p&gt;
+&lt;p&gt;You can always setup webhooks by hand yourself whenever a git repository is &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/&#34;&gt;created or imported&lt;/a&gt; or the domain name of your &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; hook endpoint changes via the &lt;a href=&#34;https://github.com/jenkins-x/jx-verify/blob/master/docs/cmd/jx-verify_webhooks.md&#34;&gt;jx verify webhooks&lt;/a&gt; command. Though its easier to get Jenkins X to automate this for you as part of the CI/CD pipelines; it just requires the git user and token to have sufficient permissions to list, create and modify webhooks.&lt;/p&gt;
+&lt;p&gt;Note also that the same pipeline user and token is reused by default for all pipelines on &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/&#34;&gt;all repositories created or imported&lt;/a&gt; which will need read, write and webhook permissions on all of those repositories too. Though if you really want you can change this later on by &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/secrets/#edit-secrets&#34;&gt;editing the pipeline token&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;create-a-git-token&#34;&gt;Create a git token&lt;/h2&gt;
+&lt;p&gt;To create a git token for passing into the operator use this button:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,admin:repo_hook,delete_repo,write:packages,read:packages,write:discussion,workflow&#34; target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create new GitHub Token&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;installing-the-operator&#34;&gt;Installing the operator&lt;/h2&gt;
+&lt;p&gt;Run &lt;a href=&#34;https://github.com/jenkins-x/jx-admin/blob/master/docs/cmd/jx-admin_operator.md&#34;&gt;jx admin operator&lt;/a&gt; command inside the git clone of the &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;git repository&lt;/a&gt; you created previously:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin operator --username mygituser --token mygittoken
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you don&amp;rsquo;t specify the &lt;code&gt;username&lt;/code&gt; or &lt;code&gt;token&lt;/code&gt; parameters you will be prompted for them.&lt;/p&gt;
+&lt;p&gt;If you are not inside the git clone of the &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;git repository&lt;/a&gt; you will need to specify the &lt;code&gt;--url&lt;/code&gt; parameter for the git URL:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin operator --url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;https://github.com/myorg/env-mycluster-dev.git --username mygituser --token mygittoken
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will use helm to install the &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; which will trigger a Job to install Jenkins X (and re-trigger a Job whenever you commit to your git repository).&lt;/p&gt;
+&lt;p&gt;The terminal will display the logs as the boot &lt;code&gt;Job&lt;/code&gt; runs.&lt;/p&gt;
+&lt;p&gt;At any time you can tail the boot job logs via the &lt;a href=&#34;https://github.com/jenkins-x/jx-admin/blob/master/docs/cmd/jx-admin_log.md&#34;&gt;jx admin log&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jenkins X will now install itself.&lt;/p&gt;
+&lt;p&gt;If you want to, you can populate the &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/secrets/&#34;&gt;secrets&lt;/a&gt; once the &lt;code&gt;ExternalSecret&lt;/code&gt; custom resources have been created.&lt;/p&gt;
+&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../config&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../secrets&#34;&gt;Next&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Infrastructure guides</title>
+      <link>https://jenkins-x.io/docs-v3/guides/infra/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/infra/</guid>
+      <description>
+        
+        
+        &lt;p&gt;If you are looking for instructions on how to install for a specific cloud provider see:&lt;/p&gt;
+&lt;h3&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/#administration&#34;&gt;Administration getting started&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Here follows some additional custom guides:&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Secrets</title>
+      <link>https://jenkins-x.io/docs-v3/guides/secrets/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/secrets/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 3.x uses &lt;a href=&#34;https://github.com/godaddy/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; to manage populating secrets from your underlying secret store such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Alibaba Cloud KMS Secret Manager&lt;/li&gt;
+&lt;li&gt;Amazon Secret Manager&lt;/li&gt;
+&lt;li&gt;Azure Key Vault&lt;/li&gt;
+&lt;li&gt;Hashicorp Vault&lt;/li&gt;
+&lt;li&gt;GCP Secret Manager&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This lets you check in all of your other kubernetes resources and custom resource definitions into git for simple and powerful GitOps.&lt;/p&gt;
+&lt;p&gt;You can then rotate secrets easily independent of git.&lt;/p&gt;
+&lt;p&gt;This is the exact same graph as &lt;a href=&#34;https://github.com/godaddy/kubernetes-external-secrets#system-architecture&#34;&gt;here&lt;/a&gt;, with AWS Secrets Manager replaced by vault.
+&lt;div class=&#34;mermaid&#34;&gt;
+    
+graph TB
+    subgraph A[Kubernetes Cluster]
+        sqB[External Secrets Controller]
+        subgraph C[secrets-infra ns]
+            sqCV[Vault]
+        end
+        subgraph D[Kube api server]
+        end
+        D -- Get ExternalSecrets --&gt; sqB
+        sqB --&gt; D
+        sqB -- Fetch secrets properties --&gt; sqCV
+        sqCV --&gt; sqB
+        subgraph E[app ns]
+            sqEP[pods]
+            sqES[secrets]
+        end
+        sqB -- Upsert Secrets --&gt; sqES
+    end
+
+&lt;/div&gt;&lt;/p&gt;
+&lt;h2 id=&#34;vault&#34;&gt;Vault&lt;/h2&gt;
+&lt;p&gt;If you are using Vault as your back end for &lt;a href=&#34;https://github.com/godaddy/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; then before you try any of the following commands to populate secrets you need to make sure your termminal can access Vault.&lt;/p&gt;
+&lt;p&gt;To do this you can run the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_vault_portforward.md&#34;&gt;jx secret vault portforward&lt;/a&gt; command in a terminal:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret vault portforward
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should then be able to run the following &lt;code&gt;jx secret edit&lt;/code&gt; or &lt;code&gt;jx secret import&lt;/code&gt; commands.&lt;/p&gt;
+&lt;h2 id=&#34;edit-secrets&#34;&gt;Edit Secrets&lt;/h2&gt;
+&lt;p&gt;To edit the Secrets run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will prompt you to enter all the missing Secrets by default.&lt;/p&gt;
+&lt;p&gt;If you just want to enter a specific secret you can use &lt;code&gt;--filter&lt;/code&gt; or &lt;code&gt;-f&lt;/code&gt; to filter for a specific secret name.&lt;/p&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -f nexus
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;export-secrets&#34;&gt;Export Secrets&lt;/h2&gt;
+&lt;p&gt;You can export the current secrets to the file system via&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret export -f /tmp/mysecrets.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or to view them on the terminal&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret export -c
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;import-secrets&#34;&gt;Import Secrets&lt;/h2&gt;
+&lt;p&gt;If you have previously exported the secrets as shown above you can re-import them again (maybe into a different cluster):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret import -f /tmp/mysecrets.yaml 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;migrating-local-secrets&#34;&gt;Migrating Local Secrets&lt;/h3&gt;
+&lt;p&gt;If you have booted Jenkins X before you may well have secrets in your &lt;code&gt;~/.jx/localSecrets/mycluster/secrets.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;If the file is valid you can just run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret import -f ~/.jx/localSecrets/mycluster/secrets.yaml 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;migrating-secrets-from-vault&#34;&gt;Migrating Secrets from Vault&lt;/h3&gt;
+&lt;p&gt;If you have secrets already in a Vault then use the vault CLI tool to export the secrets to disk, reformat it in the above YAML layout and then import the secrets as above.&lt;/p&gt;
+&lt;h3 id=&#34;replicating-secrets-among-namespaces&#34;&gt;Replicating Secrets among namespaces&lt;/h3&gt;
+&lt;p&gt;Its quite common to need to replicate the same Secrets across namespaces. For example &lt;a href=&#34;https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/&#34;&gt;Image Pull Secrets&lt;/a&gt; to pull images from container registries which may need to be used in dev, staging and production.&lt;/p&gt;
+&lt;p&gt;The Jenkins X boot job does this automatically for any secret labelled with &lt;code&gt;secret.jenkins-x.io/replica-source=true&lt;/code&gt; using the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_replicate.md&#34;&gt;jx secret replicate&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret replicate --selector secret.jenkins-x.io/replica-source&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will replicate the secret to all permanent enivronments in the same cluster (e.g. a local Staging or Production environment).&lt;/p&gt;
+&lt;p&gt;If you want to replicate another secret just add the label &lt;code&gt;secret.jenkins-x.io/replica-source=true&lt;/code&gt; or you can add a new &lt;a href=&#34;https://github.com/jenkins-x/jx-secret/blob/master/docs/cmd/jx-secret_replicate.md&#34;&gt;jx secret replicate&lt;/a&gt; to the &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/#boot-job&#34;&gt;boot makefile&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Configuration</title>
+      <link>https://jenkins-x.io/docs-v3/guides/config/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/config/</guid>
+      <description>
+        
+        
+        &lt;p&gt;You can edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in the git repository that was created in an earlier step for your &lt;code&gt;dev&lt;/code&gt; environment, to configure various capabilities:&lt;/p&gt;
+&lt;p&gt;Make changes to the config using the help below or continue Next to run boot.&lt;/p&gt;
+&lt;nav&gt;
+  &lt;ul class=&#34;pagination&#34;&gt;
+    &lt;li class=&#34;page-item&#34;&gt;&lt;a class=&#34;page-link&#34; href=&#34;../secrets&#34;&gt;Previous&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;
+&lt;h2 id=&#34;secrets&#34;&gt;Secrets&lt;/h2&gt;
+&lt;p&gt;Boot currently supports the following options for managing secrets:&lt;/p&gt;
+&lt;h3 id=&#34;local-storage&#34;&gt;Local Storage&lt;/h3&gt;
+&lt;p&gt;This is the default or can be explicitly configured via &lt;code&gt;secretStorage: local&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If enabled secrets are loaded/saved into the folder &lt;code&gt;~/.jx/localSecrets/$clusterName&lt;/code&gt;. You can use &lt;code&gt;$JX_HOME&lt;/code&gt; to change the location of &lt;code&gt;~/.jx&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;vault&#34;&gt;Vault&lt;/h3&gt;
+&lt;p&gt;This is the recommended approach when using GKE or EKS providers. It can be explicitly configured via &lt;code&gt;secretStorage: vault&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: vault
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This configuration will cause &lt;code&gt;jx boot&lt;/code&gt;&#39;s pipeline to install a Vault using KMS and a cloud storage bucket to load/save secrets.&lt;/p&gt;
+&lt;p&gt;The big advantage of Vault is it means a team of folks can then easily run &lt;code&gt;jx boot&lt;/code&gt; on the same cluster. Even if you accidentally delete your Kubernetes cluster, it&amp;rsquo;s easy to restore from the KMS + cloud bucket.&lt;/p&gt;
+&lt;h3 id=&#34;google-secret-manager&#34;&gt;Google Secret Manager&lt;/h3&gt;
+&lt;p&gt;This can be explicitly configured via &lt;code&gt;secretStorage: gsm&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: gsm
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;git&#34;&gt;Git&lt;/h2&gt;
+&lt;p&gt;Jenkins X supports a number of different Git providers. You can specify the Git provider you wish to use and the organisation to use for the Git providers for each environment in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;github&#34;&gt;GitHub&lt;/h3&gt;
+&lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h3&gt;
+&lt;p&gt;The configuration is similar to the above but you need to specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; (if it differs from ht&lt;span&gt;tps://github.com) and &lt;code&gt;gitKind: github&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: github
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: ghe
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://github.myserver.com
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h3&gt;
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;. If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: bitbucketserver
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: bs
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://bitbucket.myserver.com
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h3&gt;
+&lt;p&gt;For this specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;. If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: bitbucketcloud
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: bc
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;gitlab&#34;&gt;GitLab&lt;/h3&gt;
+&lt;p&gt;For this specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;. If you want to use &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: gitlab
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: gl
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://gitlab.com
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gs://jx-logs&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: lighthouse
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;repository&#34;&gt;Repository&lt;/h2&gt;
+&lt;p&gt;Jenkins X lets you configure different artifact repositories. We use artifact repositories to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;store artifacts from some kinds of build (e.g. Java builds tend to deploy jars, &lt;code&gt;pom.xml&lt;/code&gt; files and tarballs)&lt;/li&gt;
+&lt;li&gt;act as a Maven proxy to cache maven dependencies when using java/maven builds&lt;/li&gt;
+&lt;li&gt;implement a chart repository for releasing helm charts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;nexus&#34;&gt;Nexus&lt;/h3&gt;
+&lt;p&gt;By default if you don&amp;rsquo;t make any explicit configuration then Jenkins X uses:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sonatype.com/nexus-repository-oss&#34;&gt;Nexus&lt;/a&gt; as an artifact repository to store artifacts (e.g. Java jars, &lt;code&gt;pom.xml&lt;/code&gt; files, tarballs or npm modules etc)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; as a repository of charts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can explicitly configure nexus via the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: nexus
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bucketrepo&#34;&gt;Bucketrepo&lt;/h3&gt;
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/bucketrepo&#34;&gt;bucketrepo&lt;/a&gt; chart is a small footprint microservice that is an alternative to both &lt;a href=&#34;https://www.sonatype.com/nexus-repository-oss&#34;&gt;Nexus&lt;/a&gt; and &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;Chartmusem&lt;/a&gt; which can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;act as a Maven proxy to cache maven dependencies when using java/maven builds&lt;/li&gt;
+&lt;li&gt;act as an artifact repository (e.g. to deploy maven artifacts)&lt;/li&gt;
+&lt;li&gt;implement a chart repository for releasing helm charts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To enable &lt;code&gt;bucketrepo&lt;/code&gt; use the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: bucketrepo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default the local file system in the bucket repo is used to store artifacts.&lt;/p&gt;
+&lt;p&gt;To enable cloud storage for artifacts in &lt;code&gt;bucketrepo&lt;/code&gt; you need to enable the &lt;code&gt;storage.repository&lt;/code&gt; configuration in which case a cloud bucket is used instead. See the &lt;a href=&#34;#storage&#34;&gt;storage section for more details&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;none&#34;&gt;None&lt;/h3&gt;
+&lt;p&gt;If you want to disable the artifact repository (nexus) but still use ChartMuseum for charts you can use the following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: none
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that without using an artifact repository you will not be able to deploy Maven artifacts; though &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; will still be used as a repository of charts&lt;/p&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;p&gt;the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file can configure whether you want to use long-term storage for logs + reports and what cloud storage buckets to use to store the data.&lt;/p&gt;
+&lt;p&gt;e.g. the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file enables long-term storage:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section. The following URL syntax is supported&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;gs://anotherBucket/mydir/something.txt&lt;/code&gt; : using a GCS bucket on GCP&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;s3://nameOfBucket/mydir/something.txt&lt;/code&gt; : using S3 bucket on AWS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;azblob://thatBucket/mydir/something.txt&lt;/code&gt; : using an Azure bucket&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;http://foo/bar&lt;/code&gt; : file stored in Git not using HTTPS&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;https://foo/bar&lt;/code&gt; : file stored in a Git repo using HTTPS&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://my-logs
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://my-logs
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://my-repo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
+
+&lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
+&lt;strong&gt;NOTE&lt;/strong&gt; On GKE your node-pool requires additional permissions to write into GCS buckets,
+for more information on this view the &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/storage/#gke-storage-permissions&#34;&gt;GKE Storage Permissions&lt;/a&gt;
+&lt;/div&gt;
+
+For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/storage/&#34;&gt;Storage Guide&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;ingress&#34;&gt;Ingress&lt;/h2&gt;
+&lt;p&gt;When installing Jenkins X it is common that you will want to use a custom domain to access services and applications running in Kubernetes.&lt;/p&gt;
+&lt;p&gt;If you don&amp;rsquo;t specify anything in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file then boot will default to using HTTP (rather than HTTPS) and using &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; as the DNS mechanism.&lt;/p&gt;
+&lt;p&gt;After running boot your &lt;code&gt;jx-requirements.yml&lt;/code&gt; may look like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;clusterName&lt;/span&gt;: my-cluster-name
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: my-git-org
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;project&lt;/span&gt;: my-gke-project
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;zone&lt;/span&gt;: europe-west1-d
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3.4&lt;/span&gt;.nip.io
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: local
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: prow
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;custom-domains-with-external-dns&#34;&gt;Custom domains with external dns&lt;/h3&gt;
+&lt;p&gt;There is a very useful open source project called &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;external-dns&lt;/a&gt; which integrates with Cloud Providers own managed dns services, to automatically enable dns.&lt;/p&gt;
+&lt;p&gt;In labs this has been verified on GKE so far but we are looking to do more very soon.&lt;/p&gt;
+&lt;h4 id=&#34;configure-for-google-cloud&#34;&gt;Configure for Google Cloud&lt;/h4&gt;
+&lt;p&gt;If you want to buy a new domain then using &lt;a href=&#34;https://domains.google.com/m/registrar/search&#34;&gt;Google Domains&lt;/a&gt; is nice and easy&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/getting-started/googlednscreate.png&#34; width=&#34;80%&#34; float=&#34;left&#34;&gt;
+&lt;p&gt;First configure &lt;a href=&#34;https://cloud.google.com/dns&#34;&gt;Google Cloud DNS&lt;/a&gt; in the GCP project that your Kubernetes cluster runs, to manage your custom domain, you will have a list of four servers returned&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;➜ jx create domain gke -d acame-trading.com
+
+Please update your existing DNS managed servers to use the nameservers below
+ns-cloud-e1.googledomains.com.
+ns-cloud-e2.googledomains.com.
+ns-cloud-e3.googledomains.com.
+ns-cloud-e4.googledomains.com.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now update your dns provider so that &lt;a href=&#34;https://cloud.google.com/dns&#34;&gt;Google Cloud DNS&lt;/a&gt; can manage your domain, here&amp;rsquo;s an example using &lt;a href=&#34;https://domains.google.com/m/registrar/search&#34;&gt;Google Domains&lt;/a&gt;:&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/getting-started/googlednsconfigure.png&#34; width=&#34;80%&#34; float=&#34;left&#34;&gt;
+&lt;p&gt;Next you can edit the &lt;code&gt;jx-requirements.yml&lt;/code&gt; and add your domain:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; when using jx on GKE the &lt;code&gt;externalDNS:&lt;/code&gt; value is ignored and will be deprecated.  This flag used to create cloud resources but these have now been moved outside of the boot process.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: my.domain.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Edit the &lt;code&gt;helmfile.yaml&lt;/code&gt; in your environment repository and add the external dns chart:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apps&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: bitnami/external-dns
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Remember to repeat this in each environment git repository, you can also use different domains for each environment by repeating all the external dns steps here.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; it can take a few minutes for DNS to propagate for each URL so please be patient when you first enable external dns or deploy a new application into an environment for the first time.&lt;/p&gt;
+&lt;h3 id=&#34;automated-tls&#34;&gt;Automated TLS&lt;/h3&gt;
+&lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.tls.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;clusterName&lt;/span&gt;: mycluster
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;environmentGitOwner&lt;/span&gt;: myorg
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitKind&lt;/span&gt;: github
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitName&lt;/span&gt;: github
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;gitServer&lt;/span&gt;: https://github.com
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: jx
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;provider&lt;/span&gt;: gke
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;vaultName&lt;/span&gt;: jx-vault-myname
+&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;span style=&#34;color:#66d9ef&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: my.domain.com
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: -jx.
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;email&lt;/span&gt;: someone@acme.com
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;secretStorage&lt;/span&gt;: vault
+&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;logs&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://jx-prod-logs
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;reports&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;webhook&lt;/span&gt;: prow
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;recovering&#34;&gt;Recovering&lt;/h3&gt;
+&lt;p&gt;If anything ever goes wrong (e.g. your cluster, namespace or tekton gets deleted) and your installation is incapable of running tekton pipelines you can always re-run &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; on your laptop to restore your cluster.&lt;/p&gt;
+&lt;h2 id=&#34;backups&#34;&gt;Backups&lt;/h2&gt;
+&lt;p&gt;Jenkins X is integrated with &lt;a href=&#34;https://velero.io&#34;&gt;Velero&lt;/a&gt; to support backing up the state of Jenkins X (the Kubernetes and custom resources together with persistent volumes).&lt;/p&gt;
+&lt;p&gt;To enable Velero add the following to your &lt;code&gt;jx-requirements.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;storage&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;backup&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;url&lt;/span&gt;: gs://my-backup-bucket
+&lt;span style=&#34;color:#66d9ef&#34;&gt;velero&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: velero
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using whatever your cloud providers bucket URLs are. For more background, check out the &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/storage/&#34;&gt;storage guide&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;user-interface&#34;&gt;User Interface&lt;/h2&gt;
+&lt;p&gt;If you&amp;rsquo;re looking for a UI check out &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/ui/&#34;&gt;Octant the open source web UI for Jenkins X&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Upgrade</title>
+      <link>https://jenkins-x.io/docs-v3/guides/upgrade/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/upgrade/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;cli&#34;&gt;CLI&lt;/h2&gt;
+&lt;p&gt;To upgrade the jx CLI run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx upgrade cli
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To upgrade jx subcommand plugins run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx upgrade plugins
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;infrastructure&#34;&gt;Infrastructure&lt;/h2&gt;
+&lt;p&gt;If you have used one of the Jenkins X Terraform Git repositories to create and manage your cloud resources then you have two options.&lt;/p&gt;
+&lt;h3 id=&#34;terraform-manual-apply&#34;&gt;Terraform manual apply&lt;/h3&gt;
+&lt;p&gt;If you are running the Terraform apply commands yourself then from your infrastructure Git repository run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;export TF_VAR_jx_bot_username=[your bot username]
+export TF_VAR_jx_bot_token=[your bot token]
+terraform get -update
+terraform plan
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;terraform-cloud&#34;&gt;Terraform Cloud&lt;/h3&gt;
+&lt;p&gt;If you are using &lt;a href=&#34;https://www.terraform.io/&#34;&gt;Terraform Cloud&lt;/a&gt; then from your infrastructure Git repository run:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;terraform get -update
+git commit -a -m &#39;chore: upgrade cloud infra&#39;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Terraform Cloud should trigger automatically and apply the updates, view the log in Terraform Cloud.&lt;/p&gt;
+&lt;h2 id=&#34;cluster&#34;&gt;Cluster&lt;/h2&gt;
+&lt;p&gt;You can upgrade your Jenkins X installation at any time by running the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_update.md&#34;&gt;jx gitops upgrade&lt;/a&gt; command inside a git checkout of your cluster GitOps repository:&lt;/p&gt;
+&lt;p&gt;First make sure you have the latest git contents as the &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/#boot-job&#34;&gt;boot job will push changes&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git pull
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Make sure you have no pending git commits&amp;hellip;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git status
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now if your git clone is clean run the following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops upgrade
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;upgrade your local &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; to the latest which has passed the latest tests&lt;/li&gt;
+&lt;li&gt;make any changes in the version stream to the &lt;a href=&#34;https://jenkins-x.io/docs/v3/about/how-it-works/#boot-job&#34;&gt;boot job and its configuration&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;After running this command you will usually have some changes in git you can review. If you are happy with the changes commit them and create a Pull Request so that they can get applied on your cluster.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add *
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: upgrade versions&amp;#34;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;merge-conflicts&#34;&gt;Merge conflicts&lt;/h3&gt;
+&lt;p&gt;It is possible that you will have merge conflicts.  You can follow the inline git helper messages to resolve conflicts - or use your IDE to help figure out the merge issues. Usually if there are conflicts its safest to use the upstream version; particularly from the &lt;code&gt;versionStream&lt;/code&gt; dir.&lt;/p&gt;
+&lt;p&gt;Under the hood Kpt is used to fetch changes from the upstream defined in each Kptfile.&lt;br&gt;
+By default the &lt;code&gt;versionStream&lt;/code&gt; directory has a Kpt strategy of &lt;code&gt;force-delete-replace&lt;/code&gt; which removes all your changes in that folder. In order to merge your changes with the ones coming from upstream, add a file: &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; with the following content:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;config&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;relativePath&lt;/span&gt;: versionStream
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;strategy&lt;/span&gt;: resource-merge
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once ready, make a pull request onto your cluster repository, review changes and merge.  The &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;Jenkins X git operator&lt;/a&gt; will automatically apply the upgrades into your cluster.&lt;/p&gt;
+&lt;h3 id=&#34;replacing-your-local-versionstream&#34;&gt;Replacing your local versionStream&lt;/h3&gt;
+&lt;p&gt;If you are having merge conflicts trying to upgrade your installation you could just replace the &lt;code&gt;versionStream&lt;/code&gt;  directory with the latest version stream folder. &lt;strong&gt;NOTE&lt;/strong&gt; this will overwrite any local changes you have made inside the &lt;code&gt;verisonStream&lt;/code&gt; folder. Though everything is versioned in git so you can always review the changes.&lt;/p&gt;
+&lt;p&gt;Inside your cluster git repository run this command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kpt pkg update --strategy force-delete-replace versionStream
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That will update your &lt;code&gt;versionStream&lt;/code&gt; directory to be in line with the latest version stream. You can always then review the changes before committing them.&lt;/p&gt;
+&lt;h3 id=&#34;configure-merge-strategy&#34;&gt;Configure merge strategy&lt;/h3&gt;
+&lt;p&gt;You can configure the &lt;code&gt;kpt&lt;/code&gt; strategy used to apply changes from the version stream into your &lt;code&gt;versionStream&lt;/code&gt; folder via a custom configuration file.&lt;/p&gt;
+&lt;p&gt;Create a file called &lt;code&gt;.jx/gitops/kpt-strategy.yaml&lt;/code&gt; in your dev cluster git repository that looks like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;config&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;relativePath&lt;/span&gt;: versionStream
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;strategy&lt;/span&gt;: alpha-git-patch
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;this will configure that the &lt;code&gt;alpha-git-patch&lt;/code&gt; strategy will be used whenever you try &lt;code&gt;jx gitops upgrade&lt;/code&gt; which should preserve any local changes; though you may have to resolve some git conflicts in your IDE (as described above).&lt;/p&gt;
+&lt;p&gt;To avoid any possible git merge issues its a good idea to try keep local source changes out of the &lt;code&gt;versionStream&lt;/code&gt; folder if you can.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Health</title>
+      <link>https://jenkins-x.io/docs-v3/guides/health/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/health/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X v3.x now has a CLI plugin that works with &lt;a href=&#34;https://github.com/Comcast/kuberhealthy&#34;&gt;Kuberhealthy&lt;/a&gt; to check the health of a working Jenkins X.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx health&lt;/code&gt; plugin is self contained in the git repository &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health&#34;&gt;https://github.com/jenkins-x-plugins/jx-health&lt;/a&gt;.  This provides a way to query teh result of health checks that run periodically in each Kubernetes namespace.&lt;/p&gt;
+&lt;p&gt;The plugin is also useful in a more locked down cluster for developers with reduced RBAC permissions.  A user only needs permissions to read the Kuberhealth state custom resources &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&#34;&gt;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Kuberhealthy provides an easy way to extend using custom health checks to report errors.  To see how to write your own check see the docs &lt;a href=&#34;https://github.com/Comcast/kuberhealthy/blob/master/docs/EXTERNAL_CHECK_CREATION.md&#34;&gt;here&lt;/a&gt;.  Jenkins X already comes with a set of custom health checks that can be installed that report errors, for example with webhooks, missing secrets, a bad install or invalid bot token.  For more details take a look here &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&#34;&gt;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It is early days but we&amp;rsquo;d like to encourrage contributions to add extra checks as Jenkins X v3 matures.  If you have a check that you would like to add please reach out in the community channels or create an issue or pull request.&lt;/p&gt;
+&lt;h1 id=&#34;try-it-out&#34;&gt;Try it out&lt;/h1&gt;
+&lt;p&gt;We havn&amp;rsquo;t enabled Kuberhealthy by default yet as we&amp;rsquo;d like more feedback but to enable on your existing v3 installation:&lt;/p&gt;
+&lt;p&gt;Get the plugin by running&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx upgrade cli
+jx upgrade plugins
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You will also need to upgrade your clusters version stream which updates the cluster to the latest release&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx gitops upgrade
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;git commit / push then check the git operator job is successful&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then to add the new server side checks (kuberhealthy ) again from a cloned copy of your cluster git repo, run&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx gitops helmfile add --chart kuberhealthy/kuberhealthy
+jx gitops helmfile add --chart jx3/jx-kh-check
+jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-jx
+jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-install 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;review the local changes, you should see four new charts added to your helmfile.yaml
+git commit / push then check the git operator job is successful&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;once completed you can use the new health CLI plugin to get health statuses that run periodically checking different things, our favorite is the watch for checks across all namespaces…&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx health get status --all-namespaces --watch
+&lt;/code&gt;&lt;/pre&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Migrate</title>
+      <link>https://jenkins-x.io/docs-v3/guides/migrate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/migrate/</guid>
+      <description>
+        
+        
+        &lt;p&gt;If you wish to migrate from older versions of Jenkins X to v3 we recommend &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;spinning up a new cluster for v3&lt;/a&gt; and then incrementally moving projects from the old cluster to the new cluster.&lt;/p&gt;
+&lt;p&gt;This might sound heavy handed but the issue with working with multiple versions of a number of charts like &lt;code&gt;lighthouse&lt;/code&gt; and &lt;code&gt;tekton&lt;/code&gt; is that they use cluster scoped resources (CRDs and &lt;code&gt;clusterrole&lt;/code&gt; resources for example) which can compete with each other. e.g. installing a new version of a chart may well break an old installation.&lt;/p&gt;
+&lt;p&gt;So its safer to &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;spin up a new cluster and install v3 there&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Once you have a new cluster you can just &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#import-an-existing-project&#34;&gt;import projects&lt;/a&gt; into the new cluster via &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#import-an-existing-project&#34;&gt;jx project import&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can then test the projects work fine in the new v3 cluster. If they do you can remove them from the old cluster via &lt;code&gt;jx delete application&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;batch-importing&#34;&gt;Batch importing&lt;/h2&gt;
+&lt;p&gt;To batch import lots of projects from the old cluster:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;git clone the new cluster&amp;rsquo;s git repository (with the &lt;code&gt;helmfile.yaml&lt;/code&gt; file inside) and &lt;code&gt;cd&lt;/code&gt; into the directory&lt;/li&gt;
+&lt;li&gt;verify you are in the correct git clone by running this command&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ls -al helmfile.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;you should see the &lt;code&gt;helmfile.yaml&lt;/code&gt; file from the v3 installation&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;now connect to your old Jenkins X cluster. Using jx v2 you can use &lt;code&gt;jx ctx&lt;/code&gt; to switch contexts or refer to your cloud providers documentation on how to switch &lt;code&gt;kubectl&lt;/code&gt; to point to different clusters&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;verify you can see the old source repositories via:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;now run the &lt;a href=&#34;&#34;&gt;jx gitops repository export&lt;/a&gt; command&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;the local file &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; should have been modified with the exported repositories&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;review the changes to this file - remove any projects you don&amp;rsquo;t want to import&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;now git commit this file:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add .jx
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: import repositories&amp;#34;&lt;/span&gt;
+git push 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;connect to your new cluster&lt;/li&gt;
+&lt;li&gt;you can watch the setup pipeline run via &lt;code&gt;jx admin log&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;once complete you should see the imported projects:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Multi-Cluster</title>
+      <link>https://jenkins-x.io/docs-v3/guides/multi-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/multi-cluster/</guid>
+      <description>
+        
+        
+        &lt;p&gt;We recommend using separate clusters for your &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments. This lets you completely isolate your environments which improves security.&lt;/p&gt;
+&lt;h2 id=&#34;setting-up-multi-cluster&#34;&gt;Setting up multi cluster&lt;/h2&gt;
+&lt;p&gt;Follow new &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;getting started approach&lt;/a&gt; to setup a new cluster. For &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; you typically won&amp;rsquo;t need lots of the development tools like lighthouse and tekton; you will just want your actual applications and any additional services you need to run them (e.g. maybe nginx-ingress or cert-manager etc).&lt;/p&gt;
+&lt;p&gt;Then when you have a git repository URL for your &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt;  cluster, &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/create-project/#import-an-existing-project&#34;&gt;import the git repository&lt;/a&gt; like you would any other git repository into your development cluster using the &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx project import --url https://github.com/myowner/my-prod-repo.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will create a Pull Request on your development cluster git repository to link to the &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; git repository on promotions of apps.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Progressive Delivery</title>
+      <link>https://jenkins-x.io/docs-v3/guides/progressive-delivery/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/progressive-delivery/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Progressive delivery allows you to gradually rollout new versions of your application to an environment using &lt;em&gt;canaries&lt;/em&gt; and gradually giving traffic to the new version until you are happy to fully rollover to the new version.&lt;/p&gt;
+&lt;p&gt;Our recommendation for using progressive delivery with Jenkins X is to use:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; as the progressive delivery controller&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt; as the service mesh to provide advanced load balancing capabilities across internal or external networking&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;configuring-progressive-delivery&#34;&gt;Configuring Progressive Delivery&lt;/h2&gt;
+&lt;p&gt;Please follow the usual &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/&#34;&gt;getting started guide for boot and helm 3&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;add-the-istio-and-flagger-apps&#34;&gt;Add the istio and flagger apps&lt;/h3&gt;
+&lt;p&gt;Please make sure your &lt;code&gt;helmfile.yaml&lt;/code&gt; has the necessary apps for using &lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; and &lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt;. Your &lt;code&gt;helmfile.yaml&lt;/code&gt; in your development environment git repository should look something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jx-labs/istio
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: flagger/flagger
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: flagger/grafana
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jx-labs/flagger-metrics
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: stable/kuberhealthy
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;So that you remove &lt;code&gt;stable/nginx-ingress&lt;/code&gt; from your &lt;code&gt;helmfile.yaml&lt;/code&gt; file and ensure the above apps are added at the top of the file.&lt;/p&gt;
+&lt;p&gt;Also for now I&amp;rsquo;m afraid you will have to remove the &lt;code&gt;jenkins-x/jxui&lt;/code&gt; chart as its currently not working yet with istio ingress - but we can hopefully get that working soon.&lt;/p&gt;
+&lt;h3 id=&#34;enable-istio-based-ingress&#34;&gt;Enable istio based ingress&lt;/h3&gt;
+&lt;p&gt;To avoid having 2 &lt;code&gt;LoadBalancer&lt;/code&gt; services for both &lt;code&gt;istio&lt;/code&gt; and &lt;code&gt;nginx&lt;/code&gt; (which costs more money) its easier to switch to pure istio for both internal and external load balancing. This also results in a smaller footprint.&lt;/p&gt;
+&lt;p&gt;To do that ensure that &lt;code&gt;kind: istio&lt;/code&gt; is added to the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in the top level &lt;code&gt;ingress:&lt;/code&gt; section like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: istio
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now your development git repository should be setup and be ready. Now:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;make sure you have setup &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/secrets/&#34;&gt;any secrets you need to boot&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When it is all complete you should see istio, flagger, grafana pods running in the &lt;code&gt;istio-system&lt;/code&gt; namespace something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+flagger-66dc49cd-g6ptp                  1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+grafana-7d7d7476f6-ff6bm                1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+istio-ingressgateway-598796f4d9-sq8b7   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+istiod-7d9c7bdd6-vjp9j                  1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+kuberhealthy-f54f7f7df-b5gbf            1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;          32h
+kuberhealthy-f54f7f7df-j6qwt            1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+prometheus-b47d8c58c-n974m              2/2     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          32h
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;From 1.5 onwards istio is pretty small; just 2 pods. Note that those &lt;code&gt;kuberhealthy&lt;/code&gt; pods are optional and just help with reporting.&lt;/p&gt;
+&lt;h3 id=&#34;enable-istio-in-stagingproduction&#34;&gt;Enable istio in staging/production&lt;/h3&gt;
+&lt;p&gt;If you wish to use a Canary with &lt;a href=&#34;https://flagger.app/&#34;&gt;flagger&lt;/a&gt; and &lt;a href=&#34;https://istio.io/&#34;&gt;istio&lt;/a&gt; in your staging or production namespace you need to make sure you have labelled the namespace correctly to enable istio injection.&lt;/p&gt;
+&lt;p&gt;To enable istio in staging:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl label namespace jx-staging istio-injection&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;enabled
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To enable istio in production:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl label namespace jx-production istio-injection&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;enabled
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;defaulting-to-use-canary&#34;&gt;Defaulting to use Canary&lt;/h3&gt;
+&lt;p&gt;Run the following command to default to using canary deployments and horizontal pod autoscaling whenever you &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;create a new quickstart&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;import a project&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx edit deploy --team --canary --hpa
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will enable all new quickstarts and imported projects to use canary rollouts and use horizontal pod autoscaling in all environments.&lt;/p&gt;
+&lt;p&gt;You can switch the defaults back again at any time or configure any app to change its defaults by running &lt;code&gt;jx edit deploy&lt;/code&gt; inside a git clone of an application.&lt;/p&gt;
+&lt;h3 id=&#34;enablingdisabling-canaryhpa-in-an-environment&#34;&gt;Enabling/Disabling Canary/HPA in an Environment&lt;/h3&gt;
+&lt;p&gt;If you want to enable/disable canary or horizontal pod autoscaling for a specific app in an environment then you can &lt;a href=&#34;https://jenkins-x.io/docs/v3/develop/apps/#customising-charts&#34;&gt;follow the app customisation approach&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Assuming your app is called &lt;code&gt;myapp&lt;/code&gt; then in the git repository for the environment (e.g. &lt;code&gt;Staging&lt;/code&gt;) you can add/edit a file called &lt;code&gt;apps/mychart/values.yaml&lt;/code&gt; to look like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;canary&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;hpa&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;you can enable/disable those 2 flags for canary releases and horizontal pod autoscaler at any point in any environment.&lt;/p&gt;
+&lt;h2 id=&#34;using-progressive-delivery&#34;&gt;Using Progressive Delivery&lt;/h2&gt;
+&lt;p&gt;Once you have followed the above steps create a &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;quickstart application&lt;/a&gt; in the usual way.&lt;/p&gt;
+&lt;p&gt;As you merge changes to the master branch of your application Jenkins X will create a new release and &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/using/#how-does-promotion-actually-work&#34;&gt;promote it to the staging environment&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However if Canary deployment is enabled your new version will gradually be rolled out progressively:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the defaults are that 20% of the traffic will go to the new version&lt;/li&gt;
+&lt;li&gt;flagger will keep monitoring the metrics used in the Canary resource to determine if the canary is good&lt;/li&gt;
+&lt;li&gt;after the configured time period is over the traffic will be increased to 40% then 60%&lt;/li&gt;
+&lt;li&gt;eventually if things look good the new version will fully rollout to 100% traffic&lt;/li&gt;
+&lt;li&gt;if anything goes bad during the rollout time period the old version is restored&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There is an excellent &lt;a href=&#34;https://youtu.be/7eePqtxW7NM&#34;&gt;video showing this in action&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs-V3: Jenkins</title>
+      <link>https://jenkins-x.io/docs-v3/guides/jenkins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/docs-v3/guides/jenkins/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/jx3/&#34;&gt;Jenkins X version 3 &lt;/a&gt; includes experimental support for the interoperability of Jenkins and Jenkins X&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
