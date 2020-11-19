@@ -24,11 +24,11 @@
 <meta property="og:description" content="Automated TLS and DNS" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/infra/tls_dns/" />
-<meta property="article:modified_time" content="2020-11-18T13:14:29+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-19T16:18:43+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="TLS and DNS">
 <meta itemprop="description" content="Automated TLS and DNS">
-<meta itemprop="dateModified" content="2020-11-18T13:14:29&#43;00:00" />
-<meta itemprop="wordCount" content="733">
+<meta itemprop="dateModified" content="2020-11-19T16:18:43&#43;00:00" />
+<meta itemprop="wordCount" content="1269">
 
 
 
@@ -928,6 +928,9 @@ if (!doNotTrack) {
       </ul>
     </li>
     <li><a href="#how-to-get-tls-in-my-preview-environment">How to get TLS in my preview environment?</a></li>
+    <li><a href="#what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</a></li>
+    <li><a href="#what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</a></li>
+    <li><a href="#how-can-i-check-if-cert-manager-has-issued-a-certificate">How can I check if cert-manager has issued a certificate?</a></li>
   </ul>
 </nav>
 
@@ -998,15 +1001,24 @@ if (!doNotTrack) {
     <div class="lead">Automated TLS and DNS</div>
 	       
 	<p>This section will describe how to enable automated TLS and DNS for your Jenkins X installation.</p>
-<p>To achive this we will use a couple of open source projects to help enable automated DNS for your applications.</p>
+<p>To achieve this we will use a couple of open source projects to help enable automated DNS for your applications.</p>
 <p>For this guide we are going to assume you own a domain called <code>foo.io</code> which is managed by Google Cloud DNS, if it is not see <a href="/docs/v3/guides/infra/google_cloud_dns">configure cloud dns to manage a domain</a>.</p>
-<p>Jenkins X services will have URLs like <code>https://hook-jx.bar.foo.io</code>.  The jx-requirements.yml <code>namespaceSubDomain:</code> of <code>-jx</code> refers to the Kubernetes namespace the service is running in, this helps avoid clashes of the same application running in different namespaces in the same cluster.</p>
+<p>A common requirement for domains is to have production services accessed using a parent / <a href="https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-custom-domains-and-github-pages#using-an-apex-domain-for-your-github-pages-site">apex domain</a>
+for example:</p>
+<p><a href="https://foo.com">https://foo.com</a></p>
+<p>Many organisations have extra requirements for development and test multi cluster environments to access services at</p>
+<p><a href="https://dev.foo.com">https://dev.foo.com</a>
+and
+<a href="https://staging.foo.com">https://staging.foo.com</a></p>
+<p>These use subdomains.</p>
+<p>In this guide below there is a prerequisite that you must already have a domain which is managed by GCP, this is so that you can choose whichever of the scenarios above you need.  It also means the dns management of the apex domain happens outside of a single cluster installation and can be shared by multiple installations using a subdomain.</p>
+<p>Jenkins X services will have URLs like <code>https://hook-jx.dev.foo.io</code>.  The jx-requirements.yml <code>namespaceSubDomain:</code> of <code>-jx</code> which is in the cluster git repository refers to the Kubernetes namespace the service is running in, this avoids clashes of the same application running in different namespaces in the same cluster.</p>
 <p>To start with we are focussed on GCP but will expand to other cloud providers.</p>
 <h1 id="google-cloud-platform">Google Cloud Platform</h1>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>cluster created using Jenkins X <a href="/docs/v3/getting-started/gke/">GCP Terraform getting started</a></li>
-<li>own a domain, we will use <a href="https://domains.google.com/registrar/">Google Domains</a> in this guide but any provider will work</li>
+<li>own a domain and have GCP manage it, <a href="/docs/v3/guides/infra/google_cloud_dns">configure cloud dns to manage a domain</a></li>
 <li>latest Jenkins X CLI, Infrastructure and Cluster git repository updates <a href="/docs/v3/guides/upgrade">upgrade</a></li>
 </ul>
 <h3 id="cloud-infrastructure">Cloud Infrastructure</h3>
@@ -1019,18 +1031,22 @@ if (!doNotTrack) {
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">parent_domain = <span style="color:#e6db74">&#34;foo.io&#34;</span>
 </code></pre></div><p>Most people prefer to use a subdomain for a specific installation rather than purchasing one domain per cluster.  For example in a multi cluster setup you will probably want all using the same parent domain but two clusters using a different subdomain like development.foo.io, staging.foo.io leaving production using just the parent domain foo.io.</p>
 <p>To use a subdomain for this cluster add the following configuration:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subdomain     = <span style="color:#e6db74">&#34;bar&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subdomain     = <span style="color:#e6db74">&#34;dev&#34;</span>
 </code></pre></div><p>Now apply these changes:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add values.auto.tfvars
 git commit -m <span style="color:#e6db74">&#39;feat: enable DNS cloud resources&#39;</span>
 git push
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform plan
+</code></pre></div><p>You may want to set two environment variables here so that Terraform does not prompt for values</p>
+<pre><code>export TF_VAR_jx_bot_username=
+export TF_VAR_jx_bot_token=
+</code></pre><p>now run</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform plan
 terraform apply
-</code></pre></div><p>You can now see your managed zone in GCP <a href="https://console.cloud.google.com/net-services/dns/zones">here</a></p>
+</code></pre></div><p>If using a subdomain you will now see your managed zone in GCP <a href="https://console.cloud.google.com/net-services/dns/zones">here</a></p>
 <h3 id="cluster">Cluster</h3>
 <p>Next we will configure the cluster requirements:</p>
 <ul>
-<li>Install <a href="https://github.com/kubernetes-sigs/external-dns#externaldns">external-dns</a> - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propogate globally across the internet</li>
+<li>Install <a href="https://github.com/kubernetes-sigs/external-dns#externaldns">external-dns</a> - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propagate globally across the internet</li>
 <li>Install <a href="https://cert-manager.io/docs/">cert-manager</a> - Kubernetes controller which watches for requests to ask <a href="https://letsencrypt.org/">Let&rsquo;s Encrypt</a> to issue a new wildcard TLS certificate for your domain and will manage this including renewals</li>
 </ul>
 <p>To satisfy these requirements go to your cluster repository (contains helmfile.yaml)</p>
@@ -1057,24 +1073,56 @@ terraform apply
 </code></pre></div><p>The domain from setting up your infrastructure in step one should appear in the <code>jx-requirements.yml</code> of you cluster git repo.  Next configure your TLS options, update your <code>jx-requirements.yml</code> with below.</p>
 <p><strong>NOTE</strong> this is the top level <code>ingress:</code> section and <strong>NOT</strong> in the <code>environments:</code> section:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ingress:
-  domain: bar.foo.io
+  domain: dev.foo.io
   externalDNS: false <span style="color:#75715e"># this is unused and will be deprecated</span>
   namespaceSubDomain: -jx.
   tls:
     email: <span style="color:#e6db74">&#34;joe@gmail.com&#34;</span>
     enabled: true
     production: false
-</code></pre></div><p>When first installing set <code>tls.production=false</code> so you use the Lets Encrtpt staging serivce which allows for more API calls before rate limniting requests.  They will issue a self-signed certificate so once happy everything is working change this to <code>tls.production=true</code></p>
+</code></pre></div><p>When first installing set <code>tls.production=false</code> so you use the Lets Encrypt staging service which allows for more API calls before rate limiting requests.  They will issue a self-signed certificate so once happy everything is working change this to <code>tls.production=true</code>.</p>
+<p><strong>NOTE</strong> Helmfile is not able to skip insecure TLS when adding helm repositories, therefore staging certificates will not work with chartmuseum that is running in the cluster.  Therefore once you have verified cert-manager can issue certificates from staging, switch to the production service.</p>
 <p>Jenkins X uses a version stream to rollout tested versions of images, charts and default configuration.  The <code>jx-boot</code> job will apply these versions to your helmfile but you can also run the step yourself to see the defaults.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops helmfile resolve
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add values.auto.tfvars
-git commit -m <span style="color:#e6db74">&#39;feat: enable DNS cloud resources&#39;</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add helmfile.yaml
+git commit -m <span style="color:#e6db74">&#39;feat: enable DNS and TLS&#39;</span>
 git push
 </code></pre></div><p>Now tail the admin logs and wait for the job to complete</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
-</code></pre></div><h2 id="how-to-get-tls-in-my-preview-environment">How to get TLS in my preview environment?</h2>
-<p>In your applications preview helm chart you can add a Kubernetes <a href="https://cert-manager.io/docs/concepts/certificate/">Certificate</a> the same as in your <code>jx</code> namespace and cert-manager will create the secret needed by an Ingress rule for TLS.</p>
-
+</code></pre></div><p>It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  <a href="https://dnschecker.org/">https://dnschecker.org/</a> is a useful way to check the status of DNS propagating.</p>
+<p>You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&rsquo;t see any changes)</p>
+<p><img src="/images/v3/working_tls.png" alt="Working TLS"></p>
+<h2 id="how-to-get-tls-in-my-preview-environment">How to get TLS in my preview environment?</h2>
+<p>In your applications preview helmfile.yaml you can add the same acme helm chart used above however because your application git repository does not have the version stream your cluster git repository above has you will need to add the default values yourself.</p>
+<p>Add this to you applications <code>./preview/helmfile.yaml</code></p>
+<pre><code>repositories:
+- name: jx3
+  url: https://storage.googleapis.com/jenkinsxio/charts
+releases:
+- chart: jx3/acme
+  name: tls
+  namespace: '{{ requiredEnv &quot;PREVIEW_NAMESPACE&quot; }}'
+  values:
+  - jx-values.yaml
+  - issuer:
+      cluster: true
+</code></pre><p><em>Note</em> as this will request a certificate that matches your existing domain configured above, cert-manager will reuse a cached certificate rather than issue a new one which can cause rate limitting by Lets Encrypt.</p>
+<h2 id="what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</h2>
+<p>It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.</p>
+<h2 id="what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</h2>
+<p>When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.</p>
+<p>If the GCP managed zone for your apex domain is in a different GCP project than the project that your current installation the you will need to set in your infrastructure repository the terraform variable:</p>
+<pre><code>parent_domain_gcp_project: [your GCP project that is managing your apex domain]
+</code></pre><p>If you do not have permission to update the recordset of the apex domain then you will need to manually update it after getting the nameservers created for your subdomain managed zone and disable the automatic way using:</p>
+<pre><code>apex_domain_integration_enabled: false
+</code></pre><h2 id="how-can-i-check-if-cert-manager-has-issued-a-certificate">How can I check if cert-manager has issued a certificate?</h2>
+<p>You can check the status of the certificate by running</p>
+<pre><code>kubectl get cert -n jx
+</code></pre><pre><code>kubectl describe cert -n jx
+</code></pre><p>if <code>Ready</code> continues to be <code>false</code> after 10-15 mins you can check on the request using</p>
+<pre><code>kubectl get certificaterequest -n jx
+</code></pre><pre><code>kubectl describe certificaterequest -n jx
+</code></pre>
 	
 		<style>
   .feedback--answer {
@@ -1137,7 +1185,7 @@ git push
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 18, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/bc4e28f84061fe728c36af45b51643d8664e4074">release 0.0.1956 (bc4e28f)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 19, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/513499baaf175889f974f35dbca13c0d6c6c9a8c">release 0.0.1957 (513499b)</a>
 </div>
 </div>
 
