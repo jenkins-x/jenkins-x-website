@@ -86,22 +86,6 @@
     </item>
     
     <item>
-      <title>V3: Infrastructure guides</title>
-      <link>https://jenkins-x.io/v3/admin/guides/infra/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/v3/admin/guides/infra/</guid>
-      <description>
-        
-        
-        &lt;p&gt;If you are looking for instructions on how to install for a specific cloud provider see:&lt;/p&gt;
-&lt;h3&gt;&lt;a href=&#34;https://jenkins-x.io/docs/v3/#administration&#34;&gt;Administration getting started&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;Here follows some additional custom guides:&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>V3: Secrets</title>
       <link>https://jenkins-x.io/v3/admin/guides/secrets/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -538,8 +522,6 @@ ns-cloud-e4.googledomains.com.
 &lt;span style=&#34;color:#66d9ef&#34;&gt;velero&lt;/span&gt;:
   &lt;span style=&#34;color:#66d9ef&#34;&gt;namespace&lt;/span&gt;: velero
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using whatever your cloud providers bucket URLs are. For more background, check out the &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/storage/&#34;&gt;storage guide&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;user-interface&#34;&gt;User Interface&lt;/h2&gt;
-&lt;p&gt;If you&amp;rsquo;re looking for a UI check out &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/ui/&#34;&gt;Octant the open source web UI for Jenkins X&lt;/a&gt;&lt;/p&gt;
 
       </description>
     </item>
@@ -628,26 +610,149 @@ By default the &lt;code&gt;versionStream&lt;/code&gt; directory has a Kpt strate
 &lt;p&gt;The &lt;code&gt;jx health&lt;/code&gt; plugin is self contained in the git repository &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health&#34;&gt;https://github.com/jenkins-x-plugins/jx-health&lt;/a&gt;.  This provides a way to query teh result of health checks that run periodically in each Kubernetes namespace.&lt;/p&gt;
 &lt;p&gt;The plugin is also useful in a more locked down cluster for developers with reduced RBAC permissions.  A user only needs permissions to read the Kuberhealth state custom resources &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&#34;&gt;https://github.com/jenkins-x-plugins/jx-health#rbac-requirements&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Kuberhealthy provides an easy way to extend using custom health checks to report errors.  To see how to write your own check see the docs &lt;a href=&#34;https://github.com/Comcast/kuberhealthy/blob/master/docs/EXTERNAL_CHECK_CREATION.md&#34;&gt;here&lt;/a&gt;.  Jenkins X already comes with a set of custom health checks that can be installed that report errors, for example with webhooks, missing secrets, a bad install or invalid bot token.  For more details take a look here &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&#34;&gt;https://github.com/jenkins-x-plugins/jx-kh-check/tree/master/cmd&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;It is early days but we&amp;rsquo;d like to encourrage contributions to add extra checks as Jenkins X v3 matures.  If you have a check that you would like to add please reach out in the community channels or create an issue or pull request.&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;d like to encourrage contributions to add extra checks as Jenkins X v3 matures.  If you have a check that you would like to add please reach out in the community channels or create an issue or pull request.&lt;/p&gt;
 &lt;h1 id=&#34;try-it-out&#34;&gt;Try it out&lt;/h1&gt;
-&lt;p&gt;We havn&amp;rsquo;t enabled Kuberhealthy by default yet as we&amp;rsquo;d like more feedback but to enable on your existing v3 installation:&lt;/p&gt;
-&lt;p&gt;Get the plugin by running&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx upgrade cli
-jx upgrade plugins
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You will also need to upgrade your clusters version stream which updates the cluster to the latest release&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx gitops upgrade
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;git commit / push then check the git operator job is successful&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx admin logs
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then to add the new server side checks (kuberhealthy ) again from a cloned copy of your cluster git repo, run&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx gitops helmfile add --chart kuberhealthy/kuberhealthy
-jx gitops helmfile add --chart jx3/jx-kh-check
-jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-jx
-jx gitops helmfile add --chart jx3/jx-kh-check --name health-checks-install 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;review the local changes, you should see four new charts added to your helmfile.yaml
-git commit / push then check the git operator job is successful&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx admin logs
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;once completed you can use the new health CLI plugin to get health statuses that run periodically checking different things, our favorite is the watch for checks across all namespaces…&lt;/p&gt;
+&lt;p&gt;When using Terraform (the recommended approach) Kuberhealthy and health checks are installed by default.&lt;/p&gt;
+&lt;p&gt;You can use the new health CLI plugin to get health statuses that run periodically checking different things, our favorite is the watch for checks across all namespaces.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jx health get status --all-namespaces --watch
+&lt;/code&gt;&lt;/pre&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: TLS and DNS</title>
+      <link>https://jenkins-x.io/v3/admin/guides/tls_dns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/tls_dns/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This section will describe how to enable automated TLS and DNS for your Jenkins X installation.&lt;/p&gt;
+&lt;p&gt;To achieve this we will use a couple of open source projects to help enable automated DNS for your applications.&lt;/p&gt;
+&lt;p&gt;For this guide we are going to assume you own a domain called &lt;code&gt;foo.io&lt;/code&gt; which is managed by Google Cloud DNS, if it is not see &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/infra/google_cloud_dns&#34;&gt;configure cloud dns to manage a domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A common requirement for domains is to have production services accessed using a parent / &lt;a href=&#34;https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-custom-domains-and-github-pages#using-an-apex-domain-for-your-github-pages-site&#34;&gt;apex domain&lt;/a&gt;
+for example:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://foo.com&#34;&gt;https://foo.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Many organisations have extra requirements for development and test multi cluster environments to access services at&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://dev.foo.com&#34;&gt;https://dev.foo.com&lt;/a&gt;
+and
+&lt;a href=&#34;https://staging.foo.com&#34;&gt;https://staging.foo.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;These use subdomains.&lt;/p&gt;
+&lt;p&gt;In this guide below there is a prerequisite that you must already have a domain which is managed by GCP, this is so that you can choose whichever of the scenarios above you need.  It also means the dns management of the apex domain happens outside of a single cluster installation and can be shared by multiple installations using a subdomain.&lt;/p&gt;
+&lt;p&gt;Jenkins X services will have URLs like &lt;code&gt;https://hook-jx.dev.foo.io&lt;/code&gt;.  The jx-requirements.yml &lt;code&gt;namespaceSubDomain:&lt;/code&gt; of &lt;code&gt;-jx&lt;/code&gt; which is in the cluster git repository refers to the Kubernetes namespace the service is running in, this avoids clashes of the same application running in different namespaces in the same cluster.&lt;/p&gt;
+&lt;p&gt;To start with we are focussed on GCP but will expand to other cloud providers.&lt;/p&gt;
+&lt;h1 id=&#34;google-cloud-platform&#34;&gt;Google Cloud Platform&lt;/h1&gt;
+&lt;h2 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;cluster created using Jenkins X &lt;a href=&#34;https://jenkins-x.io/docs/v3/getting-started/gke/&#34;&gt;GCP Terraform getting started&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;own a domain and have GCP manage it, &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/infra/google_cloud_dns&#34;&gt;configure cloud dns to manage a domain&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;latest Jenkins X CLI, Infrastructure and Cluster git repository updates &lt;a href=&#34;https://jenkins-x.io/docs/v3/guides/upgrade&#34;&gt;upgrade&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;cloud-infrastructure&#34;&gt;Cloud Infrastructure&lt;/h3&gt;
+&lt;p&gt;First we will configure the cloud infrastructure requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a GCP Service Account with the &lt;code&gt;dns.admin&lt;/code&gt; role, see &lt;a href=&#34;https://cloud.google.com/iam/docs/understanding-roles#dns-roles&#34;&gt;here&lt;/a&gt; for more information&lt;/li&gt;
+&lt;li&gt;a managed cloud dns zone, see &lt;a href=&#34;https://cloud.google.com/dns/docs/zones&#34;&gt;here&lt;/a&gt; for more information&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To satisfy these requirements go to your infrastructure repository (contains Terraform main.tf) and add to your &lt;code&gt;values.auto.tfvars&lt;/code&gt; the following:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;parent_domain = &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo.io&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Most people prefer to use a subdomain for a specific installation rather than purchasing one domain per cluster.  For example in a multi cluster setup you will probably want all using the same parent domain but two clusters using a different subdomain like development.foo.io, staging.foo.io leaving production using just the parent domain foo.io.&lt;/p&gt;
+&lt;p&gt;To use a subdomain for this cluster add the following configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;subdomain     = &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dev&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now apply these changes:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add values.auto.tfvars
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feat: enable DNS cloud resources&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You may want to set two environment variables here so that Terraform does not prompt for values&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;export TF_VAR_jx_bot_username=
+export TF_VAR_jx_bot_token=
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;now run&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;terraform plan
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If using a subdomain you will now see your managed zone in GCP &lt;a href=&#34;https://console.cloud.google.com/net-services/dns/zones&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;cluster&#34;&gt;Cluster&lt;/h3&gt;
+&lt;p&gt;Next we will configure the cluster requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Install &lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns#externaldns&#34;&gt;external-dns&lt;/a&gt; - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propagate globally across the internet&lt;/li&gt;
+&lt;li&gt;Install &lt;a href=&#34;https://cert-manager.io/docs/&#34;&gt;cert-manager&lt;/a&gt; - Kubernetes controller which watches for requests to ask &lt;a href=&#34;https://letsencrypt.org/&#34;&gt;Let&amp;rsquo;s Encrypt&lt;/a&gt; to issue a new wildcard TLS certificate for your domain and will manage this including renewals&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To satisfy these requirements go to your cluster repository (contains helmfile.yaml)&lt;/p&gt;
+&lt;p&gt;Add external-dns to your clusters helmfile.yaml &lt;code&gt;releases&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: bitnami/external-dns
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Add cert-manager to your clusters helmfile.yaml &lt;code&gt;releases&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jetstack/cert-manager
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next we install&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a cluster wide &lt;a href=&#34;https://cert-manager.io/docs/concepts/issuer/&#34;&gt;Issuer&lt;/a&gt; which tells cert-manager how to validate you own your domain&lt;/li&gt;
+&lt;li&gt;a namespaced &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; to request a TLS certificate for services running in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
+  name: acme-jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Cert-manager will use the cluster issuer to request a TLS certificate for each namespaces &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; found.  The advantage here is that the same wildcard certificate is cached and reused for multiple namespaces reducing the risk of being &lt;a href=&#34;https://letsencrypt.org/docs/rate-limits/&#34;&gt;rate limited&lt;/a&gt; by Lets Encrypt.&lt;/p&gt;
+&lt;p&gt;Now install the &lt;code&gt;acme&lt;/code&gt; chart into any namespace you require TLS, e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
+  name: tls-jx-staging
+  namespace: jx-staging
+
+- chart: jx3/acme
+  name: tls-jx-production
+  namespace: jx-production
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The domain from setting up your infrastructure in step one should appear in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; of you cluster git repo.  Next configure your TLS options, update your &lt;code&gt;jx-requirements.yml&lt;/code&gt; with below.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; this is the top level &lt;code&gt;ingress:&lt;/code&gt; section and &lt;strong&gt;NOT&lt;/strong&gt; in the &lt;code&gt;environments:&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ingress:
+  domain: dev.foo.io
+  externalDNS: false &lt;span style=&#34;color:#75715e&#34;&gt;# this is unused and will be deprecated&lt;/span&gt;
+  namespaceSubDomain: -jx.
+  tls:
+    email: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;joe@gmail.com&amp;#34;&lt;/span&gt;
+    enabled: true
+    production: false
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When first installing set &lt;code&gt;tls.production=false&lt;/code&gt; so you use the Lets Encrypt staging service which allows for more API calls before rate limiting requests.  They will issue a self-signed certificate so once happy everything is working change this to &lt;code&gt;tls.production=true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Helmfile is not able to skip insecure TLS when adding helm repositories, therefore staging certificates will not work with chartmuseum that is running in the cluster.  Therefore once you have verified cert-manager can issue certificates from staging, switch to the production service.&lt;/p&gt;
+&lt;p&gt;Jenkins X uses a version stream to rollout tested versions of images, charts and default configuration.  The &lt;code&gt;jx-boot&lt;/code&gt; job will apply these versions to your helmfile but you can also run the step yourself to see the defaults.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops helmfile resolve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add helmfile.yaml
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feat: enable DNS and TLS&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now tail the admin logs and wait for the job to complete&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  &lt;a href=&#34;https://dnschecker.org/&#34;&gt;https://dnschecker.org/&lt;/a&gt; is a useful way to check the status of DNS propagating.&lt;/p&gt;
+&lt;p&gt;You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&amp;rsquo;t see any changes)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/working_tls.png&#34; alt=&#34;Working TLS&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-to-get-tls-in-my-preview-environment&#34;&gt;How to get TLS in my preview environment?&lt;/h2&gt;
+&lt;p&gt;In your applications preview helmfile.yaml you can add the same acme helm chart used above however because your application git repository does not have the version stream your cluster git repository above has you will need to add the default values yourself.&lt;/p&gt;
+&lt;p&gt;Add this to you applications &lt;code&gt;./preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;repositories:
+- name: jx3
+  url: https://storage.googleapis.com/jenkinsxio/charts
+releases:
+- chart: jx3/acme
+  name: tls
+  namespace: &#39;{{ requiredEnv &amp;quot;PREVIEW_NAMESPACE&amp;quot; }}&#39;
+  values:
+  - jx-values.yaml
+  - issuer:
+      cluster: true
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;em&gt;Note&lt;/em&gt; as this will request a certificate that matches your existing domain configured above, cert-manager will reuse a cached certificate rather than issue a new one which can cause rate limitting by Lets Encrypt.&lt;/p&gt;
+&lt;h2 id=&#34;what-if-i-have-a-chartmuseum-with-charts-running-using-nipio&#34;&gt;What if I have a chartmuseum with charts running using nip.io?&lt;/h2&gt;
+&lt;p&gt;It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.&lt;/p&gt;
+&lt;h2 id=&#34;what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project&#34;&gt;What if I use a subdomain with an apex domain in a different GCP project?&lt;/h2&gt;
+&lt;p&gt;When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.&lt;/p&gt;
+&lt;p&gt;If the GCP managed zone for your apex domain is in a different GCP project than the project that your current installation the you will need to set in your infrastructure repository the terraform variable:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;parent_domain_gcp_project: [your GCP project that is managing your apex domain]
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you do not have permission to update the recordset of the apex domain then you will need to manually update it after getting the nameservers created for your subdomain managed zone and disable the automatic way using:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;apex_domain_integration_enabled: false
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;how-can-i-remove-the-namespace-subdomain-eg--jx-from-my-urls&#34;&gt;How can I remove the namespace subdomain (e.g. -jx.) from my URLs?&lt;/h2&gt;
+&lt;p&gt;In your cluster git repository find the &lt;code&gt;namespaceSubdomain&lt;/code&gt; property in your jx-requirements.yml file and change its value to &lt;code&gt;namespaceSubdomain: &amp;quot;.&amp;quot;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Be aware that the same application deployed in multiple namespaces will end up with the same URL if you change &lt;code&gt;namespaceSubdomain&lt;/code&gt; to be the same for all environments.&lt;/p&gt;
+&lt;h2 id=&#34;how-can-i-check-if-cert-manager-has-issued-a-certificate&#34;&gt;How can I check if cert-manager has issued a certificate?&lt;/h2&gt;
+&lt;p&gt;You can check the status of the certificate by running&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl get cert -n jx
+&lt;/code&gt;&lt;/pre&gt;&lt;pre&gt;&lt;code&gt;kubectl describe cert -n jx
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;if &lt;code&gt;Ready&lt;/code&gt; continues to be &lt;code&gt;false&lt;/code&gt; after 10-15 mins you can check on the request using&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl get certificaterequest -n jx
+&lt;/code&gt;&lt;/pre&gt;&lt;pre&gt;&lt;code&gt;kubectl describe certificaterequest -n jx
 &lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
