@@ -24,11 +24,11 @@
 <meta property="og:description" content="Automated TLS and DNS" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/tls_dns/" />
-<meta property="article:modified_time" content="2020-11-20T11:53:53+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-23T11:31:48+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="TLS and DNS">
 <meta itemprop="description" content="Automated TLS and DNS">
-<meta itemprop="dateModified" content="2020-11-20T11:53:53&#43;00:00" />
-<meta itemprop="wordCount" content="1329">
+<meta itemprop="dateModified" content="2020-11-23T11:31:48&#43;00:00" />
+<meta itemprop="wordCount" content="1275">
 
 
 
@@ -943,7 +943,7 @@ if (!doNotTrack) {
         <li><a href="#cluster">Cluster</a></li>
       </ul>
     </li>
-    <li><a href="#how-to-get-tls-in-my-preview-environment">How to get TLS in my preview environment?</a></li>
+    <li><a href="#how-do-i-enable-tls-on-non-jenkins-x-quickstarts">How do I enable TLS on non Jenkins X quickstarts?</a></li>
     <li><a href="#what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</a></li>
     <li><a href="#what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</a></li>
     <li><a href="#how-can-i-remove-the-namespace-subdomain-eg--jx-from-my-urls">How can I remove the namespace subdomain (e.g. -jx.) from my URLs?</a></li>
@@ -1064,20 +1064,12 @@ terraform apply
 </code></pre></div><p>Next we install</p>
 <ul>
 <li>a cluster wide <a href="https://cert-manager.io/docs/concepts/issuer/">Issuer</a> which tells cert-manager how to validate you own your domain</li>
-<li>a namespaced <a href="https://cert-manager.io/docs/concepts/certificate/">Certificate</a> to request a TLS certificate for services running in the <code>jx</code> namespace</li>
+<li>a namespaced <a href="https://cert-manager.io/docs/concepts/certificate/">Certificate</a> to request a TLS certificate for applications running in your cluster</li>
 </ul>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">- chart: jx3/acme
   name: acme-jx
-</code></pre></div><p>Cert-manager will use the cluster issuer to request a TLS certificate for each namespaces <a href="https://cert-manager.io/docs/concepts/certificate/">Certificate</a> found.  The advantage here is that the same wildcard certificate is cached and reused for multiple namespaces reducing the risk of being <a href="https://letsencrypt.org/docs/rate-limits/">rate limited</a> by Lets Encrypt.</p>
-<p>Now install the <code>acme</code> chart into any namespace you require TLS, e.g.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">- chart: jx3/acme
-  name: tls-jx-staging
-  namespace: jx-staging
-
-- chart: jx3/acme
-  name: tls-jx-production
-  namespace: jx-production
-</code></pre></div><p>The domain from setting up your infrastructure in step one should appear in the <code>jx-requirements.yml</code> of you cluster git repo.  Next configure your TLS options, update your <code>jx-requirements.yml</code> with below.</p>
+</code></pre></div><p>Cert-manager will use the cluster issuer to request a TLS certificate.  A Kubernetes secret will be automatically created and contain the TLS cert.  Ingresses for applications in any namespace will reference this secret in the <code>jx</code> namespace.</p>
+<p>The domain from setting up your infrastructure in step one should appear in the <code>jx-requirements.yml</code> of you cluster git repo.  Next configure your TLS options, update your <code>jx-requirements.yml</code> with below.</p>
 <p><strong>NOTE</strong> this is the top level <code>ingress:</code> section and <strong>NOT</strong> in the <code>environments:</code> section:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ingress:
   domain: dev.foo.io
@@ -1099,22 +1091,25 @@ git push
 </code></pre></div><p>It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  <a href="https://dnschecker.org/">https://dnschecker.org/</a> is a useful way to check the status of DNS propagating.</p>
 <p>You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&rsquo;t see any changes)</p>
 <p><img src="/images/v3/working_tls.png" alt="Working TLS"></p>
-<h2 id="how-to-get-tls-in-my-preview-environment">How to get TLS in my preview environment?</h2>
-<p>In your applications preview helmfile.yaml you can add the same acme helm chart used above however because your application git repository does not have the version stream your cluster git repository above has you will need to add the default values yourself.</p>
-<p>Add this to you applications <code>./preview/helmfile.yaml</code></p>
-<pre><code>repositories:
-- name: jx3
-  url: https://storage.googleapis.com/jenkinsxio/charts
-releases:
-- chart: jx3/acme
-  name: tls
-  namespace: '{{ requiredEnv &quot;PREVIEW_NAMESPACE&quot; }}'
-  values:
-  - jx-values.yaml
-  - issuer:
-      cluster: true
-</code></pre><p><em>Note</em> as this will request a certificate that matches your existing domain configured above, cert-manager will reuse a cached certificate rather than issue a new one which can cause rate limitting by Lets Encrypt.</p>
-<h2 id="what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</h2>
+<h2 id="how-do-i-enable-tls-on-non-jenkins-x-quickstarts">How do I enable TLS on non Jenkins X quickstarts?</h2>
+<p>If you are creating your own Ingress resources and not using Jenkins X quickstarts then add this:</p>
+<p>First take note of your TLS secret name in the <code>jx</code> namespace</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kc get secret -n jx | grep tls
+
+</code></pre></div><p>Now add the reference including the <code>jx/</code> prefix to your ingress</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">spec:
+  rules:
+  - host: <span style="color:#f92672">[</span>your hostname<span style="color:#f92672">]</span>
+    http:
+      paths:
+      - backend:
+          serviceName: <span style="color:#f92672">[</span>your kubernetes service name<span style="color:#f92672">]</span>
+          servicePort: <span style="color:#f92672">[</span>your kubernetes service port<span style="color:#f92672">]</span>
+  tls:
+  - hosts:
+    - <span style="color:#f92672">[</span>your hostname<span style="color:#f92672">]</span>
+    secretName: jx/<span style="color:#f92672">[</span>your TLS secret name from step above<span style="color:#f92672">]</span>
+</code></pre></div><h2 id="what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</h2>
 <p>It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.</p>
 <h2 id="what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</h2>
 <p>When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.</p>
@@ -1195,7 +1190,7 @@ releases:
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 20, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/261c2786c0ac3bbc7ba267135e1c49aed9a790fc">fix: simpler layout for admin (261c2786c0)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 23, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/1e8bb466417f4c5b841811c3aed8070b32786495">chore: lets use the wildcard cert from the jx namespace (1e8bb46641)</a>
 </div>
 </div>
 

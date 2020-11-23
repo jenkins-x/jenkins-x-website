@@ -685,20 +685,12 @@ terraform apply
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next we install&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;a cluster wide &lt;a href=&#34;https://cert-manager.io/docs/concepts/issuer/&#34;&gt;Issuer&lt;/a&gt; which tells cert-manager how to validate you own your domain&lt;/li&gt;
-&lt;li&gt;a namespaced &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; to request a TLS certificate for services running in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/li&gt;
+&lt;li&gt;a namespaced &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; to request a TLS certificate for applications running in your cluster&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
   name: acme-jx
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Cert-manager will use the cluster issuer to request a TLS certificate for each namespaces &lt;a href=&#34;https://cert-manager.io/docs/concepts/certificate/&#34;&gt;Certificate&lt;/a&gt; found.  The advantage here is that the same wildcard certificate is cached and reused for multiple namespaces reducing the risk of being &lt;a href=&#34;https://letsencrypt.org/docs/rate-limits/&#34;&gt;rate limited&lt;/a&gt; by Lets Encrypt.&lt;/p&gt;
-&lt;p&gt;Now install the &lt;code&gt;acme&lt;/code&gt; chart into any namespace you require TLS, e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;- chart: jx3/acme
-  name: tls-jx-staging
-  namespace: jx-staging
-
-- chart: jx3/acme
-  name: tls-jx-production
-  namespace: jx-production
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The domain from setting up your infrastructure in step one should appear in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; of you cluster git repo.  Next configure your TLS options, update your &lt;code&gt;jx-requirements.yml&lt;/code&gt; with below.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Cert-manager will use the cluster issuer to request a TLS certificate.  A Kubernetes secret will be automatically created and contain the TLS cert.  Ingresses for applications in any namespace will reference this secret in the &lt;code&gt;jx&lt;/code&gt; namespace.&lt;/p&gt;
+&lt;p&gt;The domain from setting up your infrastructure in step one should appear in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; of you cluster git repo.  Next configure your TLS options, update your &lt;code&gt;jx-requirements.yml&lt;/code&gt; with below.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; this is the top level &lt;code&gt;ingress:&lt;/code&gt; section and &lt;strong&gt;NOT&lt;/strong&gt; in the &lt;code&gt;environments:&lt;/code&gt; section:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ingress:
   domain: dev.foo.io
@@ -720,22 +712,25 @@ git push
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  &lt;a href=&#34;https://dnschecker.org/&#34;&gt;https://dnschecker.org/&lt;/a&gt; is a useful way to check the status of DNS propagating.&lt;/p&gt;
 &lt;p&gt;You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&amp;rsquo;t see any changes)&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/working_tls.png&#34; alt=&#34;Working TLS&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-to-get-tls-in-my-preview-environment&#34;&gt;How to get TLS in my preview environment?&lt;/h2&gt;
-&lt;p&gt;In your applications preview helmfile.yaml you can add the same acme helm chart used above however because your application git repository does not have the version stream your cluster git repository above has you will need to add the default values yourself.&lt;/p&gt;
-&lt;p&gt;Add this to you applications &lt;code&gt;./preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;repositories:
-- name: jx3
-  url: https://storage.googleapis.com/jenkinsxio/charts
-releases:
-- chart: jx3/acme
-  name: tls
-  namespace: &#39;{{ requiredEnv &amp;quot;PREVIEW_NAMESPACE&amp;quot; }}&#39;
-  values:
-  - jx-values.yaml
-  - issuer:
-      cluster: true
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;em&gt;Note&lt;/em&gt; as this will request a certificate that matches your existing domain configured above, cert-manager will reuse a cached certificate rather than issue a new one which can cause rate limitting by Lets Encrypt.&lt;/p&gt;
-&lt;h2 id=&#34;what-if-i-have-a-chartmuseum-with-charts-running-using-nipio&#34;&gt;What if I have a chartmuseum with charts running using nip.io?&lt;/h2&gt;
+&lt;h2 id=&#34;how-do-i-enable-tls-on-non-jenkins-x-quickstarts&#34;&gt;How do I enable TLS on non Jenkins X quickstarts?&lt;/h2&gt;
+&lt;p&gt;If you are creating your own Ingress resources and not using Jenkins X quickstarts then add this:&lt;/p&gt;
+&lt;p&gt;First take note of your TLS secret name in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kc get secret -n jx | grep tls
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now add the reference including the &lt;code&gt;jx/&lt;/code&gt; prefix to your ingress&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;spec:
+  rules:
+  - host: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;your hostname&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+    http:
+      paths:
+      - backend:
+          serviceName: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;your kubernetes service name&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+          servicePort: &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;your kubernetes service port&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+  tls:
+  - hosts:
+    - &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;your hostname&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+    secretName: jx/&lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;your TLS secret name from step above&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;what-if-i-have-a-chartmuseum-with-charts-running-using-nipio&#34;&gt;What if I have a chartmuseum with charts running using nip.io?&lt;/h2&gt;
 &lt;p&gt;It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.&lt;/p&gt;
 &lt;h2 id=&#34;what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project&#34;&gt;What if I use a subdomain with an apex domain in a different GCP project?&lt;/h2&gt;
 &lt;p&gt;When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.&lt;/p&gt;
