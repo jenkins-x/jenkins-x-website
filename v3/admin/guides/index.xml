@@ -819,12 +819,40 @@ git push
         
         &lt;p&gt;We recommend using separate clusters for your &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments. This lets you completely isolate your environments which improves security.&lt;/p&gt;
 &lt;h2 id=&#34;setting-up-multi-cluster&#34;&gt;Setting up multi cluster&lt;/h2&gt;
-&lt;p&gt;Follow new &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;getting started approach&lt;/a&gt; to setup a new cluster. For &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; you typically won&amp;rsquo;t need lots of the development tools like lighthouse and tekton; you will just want your actual applications and any additional services you need to run them (e.g. maybe nginx-ingress or cert-manager etc).&lt;/p&gt;
-&lt;p&gt;Then when you have a git repository URL for your &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt;  cluster, &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/#import-an-existing-project&#34;&gt;import the git repository&lt;/a&gt; like you would any other git repository into your development cluster using the &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; command:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Follow the &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;administration documentation&lt;/a&gt; to setup a new Development Cluster (or skip this step if already in place).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Follow the mentioned approach at the previous point in order to setup new and additional clusters for the desired remote environments:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;For remote environments (e.g. &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt;) you typically won&amp;rsquo;t need lots of the development tools such as:
+&lt;ul&gt;
+&lt;li&gt;Lighthouse&lt;/li&gt;
+&lt;li&gt;Tekton&lt;/li&gt;
+&lt;li&gt;Webhooks&lt;/li&gt;
+&lt;li&gt;Nexus / Bucketrepo&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;And install only services to run and expose your applications, e.g.:
+&lt;ul&gt;
+&lt;li&gt;Nginx-ingress&lt;/li&gt;
+&lt;li&gt;Cert-manager&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; for &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/secrets/&#34;&gt;populating Secrets from your secret store&lt;/a&gt; (vault or cloud provider secret manager)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/pusher-wave#wave&#34;&gt;push-wave&lt;/a&gt; for automatically performing rolling upgrades when secrets are rotated in your secret store&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Then when you have a git repository URL for your &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; cluster, &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/#import-an-existing-project&#34;&gt;import the git repository&lt;/a&gt; like you would any other git repository into your Development cluster using the &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; command (command should be run in the &lt;code&gt;jx&lt;/code&gt; namespace):&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx project import --url https://github.com/myowner/my-prod-repo.git
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will create a Pull Request on your development cluster git repository to link to the &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; git repository on promotions of apps.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: Jenkins X will &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;push additional configuration files&lt;/a&gt; to the created Pull Request, so it is recommended to wait until the Pull Request is auto-merged and avoid manual intervention.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 &lt;h3 id=&#34;changes-to-jx-requirementsyml&#34;&gt;Changes to &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/h3&gt;
-&lt;p&gt;The above should modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in your development cluster to reference the remote production/pre-production cluster.&lt;/p&gt;
+&lt;p&gt;The above &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; should modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in your development cluster to reference the remote production/pre-production cluster.&lt;/p&gt;
 &lt;p&gt;So your &lt;code&gt;jx-requirements.yml&lt;/code&gt; should have started something like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
 - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
@@ -839,7 +867,8 @@ git push
   &lt;span style=&#34;color:#66d9ef&#34;&gt;owner&lt;/span&gt;: myowner
   &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: my-prod-repo
   &lt;span style=&#34;color:#66d9ef&#34;&gt;remoteCluster&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once everything is correctly setup, it will be possible to deploy applications to the newly created remote environment/s.&lt;/p&gt;
+&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
 &lt;p&gt;The multi cluster setup of Jenkins X is designed around the following goals:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;you have full control over production and pre-production clusters, choosing exactly what software is installed there
@@ -878,7 +907,7 @@ git push
 &lt;p&gt;We do recommend using the Jenkins X GitOps pipeline approach in &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;production and preproduction for these reasons&lt;/a&gt; then all changes to git result in the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;kubernetes resources being checked into git&lt;/a&gt; so they can be easily reviewed without reviewers needing access to production.&lt;/p&gt;
 &lt;p&gt;You may want to reuse existing built in charts such as:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; for [populating Secrets from your secret store(/v3/admin/guides/secrets/) (vault or cloud provider secret manager)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; for &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/secrets/&#34;&gt;populating Secrets from your secret store&lt;/a&gt; (vault or cloud provider secret manager)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/pusher-wave#wave&#34;&gt;push-wave&lt;/a&gt; for automatically performing rolling upgrades when secrets are rotated in your secret store&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;using-helmfile-sync&#34;&gt;using &lt;code&gt;helmfile sync&lt;/code&gt;&lt;/h3&gt;

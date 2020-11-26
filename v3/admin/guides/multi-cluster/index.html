@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to use multiple clusters with helm 3 and helmfile" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/multi-cluster/" />
-<meta property="article:modified_time" content="2020-11-26T11:10:52+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-26T11:29:35+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Multi-Cluster">
 <meta itemprop="description" content="How to use multiple clusters with helm 3 and helmfile">
-<meta itemprop="dateModified" content="2020-11-26T11:10:52&#43;00:00" />
-<meta itemprop="wordCount" content="579">
+<meta itemprop="dateModified" content="2020-11-26T11:29:35&#43;00:00" />
+<meta itemprop="wordCount" content="694">
 
 
 
@@ -1014,12 +1014,40 @@ if (!doNotTrack) {
 	       
 	<p>We recommend using separate clusters for your <code>Preprod</code> and <code>Production</code> environments. This lets you completely isolate your environments which improves security.</p>
 <h2 id="setting-up-multi-cluster">Setting up multi cluster</h2>
-<p>Follow new <a href="/v3/admin/platform/">getting started approach</a> to setup a new cluster. For <code>Preprod</code> and <code>Production</code> you typically won&rsquo;t need lots of the development tools like lighthouse and tekton; you will just want your actual applications and any additional services you need to run them (e.g. maybe nginx-ingress or cert-manager etc).</p>
-<p>Then when you have a git repository URL for your <code>Preprod</code> or <code>Production</code>  cluster, <a href="/v3/develop/create-project/#import-an-existing-project">import the git repository</a> like you would any other git repository into your development cluster using the <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> command:</p>
+<ol>
+<li>
+<p>Follow the <a href="/v3/admin/platform/">administration documentation</a> to setup a new Development Cluster (or skip this step if already in place).</p>
+</li>
+<li>
+<p>Follow the mentioned approach at the previous point in order to setup new and additional clusters for the desired remote environments:</p>
+<ul>
+<li>For remote environments (e.g. <code>Preprod</code> and <code>Production</code>) you typically won&rsquo;t need lots of the development tools such as:
+<ul>
+<li>Lighthouse</li>
+<li>Tekton</li>
+<li>Webhooks</li>
+<li>Nexus / Bucketrepo</li>
+</ul>
+</li>
+<li>And install only services to run and expose your applications, e.g.:
+<ul>
+<li>Nginx-ingress</li>
+<li>Cert-manager</li>
+<li><a href="https://github.com/external-secrets/kubernetes-external-secrets">kubernetes external secrets</a> for <a href="/v3/admin/guides/secrets/">populating Secrets from your secret store</a> (vault or cloud provider secret manager)</li>
+<li><a href="https://github.com/jenkins-x-charts/pusher-wave#wave">push-wave</a> for automatically performing rolling upgrades when secrets are rotated in your secret store</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Then when you have a git repository URL for your <code>Preprod</code> or <code>Production</code> cluster, <a href="/v3/develop/create-project/#import-an-existing-project">import the git repository</a> like you would any other git repository into your Development cluster using the <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> command (command should be run in the <code>jx</code> namespace):</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx project import --url https://github.com/myowner/my-prod-repo.git
 </code></pre></div><p>This will create a Pull Request on your development cluster git repository to link to the <code>Preprod</code> or <code>Production</code> git repository on promotions of apps.</p>
+<p><strong>NOTE</strong>: Jenkins X will <a href="/v3/about/how-it-works/#importing--creating-quickstarts">push additional configuration files</a> to the created Pull Request, so it is recommended to wait until the Pull Request is auto-merged and avoid manual intervention.</p>
+</li>
+</ol>
 <h3 id="changes-to-jx-requirementsyml">Changes to <code>jx-requirements.yml</code></h3>
-<p>The above should modify your <code>jx-requirements.yml</code> file in your development cluster to reference the remote production/pre-production cluster.</p>
+<p>The above <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> should modify your <code>jx-requirements.yml</code> file in your development cluster to reference the remote production/pre-production cluster.</p>
 <p>So your <code>jx-requirements.yml</code> should have started something like:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">environments</span>:
 - <span style="color:#66d9ef">key</span>: dev
@@ -1034,7 +1062,8 @@ if (!doNotTrack) {
   <span style="color:#66d9ef">owner</span>: myowner
   <span style="color:#66d9ef">repository</span>: my-prod-repo
   <span style="color:#66d9ef">remoteCluster</span>: <span style="color:#66d9ef">true</span>
-</code></pre></div><h2 id="how-it-works">How it works</h2>
+</code></pre></div><p>Once everything is correctly setup, it will be possible to deploy applications to the newly created remote environment/s.</p>
+<h2 id="how-it-works">How it works</h2>
 <p>The multi cluster setup of Jenkins X is designed around the following goals:</p>
 <ul>
 <li>you have full control over production and pre-production clusters, choosing exactly what software is installed there
@@ -1073,7 +1102,7 @@ if (!doNotTrack) {
 <p>We do recommend using the Jenkins X GitOps pipeline approach in <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">production and preproduction for these reasons</a> then all changes to git result in the <a href="/v3/about/how-it-works/#boot-job">kubernetes resources being checked into git</a> so they can be easily reviewed without reviewers needing access to production.</p>
 <p>You may want to reuse existing built in charts such as:</p>
 <ul>
-<li><a href="https://github.com/external-secrets/kubernetes-external-secrets">kubernetes external secrets</a> for [populating Secrets from your secret store(/v3/admin/guides/secrets/) (vault or cloud provider secret manager)</li>
+<li><a href="https://github.com/external-secrets/kubernetes-external-secrets">kubernetes external secrets</a> for <a href="/v3/admin/guides/secrets/">populating Secrets from your secret store</a> (vault or cloud provider secret manager)</li>
 <li><a href="https://github.com/jenkins-x-charts/pusher-wave#wave">push-wave</a> for automatically performing rolling upgrades when secrets are rotated in your secret store</li>
 </ul>
 <h3 id="using-helmfile-sync">using <code>helmfile sync</code></h3>
@@ -1151,7 +1180,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/75bb183b6945b293d7669e510c9bc74b112ae271">fix: polish the multi cluster docs (75bb183b69)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/17c37bb563dd0fcb2ad69d99fb8bd83001f61049">fix: merge docs from previous PR (17c37bb563)</a>
 </div>
 </div>
 
