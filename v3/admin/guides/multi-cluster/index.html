@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to use multiple clusters with helm 3 and helmfile" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/multi-cluster/" />
-<meta property="article:modified_time" content="2020-11-24T08:37:33+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-11-26T11:10:52+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Multi-Cluster">
 <meta itemprop="description" content="How to use multiple clusters with helm 3 and helmfile">
-<meta itemprop="dateModified" content="2020-11-24T08:37:33&#43;00:00" />
-<meta itemprop="wordCount" content="139">
+<meta itemprop="dateModified" content="2020-11-26T11:10:52&#43;00:00" />
+<meta itemprop="wordCount" content="579">
 
 
 
@@ -935,6 +935,27 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#setting-up-multi-cluster">Setting up multi cluster</a>
+      <ul>
+        <li><a href="#changes-to-jx-requirementsyml">Changes to <code>jx-requirements.yml</code></a></li>
+      </ul>
+    </li>
+    <li><a href="#how-it-works">How it works</a>
+      <ul>
+        <li><a href="#development-cluster">Development Cluster</a></li>
+        <li><a href="#remote-cluster">Remote Cluster</a></li>
+      </ul>
+    </li>
+    <li><a href="#remote-cluster-recommendations">Remote Cluster Recommendations</a>
+      <ul>
+        <li><a href="#using-helmfile-sync">using <code>helmfile sync</code></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
 
 
           </div>
@@ -997,6 +1018,76 @@ if (!doNotTrack) {
 <p>Then when you have a git repository URL for your <code>Preprod</code> or <code>Production</code>  cluster, <a href="/v3/develop/create-project/#import-an-existing-project">import the git repository</a> like you would any other git repository into your development cluster using the <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> command:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx project import --url https://github.com/myowner/my-prod-repo.git
 </code></pre></div><p>This will create a Pull Request on your development cluster git repository to link to the <code>Preprod</code> or <code>Production</code> git repository on promotions of apps.</p>
+<h3 id="changes-to-jx-requirementsyml">Changes to <code>jx-requirements.yml</code></h3>
+<p>The above should modify your <code>jx-requirements.yml</code> file in your development cluster to reference the remote production/pre-production cluster.</p>
+<p>So your <code>jx-requirements.yml</code> should have started something like:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">environments</span>:
+- <span style="color:#66d9ef">key</span>: dev
+  <span style="color:#66d9ef">repository</span>: my-dev-environment
+- <span style="color:#66d9ef">key</span>: staging                                                   
+</code></pre></div><p>after importing the remote environment via <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> and the pull request merging it should look like:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">environments</span>:
+- <span style="color:#66d9ef">key</span>: dev
+  <span style="color:#66d9ef">repository</span>: my-dev-environment
+- <span style="color:#66d9ef">key</span>: staging
+- <span style="color:#66d9ef">key</span>: my-prod-repo
+  <span style="color:#66d9ef">owner</span>: myowner
+  <span style="color:#66d9ef">repository</span>: my-prod-repo
+  <span style="color:#66d9ef">remoteCluster</span>: <span style="color:#66d9ef">true</span>
+</code></pre></div><h2 id="how-it-works">How it works</h2>
+<p>The multi cluster setup of Jenkins X is designed around the following goals:</p>
+<ul>
+<li>you have full control over production and pre-production clusters, choosing exactly what software is installed there
+<ul>
+<li>there are no development tools installed: no tekton, lighthouse, container registries and no images are built in production</li>
+</ul>
+</li>
+<li>immutable infrastructure configured via GitOps with maximum traceability and feedback
+<ul>
+<li>easy to review changes on production via git and not requiring access to production</li>
+</ul>
+</li>
+</ul>
+<h3 id="development-cluster">Development Cluster</h3>
+<p>The development cluster:</p>
+<ul>
+<li>runs all pipelines on your applications to handle pull requests and performs releases
+<ul>
+<li>releases of applications create pull requests on remote cluster repositories</li>
+</ul>
+</li>
+<li>handles all webhooks for pull requests on remove environments and runs pipelines to validate changes to remote environments
+<ul>
+<li>reports back to GitHub the status of pull request pipelines</li>
+<li>visualises the pipelines in the <a href="/v3/develop/ui/">usual Jenkins X UIs</a></li>
+<li>supports auto-merge via ChatOps when approved</li>
+</ul>
+</li>
+</ul>
+<h3 id="remote-cluster">Remote Cluster</h3>
+<ul>
+<li>runs the <a href="/v3/admin/guides/operator/">git operator</a> which polls the main branch in the remote cluster for changes</li>
+<li>when a change is found a <code>Job</code> is run to perform the <code>kubectl apply</code> or <code>helmfile sync</code> or whatever</li>
+</ul>
+<h2 id="remote-cluster-recommendations">Remote Cluster Recommendations</h2>
+<p>We do recommend using the Jenkins X GitOps pipeline approach in <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">production and preproduction for these reasons</a> then all changes to git result in the <a href="/v3/about/how-it-works/#boot-job">kubernetes resources being checked into git</a> so they can be easily reviewed without reviewers needing access to production.</p>
+<p>You may want to reuse existing built in charts such as:</p>
+<ul>
+<li><a href="https://github.com/external-secrets/kubernetes-external-secrets">kubernetes external secrets</a> for [populating Secrets from your secret store(/v3/admin/guides/secrets/) (vault or cloud provider secret manager)</li>
+<li><a href="https://github.com/jenkins-x-charts/pusher-wave#wave">push-wave</a> for automatically performing rolling upgrades when secrets are rotated in your secret store</li>
+</ul>
+<h3 id="using-helmfile-sync">using <code>helmfile sync</code></h3>
+<p>If you want to just use something like <code>helmfile sync</code> to deploy charts in production you could use the following <code>Makefile</code> in your production/pre-production repository:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-make" data-lang="make"><span style="color:#a6e22e">apply</span><span style="color:#f92672">:</span>
+    helmfile sync
+    
+<span style="color:#a6e22e">pr</span><span style="color:#f92672">:</span>
+    helmfile lint
+</code></pre></div><p>though you will lose <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">these benefits</a>. You will also need to:</p>
+<ul>
+<li>add your own <a href="https://github.com/jenkins-x-charts/pusher-wave#quick-start">pusher-wave integration</a> for each chart you want to perform a rolling upgrade if the underlying secrets are rotated.</li>
+<li>manually populate all secrets in each remote environments via the underlying secret store as you will not be using the <a href="https://github.com/jenkins-x/jx-secret">jx-secret</a> mechanism built into the default Jenkins X GitOps pipelines for doing this.</li>
+</ul>
 
 	
 		<style>
@@ -1060,7 +1151,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified November 26, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/75bb183b6945b293d7669e510c9bc74b112ae271">fix: polish the multi cluster docs (75bb183b69)</a>
 </div>
 </div>
 
