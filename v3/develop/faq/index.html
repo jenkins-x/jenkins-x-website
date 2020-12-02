@@ -514,7 +514,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/v3/develop/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">Developing</a>
+    <a  href="/v3/develop/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">User Guide</a>
   </li>
   <ul>
     <li class="collapse show" id="v3develop">
@@ -642,7 +642,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/v3/admin/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Administration</a>
+    <a  href="/v3/admin/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Admin Guide</a>
   </li>
   <ul>
     <li class="collapse " id="v3admin">
@@ -965,6 +965,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-list-the-apps-that-have-been-deployed">How do I list the apps that have been deployed?</a></li>
     <li><a href="#why-does-jenkins-x-use-helmfile-template">Why does Jenkins X use <code>helmfile template</code>?</a></li>
     <li><a href="#what-is-the-directory-layout">What is the directory layout?</a></li>
+    <li><a href="#how-do-i-diagnose-a-step-in-a-pipeline">How do I diagnose a step in a pipeline?</a></li>
     <li><a href="#does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</a></li>
     <li><a href="#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production">How do I configure the ingress domain in Dev, Staging or Production?</a></li>
     <li><a href="#how-do-i-configure-the-ingress-tls-certificate-in-dev-staging-or-production">How do I configure the ingress TLS certificate in Dev, Staging or Production?</a></li>
@@ -1002,7 +1003,7 @@ if (!doNotTrack) {
 
 
 <li class="breadcrumb-item" >
-	<a href="https://jenkins-x.io/v3/develop/">Developing</a>
+	<a href="https://jenkins-x.io/v3/develop/">User Guide</a>
 </li>
 
 
@@ -1092,7 +1093,27 @@ if (!doNotTrack) {
 <p>So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a <code>helm upgrade</code> or <code>helmfile sync</code> command to your makefile. The entire boot job is defined in git in <strong>versionStream/git-operator/job.yaml</strong> so you are free to go in whatever direction you prefer.</p>
 <h2 id="what-is-the-directory-layout">What is the directory layout?</h2>
 <p>To understand the directory layout see <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md">this document</a></p>
-<h2 id="does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</h2>
+<h2 id="how-do-i-diagnose-a-step-in-a-pipeline">How do I diagnose a step in a pipeline?</h2>
+<p>If you are wondering what image, command, environment variables are being used in a step in the pipeline the simplest thing is to <a href="/v3/develop/ui/octant/">open the octant console</a> via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx ui
+</code></pre></div><p>Then if you navigate to the pipeline you are interested in and select the envelope icon next to a step name that will take you to the Step details page. e.g. if you click on the icon pointed to by the big red arrow:</p>
+<figure>
+<img src="/images/developing/octant-step-click.png" />
+<figcaption>
+<h5>Click on the step icon to see details of a step which then takes you to the step details page</h5>
+</figcaption>
+</figure>
+<figure>
+<img src="/images/developing/octant-step.png" />
+<figcaption>
+<h5>Step details page lets you see the command, image, environment variables and volumes</h5>
+</figcaption>
+</figure>
+<p>If that doesn&rsquo;t help another option is to <a href="/v3/develop/pipeline-catalog/#editing-pipelines">edit the pipeline step</a> via the <code>.lighthouse/jenkins-x/release.yaml</code> or  <code>.lighthouse/jenkins-x/pullrequest.yaml</code> file to add the command: <code>sleep infinity</code> in the <code>script:</code> value before the command that is not working.</p>
+<p>You can then <code>kubectl exec</code> into the pod at that step and look around and try running commands locally.</p>
+<p>e.g. using the pod name from the above page and the container name you can do something like:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl exec -it -c name-of-step-container name-of-pod sh
+</code></pre></div><h2 id="does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</h2>
 <p>Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.</p>
 <p>Since we default to using <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">helmfile template</a> helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).</p>
 <p>However its easy to add steps into the <strong>versionStream/src/Makefile.mk</strong> to simulate helmfile hooks.</p>
@@ -1317,7 +1338,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 2, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/8efa40b3c3a040697f9a93cb63de330217a15dee">fix: add FAQ entry (8efa40b3c3)</a>
 </div>
 </div>
 

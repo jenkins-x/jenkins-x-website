@@ -1,8 +1,8 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – Developing</title>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – User Guide</title>
     <link>https://jenkins-x.io/v3/develop/</link>
-    <description>Recent content in Developing on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <description>Recent content in User Guide on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
     
 	  <atom:link href="https://jenkins-x.io/v3/develop/index.xml" rel="self" type="application/rss+xml" />
@@ -368,7 +368,27 @@ git push
 &lt;p&gt;So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a &lt;code&gt;helm upgrade&lt;/code&gt; or &lt;code&gt;helmfile sync&lt;/code&gt; command to your makefile. The entire boot job is defined in git in &lt;strong&gt;versionStream/git-operator/job.yaml&lt;/strong&gt; so you are free to go in whatever direction you prefer.&lt;/p&gt;
 &lt;h2 id=&#34;what-is-the-directory-layout&#34;&gt;What is the directory layout?&lt;/h2&gt;
 &lt;p&gt;To understand the directory layout see &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;this document&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
+&lt;h2 id=&#34;how-do-i-diagnose-a-step-in-a-pipeline&#34;&gt;How do I diagnose a step in a pipeline?&lt;/h2&gt;
+&lt;p&gt;If you are wondering what image, command, environment variables are being used in a step in the pipeline the simplest thing is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;open the octant console&lt;/a&gt; via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ui
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then if you navigate to the pipeline you are interested in and select the envelope icon next to a step name that will take you to the Step details page. e.g. if you click on the icon pointed to by the big red arrow:&lt;/p&gt;
+&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step-click.png&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Click on the step icon to see details of a step which then takes you to the step details page&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step.png&#34; /&gt;
+&lt;figcaption&gt;
+&lt;h5&gt;Step details page lets you see the command, image, environment variables and volumes&lt;/h5&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;If that doesn&amp;rsquo;t help another option is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipeline-catalog/#editing-pipelines&#34;&gt;edit the pipeline step&lt;/a&gt; via the &lt;code&gt;.lighthouse/jenkins-x/release.yaml&lt;/code&gt; or  &lt;code&gt;.lighthouse/jenkins-x/pullrequest.yaml&lt;/code&gt; file to add the command: &lt;code&gt;sleep infinity&lt;/code&gt; in the &lt;code&gt;script:&lt;/code&gt; value before the command that is not working.&lt;/p&gt;
+&lt;p&gt;You can then &lt;code&gt;kubectl exec&lt;/code&gt; into the pod at that step and look around and try running commands locally.&lt;/p&gt;
+&lt;p&gt;e.g. using the pod name from the above page and the container name you can do something like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c name-of-step-container name-of-pod sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
 &lt;p&gt;Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.&lt;/p&gt;
 &lt;p&gt;Since we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;helmfile template&lt;/a&gt; helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).&lt;/p&gt;
 &lt;p&gt;However its easy to add steps into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; to simulate helmfile hooks.&lt;/p&gt;
