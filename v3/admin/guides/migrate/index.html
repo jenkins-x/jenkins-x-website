@@ -7,6 +7,7 @@
 
 <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
 
+<link rel="alternate" type="application/rss&#43;xml" href="https://jenkins-x.io/v3/admin/guides/migrate/index.xml">
 
 
 <link rel="shortcut icon" href="/favicons/favicon.ico" >
@@ -22,17 +23,11 @@
 
 <title>Migrate | Jenkins X - Cloud Native CI/CD Built On Kubernetes</title><meta property="og:title" content="Migrate" />
 <meta property="og:description" content="Migrate to v3 from older Jenkins X installations" />
-<meta property="og:type" content="article" />
+<meta property="og:type" content="website" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/migrate/" />
-<meta property="article:modified_time" content="2020-11-24T08:37:33+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Migrate">
-<meta itemprop="description" content="Migrate to v3 from older Jenkins X installations">
-<meta itemprop="dateModified" content="2020-11-24T08:37:33&#43;00:00" />
-<meta itemprop="wordCount" content="331">
-
-
-
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta itemprop="description" content="Migrate to v3 from older Jenkins X installations"><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Migrate"/>
 <meta name="twitter:description" content="Migrate to v3 from older Jenkins X installations"/>
 
@@ -76,7 +71,7 @@ if (!doNotTrack) {
 
 
   </head>
-  <body class="td-page">
+  <body class="td-section">
     <header>
       
 
@@ -786,7 +781,7 @@ if (!doNotTrack) {
 
 <ul class="td-sidebar-nav__section pr-md-3">
   <li class="td-sidebar-nav__section-title">
-    <a  href="/v3/admin/guides/" class="align-left pl-0 pr-2 active td-sidebar-link td-sidebar-link__section">Guides</a>
+    <a  href="/v3/admin/guides/" class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section">Guides</a>
   </li>
   <ul>
     <li class="collapse show" id="v3adminguides">
@@ -860,8 +855,37 @@ if (!doNotTrack) {
       
       
       
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/v3/admin/guides/migrate/" class="align-left pl-0 pr-2 active td-sidebar-link td-sidebar-link__section">Migrate</a>
+  </li>
+  <ul>
+    <li class="collapse show" id="v3adminguidesmigrate">
       
-      <a class="td-sidebar-link td-sidebar-link__page  active" id="m-v3adminguidesmigrate" href="/v3/admin/guides/migrate/">Migrate</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesmigratev3-alpha" href="/v3/admin/guides/migrate/v3-alpha/">From 3.0 Alpha</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesmigratev2" href="/v3/admin/guides/migrate/v2/">From 2.x</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
       
       
       
@@ -948,7 +972,7 @@ if (!doNotTrack) {
 
 <p>
   <h4>
-    <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/en/v3/admin/guides/migrate.md" target="_blank"><i class="fa fa-edit fa-fw"></i> Edit this page</a>
+    <a href="https://github.com/jenkins-x/jx-docs/edit/master/content/en/v3/admin/guides/migrate/_index.md" target="_blank"><i class="fa fa-edit fa-fw"></i> Edit this page</a>
   </h4>
   <a href="/docs/contributing/documentation/changes/" target="_blank"><i>(Learn how to edit)</i></a>
 </p>
@@ -1018,56 +1042,131 @@ if (!doNotTrack) {
             
 <div class="td-content">
 	<h1>Migrate</h1>
-    <div class="lead">Migrate to v3 from older Jenkins X installations</div>
-	       
-	<p>If you wish to migrate from older versions of Jenkins X to v3 we recommend <a href="/v3/admin/platform/">spinning up a new cluster for v3</a> and then incrementally moving projects from the old cluster to the new cluster.</p>
-<p>This might sound heavy handed but the issue with working with multiple versions of a number of charts like <code>lighthouse</code> and <code>tekton</code> is that they use cluster scoped resources (CRDs and <code>clusterrole</code> resources for example) which can compete with each other. e.g. installing a new version of a chart may well break an old installation.</p>
-<p>So its safer to <a href="/v3/admin/platform/">spin up a new cluster and install v3 there</a>.</p>
-<p>Once you have a new cluster you can just <a href="/v3/develop/create-project/#import-an-existing-project">import projects</a> into the new cluster via <a href="/v3/develop/create-project/#import-an-existing-project">jx project import</a></p>
-<p>You can then test the projects work fine in the new v3 cluster. If they do you can remove them from the old cluster via <code>jx delete application</code>.</p>
-<h2 id="batch-importing">Batch importing</h2>
-<p>To batch import lots of projects from the old cluster:</p>
-<ul>
-<li>git clone the new cluster&rsquo;s git repository (with the <code>helmfile.yaml</code> file inside) and <code>cd</code> into the directory</li>
-<li>verify you are in the correct git clone by running this command</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ls -al helmfile.yaml
-</code></pre></div><ul>
-<li>
-<p>you should see the <code>helmfile.yaml</code> file from the v3 installation</p>
-</li>
-<li>
-<p>now connect to your old Jenkins X cluster. Using jx v2 you can use <code>jx ctx</code> to switch contexts or refer to your cloud providers documentation on how to switch <code>kubectl</code> to point to different clusters</p>
-</li>
-<li>
-<p>verify you can see the old source repositories via:</p>
-</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get sourcerepository
-</code></pre></div><ul>
-<li>
-<p>now run the <a href="">jx gitops repository export</a> command</p>
-</li>
-<li>
-<p>the local file <code>.jx/gitops/source-config.yaml</code> should have been modified with the exported repositories</p>
-</li>
-<li>
-<p>review the changes to this file - remove any projects you don&rsquo;t want to import</p>
-</li>
-<li>
-<p>now git commit this file:</p>
-</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add .jx
-git commit -a -m <span style="color:#e6db74">&#34;fix: import repositories&#34;</span>
-git push 
-</code></pre></div><ul>
-<li>connect to your new cluster</li>
-<li>you can watch the setup pipeline run via <code>jx admin log</code></li>
-<li>once complete you should see the imported projects:</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get sourcerepository
-</code></pre></div>
+        <div class="lead">Migrate to v3 from older Jenkins X installations</div>
+	
+	
+        <div class="section-index">
+    
+    
+    
+    
+    <hr class="panel-line">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/admin/guides/migrate/v3-alpha/">From 3.0 Alpha</a>
+                    </h5>
+                    <p>Migrate to the 3.0 Beta from 3.0 Alpha</p>
+                </div>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/admin/guides/migrate/v2/">From 2.x</a>
+                    </h5>
+                    <p>Migrate to the 3.0 Beta from older Jenkins X installations</p>
+                </div>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    
+</div>
+
 	
 		<style>
   .feedback--answer {
@@ -1130,10 +1229,9 @@ git push
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 4, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5df0e59dce9a9ba09b836d8bc73b5e490cef3e46">fix: add better migration guide (5df0e59dce)</a>
 </div>
 </div>
-
 
           </main>
         </div>
