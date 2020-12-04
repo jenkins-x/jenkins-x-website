@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 11 Nov 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 04 Dec 2020 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,33 @@
         
       
     
+    
+    <item>
+      <title>Blog: Jenkins X 3.x - beta is close!</title>
+      <link>https://jenkins-x.io/blog/2020/12/04/jx-v3-update/</link>
+      <pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2020/12/04/jx-v3-update/</guid>
+      <description>
+        
+        
+        &lt;p&gt;It has been &amp;lsquo;all hands on deck&amp;rsquo; in recent months with the focus on Jenkins X 3 alpha.  First off a huge thankyou to everyone involved.  The OSS community spirit has really shone through what has been a very difficult year for everyone.  Knowing that people from all over the world come and help each other, share banter and work at all hours of the day to help build out a true open source cloud native continuous delivery solution for developers - it&amp;rsquo;s quite fantastic to see and amazing to be apart of.&lt;/p&gt;
+&lt;p&gt;As a result of all this hard work the Beta is iminent so this is a good opportunity to thank all involved so far and to outline what to expect in the coming days.&lt;/p&gt;
+&lt;p&gt;While we&amp;rsquo;ve been in the Alpha phase it has provided us with the opportunity to deprecate and remove APIs, commands and obsolete features that existed in v2.  This means we will not have any code dependency on the v2 codebase and so going forward v3 will be easier to maintain without the tech debt.&lt;/p&gt;
+&lt;p&gt;With that, we aim to make a big push and roll out a few last changes in preparation for Beta, here&amp;rsquo;s a couple you will notice if you are already on the Alpha.  We recommend taking time to understand these, and avoid upgrading for a few days so that changes can be handled in one go, as there will be a constant stream of larger updates happening:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jx requirements - this is the yaml file used to describe install needs for Jenkins X, until now there have been options available that were unsupported, confusing and in some cases did nothing.  These have now all been removed and the structure of the file has changed to be CRD like including an API version.  Upon upgrade &lt;code&gt;jx gitops upgrade&lt;/code&gt; will migrate your &lt;code&gt;jx-requirements.yml&lt;/code&gt; and push the changes back to the cluster gitops repository.  You should not see any errors however there are some pipeline steps that need to be updated in order to work with the new structure, this is covered next.&lt;/li&gt;
+&lt;li&gt;pipeline catalog - currently Jenkins X 3.x defaults to in-repo pipelines where your Tekton resources are managed by kpt, these will need to be updated to work with the new or old requirements described above.  This means you will also need to run &lt;code&gt;jx gitops upgrade&lt;/code&gt; in each your application git repos.  In the near future Jenkins X 3.x will make it easy to work with shared pipeline libraries / catalog repositories, referencing them via URL rather than in-repo.  This is so that users have the flexibility to choose which option is best for your use case.  In-repo pipelines and shared pipeline libraries have pros and cons for each, mainly about maintaining changes.  But for now, you will need to upgrade each application git repository.&lt;/li&gt;
+&lt;li&gt;nested helmfiles - this is a great feature from Chris Mellard which will be merged very soon.  The idea is that your cluster git repository will have support for multiple helmfiles, ones that will contain core Jenkins X charts and maintained by kpt via the &lt;code&gt;jx gitops upgrade&lt;/code&gt; process, and others where you can add your own charts rather than extending the single helmfile that is there today.&lt;/li&gt;
+&lt;li&gt;nginx - for the alpha we have upgraded all the core helm charts we ship in a base Jenkins X installation, the last to land is Nginx thanks to Ankit!  This is not expected to cause issues however the change does involve moving to a different chart, there is a risk that there may be some very small window of downtime for the ingress controller so webhooks fired during the upgrade may fail to be delivered.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Balancing upgrades with continuous delivery brings many challenges.  However with Kubernetes, GitOps, Jenkins X version streams (including the monthly LTS coming soon) and other tools like kpt makes the process more transparent and provides a greater level of high availability.&lt;/p&gt;
+&lt;p&gt;Jenkins X automatically upgrades its own infrastructure with every version stream release and we haven&amp;rsquo;t experienced any disruption during the alpha period so far.  We aim to continue this, but when we know there will be disruption we endeavour to inform and explain why ahead of time.&lt;/p&gt;
+&lt;p&gt;Keep an eye out for announcements of the Beta and thanks again to all involved in the community and we are very much looking forward to welcoming new people too.  We are very excited for the Beta release and given the feedback so far we understand users are too.&lt;/p&gt;
+&lt;p&gt;For any questions and feedback please reach out on slack &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;https://jenkins-x.io/community/#slack&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Accelerate your Tekton with Jenkins X</title>
@@ -2914,27 +2941,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;p&gt;If you are using Jenkins X then please consider using the &lt;code&gt;--no-tiller&lt;/code&gt;  option when you&amp;rsquo;re &lt;a href=&#34;https://jenkins-x.io/getting-started/create-cluster/&#34;&gt;creating a cluster&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/old/install-on-cluster/&#34;&gt;install Jenkins X on an existing cluster&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;We&amp;rsquo;re working  on Jenkins X 2.0 - most of its features are already available hidden behind feature flags. So in Jenkins X 2.0 we will default disable tiller by default along with enabling other things like Prow integration and using &lt;em&gt;serverless&lt;/em&gt; Jenkins by default (more on those in a separate blog!).&lt;/p&gt;
 &lt;p&gt;We are also really looking forward to helm 3! :). Helm rocks, but tiller does not!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins X at Jenkins World</title>
-      <link>https://jenkins-x.io/blog/2018/09/06/jenkins-x-at-jenkinsworld/</link>
-      <pubDate>Thu, 06 Sep 2018 08:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2018/09/06/jenkins-x-at-jenkinsworld/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;jenkins-x-at-jenkinsworld&#34;&gt;Jenkins X at JenkinsWorld&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.cloudbees.com/devops-world/&#34;&gt;Jenkins World&lt;/a&gt; has combined with DevOps world to become the premier DevOps event in your calendar this year - and there really isn&amp;rsquo;t much time left if you still have to register. The event is happening at San Francisco 16-19 September, and Nice,France  22-25 October.  To get a discount on entry - you are invited to use the dscount code: JWRDAVIES&lt;/p&gt;
-&lt;p&gt;Some of the Jenkins X team, including James Strachan, James Rawlings, Rob Davies and Pete Muir will be available if you want some extra help with the Jenkins X project - we are cheap too - beer tokens gratefully received.&lt;/p&gt;
-&lt;p&gt;There will be interactive Jenkins X demonstrations at the Jenkins X community booth and the exhibition theatre. There will be Jenkins X book signings and much more.&lt;/p&gt;
-&lt;p&gt;There is a &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/FYjb/building-continuous-delivery-for-microservices-with-jenkins-x-25?iframe=no&amp;amp;w=100%25&amp;amp;sidebar=yes&amp;amp;bg=no&#34;&gt;Jenkins X workshop&lt;/a&gt;, which is unfortunately already sold out!&lt;/p&gt;
-&lt;p&gt;James Strachan will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/FlPE/jenkins-x-continuous-delivery-for-kubernetes?iframe=no&amp;amp;w=100%25&amp;amp;sidebar=yes&amp;amp;bg=no&#34;&gt;Jenkins X: Continuous Delivery for Kubernetes&lt;/a&gt; on Tuesday 18 Sep&lt;/p&gt;
-&lt;p&gt;and James Rawlings and Rob Davies will be presenting &lt;a href=&#34;https://devopsworldjenkinsworld2018.sched.com/event/GFmE/extending-jenkins-x-for-fun-and-profit?iframe=no&amp;amp;w=100%25&amp;amp;sidebar=yes&amp;amp;bg=no&#34;&gt;Extending Jenkins X for fun&lt;/a&gt; on Tuesday 18 Sep too&lt;/p&gt;
-&lt;p&gt;The Jenkins X team is looking forward to seeing you at Jenkins World this year!&lt;/p&gt;
 
       </description>
     </item>
