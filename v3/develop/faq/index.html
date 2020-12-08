@@ -991,6 +991,8 @@ if (!doNotTrack) {
 <nav id="TableOfContents">
   <ul>
     <li><a href="#how-do-i-customise-an-app-in-an-environment">How do I customise an App in an Environment</a></li>
+    <li><a href="#how-do-i-deploy-kubernetes-resources">How do I deploy kubernetes resources?</a></li>
+    <li><a href="#how-do-i-deploy-an-app-with-no-chart">How do I deploy an app with no chart?</a></li>
     <li><a href="#how-do-i-list-the-apps-that-have-been-deployed">How do I list the apps that have been deployed?</a></li>
     <li><a href="#why-does-jenkins-x-use-helmfile-template">Why does Jenkins X use <code>helmfile template</code>?</a></li>
     <li><a href="#what-is-the-directory-layout">What is the directory layout?</a></li>
@@ -1053,6 +1055,33 @@ if (!doNotTrack) {
 	<h2 id="how-do-i-customise-an-app-in-an-environment">How do I customise an App in an Environment</h2>
 <p>With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the <code>dev</code>, <code>staging</code> or <code>production</code> environment and whether or not you are using <a href="/v3/guides/multi-cluster/">multiple clusters</a>.</p>
 <p>See <a href="/v3/develop/apps/#customising-charts">how to customise a chart</a></p>
+<h2 id="how-do-i-deploy-kubernetes-resources">How do I deploy kubernetes resources?</h2>
+<p>The default <code>helmfile.yaml</code> files take references to helm charts.</p>
+<p>If you want to deploy one or more kubernetes resources <a href="/v3/develop/apps/#adding-resources">wrap them in a local chart in your dev cluster git repository</a></p>
+<h2 id="how-do-i-deploy-an-app-with-no-chart">How do I deploy an app with no chart?</h2>
+<p>Some microservices on kubernetes do not yet come packaged as a helm chart.</p>
+<p>e.g. if the only instructions on the website of the microservice is something like</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># install this appication via:</span>
+kubectl apply -f https://acme.com/foo.yaml
+</code></pre></div><p>If you want you can just install it like the above <code>kubectl apply</code> command.</p>
+<p>Though you then lose the benefits of GitOps in that all changes to your cluster are auditted and versioned in git and it&rsquo;s easy to rollback changes.</p>
+<p>So another approach is to follow the <a href="/v3/develop/apps/#adding-resources">create a local chart</a> instructions:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir charts/myname/templates
+curl -L https://acme.com/foo.yaml &gt; charts/myname/templates/resources.yaml
+echo <span style="color:#e6db74">&#34;apiVersion: v1
+</span><span style="color:#e6db74">description: A Helm chart for myname
+</span><span style="color:#e6db74">name: myname
+</span><span style="color:#e6db74">version: 0.0.1&#34;</span> &gt; charts/myname/Chart.yaml
+</code></pre></div><p>Then add the following <code>chart:</code> line to your <code>helmfiles/$namespace/helmfile.yaml</code> in the <code>releases:</code> section for the namespace you want to deploy it in&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">releases</span>:
+- <span style="color:#66d9ef">chart</span>: ./charts/myname
+</code></pre></div><p>If this is a brand new namespace which didn&rsquo;t have a <code>helmfiles/$namespace/helmfile.yaml</code> then make sure you also add an entry in the root <code>helmfile.yaml</code> file of:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">helmfiles</span>:
+- <span style="color:#66d9ef">path</span>: helmfiles/$namespace/helmfile.yaml
+</code></pre></div><p>Note that <code>$namespace</code> in the above files should be expanded to the actual namespace you are deploying it to; e.g. <code>jx</code> or <code>jx-staging</code> or whatever.</p>
+<p>The above may seem like a bit of work compared to <code>kubectl apply</code> but it does mean at any time you can upgrade the app by re-running the command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -L https://acme.com/foo.yaml &gt; charts/myname/templates/resources.yaml
+</code></pre></div><p>You can also easily uninstall the application or modify the YAML in git at any time.</p>
 <h2 id="how-do-i-list-the-apps-that-have-been-deployed">How do I list the apps that have been deployed?</h2>
 <p>You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the <code>releases</code> section of your <code>helmfile.yaml</code> file in your cluster git repository.</p>
 <p>You can browse all the kubernetes resources in each namespace using the canonical layout in the <code>config-root</code> folder. e.g. all charts are versioned in git as follows:</p>
@@ -1371,7 +1400,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 2, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/57a9286bf59c807d4c7000dce330a2673c65302a">Update _index.md (57a9286bf5)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 8, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e02c8f93b1add5f2140e0bbdd0edc2981a76cd21">fix: polish FAQ (e02c8f93b1)</a>
 </div>
 </div>
 

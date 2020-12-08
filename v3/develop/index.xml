@@ -302,6 +302,33 @@ git push
         &lt;h2 id=&#34;how-do-i-customise-an-app-in-an-environment&#34;&gt;How do I customise an App in an Environment&lt;/h2&gt;
 &lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;how to customise a chart&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-deploy-kubernetes-resources&#34;&gt;How do I deploy kubernetes resources?&lt;/h2&gt;
+&lt;p&gt;The default &lt;code&gt;helmfile.yaml&lt;/code&gt; files take references to helm charts.&lt;/p&gt;
+&lt;p&gt;If you want to deploy one or more kubernetes resources &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;wrap them in a local chart in your dev cluster git repository&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-deploy-an-app-with-no-chart&#34;&gt;How do I deploy an app with no chart?&lt;/h2&gt;
+&lt;p&gt;Some microservices on kubernetes do not yet come packaged as a helm chart.&lt;/p&gt;
+&lt;p&gt;e.g. if the only instructions on the website of the microservice is something like&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install this appication via:&lt;/span&gt;
+kubectl apply -f https://acme.com/foo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you want you can just install it like the above &lt;code&gt;kubectl apply&lt;/code&gt; command.&lt;/p&gt;
+&lt;p&gt;Though you then lose the benefits of GitOps in that all changes to your cluster are auditted and versioned in git and it&amp;rsquo;s easy to rollback changes.&lt;/p&gt;
+&lt;p&gt;So another approach is to follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;create a local chart&lt;/a&gt; instructions:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mkdir charts/myname/templates
+curl -L https://acme.com/foo.yaml &amp;gt; charts/myname/templates/resources.yaml
+echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;description: A Helm chart for myname
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;name: myname
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;version: 0.0.1&amp;#34;&lt;/span&gt; &amp;gt; charts/myname/Chart.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then add the following &lt;code&gt;chart:&lt;/code&gt; line to your &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt; in the &lt;code&gt;releases:&lt;/code&gt; section for the namespace you want to deploy it in&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: ./charts/myname
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If this is a brand new namespace which didn&amp;rsquo;t have a &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt; then make sure you also add an entry in the root &lt;code&gt;helmfile.yaml&lt;/code&gt; file of:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;helmfiles&lt;/span&gt;:
+- &lt;span style=&#34;color:#66d9ef&#34;&gt;path&lt;/span&gt;: helmfiles/$namespace/helmfile.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that &lt;code&gt;$namespace&lt;/code&gt; in the above files should be expanded to the actual namespace you are deploying it to; e.g. &lt;code&gt;jx&lt;/code&gt; or &lt;code&gt;jx-staging&lt;/code&gt; or whatever.&lt;/p&gt;
+&lt;p&gt;The above may seem like a bit of work compared to &lt;code&gt;kubectl apply&lt;/code&gt; but it does mean at any time you can upgrade the app by re-running the command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;curl -L https://acme.com/foo.yaml &amp;gt; charts/myname/templates/resources.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also easily uninstall the application or modify the YAML in git at any time.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
 &lt;p&gt;You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the &lt;code&gt;releases&lt;/code&gt; section of your &lt;code&gt;helmfile.yaml&lt;/code&gt; file in your cluster git repository.&lt;/p&gt;
 &lt;p&gt;You can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
