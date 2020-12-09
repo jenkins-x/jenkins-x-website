@@ -24,11 +24,11 @@
 <meta property="og:description" content="Automated TLS and DNS" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/tls_dns/" />
-<meta property="article:modified_time" content="2020-11-24T13:12:06+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-12-09T12:20:56+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="TLS and DNS">
 <meta itemprop="description" content="Automated TLS and DNS">
-<meta itemprop="dateModified" content="2020-11-24T13:12:06&#43;00:00" />
-<meta itemprop="wordCount" content="1200">
+<meta itemprop="dateModified" content="2020-12-09T12:20:56&#43;00:00" />
+<meta itemprop="wordCount" content="1337">
 
 
 
@@ -842,8 +842,49 @@ if (!doNotTrack) {
       
       
       
+
+
+
+
+
+
+<ul class="td-sidebar-nav__section pr-md-3">
+  <li class="td-sidebar-nav__section-title">
+    <a  href="/v3/admin/guides/upgrades/" class="align-left pl-0 pr-2 collapsed td-sidebar-link td-sidebar-link__section">Upgrades</a>
+  </li>
+  <ul>
+    <li class="collapse " id="v3adminguidesupgrades">
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesupgrade" href="/v3/admin/guides/upgrade/">Upgrade</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesupgradescli" href="/v3/admin/guides/upgrades/cli/">CLI</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesupgradescluster" href="/v3/admin/guides/upgrades/cluster/">Cluster</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesupgradesinfrastructure" href="/v3/admin/guides/upgrades/infrastructure/">Infrastructure</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesupgradeslts" href="/v3/admin/guides/upgrades/lts/">LTS</a>
+      
+      
+    </li>
+  </ul>
+</ul>
+
       
       
       
@@ -998,13 +1039,17 @@ if (!doNotTrack) {
     <li><a href="#prerequisites">Prerequisites</a>
       <ul>
         <li><a href="#cloud-infrastructure">Cloud Infrastructure</a></li>
-        <li><a href="#cluster">Cluster</a></li>
       </ul>
     </li>
     <li><a href="#what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</a></li>
     <li><a href="#what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</a></li>
     <li><a href="#how-can-i-remove-the-namespace-subdomain-eg--jx-from-my-urls">How can I remove the namespace subdomain (e.g. -jx.) from my URLs?</a></li>
     <li><a href="#how-can-i-check-if-cert-manager-has-issued-a-certificate">How can I check if cert-manager has issued a certificate?</a></li>
+    <li><a href="#how-can-i-install-the-charts-if-not-using-terraform-to-autamatically-enable-them">How can I install the charts if not using terraform to autamatically enable them?</a>
+      <ul>
+        <li><a href="#cluster">Cluster</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
 
@@ -1092,10 +1137,14 @@ and
 <li>a managed cloud dns zone, see <a href="https://cloud.google.com/dns/docs/zones">here</a> for more information</li>
 </ul>
 <p>To satisfy these requirements go to your infrastructure repository (contains Terraform main.tf) and add to your <code>values.auto.tfvars</code> the following:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">parent_domain = <span style="color:#e6db74">&#34;foo.io&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apex_domain = <span style="color:#e6db74">&#34;foo.io&#34;</span>
 </code></pre></div><p>Most people prefer to use a subdomain for a specific installation rather than purchasing one domain per cluster.  For example in a multi cluster setup you will probably want all using the same parent domain but two clusters using a different subdomain like development.foo.io, staging.foo.io leaving production using just the parent domain foo.io.</p>
 <p>To use a subdomain for this cluster add the following configuration:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subdomain     = <span style="color:#e6db74">&#34;dev&#34;</span>
+</code></pre></div><p>We will now add details that will be passed to Jenkins X as requirements when booting the cluster.</p>
+<p>Add these to <code>values.auto.tfvars</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">lets_encrypt_production = <span style="color:#66d9ef">false</span>
+tls_email               = your_email_address@googlegroups.com
 </code></pre></div><p>Now apply these changes:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add values.auto.tfvars
 git commit -m <span style="color:#e6db74">&#39;feat: enable DNS cloud resources&#39;</span>
@@ -1107,48 +1156,30 @@ export TF_VAR_jx_bot_token=
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform plan
 terraform apply
 </code></pre></div><p>If using a subdomain you will now see your managed zone in GCP <a href="https://console.cloud.google.com/net-services/dns/zones">here</a></p>
-<h3 id="cluster">Cluster</h3>
-<p>Next we will configure the cluster requirements:</p>
-<ul>
-<li>Install <a href="https://github.com/kubernetes-sigs/external-dns#externaldns">external-dns</a> - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propagate globally across the internet</li>
-<li>Install <a href="https://cert-manager.io/docs/">cert-manager</a> - Kubernetes controller which watches for requests to ask <a href="https://letsencrypt.org/">Let&rsquo;s Encrypt</a> to issue a new wildcard TLS certificate for your domain and will manage this including renewals</li>
-</ul>
-<p>To satisfy these requirements go to your cluster repository (contains helmfile.yaml)</p>
-<p>Add external-dns to your clusters helmfile.yaml <code>releases</code> section:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">- chart: bitnami/external-dns
-</code></pre></div><p>Add cert-manager to your clusters helmfile.yaml <code>releases</code> section:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">- chart: jetstack/cert-manager
-</code></pre></div><p>Next we install</p>
-<ul>
-<li>a cluster wide <a href="https://cert-manager.io/docs/concepts/issuer/">Issuer</a> which tells cert-manager how to validate you own your domain</li>
-<li>a namespaced <a href="https://cert-manager.io/docs/concepts/certificate/">Certificate</a> to request a TLS certificate for applications running in your cluster</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">- chart: jx3/acme
-  name: acme-jx
-</code></pre></div><p>Cert-manager will use the cluster issuer to request a TLS certificate.  A Kubernetes secret will be automatically created and contain the TLS cert.  The nginx controllers in the <code>nginx</code> namespace will use this secret in the <code>jx</code> namespace for the default SSL certificate which will automatically enable TLS for all applications in your cluster.</p>
-<p>The domain from setting up your infrastructure in step one should appear in the <code>jx-requirements.yml</code> of you cluster git repo.  Next configure your TLS options, update your <code>jx-requirements.yml</code> with below.</p>
-<p><strong>NOTE</strong> this is the top level <code>ingress:</code> section and <strong>NOT</strong> in the <code>environments:</code> section:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ingress:
-  domain: dev.foo.io
-  externalDNS: false <span style="color:#75715e"># this is unused and will be deprecated</span>
-  namespaceSubDomain: -jx.
-  tls:
-    email: <span style="color:#e6db74">&#34;joe@gmail.com&#34;</span>
-    enabled: true
-    production: false
-</code></pre></div><p>When first installing set <code>tls.production=false</code> so you use the Lets Encrypt staging service which allows for more API calls before rate limiting requests.  They will issue a self-signed certificate so once happy everything is working change this to <code>tls.production=true</code>.</p>
-<p><strong>NOTE</strong> Helmfile is not able to skip insecure TLS when adding helm repositories, therefore staging certificates will not work with chartmuseum that is running in the cluster.  Therefore once you have verified cert-manager can issue certificates from staging, switch to the production service.</p>
-<p>Jenkins X uses a version stream to rollout tested versions of images, charts and default configuration.  The <code>jx-boot</code> job will apply these versions to your helmfile but you can also run the step yourself to see the defaults.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops helmfile resolve
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add helmfile.yaml
-git commit -m <span style="color:#e6db74">&#39;feat: enable DNS and TLS&#39;</span>
-git push
-</code></pre></div><p>Now tail the admin logs and wait for the job to complete</p>
+<p>Once terraform has finished you can follow the jx boot installation using the instructions given in the terraform output, connect to the cluster and run:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
-</code></pre></div><p>It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  <a href="https://dnschecker.org/">https://dnschecker.org/</a> is a useful way to check the status of DNS propagating.</p>
-<p>You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&rsquo;t see any changes)</p>
+</code></pre></div><p>There is a timing issue with the latest cert-manager so the first boot job may fail but second will automatically run and succeed.</p>
+<p>It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  <a href="https://dnschecker.org/">https://dnschecker.org/</a> is a useful way to check the status of DNS propagating.</p>
+<p>To verify using the CLI run:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ingress -n jx
+</code></pre></div><p>and use the hook URL</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx verify tls hook-jx.dev.foo.io  --production<span style="color:#f92672">=</span>false --timeout 20m
+</code></pre></div><p>You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&rsquo;t see any changes)</p>
 <p><img src="/images/v3/working_tls.png" alt="Working TLS"></p>
-<h2 id="what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</h2>
+<p>Once this is working you can switch to the production service from Lets Encrypt.  Clone your cluster git repository and change the jx-requirements.yaml enabling production:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">ingress</span>:
+  <span style="color:#66d9ef">domain</span>: dev.foo.io
+  <span style="color:#66d9ef">externalDNS</span>: <span style="color:#66d9ef">true</span>
+  <span style="color:#66d9ef">namespaceSubDomain</span>: -jx.
+  <span style="color:#66d9ef">tls</span>:
+    <span style="color:#66d9ef">email</span>: <span style="color:#e6db74">&#34;joe@gmail.com&#34;</span>
+    <span style="color:#66d9ef">enabled</span>: <span style="color:#66d9ef">true</span>
+    <span style="color:#66d9ef">production</span>: <span style="color:#66d9ef">true</span>
+</code></pre></div><p>Git commit and push the change back to your remote git repository and follow the installation:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
+</code></pre></div><p>You will now be issued a valid TLS certificate</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx verify tls hook-jx.dev.foo.io  --production<span style="color:#f92672">=</span>true --timeout 20m
+</code></pre></div><h2 id="what-if-i-have-a-chartmuseum-with-charts-running-using-nipio">What if I have a chartmuseum with charts running using nip.io?</h2>
 <p>It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.</p>
 <h2 id="what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project">What if I use a subdomain with an apex domain in a different GCP project?</h2>
 <p>When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.</p>
@@ -1166,7 +1197,35 @@ git push
 </code></pre><p>if <code>Ready</code> continues to be <code>false</code> after 10-15 mins you can check on the request using</p>
 <pre><code>kubectl get certificaterequest -n jx
 </code></pre><pre><code>kubectl describe certificaterequest -n jx
-</code></pre>
+</code></pre><h2 id="how-can-i-install-the-charts-if-not-using-terraform-to-autamatically-enable-them">How can I install the charts if not using terraform to autamatically enable them?</h2>
+<p>If you are not using the Jenkins X Terraform above then you can manually update your cluster git repository and add the charts needed.</p>
+<h3 id="cluster">Cluster</h3>
+<p>Next we will configure the cluster requirements:</p>
+<ul>
+<li>Install <a href="https://github.com/kubernetes-sigs/external-dns#externaldns">external-dns</a> - Kubernetes controller which watches for new Kubernetes Ingress resources and creates A records in Google Cloud DNS which will propagate globally across the internet</li>
+<li>Install <a href="https://cert-manager.io/docs/">cert-manager</a> - Kubernetes controller which watches for requests to ask <a href="https://letsencrypt.org/">Let&rsquo;s Encrypt</a> to issue a new wildcard TLS certificate for your domain and will manage this including renewals</li>
+</ul>
+<p>Cert-manager will use the cluster issuer to request a TLS certificate.  A Kubernetes secret will be automatically created and contain the TLS cert.  The nginx controllers in the <code>nginx</code> namespace will use this secret in the <code>jx</code> namespace for the default SSL certificate which will automatically enable TLS for all applications in your cluster.</p>
+<p>The domain from setting up your infrastructure in step one should appear in the <code>jx-requirements.yml</code> of you cluster git repo.  Next configure your TLS options, update your <code>jx-requirements.yml</code> with below.</p>
+<p><strong>NOTE</strong> this is the top level <code>ingress:</code> section and <strong>NOT</strong> in the <code>environments:</code> section:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ingress:
+  domain: dev.foo.io
+  externalDNS: true
+  namespaceSubDomain: -jx.
+  tls:
+    email: <span style="color:#e6db74">&#34;joe@gmail.com&#34;</span>
+    enabled: true
+    production: false
+</code></pre></div><p>When first installing set <code>tls.production=false</code> so you use the Lets Encrypt staging service which allows for more API calls before rate limiting requests.  They will issue a self-signed certificate so once happy everything is working change this to <code>tls.production=true</code>.</p>
+<p><strong>NOTE</strong> Helmfile is not able to skip insecure TLS when adding helm repositories, therefore staging certificates will not work with chartmuseum that is running in the cluster.  Therefore once you have verified cert-manager can issue certificates from staging, switch to the production service.</p>
+<p>Jenkins X uses a version stream to rollout tested versions of images, charts and default configuration.  The <code>jx-boot</code> job will apply these versions to your helmfile but you can also run the step yourself to see the defaults.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops helmfile resolve
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add helmfile.yaml
+git commit -m <span style="color:#e6db74">&#39;feat: enable DNS and TLS&#39;</span>
+git push
+</code></pre></div><p>Now tail the admin logs and wait for the job to complete</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1229,7 +1288,7 @@ git push
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e6042a0c7603984302fb13975585a400eef88915">docs: fix TLS docs after switching nginx to use a default cert (e6042a0c76)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 9, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/977383f7261c2d5e2a6260a88c3b3760e624eb9b">docs: updates for TLS docs (977383f726)</a>
 </div>
 </div>
 
