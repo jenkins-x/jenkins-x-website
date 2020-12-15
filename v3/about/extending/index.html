@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to extend Jenkins X 3.x" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/about/extending/" />
-<meta property="article:modified_time" content="2020-11-24T08:37:33+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-12-15T09:50:30+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Extending">
 <meta itemprop="description" content="How to extend Jenkins X 3.x">
-<meta itemprop="dateModified" content="2020-11-24T08:37:33&#43;00:00" />
-<meta itemprop="wordCount" content="624">
+<meta itemprop="dateModified" content="2020-12-15T09:50:30&#43;00:00" />
+<meta itemprop="wordCount" content="692">
 
 
 
@@ -1142,18 +1142,42 @@ if (!doNotTrack) {
 <p>You can browse the <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs">default Jenkins X Pipeline Catalog here</a>.</p>
 <p>If you want you can fork the <a href="https://github.com/jenkins-x/jx3-pipeline-catalog">jenkins-x/jx3-pipeline-catalog</a> repository and make your modifications to add/remove folders for different languages or modify the pipelines and associated files.</p>
 <p>We&rsquo;d prefer if any improvements or enhancements could be submitted back to the project via a Pull Request then we all get to share your improvements; but its totally fine to have some local modifications for your specific business requirements.</p>
-<p>To use your custom fork modify the <code>jx-requirements.yml</code> file in your cluster git repository to link to your fork instead of the  <a href="https://github.com/jenkins-x/jx3-pipeline-catalog">jenkins-x/jx3-pipeline-catalog</a> repository:</p>
+<p>To use your custom fork modify the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/pipeline-catalog.yaml">extensions/pipeline-catalog.yaml</a> file in your cluster git repository to link to your fork instead of the  <a href="https://github.com/jenkins-x/jx3-pipeline-catalog">jenkins-x/jx3-pipeline-catalog</a> repository:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...
-<span style="color:#66d9ef">buildPacks</span>:
-  <span style="color:#66d9ef">buildPackLibrary</span>:
-    <span style="color:#66d9ef">gitRef</span>: master
-    <span style="color:#66d9ef">gitURL</span>: https://github.com/myorg/jx3-pipeline-catalog.git
+<span style="color:#66d9ef">apiVersion</span>: project.jenkins-x.io/v1alpha1
+<span style="color:#66d9ef">kind</span>: PipelineCatalog
+<span style="color:#66d9ef">metadata</span>:
+  <span style="color:#66d9ef">creationTimestamp</span>: <span style="color:#66d9ef">null</span>
+<span style="color:#66d9ef">spec</span>:
+  <span style="color:#66d9ef">repositories</span>:
+  - <span style="color:#66d9ef">gitRef</span>: 0ad0e49dca4d3a1e952c6f7c548e77b2136c5035
+    <span style="color:#66d9ef">gitUrl</span>: https://github.com/myorg/jx3-pipeline-catalog
+    <span style="color:#66d9ef">label</span>: My Pipeline Catalog
 </code></pre></div><h2 id="quickstarts">QuickStarts</h2>
 <p>Quickstarts are sample projects which are used <code>jx project quickstart</code> when you <a href="/v3/develop/create-project/">create new projects</a></p>
 <p>The default quickstart projects are in the <a href="https://github.com/jenkins-x-quickstarts/">jenkins-x-quickstarts</a> github organisation.</p>
-<p>The quickstarts are versioned in the version stream in your cluster git repository at <code>versionStream/quickstarts.yml</code>.</p>
-<p>So you can add your own quickstarts by just modifying that file to add any quickstart you like.</p>
-<h2 id="octant">Octant</h2>
+<p>The quickstarts are defined in your <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/quickstarts.yaml">extensions/quickstarts.yaml</a> file and defaults to including all of the quickstarts in the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/versionStream/quickstarts.yaml">versionStream/quickstarts.yml</a> file.</p>
+<p>You can include/exclude quickstarts from the version stream using the <code>includes</code> and <code>excludes</code> regular expressions in the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/quickstarts.yaml">extensions/quickstarts.yaml</a> file as shown below.</p>
+<p>You can add your own quickstarts into the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/quickstarts.yaml">extensions/quickstarts.yaml</a> file as follows</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">apiVersion</span>: project.jenkins-x.io/v1alpha1
+<span style="color:#66d9ef">kind</span>: Quickstarts
+<span style="color:#66d9ef">spec</span>:
+  <span style="color:#66d9ef">defaultOwner</span>: myorg
+
+  <span style="color:#75715e"># custom quickstarts</span>
+  <span style="color:#66d9ef">quickstarts</span>:
+  - <span style="color:#66d9ef">name</span>: cheese
+    <span style="color:#66d9ef">language</span>: JavaScript
+    <span style="color:#66d9ef">downloadZipURL</span>: https://codeload.github.com/jenkins-x-quickstarts/cheese/zip/master
+
+  <span style="color:#75715e"># shared quickstarts from the version stream</span>
+  <span style="color:#66d9ef">imports</span>:
+  - <span style="color:#66d9ef">file</span>: versionStream/quickstarts.yaml
+    <span style="color:#66d9ef">includes</span>:
+    - <span style="color:#e6db74">&#34;.*&#34;</span>
+    <span style="color:#66d9ef">excludes</span>:
+    - <span style="color:#e6db74">&#34;.*/node.*&#34;</span>
+</code></pre></div><h2 id="octant">Octant</h2>
 <p>Our preferred UI for Kubernetes, Tekton and Jenkins X is <a href="/v3/develop/ui/octant">octant</a> as its easy to install/run and has fined grained RBAC and security without the hassle of setting up TLS, DNS and SSO on every cluster.</p>
 <p>One of the awesome features of <a href="https://octant.dev/">Octant</a> is it supports plugins so that anyone can build a plugin to extend the UI. We&rsquo;ve created the <a href="https://github.com/jenkins-x/octant-jx">octant-jx</a> plugin to extend <a href="https://octant.dev/">Octant</a> with the Jenkins X capabilities of environments, pipelines, source repositories and so forth.</p>
 <p>If you wish to extend <a href="https://octant.dev/">Octant</a> further either contribute to the <a href="https://github.com/jenkins-x/octant-jx">octant-jx</a> plugin or create your own!</p>
@@ -1220,7 +1244,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 15, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5803acafc753d3ffad9881c0f50ebbe98cc7ac16">fix: add FAQ entry (5803acafc7)</a>
 </div>
 </div>
 
