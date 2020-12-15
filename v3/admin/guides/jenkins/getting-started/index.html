@@ -24,11 +24,11 @@
 <meta property="og:description" content="Getting started with Jenkins and Jenkins X interop" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/" />
-<meta property="article:modified_time" content="2020-11-24T08:37:33+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-12-15T17:06:38+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Getting Started">
 <meta itemprop="description" content="Getting started with Jenkins and Jenkins X interop">
-<meta itemprop="dateModified" content="2020-11-24T08:37:33&#43;00:00" />
-<meta itemprop="wordCount" content="117">
+<meta itemprop="dateModified" content="2020-12-15T17:06:38&#43;00:00" />
+<meta itemprop="wordCount" content="210">
 
 
 
@@ -1063,6 +1063,16 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#adding-jenkins-servers-into-jenkins-x">Adding Jenkins Servers into Jenkins X</a>
+      <ul>
+        <li><a href="#accessing-the-jenkins-server">Accessing the Jenkins server</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
 
 
           </div>
@@ -1131,14 +1141,23 @@ if (!doNotTrack) {
 	       
 	<p>Make sure you have got the <a href="/v3/guides/jx3/">jx 3.x binary</a> and you have installed <a href="/v3/admin/platform/">version 3</a> before proceeding.</p>
 <h2 id="adding-jenkins-servers-into-jenkins-x">Adding Jenkins Servers into Jenkins X</h2>
-<p>You can use Jenkins X to install one or more Jenkins servers by adding the following YAML to your <code>helmfile.yaml</code> in your cluster git repository you used to install Jenkins X:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">releases</span>:
-- <span style="color:#66d9ef">chart</span>: jenkinsci/jenkins
-  <span style="color:#66d9ef">name</span>: jenkins
-  <span style="color:#66d9ef">namespace</span>: jx
-</code></pre></div><p>You can create as many Jenkins servers you wish, give them any release <code>name</code> value you wish and put them in whatever namespaces you wish.</p>
-<p>You can also add <a href="/v3/develop/apps/#customising-charts">customize the charts</a> by adding a <code>values.yaml</code> file via the <code>values:</code> entry in the helmfile to configure whatever you need (e.g. Jenkins plugins and jobs etc).</p>
+<p>You can use Jenkins X to install one or more Jenkins servers by running the following command in a git clone of your dev cluster git repository:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops helmfile add --chart jenkinsci/jenkins --namespace myjenkins
+</code></pre></div><p>That will add a new <code>helmfile/myjenkins/helmfile.yaml</code> file.</p>
+<p>Now git commit that file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git commit -a -m <span style="color:#e6db74">&#34;fix: added new jenkins service&#34;</span>
+</code></pre></div><p>To see how to customize your Jenkins server see <a href="/v3/develop/apps/#customising-charts">how to customize the charts</a> by adding a <code>values.yaml</code> file via the <code>values:</code> entry in the helmfile to configure whatever you need (e.g. Jenkins plugins and jobs etc).</p>
+<h3 id="accessing-the-jenkins-server">Accessing the Jenkins server</h3>
+<p>You can switch to the jenkins namespace via the following and see the host name to open the console:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx ns myjenkins
 
+kubectl get ing
+</code></pre></div><p>Jenkins X will have generated a username of <strong>admin</strong> and a random password which is stored in your secret store (either Vault or your cloud secret manager).</p>
+<p>To find the admin password so that you can login to Jenkins try:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get secret jenkins -o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{.data.jenkins-admin-password}&#34;</span> | base64 --decode
+</code></pre></div><p>You can find the URL to open Jenkins via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">echo http://<span style="color:#e6db74">`</span>kubectl get ingress jenkins -o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;{.spec.rules[0].host}&#34;</span><span style="color:#e6db74">`</span>
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1201,7 +1220,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 15, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/770db74987120ce6eace6d8389fdd7846cf56d16">fix: improve jenkins help (770db74987)</a>
 </div>
 </div>
 
