@@ -24,11 +24,11 @@
 <meta property="og:description" content="Getting started with Jenkins and Jenkins X interop" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/" />
-<meta property="article:modified_time" content="2020-12-15T17:06:38+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-12-21T09:34:27+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Getting Started">
 <meta itemprop="description" content="Getting started with Jenkins and Jenkins X interop">
-<meta itemprop="dateModified" content="2020-12-15T17:06:38&#43;00:00" />
-<meta itemprop="wordCount" content="210">
+<meta itemprop="dateModified" content="2020-12-21T09:34:27&#43;00:00" />
+<meta itemprop="wordCount" content="469">
 
 
 
@@ -972,7 +972,7 @@ if (!doNotTrack) {
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesjenkinsimporting" href="/v3/admin/guides/jenkins/importing/">Importing Projects</a>
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesjenkinsgitops" href="/v3/admin/guides/jenkins/gitops/">GitOps</a>
       
       
     </li>
@@ -1067,6 +1067,9 @@ if (!doNotTrack) {
   <ul>
     <li><a href="#adding-jenkins-servers-into-jenkins-x">Adding Jenkins Servers into Jenkins X</a>
       <ul>
+        <li><a href="#importing-projects-or-creating-quickstarts">Importing projects or creating quickstarts</a></li>
+        <li><a href="#configure-jenkins">Configure Jenkins</a></li>
+        <li><a href="#job-dsl">Job DSL</a></li>
         <li><a href="#accessing-the-jenkins-server">Accessing the Jenkins server</a></li>
       </ul>
     </li>
@@ -1142,11 +1145,23 @@ if (!doNotTrack) {
 	<p>Make sure you have got the <a href="/v3/guides/jx3/">jx 3.x binary</a> and you have installed <a href="/v3/admin/platform/">version 3</a> before proceeding.</p>
 <h2 id="adding-jenkins-servers-into-jenkins-x">Adding Jenkins Servers into Jenkins X</h2>
 <p>You can use Jenkins X to install one or more Jenkins servers by running the following command in a git clone of your dev cluster git repository:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops helmfile add --chart jenkinsci/jenkins --namespace myjenkins
-</code></pre></div><p>That will add a new <code>helmfile/myjenkins/helmfile.yaml</code> file.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops jenkins add --name myjenkins
+</code></pre></div><p>That will add a new <code>helmfile/myjenkins/helmfile.yaml</code> file for the jenkins charts along with <code>helmfile/myjenkins/values.yaml</code> file that can be used to configure the <a href="https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/VALUES_SUMMARY.md">jenkins helm chart configuration values</a>.</p>
 <p>Now git commit that file:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git commit -a -m <span style="color:#e6db74">&#34;fix: added new jenkins service&#34;</span>
-</code></pre></div><p>To see how to customize your Jenkins server see <a href="/v3/develop/apps/#customising-charts">how to customize the charts</a> by adding a <code>values.yaml</code> file via the <code>values:</code> entry in the helmfile to configure whatever you need (e.g. Jenkins plugins and jobs etc).</p>
+</code></pre></div><h3 id="importing-projects-or-creating-quickstarts">Importing projects or creating quickstarts</h3>
+<p>If you want to import repositories into your jenkins server or create quickstarts using <code>Jenkinsfile</code> files then follow the usual <a href="/v3/develop/create-project/">user guide approach of creating projects</a>.</p>
+<p>Your new jenkins server will be added to the <code>.jx/gitops/source-config.yaml</code> file and so will be available to developers as a Jenkins server that can be used when importing projects.</p>
+<h3 id="configure-jenkins">Configure Jenkins</h3>
+<p>To configure your Jenkins server edit the <code>helmfile/myjenkins/values.yaml</code> according to the <a href="https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/VALUES_SUMMARY.md">configuration guide</a>.</p>
+<p>Each Jenkins server has its own namespace so that its possible to use fine grained role based access for each server using Kubernetes RBAC.</p>
+<p>In addition by default each Jenkins server gets to share the pipeline git user name and token so that it can access private git repositories in the same way as tekton pipelines.</p>
+<h3 id="job-dsl">Job DSL</h3>
+<p>When you import projects or create quickstarts with the above approach, your projects get added to the jenkins server you choose in  <code>.jx/gitops/source-config.yaml</code>.</p>
+<p>Then during the <a href="/v3/about/how-it-works/#boot-job">boot job</a> Jenkins X will create a <a href="https://plugins.jenkins.io/job-dsl/">Jenkins Job DSL script</a> for each project in your <code>.jx/gitops/source-config.yaml</code> file for each Jenkins server.</p>
+<p>The Job DSL scripts are generated in the file <code>helmfiles/myjenkins/job-values.yaml</code> which is then passed into the <a href="https://github.com/jenkinsci/helm-charts">Jenkins helm chart</a> via the <code>values:</code> item in the <code>helmfiles/myjenkins/helmfile.yaml</code></p>
+<p>By default the boot job uses <a href="https://github.com/jenkins-x/jx3-versions/tree/master/jenkins/templates">these templates for the Job DSL</a> for folders (e.g. organisations) and for repositories.</p>
+<p>You can configure which templates you wish to use in the <code>.jx/gitops/source-config.yaml</code> file; either globally or on a per organsation or repository basis. Please refer to the <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.SourceConfig">SourceConfig</a> reference guide. In particularly see how you can specify <code>jenkinsFolderTemplate</code> or <code>jenkinsJobTemplate</code> values at the global, organisation or repository level inside the <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.JenkinsServer">jenkinsServer</a> entry.</p>
 <h3 id="accessing-the-jenkins-server">Accessing the Jenkins server</h3>
 <p>You can switch to the jenkins namespace via the following and see the host name to open the console:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx ns myjenkins
@@ -1220,7 +1235,7 @@ kubectl get ing
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 15, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/770db74987120ce6eace6d8389fdd7846cf56d16">fix: improve jenkins help (770db74987)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 21, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/97b4c9bfa19c6a9d0d80d5911d12994eb6fba0aa">fix: added gitops recommendations for jenkins (97b4c9bfa1)</a>
 </div>
 </div>
 

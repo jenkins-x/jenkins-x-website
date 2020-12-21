@@ -21,20 +21,20 @@
 <link rel="icon" type="image/png" href="/favicons/android-192x192.png" sizes="192x192">
 
 <title>Jenkinsfile support | Jenkins X - Cloud Native CI/CD Built On Kubernetes</title><meta property="og:title" content="Jenkinsfile support" />
-<meta property="og:description" content="How 3.x handles importing Jenkinsfiles" />
+<meta property="og:description" content="Working with Jenkinsfiles, Jenkins and Tekton" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/create-project/jenkinsfile/" />
-<meta property="article:modified_time" content="2020-11-24T08:37:33+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2020-12-21T09:07:01+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Jenkinsfile support">
-<meta itemprop="description" content="How 3.x handles importing Jenkinsfiles">
-<meta itemprop="dateModified" content="2020-11-24T08:37:33&#43;00:00" />
-<meta itemprop="wordCount" content="261">
+<meta itemprop="description" content="Working with Jenkinsfiles, Jenkins and Tekton">
+<meta itemprop="dateModified" content="2020-12-21T09:07:01&#43;00:00" />
+<meta itemprop="wordCount" content="282">
 
 
 
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Jenkinsfile support"/>
-<meta name="twitter:description" content="How 3.x handles importing Jenkinsfiles"/>
+<meta name="twitter:description" content="Working with Jenkinsfiles, Jenkins and Tekton"/>
 
 
 <script type="application/javascript">
@@ -972,7 +972,7 @@ if (!doNotTrack) {
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesjenkinsimporting" href="/v3/admin/guides/jenkins/importing/">Importing Projects</a>
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidesjenkinsgitops" href="/v3/admin/guides/jenkins/gitops/">GitOps</a>
       
       
     </li>
@@ -1063,6 +1063,17 @@ if (!doNotTrack) {
 
 
 
+<nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#using-jenkins-server">Using Jenkins Server</a></li>
+        <li><a href="#using-jenkinsfile-runner">Using Jenkinsfile Runner</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
 
 
           </div>
@@ -1117,24 +1128,26 @@ if (!doNotTrack) {
             
 <div class="td-content">
 	<h1>Jenkinsfile support</h1>
-    <div class="lead">How 3.x handles importing Jenkinsfiles</div>
+    <div class="lead">Working with Jenkinsfiles, Jenkins and Tekton</div>
 	       
-	<p>When importing a project <code>jx project import</code> looks for a <code>Jenkinfile</code> in the source code.</p>
-<p>If there is no <code>Jenkinsfile</code> then the wizard assumes you wish to proceed with a <a href="https://jenkins-x.io/about/concepts/jenkins-x-pipelines/">Jenkins X Pipeline</a> based on Tekton and imports it in the usual Jenkins X way. You also get to confirm the kind of build pack and language you wish to use for the automated CI/CD - so its easy to import any workload whether its a library, a binary, a container image, a helm chart or a fully blown microservice for automated kubernetes based CI/CD.</p>
-<p>If a <code>Jenkinsfile</code> is present  then the wizard assumes you may wish to use a <a href="/v3/guides/jenkins/">remote Jenkins server</a> or <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile Runner</a> to run the pipelines, so it presents you with a list of the available Jenkins options to choose from.</p>
-<p>When using a Jenkins Server you get two options:</p>
+	<p>When importing a project <a href="https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md">jx project import</a> looks for a <code>Jenkinfile</code> in the source code.</p>
+<p>If there is no <code>Jenkinsfile</code> then the wizard assumes you wish to proceed with automated CI/CD pipelines based on <a href="https://github.com/tektoncd/pipeline">tekton</a> and imports it in the usual Jenkins X way. You also get to confirm the kind of pipeline catalog  and language you wish to use for the automated CI/CD - so its easy to import any workload whether its a library, a binary, a container image, a helm chart or a fully blown microservice for automated kubernetes based CI/CD.</p>
+<p>If a <code>Jenkinsfile</code> is present then the wizard asks you how you want to proceed:</p>
 <ul>
-<li>use vanilla Jenkins pipelines via <code>Multi Branch Project</code> to perform the webhook handling and run the pipelines</li>
-<li>use  <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> for webhook handling and ChatOps on Pull Requests. Then when a pipeline is triggered we use the <a href="https://github.com/jenkins-x-labs/trigger-pipeline">trigger-pipeline</a> as a step to run the pipeline remotely inside a specific Jenkins server (without using the <code>Multi Branch Project</code>).</li>
-</ul>
-<h3 id="supported-integrations">Supported Integrations</h3>
-<p>When importing a project these approaches are supported:</p>
+<li>use the automated CI/CD pipelines based on <a href="https://github.com/tektoncd/pipeline">tekton</a>.
 <ul>
-<li><a href="https://jenkins-x.io/about/concepts/jenkins-x-pipelines/">Jenkins X Pipeline</a> using Tekton</li>
-<li>Jenkins pipelines via <code>Multi Branch Project</code></li>
-<li><a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> for ChatOps triggering a remote Jenkins pipeline via <a href="https://github.com/jenkins-x-labs/trigger-pipeline">trigger-pipeline</a> (without using <code>Multi Branch Project</code>)</li>
-<li><a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile Runner</a> based pipelines in Tekton. You can override the container image used for the pipeline on import via the <code>--jenkinsfilerunner myimage:1.2.3</code> command line argument</li>
+<li>this option will ignore the <code>Jenkinfile</code> for now - you can always use it later</li>
 </ul>
+</li>
+<li>use a <a href="/v3/admin/guides/jenkins/">Jenkins server</a> to execute the <code>Jenkinfile</code> pipeline</li>
+<li>use <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile Runner</a> to run the pipelines</li>
+</ul>
+<h3 id="using-jenkins-server">Using Jenkins Server</h3>
+<p>If you choose the <a href="/v3/admin/guides/jenkins/">Jenkins server</a> option and you have not yet configured a Jenkins server in your cluster, the wizard will prompt you for the new Jenkins server name and will automatically <a href="/v3/admin/guides/jenkins/getting-started/#adding-jenkins-servers-into-jenkins-x">create you a Jenkins server via GitOps</a></p>
+<p>Otherwise you choose which Jenkins server to use for your project. You could have multiple jenkins servers with different configurations and plugins.</p>
+<p>When using a Jenkins Server you get to use the full power of the Jenkins server and <code>Jenkinfile</code>. Jenkins X uses the <a href="https://github.com/jenkinsci/helm-charts">upstream Jenkins helm chart</a> which you can <a href="/v3/admin/guides/jenkins/getting-started/#configure-jenkins">configure fully via GitOps</a></p>
+<h3 id="using-jenkinsfile-runner">Using Jenkinsfile Runner</h3>
+<p>When using <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile Runner</a> we still reuse <a href="https://github.com/tektoncd/pipeline">tekton</a> to run the pipelines and <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> to handle webhooks and to trigger pipelines. The <a href="https://github.com/jenkinsci/jenkinsfile-runner">Jenkinsfile Runner</a> container runs as a step in a <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs/jenkinsfilerunner/.lighthouse/jenkins-x">Tekton pipeline</a></p>
 
 	
 		<style>
@@ -1198,7 +1211,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified November 24, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/e57cb94b10851665b075ede8dd29bfa875ceca15">fix: use consistent links (e57cb94b10)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 21, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/0d05ba9bab85a8a41477bdaae6a906ce9ab99454">fix: polish the docs for working with Jenkins (0d05ba9bab)</a>
 </div>
 </div>
 
