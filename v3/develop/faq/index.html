@@ -1076,6 +1076,7 @@ if (!doNotTrack) {
     <li><a href="#why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</a></li>
     <li><a href="#why-did-my-quickstart--import-not-work">Why did my quickstart / import not work?</a></li>
     <li><a href="#how-do-i-add-an-environment">How do I add an Environment</a></li>
+    <li><a href="#how-do-i-switch-to-bucketrepo">How do I switch to bucketrepo?</a></li>
     <li><a href="#how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</a></li>
   </ul>
 </nav>
@@ -1315,6 +1316,32 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 <h2 id="how-do-i-add-an-environment">How do I add an Environment</h2>
 <p>With v3 everything is done via GitOps - so if in doubt the answer is to modify git.</p>
 <p>You can create new environments by adding to the <code>environments:</code> section of <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L18">jx-requirements.yml</a></p>
+<h2 id="how-do-i-switch-to-bucketrepo">How do I switch to bucketrepo?</h2>
+<p>To switch from <code>nexus</code> to <code>bucketrepo</code> in V3 there are a few changes you need to make.</p>
+<p>Incidetally the <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/">jx3-kubernetes</a> repository is already setup for<code>bucketrepo</code>.</p>
+<p>Please make the following changes&hellip;</p>
+<ul>
+<li>remove your old <code>nexus</code> chart from <code>helmfiles/jx/helmfile.yaml</code></li>
+<li>add this to your <code>jx-requirements.yml</code> file so its like <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L8">this one</a></li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">apiVersion</span>: core.jenkins-x.io/v4beta1
+<span style="color:#66d9ef">kind</span>: Requirements
+<span style="color:#66d9ef">spec</span>:
+  ...
+  <span style="color:#66d9ef">cluster</span>:
+    <span style="color:#66d9ef">chartRepository</span>: http://bucketrepo.jx.svc.cluster.local/bucketrepo/charts
+...
+  <span style="color:#66d9ef">repository</span>: bucketrepo
+    
+</code></pre></div><ul>
+<li>add the <code>bucketrepo</code> chart to your <code>helmfiles/jx/helmfile.yaml</code> file <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/helmfiles/jx/helmfile.yaml#L42">like this</a>:</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">...
+<span style="color:#66d9ef">releases</span>:
+- <span style="color:#66d9ef">chart</span>: jenkins-x/bucketrepo
+  <span style="color:#66d9ef">name</span>: bucketrepo
+...
+</code></pre></div><p>then git commit and you should have your cluster switched to bucketrepo</p>
 <h2 id="how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</h2>
 <p>We don&rsquo;t yet have a nice uninstall command.</p>
 <p>Though if you git clone your development git repository and cd into it you can run:</p>
@@ -1503,7 +1530,7 @@ kubectl delete -R -f config-root/cluster
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 21, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/eb089deee8eefbacc9259b7401c57e81506a744b">chore: add FAQ (eb089deee8)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified December 23, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/9b2e426009e2f79b53aa6acc35631a27f4b6b088">fix: add FAQ on bucket repo (9b2e426009)</a>
 </div>
 </div>
 
