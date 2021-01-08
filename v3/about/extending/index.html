@@ -24,11 +24,11 @@
 <meta property="og:description" content="How to extend Jenkins X 3.x" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/about/extending/" />
-<meta property="article:modified_time" content="2020-12-15T09:50:30+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-01-08T16:55:06+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Extending">
 <meta itemprop="description" content="How to extend Jenkins X 3.x">
-<meta itemprop="dateModified" content="2020-12-15T09:50:30&#43;00:00" />
-<meta itemprop="wordCount" content="692">
+<meta itemprop="dateModified" content="2021-01-08T16:55:06&#43;00:00" />
+<meta itemprop="wordCount" content="860">
 
 
 
@@ -1066,7 +1066,13 @@ if (!doNotTrack) {
 <nav id="TableOfContents">
   <ul>
     <li><a href="#charts">Charts</a></li>
-    <li><a href="#plugins">Plugins</a></li>
+    <li><a href="#plugins">Plugins</a>
+      <ul>
+        <li><a href="#developing-plugins">Developing Plugins</a></li>
+        <li><a href="#testing-local-builds-with-jx">Testing local builds with <strong>jx</strong></a></li>
+        <li><a href="#using-a-specific-version-of-a-plugin">Using a specific version of a plugin</a></li>
+      </ul>
+    </li>
     <li><a href="#triggers">Triggers</a></li>
     <li><a href="#pipeline-catalog">Pipeline Catalog</a></li>
     <li><a href="#quickstarts">QuickStarts</a></li>
@@ -1130,7 +1136,24 @@ if (!doNotTrack) {
 <p>It turns out anyone can create a new plugin to wrap up some functionality that is either ran on a developer laptop or is used via a container image inside a pipeline step.</p>
 <p>Plugins usually written in <a href="https://golang.org/">Go</a> as it has awesome Kubernetes support and generates easy to use statically compiled binaries - though you are free to create plugins in any programming language.</p>
 <p>If you wish to create a new plugin try browse the <a href="https://github.com/jenkins-x-plugins">jenkins-x-plugins organisation</a> for inspiration or check out the <a href="https://github.com/jenkins-x/jx-cli#plugins">standard plugins used in the jx-cli</a></p>
-<h2 id="triggers">Triggers</h2>
+<h3 id="developing-plugins">Developing Plugins</h3>
+<p>The easiest way to work on the plugins is to clone the source of a plugin locally and make local changes and build the code (you will need a <a href="https://golang.org/doc/install">go 1.15 installation</a>).</p>
+<p>e.g.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git clone https://github.com/jenkins-x/jx-gitops 
+cd jx-gitops
+make build
+</code></pre></div><p>Now you can test out the local build of a plugin by calling <strong>./build/jx-gitops</strong> instead of using, say <strong>jx gitops</strong></p>
+<h3 id="testing-local-builds-with-jx">Testing local builds with <strong>jx</strong></h3>
+<p>If you add your <strong>./build</strong> for your locally built plugin to your <strong>$PATH</strong> environment variable you can invoke your local <strong>./build/jx-gitops</strong> binary as if its a regular <strong>jx</strong> plugin via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx gitops help
+</code></pre></div><p>Basically <strong>jx myplugin</strong> will normally download the <strong>jx-myplugin</strong> binary and invoke that - unless it finds <strong>jx-myplugin</strong> on the <strong>$PATH</strong>.</p>
+<h3 id="using-a-specific-version-of-a-plugin">Using a specific version of a plugin</h3>
+<p>If you want to test a new plugin version before its been tested released in the version stream you can use an environment variable&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export JX_GITOPS_VERSION 1.2.3
+
+<span style="color:#75715e"># we will now try version 1.2.3 of the gitops plugin:</span>
+jx gitops help
+</code></pre></div><h2 id="triggers">Triggers</h2>
 <p>With version 3.x we default to using <a href="/v3/develop/pipeline-catalog/">Pipeline Catalogs</a> containing Tekton resources to define CI/CD pipelines.</p>
 <p>e.g. the default CI/CD pipelines from the <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs">default Jenkins X Pipeline Catalog</a> define tekton pipelines in the <code>.lighthouse/jenkins-x</code> folder.</p>
 <p>Inside each repository there is now a trigger file called <code>triggers.yaml</code> defined at<code>.lighthouse/jenkins-x/triggers.yaml</code> to define the <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> <code>presubmits</code> and <code>postsubmits</code> (i.e. Pull Request pipelines and release pipelines).</p>
@@ -1244,7 +1267,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 15, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/5803acafc753d3ffad9881c0f50ebbe98cc7ac16">fix: add FAQ entry (5803acafc7)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified January 8, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/e161e5502be85d891eaa472e65b3d7bef35b8471">fix: add docs on developing plugins (e161e5502b)</a>
 </div>
 </div>
 

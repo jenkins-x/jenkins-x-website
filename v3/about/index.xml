@@ -481,7 +481,24 @@ jx dash
 &lt;p&gt;It turns out anyone can create a new plugin to wrap up some functionality that is either ran on a developer laptop or is used via a container image inside a pipeline step.&lt;/p&gt;
 &lt;p&gt;Plugins usually written in &lt;a href=&#34;https://golang.org/&#34;&gt;Go&lt;/a&gt; as it has awesome Kubernetes support and generates easy to use statically compiled binaries - though you are free to create plugins in any programming language.&lt;/p&gt;
 &lt;p&gt;If you wish to create a new plugin try browse the &lt;a href=&#34;https://github.com/jenkins-x-plugins&#34;&gt;jenkins-x-plugins organisation&lt;/a&gt; for inspiration or check out the &lt;a href=&#34;https://github.com/jenkins-x/jx-cli#plugins&#34;&gt;standard plugins used in the jx-cli&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;triggers&#34;&gt;Triggers&lt;/h2&gt;
+&lt;h3 id=&#34;developing-plugins&#34;&gt;Developing Plugins&lt;/h3&gt;
+&lt;p&gt;The easiest way to work on the plugins is to clone the source of a plugin locally and make local changes and build the code (you will need a &lt;a href=&#34;https://golang.org/doc/install&#34;&gt;go 1.15 installation&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git clone https://github.com/jenkins-x/jx-gitops 
+cd jx-gitops
+make build
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now you can test out the local build of a plugin by calling &lt;strong&gt;./build/jx-gitops&lt;/strong&gt; instead of using, say &lt;strong&gt;jx gitops&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;testing-local-builds-with-jx&#34;&gt;Testing local builds with &lt;strong&gt;jx&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;If you add your &lt;strong&gt;./build&lt;/strong&gt; for your locally built plugin to your &lt;strong&gt;$PATH&lt;/strong&gt; environment variable you can invoke your local &lt;strong&gt;./build/jx-gitops&lt;/strong&gt; binary as if its a regular &lt;strong&gt;jx&lt;/strong&gt; plugin via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops help
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Basically &lt;strong&gt;jx myplugin&lt;/strong&gt; will normally download the &lt;strong&gt;jx-myplugin&lt;/strong&gt; binary and invoke that - unless it finds &lt;strong&gt;jx-myplugin&lt;/strong&gt; on the &lt;strong&gt;$PATH&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;using-a-specific-version-of-a-plugin&#34;&gt;Using a specific version of a plugin&lt;/h3&gt;
+&lt;p&gt;If you want to test a new plugin version before its been tested released in the version stream you can use an environment variable&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export JX_GITOPS_VERSION 1.2.3
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# we will now try version 1.2.3 of the gitops plugin:&lt;/span&gt;
+jx gitops help
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;triggers&#34;&gt;Triggers&lt;/h2&gt;
 &lt;p&gt;With version 3.x we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipeline-catalog/&#34;&gt;Pipeline Catalogs&lt;/a&gt; containing Tekton resources to define CI/CD pipelines.&lt;/p&gt;
 &lt;p&gt;e.g. the default CI/CD pipelines from the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs&#34;&gt;default Jenkins X Pipeline Catalog&lt;/a&gt; define tekton pipelines in the &lt;code&gt;.lighthouse/jenkins-x&lt;/code&gt; folder.&lt;/p&gt;
 &lt;p&gt;Inside each repository there is now a trigger file called &lt;code&gt;triggers.yaml&lt;/code&gt; defined at&lt;code&gt;.lighthouse/jenkins-x/triggers.yaml&lt;/code&gt; to define the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; &lt;code&gt;presubmits&lt;/code&gt; and &lt;code&gt;postsubmits&lt;/code&gt; (i.e. Pull Request pipelines and release pipelines).&lt;/p&gt;
