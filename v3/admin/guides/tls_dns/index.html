@@ -24,11 +24,11 @@
 <meta property="og:description" content="Automated TLS and DNS" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/guides/tls_dns/" />
-<meta property="article:modified_time" content="2020-12-09T12:20:56+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-01-19T15:12:15+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="TLS and DNS">
 <meta itemprop="description" content="Automated TLS and DNS">
-<meta itemprop="dateModified" content="2020-12-09T12:20:56&#43;00:00" />
-<meta itemprop="wordCount" content="1337">
+<meta itemprop="dateModified" content="2021-01-19T15:12:15&#43;00:00" />
+<meta itemprop="wordCount" content="1393">
 
 
 
@@ -1213,7 +1213,7 @@ and
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">subdomain     = <span style="color:#e6db74">&#34;dev&#34;</span>
 </code></pre></div><p>We will now add details that will be passed to Jenkins X as requirements when booting the cluster.</p>
 <p>Add these to <code>values.auto.tfvars</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">lets_encrypt_production = <span style="color:#66d9ef">false</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">lets_encrypt_production = <span style="color:#66d9ef">true</span>
 tls_email               = your_email_address@googlegroups.com
 </code></pre></div><p>Now apply these changes:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add values.auto.tfvars
@@ -1226,9 +1226,10 @@ export TF_VAR_jx_bot_token=
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">terraform plan
 terraform apply
 </code></pre></div><p>If using a subdomain you will now see your managed zone in GCP <a href="https://console.cloud.google.com/net-services/dns/zones">here</a></p>
-<p>Once terraform has finished you can follow the jx boot installation using the instructions given in the terraform output, connect to the cluster and run:</p>
+<p><strong>Once terraform has finished for now there is a manual trigger of the Jenkins X cluster repository required.  This will not be needed in the future but for now please make a dummy commit on your cluster git repository and follow the boot job as in applies the updates to your cluster.</strong></p>
+<p>To follow the jx boot installation using the instructions given in the terraform output, connect to the cluster and run:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
-</code></pre></div><p>There is a timing issue with the latest cert-manager so the first boot job may fail but second will automatically run and succeed.</p>
+</code></pre></div><p>There is a timing issue with cert-manager and the admission controller so the first boot job may fail but second will run automatically and succeed.</p>
 <p>It can take a short while for DNS to propagate so you may need to wait for 5 - 10 minutes.  <a href="https://dnschecker.org/">https://dnschecker.org/</a> is a useful way to check the status of DNS propagating.</p>
 <p>To verify using the CLI run:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ingress -n jx
@@ -1236,7 +1237,7 @@ terraform apply
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx verify tls hook-jx.dev.foo.io  --production<span style="color:#f92672">=</span>false --timeout 20m
 </code></pre></div><p>You should be able to verify the TLS certificate from Lets Encrypt in your browser (beware of browser caching if you don&rsquo;t see any changes)</p>
 <p><img src="/images/v3/working_tls.png" alt="Working TLS"></p>
-<p>Once this is working you can switch to the production service from Lets Encrypt.  Clone your cluster git repository and change the jx-requirements.yaml enabling production:</p>
+<p>Once this is working you can switch any of the configuration using your cluster git repository and change the jx-requirements.yaml, e.g. toggling the cert-manager production service or editing the email address used:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">ingress</span>:
   <span style="color:#66d9ef">domain</span>: dev.foo.io
   <span style="color:#66d9ef">externalDNS</span>: <span style="color:#66d9ef">true</span>
@@ -1358,7 +1359,7 @@ git push
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified December 9, 2020: <a  href="https://github.com/jenkins-x/jx-docs/commit/977383f7261c2d5e2a6260a88c3b3760e624eb9b">docs: updates for TLS docs (977383f726)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified January 19, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/d740def2114a5ad50d8d77e4ed2dab6b977c4f68">chore: tidy up tls docs (d740def211)</a>
 </div>
 </div>
 
