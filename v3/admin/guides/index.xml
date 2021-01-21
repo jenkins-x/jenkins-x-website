@@ -592,7 +592,7 @@ ns-cloud-e4.googledomains.com.
         
         &lt;p&gt;This section will describe how to enable automated TLS and DNS for your Jenkins X installation.&lt;/p&gt;
 &lt;p&gt;To achieve this we will use a couple of open source projects to help enable automated DNS for your applications.&lt;/p&gt;
-&lt;p&gt;For this guide we are going to assume you own a domain called &lt;code&gt;foo.io&lt;/code&gt; which is managed by Google Cloud DNS, if it is not see &lt;a href=&#34;https://jenkins-x.io/v3/guides/infra/google_cloud_dns&#34;&gt;configure cloud dns to manage a domain&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For this guide we are going to assume you own a domain called &lt;code&gt;foo.io&lt;/code&gt; which is managed by Google Cloud DNS, if it is not see &lt;a href=&#34;https://jenkins-x.io/v3/guides/infra/google_cloud_dns&#34;&gt;configure cloud dns to manage a domain&lt;/a&gt;. A similar procedure is described for an external registrar, see the Azure section.&lt;/p&gt;
 &lt;p&gt;A common requirement for domains is to have production services accessed using a parent / &lt;a href=&#34;https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-custom-domains-and-github-pages#using-an-apex-domain-for-your-github-pages-site&#34;&gt;apex domain&lt;/a&gt;
 for example:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://foo.com&#34;&gt;https://foo.com&lt;/a&gt;&lt;/p&gt;
@@ -601,9 +601,9 @@ for example:&lt;/p&gt;
 and
 &lt;a href=&#34;https://staging.foo.com&#34;&gt;https://staging.foo.com&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;These use subdomains.&lt;/p&gt;
-&lt;p&gt;In this guide below there is a prerequisite that you must already have a domain which is managed by GCP, this is so that you can choose whichever of the scenarios above you need.  It also means the dns management of the apex domain happens outside of a single cluster installation and can be shared by multiple installations using a subdomain.&lt;/p&gt;
+&lt;p&gt;In this guide below there is a prerequisite that you must already have a domain which is managed by your cloud provider, this is so that you can choose whichever of the scenarios above you need.  It also means the dns management of the apex domain happens outside of a single cluster installation and can be shared by multiple installations using a subdomain.&lt;/p&gt;
 &lt;p&gt;Jenkins X services will have URLs like &lt;code&gt;https://hook-jx.dev.foo.io&lt;/code&gt;.  The jx-requirements.yml &lt;code&gt;namespaceSubDomain:&lt;/code&gt; of &lt;code&gt;-jx&lt;/code&gt; which is in the cluster git repository refers to the Kubernetes namespace the service is running in, this avoids clashes of the same application running in different namespaces in the same cluster.&lt;/p&gt;
-&lt;p&gt;To start with we are focussed on GCP but will expand to other cloud providers.&lt;/p&gt;
+&lt;p&gt;To start with we are focussed on GCP and Azure but will expand to other cloud providers.&lt;/p&gt;
 &lt;h1 id=&#34;google-cloud-platform&#34;&gt;Google Cloud Platform&lt;/h1&gt;
 &lt;h2 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h2&gt;
 &lt;ul&gt;
@@ -661,7 +661,113 @@ terraform apply
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin logs
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You will now be issued a valid TLS certificate&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx verify tls hook-jx.dev.foo.io  --production&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true --timeout 20m
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;what-if-i-have-a-chartmuseum-with-charts-running-using-nipio&#34;&gt;What if I have a chartmuseum with charts running using nip.io?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;azure&#34;&gt;Azure&lt;/h1&gt;
+&lt;h2 id=&#34;azure-dns-zone-creation&#34;&gt;Azure DNS zone creation&lt;/h2&gt;
+&lt;p&gt;Create a common resource group dedicated to all your DNS zones:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ az group create --name rg-dns --location westeurope
+{
+  &amp;quot;id&amp;quot;: &amp;quot;/subscriptions/49721339-fe83-4562-afec-783c3f00c06f/resourceGroups/rg-dns&amp;quot;,
+  &amp;quot;location&amp;quot;: &amp;quot;westeurope&amp;quot;,
+  &amp;quot;managedBy&amp;quot;: null,
+  &amp;quot;name&amp;quot;: &amp;quot;rg-dns&amp;quot;,
+  &amp;quot;properties&amp;quot;: {
+    &amp;quot;provisioningState&amp;quot;: &amp;quot;Succeeded&amp;quot;
+  },
+  &amp;quot;tags&amp;quot;: null,
+  &amp;quot;type&amp;quot;: &amp;quot;Microsoft.Resources/resourceGroups&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Create an Azure DNS zone with the name of your domain:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ az network dns zone create -g rg-dns -n foo.io
+{
+  &amp;quot;etag&amp;quot;: &amp;quot;00000002-0000-0000-e2d9-80ef0df0d601&amp;quot;,
+  &amp;quot;id&amp;quot;: &amp;quot;/subscriptions/49721339-fe83-4562-afec-783c3f00c06f/resourceGroups/rg-dns/providers/Microsoft.Network/dnszones/foo.io&amp;quot;,
+  &amp;quot;location&amp;quot;: &amp;quot;global&amp;quot;,
+  &amp;quot;maxNumberOfRecordSets&amp;quot;: 10000,
+  &amp;quot;name&amp;quot;: &amp;quot;foo.io&amp;quot;,
+  &amp;quot;nameServers&amp;quot;: [
+    &amp;quot;ns1-05.azure-dns.com.&amp;quot;,
+    &amp;quot;ns2-05.azure-dns.net.&amp;quot;,
+    &amp;quot;ns3-05.azure-dns.org.&amp;quot;,
+    &amp;quot;ns4-05.azure-dns.info.&amp;quot;
+  ],
+  &amp;quot;numberOfRecordSets&amp;quot;: 2,
+  &amp;quot;registrationVirtualNetworks&amp;quot;: null,
+  &amp;quot;resolutionVirtualNetworks&amp;quot;: null,
+  &amp;quot;resourceGroup&amp;quot;: &amp;quot;rg-dns&amp;quot;,
+  &amp;quot;tags&amp;quot;: {},
+  &amp;quot;type&amp;quot;: &amp;quot;Microsoft.Network/dnszones&amp;quot;,
+  &amp;quot;zoneType&amp;quot;: &amp;quot;Public&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;domain-dns-servers-configuration&#34;&gt;Domain DNS servers configuration&lt;/h2&gt;
+&lt;p&gt;In your registrar admin panel, find the DNS servers section of the domain you want to use and replace the default ones by those from the first step:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/registrar_dns_servers.png&#34; alt=&#34;dns servers section&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/registrar_dns_servers_update.png&#34; alt=&#34;dns servers update&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Test the DNS delegation by adding a A record in the Azure DNS zone you&amp;rsquo;ve previously created:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ az network dns record-set a add-record -g rg-dns -z foo.io -n potato -a 1.2.3.4
+{
+  &amp;quot;arecords&amp;quot;: [
+    {
+      &amp;quot;ipv4Address&amp;quot;: &amp;quot;1.2.3.4&amp;quot;
+    }
+  ],
+  &amp;quot;etag&amp;quot;: &amp;quot;a80b3397-dd76-4ad8-a789-0fd1dbd02d99&amp;quot;,
+  &amp;quot;fqdn&amp;quot;: &amp;quot;potato.foo.io.&amp;quot;,
+  &amp;quot;id&amp;quot;: &amp;quot;/subscriptions/49721339-fe83-4562-afec-783c3f00c06f/resourceGroups/rg-dns/providers/Microsoft.Network/dnszones/foo.io/A/potato&amp;quot;,
+  &amp;quot;metadata&amp;quot;: null,
+  &amp;quot;name&amp;quot;: &amp;quot;potato&amp;quot;,
+  &amp;quot;provisioningState&amp;quot;: &amp;quot;Succeeded&amp;quot;,
+  &amp;quot;resourceGroup&amp;quot;: &amp;quot;rg-dns&amp;quot;,
+  &amp;quot;targetResource&amp;quot;: {
+    &amp;quot;id&amp;quot;: null
+  },
+  &amp;quot;ttl&amp;quot;: 3600,
+  &amp;quot;type&amp;quot;: &amp;quot;Microsoft.Network/dnszones/A&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then check it:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ nslookup potato.foo.io
+Server:		8.8.8.8
+Address:	8.8.8.8#53
+
+Non-authoritative answer:
+Name:	potato.foo.io
+Address: 1.2.3.4
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You can finally remove this test A record:
+&lt;code&gt;$ az network dns record-set a remove-record --resource-group rg-dns --zone-name foo.io --record-set-name &amp;quot;potato&amp;quot; --ipv4-address 1.2.3.4&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;cluster-creation&#34;&gt;Cluster creation&lt;/h2&gt;
+&lt;p&gt;Generate a new infrastructure repository and a new a new cluster repository, then put this at the end of your &lt;strong&gt;infrastructure&lt;/strong&gt; repository &lt;code&gt;values.auto.tfvars&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;dns_enabled = &amp;quot;true&amp;quot;
+domain_name = &amp;quot;jx&amp;quot;
+apex_domain_name = &amp;quot;foo.io&amp;quot;
+apex_domain_integration_enabled = &amp;quot;true&amp;quot;
+apex_resource_group_name = &amp;quot;rg-dns&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Commit these changes:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git add values.auto.tfvars
+$ git commit -m &amp;quot;chore: DNS configuration&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;And create the cluster:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ terraform init
+$ terraform plan
+$ terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;cluster-configuration&#34;&gt;Cluster configuration&lt;/h2&gt;
+&lt;p&gt;Once the cluster creation and the boot job is completed, configure TLS in &lt;code&gt;jx-requirements.yaml&lt;/code&gt; in your &lt;strong&gt;cluster&lt;/strong&gt; repository (don&amp;rsquo;t forget to retrieve the boot changes before with &lt;code&gt;git pull&lt;/code&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  ingress:
+    domain: jx.foo.io
+    externalDNS: true
+    kind: ingress
+    namespaceSubDomain: -jx.
+    tls:
+      email: &amp;quot;contact@foo.io&amp;quot;
+      enabled: true
+      production: false
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Commit and push these changes:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$ git add values.auto.tfvars
+$ git commit -m &amp;quot;chore: domain and TLS configuration&amp;quot;
+$ git push
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;After the boot job, verify with:
+&lt;code&gt;jx verify tls hook-jx.jx.foo.io  --production=false --timeout 20m&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;When you&amp;rsquo;re happy with your changes, you can set &lt;code&gt;production&lt;/code&gt; to &lt;code&gt;true&lt;/code&gt; to get a real certificate, then after the boot job, verify it with:
+&lt;code&gt;jx verify tls hook-jx.jx.foo.io  --production=true --timeout 20m&lt;/code&gt;&lt;/p&gt;
+&lt;h1 id=&#34;faq&#34;&gt;FAQ&lt;/h1&gt;
+&lt;h2 id=&#34;what-if-i-have-a-chartmuseum-with-charts-running-using-nipio&#34;&gt;What if I have a chartmuseum with charts running using nip.io?&lt;/h2&gt;
 &lt;p&gt;It is best to comment out your Jenkins X chartmuseum repository and charts from your helmfile until your new domain and ingress is working.  Then uncomment and make sure you update the chartmuseum URL to your new one.&lt;/p&gt;
 &lt;h2 id=&#34;what-if-i-use-a-subdomain-with-an-apex-domain-in-a-different-gcp-project&#34;&gt;What if I use a subdomain with an apex domain in a different GCP project?&lt;/h2&gt;
 &lt;p&gt;When using a subdomain Terraform will create a managed zone in GCP, add the recordsets to your parent / apex domain.&lt;/p&gt;
