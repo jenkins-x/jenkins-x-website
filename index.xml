@@ -13,6 +13,80 @@
     
     
     <item>
+      <title>Blog: Jenkins X 3.x walkthroughs</title>
+      <link>https://jenkins-x.io/blog/2021/01/26/jx3-walkthroughs/</link>
+      <pubDate>Tue, 26 Jan 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/01/26/jx3-walkthroughs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 3.x is now looking ahead towards a GA release, with that we are producing walkthroughs for key areas to help users not only get started but get the most out of Jenkins X.&lt;/p&gt;
+&lt;p&gt;To kick this off we are going to start with 9 videos that we&amp;rsquo;ll follow up with more dedicated blogs over the coming weeks.  The complete playlist can be found &lt;a href=&#34;https://www.youtube.com/playlist?list=PLr_PmC4W69dKM3fo8OK729fdmX_MTqdHd&#34;&gt;here&lt;/a&gt; however the blog below gives a more context for each one.&lt;/p&gt;
+&lt;p&gt;There are a few key areas we are focusing on here:&lt;/p&gt;
+&lt;h2 id=&#34;intro--high-level-architecture&#34;&gt;Intro + high level architecture&lt;/h2&gt;
+&lt;p&gt;Starting off with a very quick introduction including what to expect from the walkthrough series.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/kDCNDAyqwpo?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;p&gt;Jenkins X 3.x has focussed on clearer lines of separation, making the architecture significantly more pluggable, extensible and maintainable.  With better tooling including UIs and more reliable guard rails for installations and upgrades.  Jenkins X 3 also minimises abstractions and wrapping; so it promotes the direct use of open source projects like Helm, Helmfile and Tekton.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/bVp5_tZ21AA?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h1 id=&#34;installation-and-setup&#34;&gt;Installation and setup&lt;/h1&gt;
+&lt;h2 id=&#34;infrastructure-and-provisioning&#34;&gt;Infrastructure and provisioning&lt;/h2&gt;
+&lt;p&gt;Decoupling the management of Cloud infrastructure away from Jenkins X to tools that are better suited for the job.  Jenkins X has started with Terraform and this manages all the cloud resources needed by Jenkins X&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Kubernetes cluster&lt;/li&gt;
+&lt;li&gt;Cloud Service Accounts&lt;/li&gt;
+&lt;li&gt;IAM bindings&lt;/li&gt;
+&lt;li&gt;Storage buckets&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Over time Jenkins X plans to support other tools (aided by the &lt;a href=&#34;https://github.com/kubernetes-sigs/cluster-api&#34;&gt;Kubernetes Cluster API&lt;/a&gt;) users in the Kubernetes ecosystem leverage such as &lt;a href=&#34;https://crossplane.io/&#34;&gt;crossplane.io&lt;/a&gt;, &lt;a href=&#34;https://cloud.google.com/config-connector/docs/overview&#34;&gt;Google Config Connector&lt;/a&gt;, &lt;a href=&#34;https://github.com/aws/aws-controllers-k8s&#34;&gt;AWS Controller&lt;/a&gt; etc.  These make use of cloud resources declared as custom resources with a Kubernetes operator managing CRUD activities for them.&lt;/p&gt;
+&lt;p&gt;Once the cloud infrastructure is created, self provisioning happens using GitOps and incluster installation.  No more flakey client side installs.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/fKGZrNgs8So?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h2 id=&#34;tls-and-dns&#34;&gt;TLS and DNS&lt;/h2&gt;
+&lt;p&gt;A large number of deployments require inbound traffic, whether that is for access to their applications, websites, REST endpoints, Webhook handlers there is often a need for Ingress HTTP traffic into a cluster and to ensure communication is secure.&lt;/p&gt;
+&lt;p&gt;To achieve this there are two common efforts needed&lt;/p&gt;
+&lt;p&gt;DNS - configuring a custom owned domain and using DNS to route traffic to endpoints
+TLS - providing end to end security for web traffic on the internet&lt;/p&gt;
+&lt;p&gt;In fact many web services do not accept working with insecure endpoints and others require manual override to accept the risk before being able to use the service.&lt;/p&gt;
+&lt;p&gt;Jenkins X uses two OSS projects to automatically manage DNS (&lt;a href=&#34;https://github.com/kubernetes-sigs/external-dns&#34;&gt;External DNS&lt;/a&gt;) and handle the management of TLS certificates (&lt;a href=&#34;https://cert-manager.io/&#34;&gt;Cert-manager&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;Once a domain is owned, External DNS will work with cloud providers to create A records that route traffic from the internet to users clusters.  Cert-manager will react to a request from Jenkins X to verify a cluster owns a domain and will issue a wildcard TLS certificate using Lets Encrypt that is used for all Ingress into the cluster.  Cert-manager will also handle certificate renewals.  This is all handled automatically following the setup of Jenkins X.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/OqsSqZqF0gY?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h1 id=&#34;using-jenkins-x&#34;&gt;Using Jenkins X&lt;/h1&gt;
+&lt;h2 id=&#34;gitops&#34;&gt;GitOps&lt;/h2&gt;
+&lt;p&gt;Initially started out as an implementation detail of Jenkins X but has evolved much more into an administrators typical workflow.  Managing installs, upgrades and rollbacks via Git provides approvals, reviews, traceability, RBAC in the same way we manage code.  This is the backbone of Jenkins X and provides us with the peace of mind for disaster recovery.&lt;/p&gt;
+&lt;p&gt;Jenkins X ships with a git operator which is responsible for applying generated Kubernetes resources which live in the cluster Git repository.  Every application and configuration for the cluster is in this repository.&lt;/p&gt;
+&lt;h2 id=&#34;health&#34;&gt;Health&lt;/h2&gt;
+&lt;p&gt;In any Kubernetes installation there can be a lot of microservices each with the responsibility to provide functionality that is needed by the overall system.  Understanding when things go wrong and the impact of these issues can be difficult to evaluate.  It is also useful to have a status page of sorts to quickly check the health of your system.&lt;/p&gt;
+&lt;p&gt;Jenkins X uses &lt;a href=&#34;https://github.com/Comcast/kuberhealthy&#34;&gt;Kuberhealthy&lt;/a&gt; and a lot of custom health checks to periodically report on the health of a Jenkins X installation.  These custom health checks are easy to extend in any language, already the Jenkins X community has been contributing their own.&lt;/p&gt;
+&lt;p&gt;There is a CLI which can be used to query the health report as well and a UI.&lt;/p&gt;
+&lt;p&gt;The health statuses can be easily integrated into users operational alerting systems too.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/4wqwulEzseM?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h2 id=&#34;extending-pipelines&#34;&gt;Extending pipelines&lt;/h2&gt;
+&lt;p&gt;Jenkins X uses vanilla Tekton pipeline resources and has deprecated the v2 &lt;code&gt;jenkins-x.yml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We will show a demo shortly of working with Tekton pipelines and inheriting shared Tasks but for now we can see it is easy using Lighthouse to trigger shared Pipelines from a git repository.  The demo uses the old favorite from the Jenkins project Chuck Norris, only here we are invoking a cloud native pipeline to comment with the joke on a Pull Request.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/cJcwV4jgE0Y?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h2 id=&#34;secrets&#34;&gt;Secrets&lt;/h2&gt;
+&lt;p&gt;Secrets management stores (e.g. AWS Secrets Manager, Hashicorp Vault, Google Secrets Manager) have gained popularity from both Administrators and Developers.  Having a single source of truth for a secret is extremely useful especially when obtaining and changing values, some solutions even offer automatic secret rotation.&lt;/p&gt;
+&lt;p&gt;With GitOps as described above we need a way to inject real secrets into a cluster rather than storing them in Git.&lt;/p&gt;
+&lt;p&gt;Jenkins X uses &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;External Secrets&lt;/a&gt; from which runs as a Kubernetes controller, using a Kubernetes Custom Resource it knows how to automatically map values from a Secret Management Store into Kubernetes Secrets.  This makes it easy for applications to leverage GitOps while keeping the benefits of using a secrets management solution.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/_gjGfwlxEY4?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h2 id=&#34;upgrades&#34;&gt;Upgrades&lt;/h2&gt;
+&lt;p&gt;Jenkins X now uses GitOps for the whole cluster, one repository keeps all applications and configurations that should be applied to a cluster.  This cluster repository also includes a copy of the version stream mentioned below.  Jenkins X uses a tool called &lt;a href=&#34;https://github.com/GoogleContainerTools/kpt&#34;&gt;kpt&lt;/a&gt; which reliable syncrosises released version configuration into their own repository that can then be committed and applied to your cluster.&lt;/p&gt;
+&lt;h2 id=&#34;version-streams&#34;&gt;Version Streams&lt;/h2&gt;
+&lt;p&gt;The world of continuous delivery can bring challenges.  One of the biggest challenges Jenkins X itself had while embracing CD was how people handle receiving constant change via releases.&lt;/p&gt;
+&lt;p&gt;Some people wanted to live on the bleeding edge, receiving fixes, improvements and new features as fast as possible so they can help provide feedback and continually improve.  Others had more stable requirements which expect more mature features along with corresponding complete documentation that gave better confidence an upgrade will not cause any adverse effects.&lt;/p&gt;
+&lt;p&gt;Jenkins X has had the concept of version streams which allows the project to collect a number of helm charts, CLI, Docker image version changes together, run further automated testing and release together for users to consume in an upgrade.  This acts as a quality gate.&lt;/p&gt;
+&lt;p&gt;For Jenkins X 3 we have extended this to include a second version stream which gets automatically updated via a Pull Request however that is merged on a slower cadence to cater for users that want greater confidence in the release.  We call this the &lt;a href=&#34;https://jenkins-x.io/v3/guides/upgrades/lts&#34;&gt;Long Term Support (LTS) version stream&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Users can decide which version stream to track or even use a custom one that they maintain themselves.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/9ZaqdwD3cTs?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h2 id=&#34;cluster-recovery&#34;&gt;Cluster recovery&lt;/h2&gt;
+&lt;p&gt;Clusters can be recreated if they move regions, are accidentally deleted or part of intentional housekeeping to continually verify disaster recovery processes.&lt;/p&gt;
+&lt;p&gt;Because Jenkins X uses Terraform for infrastructure checked into Git and a another Git repository specifically for the cluster, it means we can recreate a cluster and resume all services with very little manual intervention.  This video deletes and recovers a cluster on GCP using Jenkins X.&lt;/p&gt;
+&lt;iframe width=&#34;600&#34; height=&#34;300&#34; src=&#34;https://www.youtube.com/embed/2QgX3cn0GqU?VQ=HD1080&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: New features in the pipelines visualizer UI</title>
       <link>https://jenkins-x.io/blog/2021/01/18/jx-pipelines-visualizer-v1/</link>
       <pubDate>Mon, 18 Jan 2021 00:00:00 +0000</pubDate>
@@ -2998,54 +3072,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;p&gt;Serverless pipeline execution mode will become the best way to run Jenkins X in the not-too-distant future. And as we’re looking forward, we’ve begun to find ways to further improve the serverless mode of Jenkins X. We now have &lt;a href=&#34;https://jenkins-x.io/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; which are based on &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34;&gt;Tekton&lt;/a&gt; which is a new Kubernetes-native way of running serverless pipelines. While it’s still in its early stages, Tekton will eventually become the best way to run CI/CD pipelines in Kubernetes.&lt;/p&gt;
 &lt;p&gt;We’ve begun some early work to add Tekton into Jenkins X. You can now begin testing the pipeline, and we’d love to get your feedback. To use the new Tekton execution mode you &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;install your Jenkins X cluster using the new tekton mode&lt;/a&gt;. You will then get a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file with your application instead of a Jenkinsfile in your source code repository. This YAML file is organized similarly to the Jenkins declarative pipeline syntax used in a Jenkinsfile.&lt;/p&gt;
 &lt;p&gt;We’ll continue to update the community on progress accordingly and welcome your feedback! Feel free to contact the &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;Jenkins X team via Slack&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/community/#office-hours&#34;&gt;office hours&lt;/a&gt; or send us an email with any questions or concerns. The next office hours will be on Thursday, February 21st, at 11:00am ET and Andrew Bayer will be demoing progress. Thanks!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Happy 1st Birthday Jenkins X</title>
-      <link>https://jenkins-x.io/blog/2019/01/14/happy-first-birthday/</link>
-      <pubDate>Mon, 14 Jan 2019 07:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/01/14/happy-first-birthday/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Time flies when you are delivering software. It has been just over a year since the &lt;a href=&#34;https://github.com/jenkins-x/jx/commit/e255f7ea050c4a410a21183ec85a510c8e4ca8c6&#34;&gt;initial commit&lt;/a&gt; went into Github for Jenkins X, the CI/CD solution for cloud native. In just 12 months, Jenkins X progress has been breathtaking, so let’s celebrate by taking a look at all that has been accomplished in this short space of time.&lt;/p&gt;
-&lt;img src=&#34;https://jenkins-x.io/news/jenkins-x-first-birthday/birthday.jpg&#34;&gt; 
-&lt;p&gt;One of the main founders of Jenkins X is &lt;a href=&#34;https://twitter.com/jstrachan&#34;&gt;James Strachan&lt;/a&gt; of CloudBees, who is known for building many popular open source software projects such as &lt;a href=&#34;http://groovy-lang.org/index.html&#34;&gt;Apache Groovy&lt;/a&gt;, &lt;a href=&#34;http://camel.apache.org/&#34;&gt;Apache Camel&lt;/a&gt; and fabric8. Notable these projects also have enduring open source software communities around them. With all this experience it is safe to say James simply gets developers and what they want, need and care about.&lt;/p&gt;
-&lt;p&gt;Developers WANT to ship code fast.&lt;/p&gt;
-&lt;p&gt;Developers NEED to use best practices as they go so they can keep the long term sustainability of their code in mind.&lt;/p&gt;
-&lt;p&gt;Developers CARE ABOUT what they are building; the code, the programming language, the environment, the quirks: everything that makes it special (and also makes one-size-fits-all tools impossible to build). Jenkins X gets all of this, let’s take a look at what it offers developers.&lt;/p&gt;
-&lt;h2 id=&#34;ship-code-fast&#34;&gt;Ship Code Fast&lt;/h2&gt;
-&lt;p&gt;To help developers get their code out to the world quickly Jenkins X offers preview environments, a seamless developer experience (DevEx) and support for multi-cloud platforms.&lt;/p&gt;
-&lt;h3 id=&#34;preview-environments&#34;&gt;Preview Environments&lt;/h3&gt;
-&lt;p&gt;These are the Jenkins X killer feature. Preview environments enable developers to preview pull requests before changes merge to master. This takes away the pain of having to look at code to work out how good a PR is. Preview environments allow for fast and early feedback as developers can review actual functionality in an automatically provisioned environment. Typically the creation of preview environments is automated inside the Pipelines created by Jenkins X. Read more about &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#preview-environments&#34;&gt;preview environments&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;developer-experience-devex&#34;&gt;Developer Experience (DevEx)&lt;/h3&gt;
-&lt;p&gt;Jenkins X can provide preview environments and a complete system for scalable CI/CD because it builds on Kubernetes and the cloud native ecosystem (tools such as Helm). However Kubernetes is complex so Jenkins X abstracts away a lot of this complexity, for example by providing a one line &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_cluster/&#34;&gt;‘jx create cluster’&lt;/a&gt; command to create a fully formed cluster automatically set up with sensible defaults.&lt;/p&gt;
-&lt;h3 id=&#34;multicloud&#34;&gt;Multicloud&lt;/h3&gt;
-&lt;p&gt;Jenkins X can create a cluster with a single command on virtually any flavour of Kubernetes, either on prem or using a public cloud provider. Google Cloud, Microsoft Azure, Amazon Web Services, Oracle Cloud, IBM Cloud, RedHat Openshift and more are all supported. Jenkins X does the heavy lifting so developers can get started without needing to know the cloud-specific command line interface (CLI), how to set up role-based access (RBAC) or what ingress controllers are.&lt;/p&gt;
-&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
-&lt;h3 id=&#34;gitops&#34;&gt;GitOps&lt;/h3&gt;
-&lt;p&gt;Jenkins X comes built in with the most modern best practices for CI/CD including GitOps, operation by pull request. Jenkins X uses GitOps for promoting pull requests and to manage the configuration and version of the kubernetes resources which are deployed to each environment. Read &lt;a href=&#34;https://jenkins-x.io/about/features/#environments&#34;&gt;more about GitOps here&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;accelerate-capabilities&#34;&gt;Accelerate Capabilities&lt;/h3&gt;
-&lt;p&gt;Jenkins X uses capabilities identified by the Accelerate book such as automating the deployment process, using trunk-based development and using loosely coupled architecture. Read &lt;a href=&#34;https://jenkins-x.io/about/accelerate/&#34;&gt;more here&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;extensibility&#34;&gt;Extensibility&lt;/h2&gt;
-&lt;p&gt;Jenkins X works in different environments with any programming language and empowers developers to extend it in so it is optimized for their environments.&lt;/p&gt;
-&lt;h3 id=&#34;quickstart-templates&#34;&gt;Quickstart templates&lt;/h3&gt;
-&lt;p&gt;This is the most popular way to extend Jenkins X as the community have contributed many quickstart templates for their favourite programming languages and frameworks. Read more about &lt;a href=&#34;https://jenkins-x.io/extending/&#34;&gt;extending Jenkins X&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;workloads&#34;&gt;Workloads&lt;/h3&gt;
-&lt;p&gt;Not everybody has the luxury of starting on cloud native apps from fresh. so recently Jenkins X added buildpacks to bridge the cloud-native divide for typical Jenkins workloads such as Java, Maven, Gradle etc.. Buildpacks themselves are extensible. Read more about &lt;a href=&#34;https://jenkins-x.io/architecture/build-packs/&#34;&gt;buildpacks here&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;what-do-developer-think-of-jenkins-x&#34;&gt;What do developer think of Jenkins X?&lt;/h2&gt;
-&lt;p&gt;From the early adopters trying out Jenkins X we hear ‘Wow’ a lot, for example:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;When Dailymotion wrote about how they went from &lt;a href=&#34;https://medium.com/dailymotion/from-jenkins-to-jenkins-x-604b6cde0ce3&#34;&gt;Jenkins to Jenkins X&lt;/a&gt; they described the ‘wow effect’ of creating a cluster in one command&lt;/li&gt;
-&lt;li&gt;Joselie Castañeda commented ‘take my wow!’ after watching the &lt;a href=&#34;https://youtu.be/uHe7R_iZSLU&#34;&gt;Jenkins X talk video from Kubecon&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;community&#34;&gt;Community&lt;/h2&gt;
-&lt;p&gt;Jenkins X would not be where it is today without the lovely community who make lots of contributions: code contributions, giving feedback and even being good sports making the Jenkins X signal. Thank you all!&lt;/p&gt;
-&lt;p&gt;Jenkins X is transforming the way developers continuously deliver code and we are excited to see how things progress in the next 12 months!&lt;/p&gt;
-&lt;p&gt;Happy first birthday Jenkins X!&lt;/p&gt;
 
       </description>
     </item>
