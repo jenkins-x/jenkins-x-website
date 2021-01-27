@@ -1115,6 +1115,7 @@ if (!doNotTrack) {
     <li><a href="#why-does-jenkins-x-use-helmfile-template">Why does Jenkins X use <code>helmfile template</code>?</a></li>
     <li><a href="#what-is-the-directory-layout">What is the directory layout?</a></li>
     <li><a href="#how-do-i-diagnose-a-step-in-a-pipeline">How do I diagnose a step in a pipeline?</a></li>
+    <li><a href="#how-do-i-configure-pipelines-to-use-gpus">How do I configure pipelines to use GPUs?</a></li>
     <li><a href="#does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</a></li>
     <li><a href="#how-do-i-add-a-chart">How do I add a chart?</a></li>
     <li><a href="#how-do-i-add-a-kubernetes-resource">How do I add a kubernetes resource?</a></li>
@@ -1301,6 +1302,19 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 <p>You can then <code>kubectl exec</code> into the pod at that step and look around and try running commands inside the pod/container.</p>
 <p>e.g. using the pod name from the above page and the container name you can do something like:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl exec -it -c name-of-step-container name-of-pod sh
+</code></pre></div><h2 id="how-do-i-configure-pipelines-to-use-gpus">How do I configure pipelines to use GPUs?</h2>
+<p>You can install the <a href="https://github.com/NVIDIA/k8s-device-plugin">nvidia k8s device plugin</a> as a daemonset to expose which nodes have GPUs and their status.</p>
+<p>You can then view the nodes via:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get nodes <span style="color:#e6db74">&#34;-o=custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu&#34;</span>  
+</code></pre></div><p>You can then use the <code>resources</code> on your tekton steps as follows:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">- <span style="color:#66d9ef">image</span>: gcr.io/kaniko-project/executor:v1<span style="color:#ae81ff">.3.0</span>-debug
+  <span style="color:#66d9ef">name</span>: build-my-image
+  <span style="color:#66d9ef">resources</span>:
+    <span style="color:#66d9ef">limits</span>:
+      <span style="color:#75715e"># This job requires an instance with 1 GPU, 4 CPUs and 16GB memory - g4dn.2xlarge</span>
+      <span style="color:#66d9ef">nvidia.com/gpu</span>: <span style="color:#ae81ff">1</span>
+  <span style="color:#66d9ef">script</span>: <span style="color:#e6db74">|
+</span><span style="color:#e6db74">    #!/busybox/sh</span>
 </code></pre></div><h2 id="does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</h2>
 <p>Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.</p>
 <p>Since we default to using <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">helmfile template</a> helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).</p>
@@ -1601,7 +1615,7 @@ kubectl delete -R -f config-root/cluster
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified January 27, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/15ef281fe4f4519aeb4fc8a6d805bee06f53461a">fix: added docs on creating a secret (15ef281fe4)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified January 27, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/d133c8c4058a1a05e47f6143d11966ae4bbdc973">fix: add FAQ on using GPUs (d133c8c405)</a>
 </div>
 </div>
 
