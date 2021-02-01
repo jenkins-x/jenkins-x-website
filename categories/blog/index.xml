@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Tue, 26 Jan 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 01 Feb 2021 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,46 @@
         
       
     
+    
+    <item>
+      <title>Blog: Jenkins X 3 - February 2021 LTS</title>
+      <link>https://jenkins-x.io/blog/2021/02/01/jx3-lts-feb-21/</link>
+      <pubDate>Mon, 01 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/02/01/jx3-lts-feb-21/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This is the first &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/upgrades/lts/&#34;&gt;LTS release&lt;/a&gt; for Jenkins X 3.x.  We are  still in the Beta release and the leadup to GA includes ensuring the process for LTS monthly releases is validated and working well.
+This first releases focuses on:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;community feedback following the Beta release&lt;/li&gt;
+&lt;li&gt;general helm chart upgrades&lt;/li&gt;
+&lt;li&gt;improved developer UX when editing Tekton pipelines &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;support for in-repo and shared Tekton pipeline libraries including git URI support,
+e.g.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;uses:jenkins-x/jx3-pipeline-catalog/packs/javascript/.lighthouse/jenkins-x/pullrequest.yaml@v1.2.3&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;more documentation and examples can be found &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/pipelines.md#configuring-pipelines&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;whats-the-difference&#34;&gt;What&amp;rsquo;s the difference?&lt;/h2&gt;
+&lt;p&gt;Because Jenkins X uses GitOps we can see the git diff of changes that will be brought in with a cluster upgrade.   Here is the Pull Request that has been verified for February LTS release.
+&lt;a href=&#34;https://github.com/jenkins-x/jx3-lts-versions/pull/209/files&#34;&gt;https://github.com/jenkins-x/jx3-lts-versions/pull/209/files&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;anything-else-to-be-aware-of&#34;&gt;Anything else to be aware of?&lt;/h2&gt;
+&lt;p&gt;Included in the release is a switch of the NGINX Helm chart from the old Helm stable registry.  It was discussed on the community slack that some users on EKS and not using a custom domain had to change the domain in their cluster jx-requirements.yml file.&lt;/p&gt;
+&lt;p&gt;The change of Chart repository meant that the old resources were removed and new ones added, which means a new Kubernetes LoadBalancer service was created, resulting in a new external IP address.  You may need to update the domain in your &lt;code&gt;jx-requirements.yml&lt;/code&gt;.  To get the external IP run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get service -n nginx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Not the external ip address and update your cluster git repository, &lt;code&gt;jx-requirements.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;domain: $EXTERNAL_IP_FROM_ABOVE.nip.io
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git commit
+git push
+jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And you should see the new ingress rules created when the boot job finishes:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing -n jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;whats-next&#34;&gt;What&amp;rsquo;s next?&lt;/h1&gt;
+&lt;p&gt;March LTS release aims to switch the incluster boot jobs to use &lt;a href=&#34;https://carvel.dev/kapp/&#34;&gt;https://carvel.dev/kapp/&lt;/a&gt; rather than using &lt;code&gt;kubectl&lt;/code&gt; to apply and prune Kubernetes resources.  &lt;code&gt;kapp&lt;/code&gt; us a dependency aware approach to installing Kubernetes resources, this aims to help avoid timing issues when installing resources before certain services like cert-manager are fully up and running.&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Jenkins X 3.x walkthroughs</title>
@@ -3048,32 +3088,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;p&gt;“I’m really excited to see the formation of the CDF - it&amp;rsquo;s starting with some of the most popular best-of-breed open source tools in the CI/CD space,&amp;rdquo; said James Strachan, co-founder of Jenkins X and distinguished engineer, CloudBees. &amp;ldquo;I’m looking forward to increased collaboration between us all to help accelerate the open source CI/CD landscape.”&lt;/p&gt;
 &lt;p&gt;Jenkins X started life under the Jenkins umbrella. In CDF, Jenkins X will be a distinct project from Jenkins which means some changes, such as having a Jenkins X Technical Steering Committee. These changes will happen gradually as we transition to CDF over the coming weeks. Normal development work will continue as usual.&lt;/p&gt;
 &lt;p&gt;We are excited about all the new possibilities that being part of the CDF will bring. We look forward to new initiatives and welcoming everybody to &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;get involved with the project&lt;/a&gt;.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins X Pipelines integrated with Tekton</title>
-      <link>https://jenkins-x.io/blog/2019/02/19/jenkins-x-next-gen-pipeline-engine/</link>
-      <pubDate>Tue, 19 Feb 2019 10:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/02/19/jenkins-x-next-gen-pipeline-engine/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;introducing-the-new-jenkins-x-pipeline-engine&#34;&gt;Introducing the new Jenkins X Pipeline Engine&lt;/h2&gt;
-&lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/&#34;&gt;Jenkins X&lt;/a&gt; team and &lt;a href=&#34;https://www.cloudbees.com/&#34;&gt;CloudBees&lt;/a&gt; are excited to announce some changes that we’ve been working on and are jntroducing the new &lt;a href=&#34;https://jenkins-x.io/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline Engine&lt;/a&gt;.&lt;/p&gt;
-
-&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
-  &lt;iframe src=&#34;https://www.youtube.com/embed/EYywyqcPVMY?autoplay=1&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
-&lt;/div&gt;
-
-&lt;p&gt;Today, there are two ways that you can run your Jenkins pipelines in Jenkins X.&lt;/p&gt;
-&lt;p&gt;By default today, Jenkins X uses a static traditional Jenkins master and Jenkins Pipelines. This mode works well for those who may have complex existing Jenkins pipelines and want to be able to use all the Jenkins X goodness of GitOps and preview environments in Kubernetes.&lt;/p&gt;
-&lt;p&gt;As of last October, you can run Jenkins pipelines without the static Jenkins server &amp;ndash; so, it’s &lt;a href=&#34;https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870&#34;&gt;serverless&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Serverless pipeline execution mode will become the best way to run Jenkins X in the not-too-distant future. And as we’re looking forward, we’ve begun to find ways to further improve the serverless mode of Jenkins X. We now have &lt;a href=&#34;https://jenkins-x.io/architecture/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipelines&lt;/a&gt; which are based on &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34;&gt;Tekton&lt;/a&gt; which is a new Kubernetes-native way of running serverless pipelines. While it’s still in its early stages, Tekton will eventually become the best way to run CI/CD pipelines in Kubernetes.&lt;/p&gt;
-&lt;p&gt;We’ve begun some early work to add Tekton into Jenkins X. You can now begin testing the pipeline, and we’d love to get your feedback. To use the new Tekton execution mode you &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;install your Jenkins X cluster using the new tekton mode&lt;/a&gt;. You will then get a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file with your application instead of a Jenkinsfile in your source code repository. This YAML file is organized similarly to the Jenkins declarative pipeline syntax used in a Jenkinsfile.&lt;/p&gt;
-&lt;p&gt;We’ll continue to update the community on progress accordingly and welcome your feedback! Feel free to contact the &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;Jenkins X team via Slack&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/community/#office-hours&#34;&gt;office hours&lt;/a&gt; or send us an email with any questions or concerns. The next office hours will be on Thursday, February 21st, at 11:00am ET and Andrew Bayer will be demoing progress. Thanks!&lt;/p&gt;
 
       </description>
     </item>
