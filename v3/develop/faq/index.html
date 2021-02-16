@@ -1175,6 +1175,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-add-a-new-secret">How do I add a new Secret?</a></li>
     <li><a href="#how-do-i-access-a-secret-from-my-pipeline">How do I access a Secret from my pipeline?</a></li>
     <li><a href="#if-i-add-a-file-to-config-root-it-gets-deleted-why">If I add a file to <code>config-root</code> it gets deleted, why?</a></li>
+    <li><a href="#how-do-i-use-testcontainers">How do I use testcontainers?</a></li>
     <li><a href="#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production">How do I configure the ingress domain in Dev, Staging or Production?</a></li>
     <li><a href="#how-do-i-configure-the-ingress-tls-certificate-in-dev-staging-or-production">How do I configure the ingress TLS certificate in Dev, Staging or Production?</a></li>
     <li><a href="#how-do-i-use-a-custom-container-registry">How do I use a custom container registry?</a></li>
@@ -1389,6 +1390,10 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 <p>The <code>config-root</code> directory is regenerated on every boot job - basically every time you promote an application or merge a change into the main branch of your git dev cluster git repository.  For background see the <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md">dev git repository layout docs</a>)</p>
 <p>To add a new chart add to the <code>helmfiles/mynamespace/helmfile.yaml</code> file follow the <a href="/v3/develop/apps/#adding-charts">add chart guide</a>.</p>
 <p>To add a new kubernetes resource <a href="/v3/develop/apps/#adding-resources">follow the add resources guide</a>.</p>
+<h2 id="how-do-i-use-testcontainers">How do I use testcontainers?</h2>
+<p>If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a <a href="https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars">sidecar container in Tekton</a>.</p>
+<p>Here is <a href="https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task">another example of a sidecar in a pipeline</a></p>
+<p>If you want to use a separate container inside a preview environment then add <a href="/v3/develop/apps/#adding-charts">charts or resources</a> to the <code>preview/helmfile.yaml</code></p>
 <h2 id="how-do-i-configure-the-ingress-domain-in-dev-staging-or-production">How do I configure the ingress domain in Dev, Staging or Production?</h2>
 <p>With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the <code>dev</code>, <code>staging</code> or <code>production</code> environment and whether or not you are using <a href="/v3/guides/multi-cluster/">multiple clusters</a>.</p>
 <p>You can override the domain name for use in all apps within an environment by modifying the <code>jx-requirements.yml</code> in the git repository for the <code>dev</code>, <code>staging</code> or <code>production</code> environment.</p>
@@ -1447,6 +1452,8 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 </ul>
 <h2 id="why-did-my-quickstart--import-not-work">Why did my quickstart / import not work?</h2>
 <p>If you are not able to create quickstarts or import projects its most probably webhooks not being setup correctly.</p>
+<p>When the <code>jx project import</code> or <code>jx project quickstart</code> runs it creates a Pull Request on your dev cluster repository. This should <a href="/v3/about/how-it-works/#importing--creating-quickstarts">trigger a webhook</a> on your git provider which should then trigger a Pipeline (via <a href="/v3/about/overview/#lighthouse">lighthouse webhooks</a>). The pipeline should then  <a href="/v3/about/how-it-works/#importing--creating-quickstarts">create a second commit on the pull request</a> to configure your repository which then should get labelled and auto-merge.</p>
+<p>If this does not happen its usually your webhooks are not working. You can check on the health of your system and webhooks via the <a href="/v3/admin/guides/health/">Health guide</a></p>
 <p>Check out the <a href="/v3/admin/troubleshooting/webhooks/">webhooks troubleshooting guide</a></p>
 <h2 id="how-do-i-add-an-environment">How do I add an Environment</h2>
 <p>With v3 everything is done via GitOps - so if in doubt the answer is to modify git.</p>
@@ -1687,7 +1694,7 @@ kubectl delete -R -f config-root/cluster
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified January 29, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/7312fa757646f30dae80c7946b5d95d0f3a67be4">fix: add better pipeline docs (7312fa7576)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified February 16, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/5093efa7170e63adce7b5f7c9427d97f17266dc5">chore: polish FAQ (5093efa717)</a>
 </div>
 </div>
 
