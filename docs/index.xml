@@ -18129,6 +18129,59 @@ It also means longer term we can generate JSON schema files for each &lt;code&gt
     </item>
     
     <item>
+      <title>V3: Accelerate</title>
+      <link>https://jenkins-x.io/v3/devops/accelerate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/devops/accelerate/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X is a reimagined CI/CD implementation for the Cloud which is heavily influenced by the State of DevOps reports and more recently the &lt;a href=&#34;https://www.amazon.co.uk/Accelerate-Software-Performing-Technology-Organizations/dp/1942788339&#34;&gt;Accelerate&lt;/a&gt; book from &lt;a href=&#34;https://twitter.com/nicolefv&#34;&gt;Nicole Forsgren&lt;/a&gt;, &lt;a href=&#34;https://twitter.com/jezhumble&#34;&gt;Jez Humble&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/RealGeneKim?&#34;&gt;Gene Kim&lt;/a&gt;.&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/accelerate.jpg&#34; class=&#34;img-thumbnail&#34; width=&#34;500&#34; height=&#34;750&#34;&gt;
+&lt;p&gt;Years of gathering data from real world teams and organizations which has been analyzed by inspiring thought leaders and data scientists from the DevOps world.  The Accelerate book recommends a number of capabilities that Jenkins X is implementing so users gain the scientifically proven benefits, out of the box.  We&amp;rsquo;ve started documenting the capabilities that are available today and will continue as more become available.&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/capabilities.png&#34; class=&#34;img-thumbnail&#34; width=&#34;400&#34; height=&#34;750&#34;&gt;
+&lt;h1 id=&#34;use-version-control-for-all-artifacts&#34;&gt;Use version control for all artifacts&lt;/h1&gt;
+&lt;p&gt;The Weaveworks folks coined the term GitOps which we love.  Any change to an environment, whether it be a new application, version upgrade, resource limit change or simple application configuration should be raised as a Pull Request to Git, have checks run against it like a form of CI for environments and approved by a team that has control over what goes into the related environment.  We now enable governance have full traceability for any change to an environment.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Related Accelerate capability:  Use version control for all production artifacts&lt;/em&gt;&lt;/p&gt;
+&lt;h1 id=&#34;automate-your-deployment-process&#34;&gt;Automate your deployment process&lt;/h1&gt;
+&lt;h2 id=&#34;environments&#34;&gt;Environments&lt;/h2&gt;
+&lt;p&gt;Jenkins X will automatically create Git backed environments during installation and makes it easy to add new ones using &lt;code&gt;jx create environment&lt;/code&gt;.  Additionally when creating new applications via a quickstart (&lt;code&gt;jx create quickstart&lt;/code&gt;), Java based SpringBoot (&lt;code&gt;jx create spring&lt;/code&gt;) or importing existing applications (&lt;code&gt;jx import&lt;/code&gt;), Jenkins X will both automatically add CI / CD pipelines and setup the jobs, git repos and webhooks to enable an automated deployment process.&lt;/p&gt;
+&lt;p&gt;Out of the box Jenkins X creates Staging and Production (this is customizable) permanent environments as well as temporary environments for preview applications from Pull Requests.&lt;/p&gt;
+&lt;h3 id=&#34;previews-environments&#34;&gt;Previews Environments&lt;/h3&gt;
+&lt;p&gt;We are trying to move as much testing, security, validation and experimentation for a change before it&amp;rsquo;s merged to master.  With the use of temporary dynamically created Preview Environments any Pull Request can have a preview version built and deployed, including libraries that feed into a downstream deployable application.  This means we can code review, test, collaborate better with all teams that are involved in agreeing that change can go live.&lt;/p&gt;
+&lt;p&gt;Ultimately Jenkins X wants to provide a way that developers, testers, designers and product managers can be as sure as they can that when a change is merged to master it works as expected.  We want to be confident the proposed change does not negatively affect any service or feature as well as deliver the value it is intended to.&lt;/p&gt;
+&lt;p&gt;Where Preview Environments get really interesting is when we are able to progress a short term PR through various stages of maturity and confidence where we begin to direct a percentage of real production traffic (either shadow traffic or even beta users).  We can then analyze the value of the proposed change and possible run multiple automated experiments over time using Hypothesis Driven Development.  This helps give us better understanding of how the change will perform when released to all users. Though we need to make sure PRs stay short lived for trunk based development; lets try avoid PRs turning into long term feature branches!&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Foster and enable team experimentation&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Using preview environments is a great way to introduce better test automation.  While Jenkins X enables this we don&amp;rsquo;t yet have examples of automated tests being run against a preview environment.  A simple test would be to ensure the application starts ok and Kubernetes liveness check pass for an amount of time. This relates to&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Implement Test Automation&lt;/em&gt;
+&lt;em&gt;Related Accelerate capability: Automate your deployment process&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id=&#34;permanent-environments&#34;&gt;Permanent Environments&lt;/h3&gt;
+&lt;p&gt;In software development we&amp;rsquo;re used to working with multiple environments in the lead up to a change being promoted to a live production environment.  Whilst this seems business as usual it can cause significant delays to other changes if for any reason that it is deemed not fit via some process that didn&amp;rsquo;t happen pre merge to master.  Subsequent commits then become blocked and can cause delay of urgent changes being promoted to production.&lt;/p&gt;
+&lt;p&gt;As above Jenkins X wants any changes and experiments to be validated before it is merged to master.  We would like changes in a staging environment to be held there for a short amount of time before being promoted, ideally in an automated fashion.&lt;/p&gt;
+&lt;p&gt;The default Jenkins X pipelines provide deployment automation via environments.  These are customizable to suite your own CI / CD pipeline requirements.&lt;/p&gt;
+&lt;p&gt;Jenkins X recommends Staging should act as a near as possible reflection on production, ideally with real production data shadowed to it using a service mesh to understand the behavior.  This also helps when developing changes in preview where we can link to non production services in staging.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Related Accelerate capability: Automate your deployment process&lt;/em&gt;&lt;/p&gt;
+&lt;h1 id=&#34;use-trunk-based-development&#34;&gt;Use trunk-based development&lt;/h1&gt;
+&lt;p&gt;The Accelerate book found that teams which use trunk based development with short lived branches performed better.  This has always worked for the Jenkins X core team members so this was an easy capability for Jenkins X to implement when setting up Git repositories and CI/CD jobs.&lt;/p&gt;
+&lt;h1 id=&#34;implement-continuous-integration&#34;&gt;Implement Continuous Integration&lt;/h1&gt;
+&lt;p&gt;Jenkins X sees CI as the effort of validating a proposed change via Pull Requests before it is merged to master.  Jenkins X will automatically configure source code repositories, Jenkins and Kubernetes to provide Continuous Integration out of the box.&lt;/p&gt;
+&lt;h1 id=&#34;implement-continuous-delivery&#34;&gt;Implement Continuous Delivery&lt;/h1&gt;
+&lt;p&gt;Jenkins X sees CD as the effort of taking that change after it&amp;rsquo;s been merged to master through to running in a live environment.  Jenkins X automates many parts in a release pipeline:&lt;/p&gt;
+&lt;p&gt;Jenkins X advocates the use of semantic versioning.  We use git tags to calculate the next release version which means we don&amp;rsquo;t need to store the latest release version in the master branch.  Where release systems do store the last or next version in Git repos it means CD becomes hard, as a commit in a release pipeline back to master triggers a new release.  This results in a recursive release trigger.  Using a Git tag helps avoid this situation which Jenkins X completely automates.&lt;/p&gt;
+&lt;p&gt;Jenkins X will automatically create a released version on &lt;strong&gt;every&lt;/strong&gt; merge to master which can then potentially progress through to production.&lt;/p&gt;
+&lt;h1 id=&#34;use-loosely-coupled-architecture&#34;&gt;Use loosely coupled architecture&lt;/h1&gt;
+&lt;p&gt;By targeting Kubernetes users of Jenkins X can take advantage of many of the cloud features that help design and develop loosely coupled solutions.  Service discovery, fault tolerance, scalability, health checks, rolling upgrades, container scheduling and orchestration to name just a few examples of where Kubernetes helps.&lt;/p&gt;
+&lt;h1 id=&#34;architect-for-empowered-teams&#34;&gt;Architect for empowered teams&lt;/h1&gt;
+&lt;p&gt;Jenkins X aims to help polyglot application developers.  Right now Jenkins X has quickstarts and automated CI/CD setup with language detection for Golang, Java, NodeJS, .Net, React, Angular, Rust, Swift and more to come.  What this also does is provide a consistent Way Of Working so developers can concentrate on developing.&lt;/p&gt;
+&lt;p&gt;Jenkins X also provides many addons, for example Grafana and Prometheus for automated metrics collection and visualization.  In this example centralized metrics help understand how your applications behave when built and deployed on Kubernetes.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; are another feature which enables developers to edit source code in their local IDE, behind the scenes it is then synced to the cloud and rapidly built and redeployed.&lt;/p&gt;
+&lt;p&gt;Jenkins X believes providing developers automation that helps them experiment in the cloud, with different technologies and  feedback empowers them to make the best decisions - faster.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Apps</title>
       <link>https://jenkins-x.io/docs/resources/guides/extending-jx/apps/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -18857,36 +18910,6 @@ You can now edit the code in your IDE and run build/test commands inside the &lt
 &lt;p&gt;So once the &lt;code&gt;skaffold dev -p dev&lt;/code&gt; (what &lt;code&gt;watch.sh&lt;/code&gt; does) command has built the docker image and installed the helm chart, your app will show up via  &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_applications/&#34;&gt;jx get applications&lt;/a&gt;:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now if you edit code and trigger a docker rebuild, which for most languages is just changing the source code; though for Java apps its whenever you rebuild the jar - the image is regenerated and the helm chart updated!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>About: Diagram</title>
-      <link>https://jenkins-x.io/about/concepts/diagram/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/about/concepts/diagram/</guid>
-      <description>
-        
-        
-        &lt;p&gt;There are several architectures based on how you choose to install Jenkins X. We show you two common architectures below.&lt;/p&gt;
-&lt;h2 id=&#34;jenkins-x-with-tekton&#34;&gt;Jenkins X with Tekton&lt;/h2&gt;
-&lt;p&gt;This is the default setup of Jenkins X&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/ArchitectureServerlessJenkins.png&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Architecture for a serverless deployment using Tekton Pipelines&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;h2 id=&#34;jenkins-x-with-tekton--lighthouse&#34;&gt;Jenkins X with Tekton &amp;amp; Lighthouse&lt;/h2&gt;
-&lt;p&gt;This is a setup of Jenkins X with &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;Lighthouse&lt;/a&gt; instead of Prow (soon to be default)&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/ArchitectureServerlessJenkinsLighthouse.png&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Architecture for a serverless deployment using Tekton Pipelines and Lighthouse&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
 
       </description>
     </item>
