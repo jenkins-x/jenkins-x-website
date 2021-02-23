@@ -38,47 +38,6 @@
 &lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/trigger/github-com-jenkins-x-lighthouse-pkg-config-job.md#Postsubmit&#34;&gt;postsubmits&lt;/a&gt; for triggering pipelines on a push to a branch (e.g. releasing)&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Also check out the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/pipelines.md&#34;&gt;lighthouse pipeline configuration docs&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;parameters-and-environment-variables&#34;&gt;Parameters and Environment Variables&lt;/h3&gt;
-&lt;p&gt;The following tekton parameters and environment variables are available inside the pipeline catalog. They are populated by &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;BUILD_ID&lt;/code&gt; a unique long number for this build&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;JOB_NAME&lt;/code&gt; the name of the build which matches the name in the &lt;code&gt;presubmit&lt;/code&gt; or &lt;code&gt;postsubmit&lt;/code&gt; in your &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; &lt;code&gt;triggers.yaml&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;JOB_SPEC&lt;/code&gt; is of the form &lt;code&gt;type:presumit&lt;/code&gt; or &lt;code&gt;type:postsubmit&lt;/code&gt; so you know what kind of job you are inside&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PULL_BASE_REF&lt;/code&gt; the base branch name. e.g. &lt;code&gt;master&lt;/code&gt; or &lt;code&gt;main&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PULL_BASE_SHA&lt;/code&gt; the base git SHA being built&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;REPO_NAME&lt;/code&gt; the name of the git repository&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;REPO_OWNER&lt;/code&gt; the owner of the git repository (a user or organisation)&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;REPO_URL&lt;/code&gt; the git URL to clone the repository being built&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Pull Requests &lt;code&gt;presubmit&lt;/code&gt; also have the following values:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;PULL_NUMBER&lt;/code&gt; the number of the pull request&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PULL_PULL_REF&lt;/code&gt; the git reference of the pull request; something like &lt;code&gt;refs/pull/123/head&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PULL_PULL_SHA&lt;/code&gt;  the git SHA of the pull request&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;additional-environment-variables&#34;&gt;Additional environment variables&lt;/h4&gt;
-&lt;p&gt;If your pipeline runs the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_variables.md&#34;&gt;jx gitops variables&lt;/a&gt; command it will lazily create the &lt;code&gt;.jx/variables.sh&lt;/code&gt; script which will default a bunch more environment variables if they are not already populated in your git repository.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; that these variables are dynamically created during the execution of the pipeline pod; so to access them you must &lt;code&gt;source .jx/variables.sh&lt;/code&gt; inside your step.&lt;/p&gt;
-&lt;p&gt;So that your step looks something like this&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: gcr.io/jenkinsxio/jx-cli:latest
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: my-step
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;script&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;|
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    #!/usr/bin/env bash&lt;/span&gt;
-    source /workspace/source/.jx/variables.sh
-    echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;now we can use variables like this: ${VERSION}&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Available variables:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;APP_NAME&lt;/code&gt; the name of the application which defaults to the &lt;code&gt;$REPO_NAME&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;BRANCH_NAME&lt;/code&gt; is really the pull request name so something like &lt;code&gt;PR-123&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;BUILD_NUMBER&lt;/code&gt; the human readable short build number relative to the repository and branch. So builds start at 1 and go up incrementally&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DOCKERFILE_PATH&lt;/code&gt;  the location of the &lt;code&gt;Dockerfile&lt;/code&gt; if it exists&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DOCKER_REGISTRY&lt;/code&gt; the host name of the registry being used for image builds&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;DOCKER_REGISTRY_ORG&lt;/code&gt; the owner in the container registry (user name or organisation) to push images&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;JX_CHART_REPOSITORY&lt;/code&gt; the URL of the helm chart repository to use&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;PIPELINE_KIND&lt;/code&gt; the kind of pipeline being run &lt;code&gt;pullrequest&lt;/code&gt; or &lt;code&gt;release&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;VERSION&lt;/code&gt; the version number used for releases (and used to tag images and git etc) or the preview version for pull requests&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;If you want to define dynamic environment variables in one step for use in later steps you can append new variables to &lt;code&gt;.jx/variables.sh&lt;/code&gt; and then add the &lt;code&gt;source .jx/variables.sh&lt;/code&gt; later in your pipeline&lt;/p&gt;
 
       </description>
     </item>
@@ -193,6 +152,60 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Variables</title>
+      <link>https://jenkins-x.io/v3/develop/reference/variables/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/reference/variables/</guid>
+      <description>
+        
+        
+        &lt;h3 id=&#34;environment-variables&#34;&gt;Environment Variables&lt;/h3&gt;
+&lt;p&gt;The following tekton parameters and environment variables are available inside the pipeline catalog. They are populated by &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;BUILD_ID&lt;/code&gt; a unique long number for this build&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;JOB_NAME&lt;/code&gt; the name of the build which matches the name in the &lt;code&gt;presubmit&lt;/code&gt; or &lt;code&gt;postsubmit&lt;/code&gt; in your &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; &lt;code&gt;triggers.yaml&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;JOB_SPEC&lt;/code&gt; is of the form &lt;code&gt;type:presumit&lt;/code&gt; or &lt;code&gt;type:postsubmit&lt;/code&gt; so you know what kind of job you are inside&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PULL_BASE_REF&lt;/code&gt; the base branch name. e.g. &lt;code&gt;master&lt;/code&gt; or &lt;code&gt;main&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PULL_BASE_SHA&lt;/code&gt; the base git SHA being built&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;REPO_NAME&lt;/code&gt; the name of the git repository&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;REPO_OWNER&lt;/code&gt; the owner of the git repository (a user or organisation)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;REPO_URL&lt;/code&gt; the git URL to clone the repository being built&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Pull Requests &lt;code&gt;presubmit&lt;/code&gt; also have the following values:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;PULL_NUMBER&lt;/code&gt; the number of the pull request&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PULL_PULL_REF&lt;/code&gt; the git reference of the pull request; something like &lt;code&gt;refs/pull/123/head&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PULL_PULL_SHA&lt;/code&gt;  the git SHA of the pull request&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;additional-environment-variables&#34;&gt;Additional environment variables&lt;/h4&gt;
+&lt;p&gt;If your pipeline runs the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_variables.md&#34;&gt;jx gitops variables&lt;/a&gt; command it will lazily create the &lt;code&gt;.jx/variables.sh&lt;/code&gt; script which will default a bunch more environment variables if they are not already populated in your git repository.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; that these variables are dynamically created during the execution of the pipeline pod; so to access them you must &lt;code&gt;source .jx/variables.sh&lt;/code&gt; inside your step.&lt;/p&gt;
+&lt;p&gt;So that your step looks something like this&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: gcr.io/jenkinsxio/jx-cli:latest
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: my-step
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;script&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;|
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    #!/usr/bin/env bash&lt;/span&gt;
+    source /workspace/source/.jx/variables.sh
+    echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;now we can use variables like this: ${VERSION}&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Available variables:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;APP_NAME&lt;/code&gt; the name of the application which defaults to the &lt;code&gt;$REPO_NAME&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BRANCH_NAME&lt;/code&gt; is really the pull request name so something like &lt;code&gt;PR-123&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;BUILD_NUMBER&lt;/code&gt; the human readable short build number relative to the repository and branch. So builds start at 1 and go up incrementally&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DOCKERFILE_PATH&lt;/code&gt;  the location of the &lt;code&gt;Dockerfile&lt;/code&gt; if it exists&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DOCKER_REGISTRY&lt;/code&gt; the host name of the registry being used for image builds&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DOCKER_REGISTRY_ORG&lt;/code&gt; the owner in the container registry (user name or organisation) to push images&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;JX_CHART_REPOSITORY&lt;/code&gt; the URL of the helm chart repository to use&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PIPELINE_KIND&lt;/code&gt; the kind of pipeline being run &lt;code&gt;pullrequest&lt;/code&gt; or &lt;code&gt;release&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VERSION&lt;/code&gt; the version number used for releases (and used to tag images and git etc) or the preview version for pull requests&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you want to define dynamic environment variables in one step for use in later steps you can append new variables to &lt;code&gt;.jx/variables.sh&lt;/code&gt; and then add the &lt;code&gt;source .jx/variables.sh&lt;/code&gt; later in your pipeline&lt;/p&gt;
 
       </description>
     </item>
