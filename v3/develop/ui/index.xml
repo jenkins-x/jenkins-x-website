@@ -106,5 +106,60 @@ kubectl get secret jx-basic-auth-user-password -o jsonpath&lt;span style=&#34;co
       </description>
     </item>
     
+    <item>
+      <title>V3: Slack</title>
+      <link>https://jenkins-x.io/v3/develop/ui/slack/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/ui/slack/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Many of us use chat to keep in touch with the developers and tools we work with. &lt;a href=&#34;https://www.slack.com/&#34;&gt;Slack&lt;/a&gt; is becoming popular in commercial settings and is already used throughout the Kubernetes open source ecosystem: including the &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;Jenkins X project slack channels&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;To get &lt;a href=&#34;https://www.slack.com/&#34;&gt;slack&lt;/a&gt; notifications of pipelines you can use the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-slack&#34;&gt;jx-slack&lt;/a&gt; plugin.&lt;/p&gt;
+&lt;h2 id=&#34;creating-the-slack-app&#34;&gt;Creating the slack app&lt;/h2&gt;
+&lt;p&gt;Before you can install the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-slack&#34;&gt;jx-slack&lt;/a&gt; plugin you need to create a Slack app.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://api.slack.com/apps?new_app=1&#34;&gt;create a new slack app&lt;/a&gt; and fill in the details of the application name and associate it with the slack workspace you wish to use&lt;/li&gt;
+&lt;li&gt;navigate to the &lt;strong&gt;Features&lt;/strong&gt; / &lt;strong&gt;OAuth &amp;amp; Permissions&lt;/strong&gt; page on the slack app site&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/slack/slack-oauth-page.png&#34; class=&#34;img-thumbnail&#34; width=&#34;239&#34; height=&#34;573&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;add the Scope &lt;strong&gt;chat:write&lt;/strong&gt; to your bot so it can post messages to your slack workspace&lt;/li&gt;
+&lt;li&gt;find your &lt;strong&gt;Bot User OAuth Access Token&lt;/strong&gt; which should start with &lt;strong&gt;xoxb-&lt;/strong&gt; you will need it later&amp;hellip;&lt;/li&gt;
+&lt;li&gt;invite the slack app you have created into whatever channels you want it to notify. e.g. inside the channel you can type &lt;code&gt;@&lt;/code&gt; and start typing the slack app name to send it a message which will get Slack to prompt you to invite the bot user to the room.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;installing&#34;&gt;Installing&lt;/h2&gt;
+&lt;p&gt;To install the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-slack&#34;&gt;jx-slack&lt;/a&gt; plugin add the following to your &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt; file in your dev cluster git repository in the &lt;code&gt;releases:&lt;/code&gt; section:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jx3/jx-slack
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jx-slack
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;values&lt;/span&gt;:
+  - jx-values.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once you have pushed the change to git and your &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;boot job has retriggered&lt;/a&gt; (you can view this via &lt;code&gt;jx admin log&lt;/code&gt;) you should see the &lt;code&gt;jx-slack&lt;/code&gt; secret show up as being missing:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret verify 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can populate your slack bot token via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -f jx-slack
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Enter the  &lt;strong&gt;Bot User OAuth Access Token&lt;/strong&gt; you found in the &lt;a href=&#34;#creating-the-slack-app&#34;&gt;above steps&lt;/a&gt; which should start with &lt;strong&gt;xoxb-&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In a few seconds time you should see the &lt;code&gt;Secret&lt;/code&gt; show up with the token populated&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get secret jx-slack -oyaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now that the secret is populated you should see the &lt;code&gt;jx-slack&lt;/code&gt; pod show up:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get pod -l app&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx-slack
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;configuring-slack-notifications&#34;&gt;Configuring Slack notifications&lt;/h2&gt;
+&lt;p&gt;In your dev cluster repository the &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file (see the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.SourceConfig&#34;&gt;configuration guide&lt;/a&gt;) is used to configure which repositories are imported into Jenkins X. This file is &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;automatically updated&lt;/a&gt;, via pull requests, when you &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34;&gt;create or import projects&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can configure the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.SlackNotify&#34;&gt;slack&lt;/a&gt; configuration either globally, for a group of repositories or for a single repository.&lt;/p&gt;
+&lt;p&gt;You can use overriding: so have good global or group based defaults then override on a per repository basis where required.&lt;/p&gt;
+&lt;h3 id=&#34;filters&#34;&gt;Filters&lt;/h3&gt;
+&lt;p&gt;You can change the notification filters at any level (global, group or repository) to let you get the right level of notifications you need.&lt;/p&gt;
+&lt;p&gt;Its common with chat to be too noisy; so you probably only need to be notified on a subset of events.&lt;/p&gt;
+&lt;p&gt;e.g. a good default is only be notified for releases only (so ignoring Pull Requests) and only for failures or the first success after a failure. This can be done via the &lt;code&gt;kind&lt;/code&gt; and &lt;code&gt;pipeline&lt;/code&gt; filters:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;slack&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;channel&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;#jenkins-x-pipelines&amp;#39;&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: failureOrNextSuccess
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipeline&lt;/span&gt;: release
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can configure the &lt;code&gt;channel&lt;/code&gt; globally or for different groups or repositories differently too. You can also filter by &lt;code&gt;branch&lt;/code&gt;, pipeline &lt;code&gt;context&lt;/code&gt; or &lt;code&gt;pullRequestLabel&lt;/code&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
   </channel>
 </rss>
