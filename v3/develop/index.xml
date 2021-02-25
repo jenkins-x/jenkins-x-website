@@ -219,36 +219,6 @@
 &lt;p&gt;One of the challenges with Jenkins X 3.x is the &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/source/&#34;&gt;source code is spread across a number of organisations and repositories&lt;/a&gt; since its highly decoupled into many &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/&#34;&gt;plugins and microservices&lt;/a&gt; so it can be confusing&lt;/p&gt;
 &lt;p&gt;If you know the specific plugin causing an issue, say &lt;a href=&#34;https://github.com/jenkins-x/jx-preview&#34;&gt;jx-preview&lt;/a&gt; then just raise the issue there in the issue tracker.&lt;/p&gt;
 &lt;p&gt;Otherwise use the &lt;a href=&#34;https://github.com/jenkins-x/issues&#34;&gt;issue tracker for Jenkins X 3.x&lt;/a&gt; and we can triage as required.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-customise-an-app-in-an-environment&#34;&gt;How do I customise an App in an Environment?&lt;/h2&gt;
-&lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;how to customise a chart&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-deploy-kubernetes-resources&#34;&gt;How do I deploy kubernetes resources?&lt;/h2&gt;
-&lt;p&gt;The default &lt;code&gt;helmfile.yaml&lt;/code&gt; files take references to helm charts.&lt;/p&gt;
-&lt;p&gt;If you want to deploy one or more kubernetes resources &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;wrap them in a local chart in your dev cluster git repository&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-deploy-an-app-with-no-chart&#34;&gt;How do I deploy an app with no chart?&lt;/h2&gt;
-&lt;p&gt;Some microservices on kubernetes do not yet come packaged as a helm chart.&lt;/p&gt;
-&lt;p&gt;e.g. if the only instructions on the website of the microservice is something like&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install this appication via:&lt;/span&gt;
-kubectl apply -f https://acme.com/foo.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you want you can just install it like the above &lt;code&gt;kubectl apply&lt;/code&gt; command.&lt;/p&gt;
-&lt;p&gt;Though you then lose the benefits of GitOps in that all changes to your cluster are auditted and versioned in git and it&amp;rsquo;s easy to rollback changes.&lt;/p&gt;
-&lt;p&gt;So another approach is to follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;create a local chart&lt;/a&gt; instructions:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mkdir charts/myname/templates
-curl -L https://acme.com/foo.yaml &amp;gt; charts/myname/templates/resources.yaml
-echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;description: A Helm chart for myname
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;name: myname
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;version: 0.0.1&amp;#34;&lt;/span&gt; &amp;gt; charts/myname/Chart.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then add the following &lt;code&gt;chart:&lt;/code&gt; line to your &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt; in the &lt;code&gt;releases:&lt;/code&gt; section for the namespace you want to deploy it in&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: ./charts/myname
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If this is a brand new namespace which didn&amp;rsquo;t have a &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt; then make sure you also add an entry in the root &lt;code&gt;helmfile.yaml&lt;/code&gt; file of:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;helmfiles&lt;/span&gt;:
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;path&lt;/span&gt;: helmfiles/$namespace/helmfile.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that &lt;code&gt;$namespace&lt;/code&gt; in the above files should be expanded to the actual namespace you are deploying it to; e.g. &lt;code&gt;jx&lt;/code&gt; or &lt;code&gt;jx-staging&lt;/code&gt; or whatever.&lt;/p&gt;
-&lt;p&gt;The above may seem like a bit of work compared to &lt;code&gt;kubectl apply&lt;/code&gt; but it does mean at any time you can upgrade the app by re-running the command:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;curl -L https://acme.com/foo.yaml &amp;gt; charts/myname/templates/resources.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also easily uninstall the application or modify the YAML in git at any time.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
 &lt;p&gt;You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the &lt;code&gt;releases&lt;/code&gt; section of your &lt;code&gt;helmfile.yaml&lt;/code&gt; file in your cluster git repository.&lt;/p&gt;
 &lt;p&gt;You can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
@@ -318,55 +288,10 @@ echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
 &lt;p&gt;So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a &lt;code&gt;helm upgrade&lt;/code&gt; or &lt;code&gt;helmfile sync&lt;/code&gt; command to your makefile. The entire boot job is defined in git in &lt;strong&gt;versionStream/git-operator/job.yaml&lt;/strong&gt; so you are free to go in whatever direction you prefer.&lt;/p&gt;
 &lt;h2 id=&#34;what-is-the-directory-layout&#34;&gt;What is the directory layout?&lt;/h2&gt;
 &lt;p&gt;To understand the directory layout see &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;this document&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-diagnose-a-step-in-a-pipeline&#34;&gt;How do I diagnose a step in a pipeline?&lt;/h2&gt;
-&lt;p&gt;If you are wondering what image, command, environment variables are being used in a step in the pipeline the simplest thing is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;open the octant console&lt;/a&gt; via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ui
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then if you navigate to the pipeline you are interested in and select the envelope icon next to a step name that will take you to the Step details page. e.g. if you click on the icon pointed to by the big red arrow:&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step-click.png&#34; /&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Click on the step icon to see details of a step which then takes you to the step details page&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step.png&#34; /&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Step details page lets you see the command, image, environment variables and volumes&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;p&gt;If that doesn&amp;rsquo;t help another option is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/#editing-pipelines&#34;&gt;edit the pipeline step&lt;/a&gt; via the &lt;code&gt;.lighthouse/jenkins-x/release.yaml&lt;/code&gt; or  &lt;code&gt;.lighthouse/jenkins-x/pullrequest.yaml&lt;/code&gt; file to add the command: &lt;code&gt;sleep infinity&lt;/code&gt; in the &lt;code&gt;script:&lt;/code&gt; value before the command that is not working.&lt;/p&gt;
-&lt;p&gt;You can then &lt;code&gt;kubectl exec&lt;/code&gt; into the pod at that step and look around and try running commands inside the pod/container.&lt;/p&gt;
-&lt;p&gt;e.g. using the pod name from the above page and the container name you can do something like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c name-of-step-container name-of-pod sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-configure-pipelines-to-use-gpus&#34;&gt;How do I configure pipelines to use GPUs?&lt;/h2&gt;
-&lt;p&gt;You can install the &lt;a href=&#34;https://github.com/NVIDIA/k8s-device-plugin&#34;&gt;nvidia k8s device plugin&lt;/a&gt; as a daemonset to expose which nodes have GPUs and their status.&lt;/p&gt;
-&lt;p&gt;You can then view the nodes via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get nodes &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;-o=custom-columns=NAME:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu&amp;#34;&lt;/span&gt;  
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can then use the &lt;code&gt;resources&lt;/code&gt; on your tekton steps as follows:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: gcr.io/kaniko-project/executor:v1&lt;span style=&#34;color:#ae81ff&#34;&gt;.3.0&lt;/span&gt;-debug
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: build-my-image
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;resources&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;limits&lt;/span&gt;:
-      &lt;span style=&#34;color:#75715e&#34;&gt;# This job requires an instance with 1 GPU, 4 CPUs and 16GB memory - g4dn.2xlarge&lt;/span&gt;
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;nvidia.com/gpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;script&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;|
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    #!/busybox/sh&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
+&lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
 &lt;p&gt;Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.&lt;/p&gt;
 &lt;p&gt;Since we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;helmfile template&lt;/a&gt; helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).&lt;/p&gt;
 &lt;p&gt;However its easy to add steps into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; to simulate helmfile hooks.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-add-a-chart&#34;&gt;How do I add a chart?&lt;/h2&gt;
-&lt;p&gt;To add a new chart add to the &lt;code&gt;helmfiles/mynamespace/helmfile.yaml&lt;/code&gt; file follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;add chart guide&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-add-a-kubernetes-resource&#34;&gt;How do I add a kubernetes resource?&lt;/h2&gt;
-&lt;p&gt;To add a new kubernetes resource &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;follow the add resources guide&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-add-a-new-secret&#34;&gt;How do I add a new Secret?&lt;/h2&gt;
-&lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#create-a-new-secret&#34;&gt;how to add a new Secret&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-access-a-secret-from-my-pipeline&#34;&gt;How do I access a Secret from my pipeline?&lt;/h2&gt;
-&lt;p&gt;Once you have a kubernetes Secret (see &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#create-a-new-secret&#34;&gt;how to create them&lt;/a&gt;) you can access then in a pipeline either:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;as an &lt;a href=&#34;https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables&#34;&gt;environment variable in a step&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;via &lt;a href=&#34;https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod&#34;&gt;a volume mount&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
 &lt;h2 id=&#34;if-i-add-a-file-to-config-root-it-gets-deleted-why&#34;&gt;If I add a file to &lt;code&gt;config-root&lt;/code&gt; it gets deleted, why?&lt;/h2&gt;
 &lt;p&gt;The &lt;code&gt;config-root&lt;/code&gt; directory is regenerated on every boot job - basically every time you promote an application or merge a change into the main branch of your git dev cluster git repository.  For background see the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;dev git repository layout docs&lt;/a&gt;)&lt;/p&gt;
 &lt;p&gt;To add a new chart add to the &lt;code&gt;helmfiles/mynamespace/helmfile.yaml&lt;/code&gt; file follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;add chart guide&lt;/a&gt;.&lt;/p&gt;
@@ -375,102 +300,6 @@ echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
 &lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Here is &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task&#34;&gt;another example of a sidecar in a pipeline&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;If you want to use a separate container inside a preview environment then add &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;charts or resources&lt;/a&gt; to the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;How do I configure the ingress domain in Dev, Staging or Production?&lt;/h2&gt;
-&lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;You can override the domain name for use in all apps within an environment by modifying the &lt;code&gt;jx-requirements.yml&lt;/code&gt; in the git repository for the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Also by default there is a namespace specific separator added. So if your service is &lt;code&gt;cheese&lt;/code&gt; the full domain name would be something like &lt;code&gt;cheese.jx-staging.mydomain.com&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;If you wish to avoid the namespace specific separator if each environment already has its own unique &lt;code&gt;domain&lt;/code&gt; value then you can specify:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com  
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to change any of these values for a single app only then you can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;app customisation mechanism&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;e.g. for an app called &lt;code&gt;mychart&lt;/code&gt; you can create a file called &lt;code&gt;apps/mychart/values.yaml&lt;/code&gt; in the git repository for your environment and add the following YAML:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;jxRequirements&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;domain&lt;/span&gt;: mydomain.com  
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;namespaceSubDomain&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;.&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-configure-the-ingress-tls-certificate-in-dev-staging-or-production&#34;&gt;How do I configure the ingress TLS certificate in Dev, Staging or Production?&lt;/h2&gt;
-&lt;p&gt;You can specify the TLS certificate to use for the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment by modifying the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in the environments git repository:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;: 
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;secretName&lt;/span&gt;: my-tls-secret-name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then be applied to all the Jenkins X ingress resources for things like &lt;code&gt;lighthouse&lt;/code&gt; or &lt;code&gt;nexus&lt;/code&gt; - plus any apps you deploy to &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;If you want to override the TLS secret name for a specific app in a specific environment then rather like the &lt;a href=&#34;#how-do-i-configure-the-ingress-domain-in-dev-staging-or-production&#34;&gt;above question&lt;/a&gt; you can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;app customisation mechanism&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;e.g. for an app called &lt;code&gt;mychart&lt;/code&gt; you can create a file called &lt;code&gt;apps/mychart/values.yaml&lt;/code&gt; in the git repository for your environment and add the following YAML:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;jxRequirements&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;ingress&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;tls&lt;/span&gt;:
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;enabled&lt;/span&gt;:
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;secretName&lt;/span&gt;: my-tls-secret-name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-use-a-custom-container-registry&#34;&gt;How do I use a custom container registry?&lt;/h2&gt;
-&lt;p&gt;To allow a pipeline to be able to push to a container registry you can add this secret&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl create secret generic container-registry-auth  &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;myserver.com &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;username&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;myuser &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;password&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;mypwd
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then take effect the next time a commit merges on your cluster git repository e.g. next time you &lt;a href=&#34;https://jenkins-x.io/v3/guides/upgrade/#cluster&#34;&gt;upgrade your cluster&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The various container registry secrets get merged into a &lt;code&gt;Secret&lt;/code&gt; called &lt;code&gt;tekton-container-registry-auth&lt;/code&gt; in the &lt;code&gt;jx&lt;/code&gt; namespace which is associated with the default pipeline &lt;code&gt;ServiceAccount&lt;/code&gt; &lt;code&gt;tekton-bot&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;If you want all pipelines to use this container registry then modify the &lt;code&gt;cluster.registry&lt;/code&gt; field in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;registry&lt;/span&gt;: myserver.com 
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Otherwise you can enable this new container registry on a specific application/repository by adding this &lt;code&gt;.jx/variables.sh&lt;/code&gt; file into the git repository if it doesn&amp;rsquo;t exist&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export DOCKER_REGISTRY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;myserver.com&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-change-the-secret-poll-period-in-kubernetes-external-secrets&#34;&gt;How do I change the secret poll period in kubernetes external secrets?&lt;/h2&gt;
-&lt;p&gt;Your cloud provider could charge per read of a secret and so a frequent poll of your secrets could cost $$$. You may want to tone down the poll period.&lt;/p&gt;
-&lt;p&gt;You can do this via the &lt;code&gt;POLLER_INTERVAL_MILLISECONDS&lt;/code&gt; setting in the &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets#configuration&#34;&gt;kubernetes external secrets configuration&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;For more details &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;see how to configure charts&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;why-does-jenkins-x-fail-to-download-plugins&#34;&gt;Why does Jenkins X fail to download plugins?&lt;/h2&gt;
-&lt;p&gt;When I run a &lt;code&gt;jx&lt;/code&gt; command I get an error like&amp;hellip;&lt;/p&gt;
-&lt;p&gt;&lt;code&gt; Get https://github.com/jenkins-x/jx-..../releases/download/v..../jx-.....tar.gz: dial tcp: i/o timeout&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;This sounds like a network problem; the code in &lt;code&gt;jx&lt;/code&gt; is trying to download from &lt;code&gt;github.com&lt;/code&gt; and your laptop is having trouble resolving the &lt;code&gt;github.com&lt;/code&gt; domain.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;do you have a firewall / VPN / HTTP proxy blocking things?&lt;/li&gt;
-&lt;li&gt;is your &lt;code&gt;/etc/resolv.conf&lt;/code&gt; causing issues? e.g. if you have multiple entries for your company VPN?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;why-did-my-quickstart--import-not-work&#34;&gt;Why did my quickstart / import not work?&lt;/h2&gt;
-&lt;p&gt;If you are not able to create quickstarts or import projects its most probably webhooks not being setup correctly.&lt;/p&gt;
-&lt;p&gt;When the &lt;code&gt;jx project import&lt;/code&gt; or &lt;code&gt;jx project quickstart&lt;/code&gt; runs it creates a Pull Request on your dev cluster repository. This should &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;trigger a webhook&lt;/a&gt; on your git provider which should then trigger a Pipeline (via &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;lighthouse webhooks&lt;/a&gt;). The pipeline should then  &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;create a second commit on the pull request&lt;/a&gt; to configure your repository which then should get labelled and auto-merge.&lt;/p&gt;
-&lt;p&gt;If this does not happen its usually your webhooks are not working. You can check on the health of your system and webhooks via the &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/health/&#34;&gt;Health guide&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Check out the &lt;a href=&#34;https://jenkins-x.io/v3/admin/troubleshooting/webhooks/&#34;&gt;webhooks troubleshooting guide&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;If you manually merge the Pull Request by hand then you&amp;rsquo;ll miss out the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;create a second commit on the pull request&lt;/a&gt; which means your project won&amp;rsquo;t properly import. To work around that you can do a dummy commit on your dev cluster repository which will trigger a regeneration.&lt;/p&gt;
-&lt;p&gt;If the &lt;code&gt;jx project import&lt;/code&gt; or &lt;code&gt;jx project quickstart&lt;/code&gt; times out before the pipeline triggers the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;second commit on the pull request&lt;/a&gt; and it auto merges and triggers a boot job to setup webhooks for the new repository - you will have pipeline catalog files locally on your laptop which are not pushed to git. e.g. the &lt;code&gt;.lighthouse/*&lt;/code&gt; files and maybe other files like &lt;code&gt;charts/*&lt;/code&gt; and &lt;code&gt;Dockerfile&lt;/code&gt;. You can always try add those files to git locally and push once you have got your webhooks working.&lt;/p&gt;
-&lt;p&gt;Also make sure that the boot Job that is triggered by the pull request merging has the necessary scopes on the git personal access token to be able to registry the webhooks on the new repository. You will see if the webhook registration has been successful in the boot log:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-add-an-environment&#34;&gt;How do I add an Environment&lt;/h2&gt;
-&lt;p&gt;With v3 everything is done via GitOps - so if in doubt the answer is to modify git.&lt;/p&gt;
-&lt;p&gt;You can create new environments by adding to the &lt;code&gt;environments:&lt;/code&gt; section of &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L18&#34;&gt;jx-requirements.yml&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-specify-docker_registry_org&#34;&gt;How do I specify DOCKER_REGISTRY_ORG?&lt;/h2&gt;
-&lt;p&gt;If you need to you can override in a specific repository (via a &lt;code&gt;.jx/settings.yaml&lt;/code&gt; in your repository) but usually its common to all repos and is inherited from your &lt;code&gt;jx-requirements.yml&lt;/code&gt; in your development environment repository&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-switch-to-bucketrepo&#34;&gt;How do I switch to bucketrepo?&lt;/h2&gt;
-&lt;p&gt;To switch from &lt;code&gt;nexus&lt;/code&gt; to &lt;code&gt;bucketrepo&lt;/code&gt; in V3 there are a few changes you need to make.&lt;/p&gt;
-&lt;p&gt;Incidetally the &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/&#34;&gt;jx3-kubernetes&lt;/a&gt; repository is already setup for&lt;code&gt;bucketrepo&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Please make the following changes&amp;hellip;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;remove your old &lt;code&gt;nexus&lt;/code&gt; chart from &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;add this to your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file so its like &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L8&#34;&gt;this one&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: core.jenkins-x.io/v4beta1
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: Requirements
-&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
-  ...
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;cluster&lt;/span&gt;:
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;chartRepository&lt;/span&gt;: http://bucketrepo.jx.svc.cluster.local/bucketrepo/charts
-...
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: bucketrepo
-    
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;add the &lt;code&gt;bucketrepo&lt;/code&gt; chart to your &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt; file &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/helmfiles/jx/helmfile.yaml#L42&#34;&gt;like this&lt;/a&gt;:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;...
-&lt;span style=&#34;color:#66d9ef&#34;&gt;releases&lt;/span&gt;:
-- &lt;span style=&#34;color:#66d9ef&#34;&gt;chart&lt;/span&gt;: jenkins-x/bucketrepo
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: bucketrepo
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then git commit and you should have your cluster switched to bucketrepo&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-uninstall-jenkins-x&#34;&gt;How do I uninstall Jenkins X?&lt;/h2&gt;
 &lt;p&gt;We don&amp;rsquo;t yet have a nice uninstall command.&lt;/p&gt;
 &lt;p&gt;Though if you git clone your development git repository and cd into it you can run:&lt;/p&gt;
