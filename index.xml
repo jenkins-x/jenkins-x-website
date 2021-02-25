@@ -55,6 +55,177 @@
     </item>
     
     <item>
+      <title>Blog: GitOps your cloud native pipelines</title>
+      <link>https://jenkins-x.io/blog/2021/02/25/gitops-pipelines/</link>
+      <pubDate>Thu, 25 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/02/25/gitops-pipelines/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton pipelines&lt;/a&gt; are cloud native and are designed from the ground up for kubernetes and the cloud:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;there&amp;rsquo;s no single point of failure and the pipelines are elastically scalable&lt;/li&gt;
+&lt;li&gt;each pipeline is completely declarative and self defined&lt;/li&gt;
+&lt;li&gt;each pipeline executes independently of any others&lt;/li&gt;
+&lt;li&gt;pipelines are orchestrated via the sophisticated kubernetes scheduler:
+&lt;ul&gt;
+&lt;li&gt;can use pipeline specific metadata for resource limits and node selectors: memory, CPU, machine type (GPU, windows/macOS/linux etc)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;its easy to associate pipelines with &lt;a href=&#34;https://jenkins-x.io/v3/devops/cloud-native/#map-iam-roles-to-kubernetes-service-accounts&#34;&gt;Cloud IAM roles&lt;/a&gt; to avoid you having to upload cluster admin secrets to your public CI service which really helps security and helps reduce accidental bitcoin mining on your cloud account&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In a previous blog we talked about how you can &lt;a href=&#34;https://jenkins-x.io/blog/2020/11/11/accelerate-tekton/&#34;&gt;accelerate your use of tekton with Jenkins X&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;the-problem&#34;&gt;The problem&lt;/h2&gt;
+&lt;p&gt;We are moving towards a microservice kind of world with many teams writing many bits of software in many repositories. So there are lots and lots of pipelines. These pipelines keep getting more sophisticated over time; doing much more (all kinds of building, analysis, reporting, testing, ChatOps etc) and the software/images/approaches they use change.&lt;/p&gt;
+&lt;p&gt;So how can we manage, configure and maintain them all so that there are many pipelines for many repositories; where each repository can customise anything it needs but we can easily maintain everything continuously and its easy to understand and tool around?&lt;/p&gt;
+&lt;h3 id=&#34;previous-solutions&#34;&gt;Previous solutions&lt;/h3&gt;
+&lt;p&gt;We&amp;rsquo;ve tried to tackle this problem in a number of ways over the years; each has pros and cons.&lt;/p&gt;
+&lt;p&gt;One option is to put all your pipelines in a shared library. You can then reference the pipelines by name in each of your repositories.&lt;/p&gt;
+&lt;p&gt;But what if you want to change a bit of a pipeline for a specific repository? If you change it globally for everyone you can break things. You may just want local customisation for your repository only.&lt;/p&gt;
+&lt;p&gt;You can add parameters into your pipelines. They are &lt;a href=&#34;https://github.com/tektoncd/pipeline/issues/1484&#34;&gt;quite verbose on Pipelines and PipelineRuns&lt;/a&gt;; but it&amp;rsquo;s hard to think up front of every parameterisation that may be required by downstream repositories. e.g. changing any image; changing any command line argument in any step, adding/changing any environment variables or volumes? How about adding extra steps before/after a particular step? It can soon get very complex and results in very complex pipelines that are hard to understand and use.&lt;/p&gt;
+&lt;p&gt;Another option is if you need to change a pipeline file you just copy the entire file or create a fork. But then you end up with 100s of copies or forks of pipelines that are hard to synchronise and manage. You end using ancient image versions or older approaches in some repositories which leads to maintenance nightmare. How do you roll out security updates to images in all those repositories, copies and forks?&lt;/p&gt;
+&lt;p&gt;Another approach we tried is using a tool like &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; to share YAML files across git repositories and then upgrade them via git. This does work quite well; though the downside is whenever you upgrade a new version (e.g. we roll out a new pipeline catalog or a new image change to a tool for security reasons) you need to generate a pull request on every git repository to upgrade them and usually you end up with merge conflicts as the tekton YAML is not trivial; even fairly minor local customisations lead to merge conflict hell.&lt;/p&gt;
+&lt;p&gt;So how can you apply the benefits of &lt;a href=&#34;https://jenkins-x.io/v3/devops/gitops/&#34;&gt;GitOps&lt;/a&gt; to your cloud native pipelines while also avoiding copy-paste of lots of YAML into all of your repositories, keeping things easy to understand and flexible so any repository can customize things when required but at the same time make it painless to move reliably forward as the pipeline catalogs and images change?&lt;/p&gt;
+&lt;h2 id=&#34;gitops-your-pipelines&#34;&gt;GitOps your pipelines&lt;/h2&gt;
+&lt;p&gt;Now our recommendation on the &lt;a href=&#34;https://jenkins-x.io/&#34;&gt;Jenkins X&lt;/a&gt; project is to use &lt;a href=&#34;https://jenkins-x.io/v3/devops/gitops/&#34;&gt;GitOps&lt;/a&gt; for your pipelines as well as for your source code and deployment configuration:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;store your pipelines as declarative YAML files inside each of your git repositories.&lt;/li&gt;
+&lt;li&gt;use the standard &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/pipelines/&#34;&gt;Tekton YAML syntax&lt;/a&gt; so that you get &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing/#ide-support&#34;&gt;IDE support&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing/#linting&#34;&gt;easy linting&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This lets each git repository configure what pipelines are triggered by what events with what pipeline steps.&lt;/p&gt;
+&lt;p&gt;If you need to &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing/&#34;&gt;edit your pipelines in any repository&lt;/a&gt; they are right there in git; it is then easy for each repository to use its own version and configuration if required. This lets pipelines and repositories change over time independently to help you accelerate.&lt;/p&gt;
+&lt;h2 id=&#34;sharing-tasks-and-steps-across-repositories&#34;&gt;Sharing Tasks and Steps across repositories&lt;/h2&gt;
+&lt;p&gt;Rather than copy pasting &lt;a href=&#34;https://tekton.dev/docs/pipelines/tasks/#configuring-a-task&#34;&gt;task and step YAML&lt;/a&gt; between repositories we can refer to a &lt;code&gt;Task&lt;/code&gt; or a &lt;code&gt;Step&lt;/code&gt; in a Task as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;refer to all the steps in a shared task by using&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;taskSpec&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;steps&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:sourceURI
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;refer to a single &lt;em&gt;named&lt;/em&gt; step from a shared task&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;taskSpec&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;stepTemplate&lt;/span&gt;:
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:sourceURI
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;steps&lt;/span&gt;:
+    - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: mystep
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;sourceuri-notation&#34;&gt;SourceURI notation&lt;/h3&gt;
+&lt;p&gt;The source URI notation is enabled by a special &lt;code&gt;image&lt;/code&gt; prefix of &lt;strong&gt;uses:&lt;/strong&gt; on step or if an image on a step is blank and the &lt;code&gt;stepTemplate:&lt;/code&gt; has an &lt;code&gt;image&lt;/code&gt; prefix of &lt;strong&gt;uses:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;We borrowed this idea from &lt;a href=&#34;https://github.com/google/ko&#34;&gt;ko&lt;/a&gt; and &lt;a href=&#34;https://github.com/mattmoor/mink&#34;&gt;mink&lt;/a&gt;; the idea of using a custom prefix on image URIs.&lt;/p&gt;
+&lt;p&gt;You can refer to the &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/blob/master/docs/pipelines.md&#34;&gt;detailed documentation&lt;/a&gt; on how the step inheritence and overriding works.&lt;/p&gt;
+&lt;p&gt;For a &lt;a href=&#34;https://github.com&#34;&gt;github.com&lt;/a&gt; source URI we use the syntax:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:owner/repository/pathToFile@version
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This references the &lt;a href=&#34;https://github.com&#34;&gt;https://github.com&lt;/a&gt; repository for &lt;code&gt;owner/repository&lt;/code&gt; and &lt;strong&gt;@version&lt;/strong&gt; can be a git tag, branch or SHA.&lt;/p&gt;
+&lt;p&gt;If you are not using &lt;a href=&#34;https://github.com&#34;&gt;github.com&lt;/a&gt; to host your git repositories you can access a pipeline task or step from your custom git serve use the &lt;strong&gt;uses:lighthouse:&lt;/strong&gt; prefix before &lt;code&gt;owner&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:lighthouse:owner/repository/pathToFile@version
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We &lt;a href=&#34;https://jenkins-x.io/v3/devops/gitops/#recommendations&#34;&gt;recommend you version everything with GitOps&lt;/a&gt; so you know exactly what versions are being used from git.&lt;/p&gt;
+&lt;p&gt;However you can use &lt;strong&gt;@HEAD&lt;/strong&gt; to reference the latest version.&lt;/p&gt;
+&lt;p&gt;To use a locked down version based on the &lt;em&gt;version stream&lt;/em&gt; of your cluster, you can use &lt;strong&gt;@versionStream&lt;/strong&gt; which means use the git SHA for the repository which is configured in the version stream.&lt;/p&gt;
+&lt;p&gt;The nice thing about &lt;strong&gt;@versionStream&lt;/strong&gt; is that the pipeline catalog you inherit tasks and steps from is locked down to an exact SHA in the version stream; but it avoids you having to go through every one of your git repositories whenever you upgrade a pipeline catalog.&lt;/p&gt;
+&lt;h2 id=&#34;reusing-tasks-and-steps-from-tekton-catalog&#34;&gt;Reusing Tasks and Steps from Tekton Catalog&lt;/h2&gt;
+&lt;p&gt;The &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt; git repository defines a ton of Tekton pipelines you can reuse in your pipelines&lt;/p&gt;
+&lt;p&gt;You can &lt;code&gt;image: uses:sourceURI&lt;/code&gt; notation inside any pipeline file in your &lt;code&gt;.lighthouse/jenkins-x/mypipeline.yaml&lt;/code&gt; file like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;steps&lt;/span&gt;:
+  - &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:tektoncd/catalog/task/git-clone/&lt;span style=&#34;color:#ae81ff&#34;&gt;0.2&lt;/span&gt;/git-clone.yaml@HEAD
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then include the steps from the &lt;a href=&#34;https://github.com/tektoncd/catalog/blob/master/task/git-clone/0.2/git-clone.yaml&#34;&gt;git-clone.yaml&lt;/a&gt; file&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s not just the &lt;a href=&#34;https://github.com/tektoncd/catalog&#34;&gt;Tekton Catalog&lt;/a&gt;  - you can use this same approach to reuse Tasks or steps from any git repository of your choosing; such as the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/tasks&#34;&gt;Jenkins X Pipeline catalog&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-it-looks&#34;&gt;How it looks&lt;/h2&gt;
+&lt;p&gt;So here is an &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/master/packs/javascript/.lighthouse/jenkins-x/release.yaml&#34;&gt;example release pipeline&lt;/a&gt; generated via the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/tasks&#34;&gt;Jenkins X Pipeline catalog&lt;/a&gt; if you create a &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/catalog&#34;&gt;JavaScript quickstart&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: tekton.dev/v1beta1
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: PipelineRun
+&lt;span style=&#34;color:#66d9ef&#34;&gt;metadata&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: release
+&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipelineSpec&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;tasks&lt;/span&gt;:
+    - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: from-build-pack
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;taskSpec&lt;/span&gt;:
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;stepTemplate&lt;/span&gt;:
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;env&lt;/span&gt;:
+          - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: NPM_CONFIG_USERCONFIG
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;value&lt;/span&gt;: /tekton/home/npm/.npmrc
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:jenkins-x/jx3-pipeline-catalog/tasks/javascript/release.yaml@versionStream
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;resources&lt;/span&gt;:
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;requests&lt;/span&gt;:
+              &lt;span style=&#34;color:#66d9ef&#34;&gt;cpu&lt;/span&gt;: 400m
+              &lt;span style=&#34;color:#66d9ef&#34;&gt;memory&lt;/span&gt;: 512Mi
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;volumeMounts&lt;/span&gt;:
+          - &lt;span style=&#34;color:#66d9ef&#34;&gt;mountPath&lt;/span&gt;: /tekton/home/npm
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: npmrc
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;workingDir&lt;/span&gt;: /workspace/source
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;steps&lt;/span&gt;:
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone.yaml@versionStream
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: next-version
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jx-variables
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: build-npm-install
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: build-npm-test
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: check-registry
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: build-container-build
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: promote-changelog
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: promote-helm-release
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: promote-jx-promote
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;volumes&lt;/span&gt;:
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: npmrc
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;secret&lt;/span&gt;:
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;optional&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+            &lt;span style=&#34;color:#66d9ef&#34;&gt;secretName&lt;/span&gt;: npmrc
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;serviceAccountName&lt;/span&gt;: tekton-bot
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;timeout&lt;/span&gt;: 240h0m0s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see it mounts an npm secret for using npm package management and specifies CPU and memory requirements. It then is using the &lt;strong&gt;uses:&lt;/strong&gt; notation to inherit a bunch of steps from the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/master/tasks/javascript/release.yaml&#34;&gt;jenkins-x/jx3-pipeline-catalog/tasks/javascript/release.yaml&lt;/a&gt; as well as sharing the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/master/tasks/git-clone/git-clone.yaml&#34;&gt;jenkins-x/jx3-pipeline-catalog/tasks/git-clone/git-clone.yaml&lt;/a&gt; task&lt;/p&gt;
+&lt;p&gt;Also notice we don&amp;rsquo;t have to copy and paste the exact details of the images, commands, arguments, environment variables and volume mounts required for each step; we can just reference them via Git. Also each pipeline in each repository can reference different versions if required.&lt;/p&gt;
+&lt;h3 id=&#34;customizing-an-inherited-step&#34;&gt;Customizing an inherited step&lt;/h3&gt;
+&lt;p&gt;You can edit the step in your &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/#ide-support&#34;&gt;IDE&lt;/a&gt; and add any custom properties such as &lt;code&gt;command&lt;/code&gt;, &lt;code&gt;args&lt;/code&gt;, &lt;code&gt;env&lt;/code&gt;, &lt;code&gt;script&lt;/code&gt; or &lt;code&gt;volumeMount&lt;/code&gt; - those values then override the inherited step.&lt;/p&gt;
+&lt;p&gt;e.g. you can then change any command line, add an environment variable or add a new volume mount without copy pasting the whole step. e.g. we change the &lt;code&gt;script&lt;/code&gt; value of the &lt;code&gt;jx-variables&lt;/code&gt; step below:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: tekton.dev/v1beta1
+&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: PipelineRun
+&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;pipelineSpec&lt;/span&gt;:
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;tasks&lt;/span&gt;:
+    - &lt;span style=&#34;color:#66d9ef&#34;&gt;taskSpec&lt;/span&gt;:
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;stepTemplate&lt;/span&gt;:
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;image&lt;/span&gt;: uses:jenkins-x/jx3-pipeline-catalog/tasks/javascript/release.yaml@versionStream
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;steps&lt;/span&gt;:
+        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jx-variables
+          &lt;span style=&#34;color:#66d9ef&#34;&gt;script&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;|
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;            #!/usr/bin/env sh&lt;/span&gt;
+            echo my replacement command script goes here
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Any extra properties in the steps are used to override the underlying uses step.&lt;/p&gt;
+&lt;h3 id=&#34;inlining-a-pipeline-step-locally&#34;&gt;Inlining a pipeline step locally&lt;/h3&gt;
+&lt;p&gt;If you want to edit a step that is inherited from a pipeline catalog just run the &lt;a href=&#34;https://github.com/jenkins-x/jx-pipeline/blob/master/docs/cmd/jx-pipeline_override.md#jx-pipeline-override&#34;&gt;jx pipeline override&lt;/a&gt; command from a clone of your repository.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline override
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then prompt you to pick which pipeline and step that&amp;rsquo;s inherited via the &lt;code&gt;image: uses:sourceURI&lt;/code&gt; notation. When chosen the step will be inlined into your local file so you can &lt;a href=&#34;#customizing-an-inherited-step&#34;&gt;edit any of the properties&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can use the git compare to see the changes and remove any properties you don&amp;rsquo;t wish to override.&lt;/p&gt;
+&lt;h3 id=&#34;viewing-the-effective-pipeline&#34;&gt;Viewing the effective pipeline&lt;/h3&gt;
+&lt;p&gt;To see the actual Tekton pipeline that would be executed from your local source directory you can run the &lt;a href=&#34;https://github.com/jenkins-x/jx-pipeline/blob/master/docs/cmd/jx-pipeline_effective.md#jx-pipeline-effective&#34;&gt;jx pipeline effective&lt;/a&gt; command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline effective
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you want to open the effective pipeline in your editor, such as &lt;a href=&#34;https://code.visualstudio.com/&#34;&gt;VS Code&lt;/a&gt; you can do:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline effective -e code
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you use &lt;a href=&#34;https://www.jetbrains.com/idea/&#34;&gt;Intellij&lt;/a&gt; or any of &lt;a href=&#34;https://www.jetbrains.com/products/#type=ide&#34;&gt;JetBrains other IDEs&lt;/a&gt; you can do the following if you have &lt;a href=&#34;https://www.youtube.com/watch?v=SVANj3gAWt8&#34;&gt;enabled&lt;/a&gt; the &lt;code&gt;idea&lt;/code&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=SVANj3gAWt8&#34;&gt;command line tool&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline effective -e idea
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you want to always view an effective pipeline in your editor then define the &lt;code&gt;JX_EDITOR&lt;/code&gt; environment variable&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export JX_EDITOR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;code&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# now we will always open effective pipelines inside VS Code&lt;/span&gt;
+jx pipeline effective
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;We&amp;rsquo;ve been on our own digital transformation journey in the world of pipelines and used many different approaches over the years to manage many pipelines across many repositories.&lt;/p&gt;
+&lt;p&gt;A few months ago we moved to the above GitOps approach for our cloud native pipelines and we are absolutely loving it!&lt;/p&gt;
+&lt;p&gt;Its super easy to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;share pipelines across all of your git repositories without copy/paste&lt;/li&gt;
+&lt;li&gt;easily customise pipelines in any project and be able to easily understand what the local changes are and roll them back if required&lt;/li&gt;
+&lt;li&gt;upgrade pipelines across your repositories in a consistent way as you &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cluster/&#34;&gt;upgrade your images, applications and cluster via GitOps&lt;/a&gt; so that new versions of pipeline catalogs are upgraded once they pass the system tests.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you are thinking about using cloud native pipelines with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; please try it out and see what you think. We&amp;rsquo;d love to hear your &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;feedback&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Jenkins X 3 - February 2021 LTS</title>
       <link>https://jenkins-x.io/blog/2021/02/01/jx3-lts-feb-21/</link>
       <pubDate>Mon, 01 Feb 2021 00:00:00 +0000</pubDate>
@@ -3082,33 +3253,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;/ul&gt;
 &lt;p&gt;The Jenkins X creators and contributors will be onsite to mingle and answer any Jenkins X technical questions you might have.  Come if you are simply curious and just want to learn more or ask the experts those Jenkins X questions that has been keeping you up at night.&lt;/p&gt;
 &lt;p&gt;Hope to see you there!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins Community Awards</title>
-      <link>https://jenkins-x.io/blog/2019/04/17/jenkins-community-awards/</link>
-      <pubDate>Wed, 17 Apr 2019 12:20:42 -0700</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/04/17/jenkins-community-awards/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/dwjw-2019-io.jpg&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;It is time for the 3rd annual,  &lt;a href=&#34;http://www.cvent.com/c/abstracts/bd21fac2-4c66-4ddf-b4c3-a5eb42270e1c&#34;&gt;DevOps World | Jenkins World 2019&lt;/a&gt; Community Awards. These nominations are indicative of the excellent work Jenkins community members are doing for the betterment of Jenkins.&lt;/p&gt;
-&lt;p&gt;This will be the third year we are commemorating community members who have shown excellence through commitment, creative thinking, and contributions to continue making Jenkins a great open source community.&lt;/p&gt;
-&lt;h2 id=&#34;the-award-categories-include&#34;&gt;The award categories include:&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Most Valuable Contributor&lt;/strong&gt; - This award is presented to the Jenkins contributor who has helped move the Jenkins project forward the most through their invaluable feature contributions, bug fixes or plugin development efforts.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Jenkins Security MVP&lt;/strong&gt; - This award is presented to the individual most consistently providing excellent security reports or who helped secure Jenkins by fixing security issues.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Most Valuable Advocate&lt;/strong&gt; - This award is presented to an individual who has helped advocate for Jenkins through the organization of their local Jenkins Area Meetup.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Most Innovative Jenkins X Implementation&lt;/strong&gt; - Presented to an innovative user who has embraced Jenkins X.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.cvent.com/c/abstracts/bd21fac2-4c66-4ddf-b4c3-a5eb42270e1c&#34;&gt;Nominate yourself&lt;/a&gt; or someone today! Winners will be announced at &lt;a href=&#34;https://www.cloudbees.com/devops-world&#34;&gt;DevOps World | Jenkins World San Francisco 2019&lt;/a&gt; on August 12-15. The deadline for nomination is &lt;strong&gt;Tuesday, April 30th&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;We look forward to hearing about the great Jenkins work you are doing.&lt;/p&gt;
 
       </description>
     </item>
