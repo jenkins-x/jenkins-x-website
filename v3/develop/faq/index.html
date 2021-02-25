@@ -769,6 +769,18 @@ if (!doNotTrack) {
       
       
       
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqgeneral" href="/v3/develop/faq/general/">General</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqusing" href="/v3/develop/faq/using/">Using</a>
+      
+      
+      
+      
+      
       <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqpipeline" href="/v3/develop/faq/pipeline/">Pipelines</a>
       
       
@@ -823,12 +835,6 @@ if (!doNotTrack) {
   </ul>
 </ul>
 
-      
-      
-      
-      
-      
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqusing" href="/v3/develop/faq/using/">Using</a>
       
       
       
@@ -1544,15 +1550,6 @@ if (!doNotTrack) {
 
 
 
-<nav id="TableOfContents">
-  <ul>
-    <li><a href="#where-do-i-raise-issues">Where do I raise issues?</a></li>
-    <li><a href="#why-does-jenkins-x-use-helmfile-template">Why does Jenkins X use <code>helmfile template</code>?</a></li>
-    <li><a href="#does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</a></li>
-    <li><a href="#how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</a></li>
-  </ul>
-</nav>
-
 
 
           </div>
@@ -1599,76 +1596,7 @@ if (!doNotTrack) {
 	<h1>FAQ</h1>
         <div class="lead">Questions on using Jenkins X 3.x and helm 3</div>
 	
-	<h2 id="where-do-i-raise-issues">Where do I raise issues?</h2>
-<p>One of the challenges with Jenkins X 3.x is the <a href="/v3/about/overview/source/">source code is spread across a number of organisations and repositories</a> since its highly decoupled into many <a href="/v3/about/overview/">plugins and microservices</a> so it can be confusing</p>
-<p>If you know the specific plugin causing an issue, say <a href="https://github.com/jenkins-x/jx-preview">jx-preview</a> then just raise the issue there in the issue tracker.</p>
-<p>Otherwise use the <a href="https://github.com/jenkins-x/issues">issue tracker for Jenkins X 3.x</a> and we can triage as required.</p>
-<h2 id="why-does-jenkins-x-use-helmfile-template">Why does Jenkins X use <code>helmfile template</code>?</h2>
-<p>If you look into the <strong>versionStream/src/Makefile.mk</strong> file in your cluster git repository to see how the boot proccess works you may notice its defined a simple makefile and uses the <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_helmfile_template.md">jx gitops helmfile template</a> command to convert the <a href="https://github.com/roboll/helmfile">helmfile</a> <code>helmfile.yaml</code> files referencing helm charts into YAML.</p>
-<p>So why don&rsquo;t we use <code>helmfile sync</code> instead to apply the kubernetes resources from the charts directly into kubernetes?</p>
-<p>The current approach has a <a href="/v3/about/benefits/">number of benefits</a>:</p>
-<ul>
-<li>
-<p>we want to version all kubernetes resources (apart from <code>Secrets</code>) in git so that you can use git tooling to view the history of every kubernetes resource over time.</p>
-<ul>
-<li>by checking in all the kubernetes resources (apart from <code>Secrets</code>) its very easy to trace (and <code>git blame</code>) any change in any kubernetes resource in any chart and namespace to diagnose issues.</li>
-<li>the upgrade of any tool such as <a href="https://helm.sh/">helm</a>, <a href="https://github.com/roboll/helmfile">helmfile</a>, <a href="https://kustomize.io/">kustomize</a>, <a href="https://googlecontainertools.github.io/kpt/">kpt</a>, <a href="https://kubernetes.io/docs/reference/kubectl/kubectl/">kubectl</a> or <a href="/v3/guides/jx3/">jx</a> could result in different YAML being generated changing the behaivour of your applications in Production.</li>
-</ul>
-</li>
-<li>
-<p>this approach makes it super easy to review all Pull Requests on all promotions and configuration changes and review what is actually going to change in kubernetes inside the git commit diff.</p>
-<ul>
-<li>e.g. promoting from <code>1.2.3</code> to <code>1.3.0</code> of application <code>cheese</code> may look innocent enough, but did you notice those new <code>ClusterRole</code> and <code>PersistentVolume</code> resources that it now brings in?</li>
-</ul>
-</li>
-<li>
-<p>we can default to using <a href="/v3/guides/secrets/">canonical secret management mechanism</a> based on <a href="https://github.com/external-secrets/kubernetes-external-secrets">kubernetes external secrets</a> (see <a href="/v3/about/how-it-works/#generate-step">how it works</a>) to ensure that:</p>
-<ul>
-<li>no Secret value accidentally gets checked into git by mistake</li>
-<li>all secrets can be managed, versioned, stored and rotated using vault or your cloud providers native secret storage mechanism</li>
-<li>the combination of git and your secret store means your cluster becomes ephemeral and can be recreated if required (which often can happen if using tools like Terraform to manage infrastructure and you change significant infrastructure configuration values like node pools, version, location and so forth)</li>
-</ul>
-</li>
-<li>
-<p>its easier for developers to understand what is going on as you can browse all the kubernetes resources in each namespace using the canonical layout in the <code>config-root</code> folder. e.g. all charts are versioned in git as follows:</p>
-</li>
-</ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">config-root/
- namespaces/
-   jx/
-     lighthouse/
-       lighthouse-webhooks-deploy.yaml    
-</code></pre></div><ul>
-<li>
-<p>you can see the above kubernetes resource, a <code>Deployment</code> with name <code>lighthouse-webhooks</code> in the namespace <code>jx</code> which comes from the <code>lighthouse</code> chart.</p>
-</li>
-<li>
-<p>its easy to enrich the generated YAML with a combination of any additional tools <a href="https://kustomize.io/">kustomize</a>, <a href="https://googlecontainertools.github.io/kpt/">kpt</a> or <a href="/v3/guides/jx3/">jx</a>. e.g.</p>
-<ul>
-<li>
-<p>its trivial to run <a href="https://kustomize.io/">kustomize</a> or <a href="https://googlecontainertools.github.io/kpt/">kpt</a> to modify any resource in any chart before it&rsquo;s applied to Production and to review the generated values first</p>
-</li>
-<li>
-<p>its easy to use <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_hash.md">jx gitops hash</a> to add some hash annotations to cause rolling upgrade to <code>Deployments</code> when git changes (when the <code>Deployment</code> YAML does not)</p>
-</li>
-<li>
-<p>use <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_annotate.md">jx gitops annotate</a> to add add support for tools like <a href="https://github.com/pusher/wave">pusher wave</a> so that rotating secrets in your underlying secret store can cause rolling upgrades in your <code>Deployments</code></p>
-</li>
-</ul>
-</li>
-</ul>
-<p>However since the steps to deploy a kubernetes cluster in Jenkins X is defined in a simple makefile stored in your cluster git repository its easy for developers to modify their cluster git repository to add any combination of tools to the makefile to use any permutation of  <a href="https://helm.sh/">helm 3</a>, <a href="https://github.com/roboll/helmfile">helmfile</a>, <a href="https://kustomize.io/">kustomize</a>, <a href="https://googlecontainertools.github.io/kpt/">kpt</a>  and <a href="https://kubernetes.io/docs/reference/kubectl/kubectl/">kubectl</a></p>
-<p>So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a <code>helm upgrade</code> or <code>helmfile sync</code> command to your makefile. The entire boot job is defined in git in <strong>versionStream/git-operator/job.yaml</strong> so you are free to go in whatever direction you prefer.</p>
-<h2 id="does-jenkins-x-support-helmfile-hooks">Does Jenkins X support helmfile hooks?</h2>
-<p>Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.</p>
-<p>Since we default to using <a href="/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template">helmfile template</a> helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).</p>
-<p>However its easy to add steps into the <strong>versionStream/src/Makefile.mk</strong> to simulate helmfile hooks.</p>
-<h2 id="how-do-i-uninstall-jenkins-x">How do I uninstall Jenkins X?</h2>
-<p>We don&rsquo;t yet have a nice uninstall command.</p>
-<p>Though if you git clone your development git repository and cd into it you can run:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl delete -R -f config-root/namespaces
-kubectl delete -R -f config-root/cluster
-</code></pre></div>
+	
         <div class="section-index">
     
     
@@ -1761,7 +1689,12 @@ kubectl delete -R -f config-root/cluster
             
         
             
-        
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/develop/faq/general/">General</a>
+                    </h5>
+                    <p>General questions about Jenkins X</p>
+                </div>
             
         
             
@@ -1780,6 +1713,19 @@ kubectl delete -R -f config-root/cluster
         
             
         
+            
+        
+            
+        
+            
+        
+            
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/develop/faq/using/">Using</a>
+                    </h5>
+                    <p>Questions on using Jenkins X</p>
+                </div>
             
         
             
@@ -1836,15 +1782,6 @@ kubectl delete -R -f config-root/cluster
         
             
         
-            
-        
-            
-                <div class="entry">
-                    <h5>
-                        <a href="/v3/develop/faq/using/">Using</a>
-                    </h5>
-                    <p>Questions on using Jenkins X</p>
-                </div>
             
         
             
@@ -1939,7 +1876,7 @@ kubectl delete -R -f config-root/cluster
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified February 25, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/5a0f105b4eeaf4a0405ecd909e8925304531a90d">fix: polish FAQ (5a0f105b4e)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified February 25, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/09af828e01c618f5c98a6ffa881892aa93c84a05">fix: nicer FAQ layout (09af828e01)</a>
 </div>
 </div>
 

@@ -24,11 +24,11 @@
 <meta property="og:description" content="Questions on common issues folks hit using the cloud, kubernetes and Jenkins X" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/faq/issues/" />
-<meta property="article:modified_time" content="2021-02-25T07:05:38+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-02-25T08:40:58+00:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 <meta itemprop="name" content="Troublehshooting">
 <meta itemprop="description" content="Questions on common issues folks hit using the cloud, kubernetes and Jenkins X">
-<meta itemprop="dateModified" content="2021-02-25T07:05:38&#43;00:00" />
-<meta itemprop="wordCount" content="387">
+<meta itemprop="dateModified" content="2021-02-25T08:40:58&#43;00:00" />
+<meta itemprop="wordCount" content="615">
 
 
 
@@ -774,6 +774,18 @@ if (!doNotTrack) {
       
       
       
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqgeneral" href="/v3/develop/faq/general/">General</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqusing" href="/v3/develop/faq/using/">Using</a>
+      
+      
+      
+      
+      
       <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqpipeline" href="/v3/develop/faq/pipeline/">Pipelines</a>
       
       
@@ -828,12 +840,6 @@ if (!doNotTrack) {
   </ul>
 </ul>
 
-      
-      
-      
-      
-      
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developfaqusing" href="/v3/develop/faq/using/">Using</a>
       
       
       
@@ -1551,8 +1557,10 @@ if (!doNotTrack) {
 
 <nav id="TableOfContents">
   <ul>
-    <li><a href="#why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</a></li>
     <li><a href="#why-did-my-quickstart--import-not-work">Why did my quickstart / import not work?</a></li>
+    <li><a href="#why-does-my-pipeline-not-start">Why does my pipeline not start?</a></li>
+    <li><a href="#why-is-my-pipeline-pending">Why is my pipeline pending?</a></li>
+    <li><a href="#why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</a></li>
   </ul>
 </nav>
 
@@ -1612,15 +1620,7 @@ if (!doNotTrack) {
 	<h1>Troublehshooting</h1>
     <div class="lead">Questions on common issues folks hit using the cloud, kubernetes and Jenkins X</div>
 	       
-	<h2 id="why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</h2>
-<p>When I run a <code>jx</code> command I get an error like&hellip;</p>
-<p><code> Get https://github.com/jenkins-x/jx-..../releases/download/v..../jx-.....tar.gz: dial tcp: i/o timeout</code></p>
-<p>This sounds like a network problem; the code in <code>jx</code> is trying to download from <code>github.com</code> and your laptop is having trouble resolving the <code>github.com</code> domain.</p>
-<ul>
-<li>do you have a firewall / VPN / HTTP proxy blocking things?</li>
-<li>is your <code>/etc/resolv.conf</code> causing issues? e.g. if you have multiple entries for your company VPN?</li>
-</ul>
-<h2 id="why-did-my-quickstart--import-not-work">Why did my quickstart / import not work?</h2>
+	<h2 id="why-did-my-quickstart--import-not-work">Why did my quickstart / import not work?</h2>
 <p>If you are not able to create quickstarts or import projects its most probably webhooks not being setup correctly.</p>
 <p>When the <code>jx project import</code> or <code>jx project quickstart</code> runs it creates a Pull Request on your dev cluster repository. This should <a href="/v3/about/how-it-works/#importing--creating-quickstarts">trigger a webhook</a> on your git provider which should then trigger a Pipeline (via <a href="/v3/about/overview/#lighthouse">lighthouse webhooks</a>). The pipeline should then  <a href="/v3/about/how-it-works/#importing--creating-quickstarts">create a second commit on the pull request</a> to configure your repository which then should get labelled and auto-merge.</p>
 <p>If this does not happen its usually your webhooks are not working. You can check on the health of your system and webhooks via the <a href="/v3/admin/setup/health/">Health guide</a></p>
@@ -1629,7 +1629,33 @@ if (!doNotTrack) {
 <p>If the <code>jx project import</code> or <code>jx project quickstart</code> times out before the pipeline triggers the <a href="/v3/about/how-it-works/#importing--creating-quickstarts">second commit on the pull request</a> and it auto merges and triggers a boot job to setup webhooks for the new repository - you will have pipeline catalog files locally on your laptop which are not pushed to git. e.g. the <code>.lighthouse/*</code> files and maybe other files like <code>charts/*</code> and <code>Dockerfile</code>. You can always try add those files to git locally and push once you have got your webhooks working.</p>
 <p>Also make sure that the boot Job that is triggered by the pull request merging has the necessary scopes on the git personal access token to be able to registry the webhooks on the new repository. You will see if the webhook registration has been successful in the boot log:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin log 
-</code></pre></div>
+</code></pre></div><h2 id="why-does-my-pipeline-not-start">Why does my pipeline not start?</h2>
+<p>It could be your <a href="/v3/develop/reference/pipelines/">YAML configuration</a> is invalid.</p>
+<p>Try <a href="/v3/develop/pipelines/editing/#linting">linting your YAML configuration</a> to verify things are setup correctly.</p>
+<p>Also make sure you are in the git repository collaborators group and are in the <code>OWNERS</code> file in the main branch.</p>
+<h2 id="why-is-my-pipeline-pending">Why is my pipeline pending?</h2>
+<p>If your pipeline shows pending in the <a href="/v3/develop/ui/cli/">CLI</a>, <a href="/v3/develop/ui/octant/">Console</a> or <a href="/v3/develop/ui/dashboard/">Dashboard</a> there could be various causes such as invalid images, pipeline configuration, missing secrets or insufficient cluster capacity to name but a few.</p>
+<p>To diagnose why a pipeline pod can&rsquo;t run the simplest thing is to use the <a href="/v3/develop/ui/octant/">Console</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx ui
+</code></pre></div><ul>
+<li>on the <strong>Pipelines</strong> page pick the pipeline that is having trouble (see the links you can click on the <strong>Build</strong> column)</li>
+<li>on the <strong>Pipeline</strong> page there is then a <strong>Pod</strong> link in the navigation bar which takes you to the <strong>Pod</strong> view in <a href="https://octant.dev/">octant</a> that lets you view the detail of the pod. From there you should be able to see any events/issues with the pod such as bad images, missing secrets or whatever.</li>
+</ul>
+<p>To do this via the command line try</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx get build pod
+</code></pre></div><p>if you know the repository name:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx get build pod -r myrepo
+</code></pre></div><p>Then you should be able to see the pod name for the pipeline in question. You can then use <code>kubectl</code> to destribe the issue:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl describe pod the-actual-pod-name-for-your-pipeline<span style="color:#e6db74">```</span>
+</code></pre></div><h2 id="why-does-jenkins-x-fail-to-download-plugins">Why does Jenkins X fail to download plugins?</h2>
+<p>When I run a <code>jx</code> command I get an error like&hellip;</p>
+<p><code> Get https://github.com/jenkins-x/jx-..../releases/download/v..../jx-.....tar.gz: dial tcp: i/o timeout</code></p>
+<p>This sounds like a network problem; the code in <code>jx</code> is trying to download from <code>github.com</code> and your laptop is having trouble resolving the <code>github.com</code> domain.</p>
+<ul>
+<li>do you have a firewall / VPN / HTTP proxy blocking things?</li>
+<li>is your <code>/etc/resolv.conf</code> causing issues? e.g. if you have multiple entries for your company VPN?</li>
+</ul>
+
 	
 		<style>
   .feedback--answer {
@@ -1692,7 +1718,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified February 25, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/f478d54032e9f0efa61048813db4fe01b6344d03">fix: add a better FAQ layout (f478d54032)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified February 25, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/23508cf8c6bc1acf51e01a95e5c33a33daa9aa3e">fix: add FAQ (23508cf8c6)</a>
 </div>
 </div>
 

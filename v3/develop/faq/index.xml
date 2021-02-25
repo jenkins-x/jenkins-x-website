@@ -14,6 +14,116 @@
     
     
     <item>
+      <title>V3: General</title>
+      <link>https://jenkins-x.io/v3/develop/faq/general/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/faq/general/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;where-do-i-raise-issues&#34;&gt;Where do I raise issues?&lt;/h2&gt;
+&lt;p&gt;One of the challenges with Jenkins X 3.x is the &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/source/&#34;&gt;source code is spread across a number of organisations and repositories&lt;/a&gt; since its highly decoupled into many &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/&#34;&gt;plugins and microservices&lt;/a&gt; so it can be confusing&lt;/p&gt;
+&lt;p&gt;If you know the specific plugin causing an issue, say &lt;a href=&#34;https://github.com/jenkins-x/jx-preview&#34;&gt;jx-preview&lt;/a&gt; then just raise the issue there in the issue tracker.&lt;/p&gt;
+&lt;p&gt;Otherwise use the &lt;a href=&#34;https://github.com/jenkins-x/issues&#34;&gt;issue tracker for Jenkins X 3.x&lt;/a&gt; and we can triage as required.&lt;/p&gt;
+&lt;h2 id=&#34;why-does-jenkins-x-use-helmfile-template&#34;&gt;Why does Jenkins X use &lt;code&gt;helmfile template&lt;/code&gt;?&lt;/h2&gt;
+&lt;p&gt;If you look into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; file in your cluster git repository to see how the boot proccess works you may notice its defined a simple makefile and uses the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_helmfile_template.md&#34;&gt;jx gitops helmfile template&lt;/a&gt; command to convert the &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; &lt;code&gt;helmfile.yaml&lt;/code&gt; files referencing helm charts into YAML.&lt;/p&gt;
+&lt;p&gt;So why don&amp;rsquo;t we use &lt;code&gt;helmfile sync&lt;/code&gt; instead to apply the kubernetes resources from the charts directly into kubernetes?&lt;/p&gt;
+&lt;p&gt;The current approach has a &lt;a href=&#34;https://jenkins-x.io/v3/about/benefits/&#34;&gt;number of benefits&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;we want to version all kubernetes resources (apart from &lt;code&gt;Secrets&lt;/code&gt;) in git so that you can use git tooling to view the history of every kubernetes resource over time.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;by checking in all the kubernetes resources (apart from &lt;code&gt;Secrets&lt;/code&gt;) its very easy to trace (and &lt;code&gt;git blame&lt;/code&gt;) any change in any kubernetes resource in any chart and namespace to diagnose issues.&lt;/li&gt;
+&lt;li&gt;the upgrade of any tool such as &lt;a href=&#34;https://helm.sh/&#34;&gt;helm&lt;/a&gt;, &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt;, &lt;a href=&#34;https://kustomize.io/&#34;&gt;kustomize&lt;/a&gt;, &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt;, &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/kubectl/&#34;&gt;kubectl&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/v3/guides/jx3/&#34;&gt;jx&lt;/a&gt; could result in different YAML being generated changing the behaivour of your applications in Production.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;this approach makes it super easy to review all Pull Requests on all promotions and configuration changes and review what is actually going to change in kubernetes inside the git commit diff.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;e.g. promoting from &lt;code&gt;1.2.3&lt;/code&gt; to &lt;code&gt;1.3.0&lt;/code&gt; of application &lt;code&gt;cheese&lt;/code&gt; may look innocent enough, but did you notice those new &lt;code&gt;ClusterRole&lt;/code&gt; and &lt;code&gt;PersistentVolume&lt;/code&gt; resources that it now brings in?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;we can default to using &lt;a href=&#34;https://jenkins-x.io/v3/guides/secrets/&#34;&gt;canonical secret management mechanism&lt;/a&gt; based on &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; (see &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#generate-step&#34;&gt;how it works&lt;/a&gt;) to ensure that:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;no Secret value accidentally gets checked into git by mistake&lt;/li&gt;
+&lt;li&gt;all secrets can be managed, versioned, stored and rotated using vault or your cloud providers native secret storage mechanism&lt;/li&gt;
+&lt;li&gt;the combination of git and your secret store means your cluster becomes ephemeral and can be recreated if required (which often can happen if using tools like Terraform to manage infrastructure and you change significant infrastructure configuration values like node pools, version, location and so forth)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;its easier for developers to understand what is going on as you can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;config-root/
+ namespaces/
+   jx/
+     lighthouse/
+       lighthouse-webhooks-deploy.yaml    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;you can see the above kubernetes resource, a &lt;code&gt;Deployment&lt;/code&gt; with name &lt;code&gt;lighthouse-webhooks&lt;/code&gt; in the namespace &lt;code&gt;jx&lt;/code&gt; which comes from the &lt;code&gt;lighthouse&lt;/code&gt; chart.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;its easy to enrich the generated YAML with a combination of any additional tools &lt;a href=&#34;https://kustomize.io/&#34;&gt;kustomize&lt;/a&gt;, &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/v3/guides/jx3/&#34;&gt;jx&lt;/a&gt;. e.g.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;its trivial to run &lt;a href=&#34;https://kustomize.io/&#34;&gt;kustomize&lt;/a&gt; or &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; to modify any resource in any chart before it&amp;rsquo;s applied to Production and to review the generated values first&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;its easy to use &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_hash.md&#34;&gt;jx gitops hash&lt;/a&gt; to add some hash annotations to cause rolling upgrade to &lt;code&gt;Deployments&lt;/code&gt; when git changes (when the &lt;code&gt;Deployment&lt;/code&gt; YAML does not)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;use &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_annotate.md&#34;&gt;jx gitops annotate&lt;/a&gt; to add add support for tools like &lt;a href=&#34;https://github.com/pusher/wave&#34;&gt;pusher wave&lt;/a&gt; so that rotating secrets in your underlying secret store can cause rolling upgrades in your &lt;code&gt;Deployments&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However since the steps to deploy a kubernetes cluster in Jenkins X is defined in a simple makefile stored in your cluster git repository its easy for developers to modify their cluster git repository to add any combination of tools to the makefile to use any permutation of  &lt;a href=&#34;https://helm.sh/&#34;&gt;helm 3&lt;/a&gt;, &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt;, &lt;a href=&#34;https://kustomize.io/&#34;&gt;kustomize&lt;/a&gt;, &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt;  and &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/kubectl/&#34;&gt;kubectl&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a &lt;code&gt;helm upgrade&lt;/code&gt; or &lt;code&gt;helmfile sync&lt;/code&gt; command to your makefile. The entire boot job is defined in git in &lt;strong&gt;versionStream/git-operator/job.yaml&lt;/strong&gt; so you are free to go in whatever direction you prefer.&lt;/p&gt;
+&lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
+&lt;p&gt;Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.&lt;/p&gt;
+&lt;p&gt;Since we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;helmfile template&lt;/a&gt; helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).&lt;/p&gt;
+&lt;p&gt;However its easy to add steps into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; to simulate helmfile hooks.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-uninstall-jenkins-x&#34;&gt;How do I uninstall Jenkins X?&lt;/h2&gt;
+&lt;p&gt;We don&amp;rsquo;t yet have a nice uninstall command.&lt;/p&gt;
+&lt;p&gt;Though if you git clone your development git repository and cd into it you can run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl delete -R -f config-root/namespaces
+kubectl delete -R -f config-root/cluster
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Using</title>
+      <link>https://jenkins-x.io/v3/develop/faq/using/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/faq/using/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
+&lt;p&gt;You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the &lt;code&gt;releases&lt;/code&gt; section of your &lt;code&gt;helmfile.yaml&lt;/code&gt; file in your cluster git repository.&lt;/p&gt;
+&lt;p&gt;You can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;config-root/
+  namespaces/
+   jx/
+     lighthouse/
+       lighthouse-webhooks-deploy.yaml    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the above kubernetes resource, a &lt;code&gt;Deployment&lt;/code&gt; with name &lt;code&gt;lighthouse-webhooks&lt;/code&gt; in the namespace &lt;code&gt;jx&lt;/code&gt; which comes from the &lt;code&gt;lighthouse&lt;/code&gt; chart.&lt;/p&gt;
+&lt;p&gt;There could be some additional charts installed via Terraform for the &lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34;&gt;git operator&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/v3/guides/health/&#34;&gt;health subsystem&lt;/a&gt; which can be viewed via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm list --all-namespaces
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
+&lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here is &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task&#34;&gt;another example of a sidecar in a pipeline&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;If you want to use a separate container inside a preview environment then add &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;charts or resources&lt;/a&gt; to the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Pipelines</title>
       <link>https://jenkins-x.io/v3/develop/faq/pipeline/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -79,34 +189,6 @@
     </item>
     
     <item>
-      <title>V3: Using</title>
-      <link>https://jenkins-x.io/v3/develop/faq/using/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/v3/develop/faq/using/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
-&lt;p&gt;You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the &lt;code&gt;releases&lt;/code&gt; section of your &lt;code&gt;helmfile.yaml&lt;/code&gt; file in your cluster git repository.&lt;/p&gt;
-&lt;p&gt;You can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;config-root/
-  namespaces/
-   jx/
-     lighthouse/
-       lighthouse-webhooks-deploy.yaml    
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the above kubernetes resource, a &lt;code&gt;Deployment&lt;/code&gt; with name &lt;code&gt;lighthouse-webhooks&lt;/code&gt; in the namespace &lt;code&gt;jx&lt;/code&gt; which comes from the &lt;code&gt;lighthouse&lt;/code&gt; chart.&lt;/p&gt;
-&lt;p&gt;There could be some additional charts installed via Terraform for the &lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34;&gt;git operator&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/v3/guides/health/&#34;&gt;health subsystem&lt;/a&gt; which can be viewed via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm list --all-namespaces
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
-&lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Here is &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task&#34;&gt;another example of a sidecar in a pipeline&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;If you want to use a separate container inside a preview environment then add &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;charts or resources&lt;/a&gt; to the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>V3: Troublehshooting</title>
       <link>https://jenkins-x.io/v3/develop/faq/issues/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -115,15 +197,7 @@
       <description>
         
         
-        &lt;h2 id=&#34;why-does-jenkins-x-fail-to-download-plugins&#34;&gt;Why does Jenkins X fail to download plugins?&lt;/h2&gt;
-&lt;p&gt;When I run a &lt;code&gt;jx&lt;/code&gt; command I get an error like&amp;hellip;&lt;/p&gt;
-&lt;p&gt;&lt;code&gt; Get https://github.com/jenkins-x/jx-..../releases/download/v..../jx-.....tar.gz: dial tcp: i/o timeout&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;This sounds like a network problem; the code in &lt;code&gt;jx&lt;/code&gt; is trying to download from &lt;code&gt;github.com&lt;/code&gt; and your laptop is having trouble resolving the &lt;code&gt;github.com&lt;/code&gt; domain.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;do you have a firewall / VPN / HTTP proxy blocking things?&lt;/li&gt;
-&lt;li&gt;is your &lt;code&gt;/etc/resolv.conf&lt;/code&gt; causing issues? e.g. if you have multiple entries for your company VPN?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;why-did-my-quickstart--import-not-work&#34;&gt;Why did my quickstart / import not work?&lt;/h2&gt;
+        &lt;h2 id=&#34;why-did-my-quickstart--import-not-work&#34;&gt;Why did my quickstart / import not work?&lt;/h2&gt;
 &lt;p&gt;If you are not able to create quickstarts or import projects its most probably webhooks not being setup correctly.&lt;/p&gt;
 &lt;p&gt;When the &lt;code&gt;jx project import&lt;/code&gt; or &lt;code&gt;jx project quickstart&lt;/code&gt; runs it creates a Pull Request on your dev cluster repository. This should &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;trigger a webhook&lt;/a&gt; on your git provider which should then trigger a Pipeline (via &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;lighthouse webhooks&lt;/a&gt;). The pipeline should then  &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;create a second commit on the pull request&lt;/a&gt; to configure your repository which then should get labelled and auto-merge.&lt;/p&gt;
 &lt;p&gt;If this does not happen its usually your webhooks are not working. You can check on the health of your system and webhooks via the &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/health/&#34;&gt;Health guide&lt;/a&gt;&lt;/p&gt;
@@ -132,7 +206,33 @@
 &lt;p&gt;If the &lt;code&gt;jx project import&lt;/code&gt; or &lt;code&gt;jx project quickstart&lt;/code&gt; times out before the pipeline triggers the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;second commit on the pull request&lt;/a&gt; and it auto merges and triggers a boot job to setup webhooks for the new repository - you will have pipeline catalog files locally on your laptop which are not pushed to git. e.g. the &lt;code&gt;.lighthouse/*&lt;/code&gt; files and maybe other files like &lt;code&gt;charts/*&lt;/code&gt; and &lt;code&gt;Dockerfile&lt;/code&gt;. You can always try add those files to git locally and push once you have got your webhooks working.&lt;/p&gt;
 &lt;p&gt;Also make sure that the boot Job that is triggered by the pull request merging has the necessary scopes on the git personal access token to be able to registry the webhooks on the new repository. You will see if the webhook registration has been successful in the boot log:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;why-does-my-pipeline-not-start&#34;&gt;Why does my pipeline not start?&lt;/h2&gt;
+&lt;p&gt;It could be your &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/pipelines/&#34;&gt;YAML configuration&lt;/a&gt; is invalid.&lt;/p&gt;
+&lt;p&gt;Try &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing/#linting&#34;&gt;linting your YAML configuration&lt;/a&gt; to verify things are setup correctly.&lt;/p&gt;
+&lt;p&gt;Also make sure you are in the git repository collaborators group and are in the &lt;code&gt;OWNERS&lt;/code&gt; file in the main branch.&lt;/p&gt;
+&lt;h2 id=&#34;why-is-my-pipeline-pending&#34;&gt;Why is my pipeline pending?&lt;/h2&gt;
+&lt;p&gt;If your pipeline shows pending in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/cli/&#34;&gt;CLI&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;Console&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt; there could be various causes such as invalid images, pipeline configuration, missing secrets or insufficient cluster capacity to name but a few.&lt;/p&gt;
+&lt;p&gt;To diagnose why a pipeline pod can&amp;rsquo;t run the simplest thing is to use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;Console&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ui
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;on the &lt;strong&gt;Pipelines&lt;/strong&gt; page pick the pipeline that is having trouble (see the links you can click on the &lt;strong&gt;Build&lt;/strong&gt; column)&lt;/li&gt;
+&lt;li&gt;on the &lt;strong&gt;Pipeline&lt;/strong&gt; page there is then a &lt;strong&gt;Pod&lt;/strong&gt; link in the navigation bar which takes you to the &lt;strong&gt;Pod&lt;/strong&gt; view in &lt;a href=&#34;https://octant.dev/&#34;&gt;octant&lt;/a&gt; that lets you view the detail of the pod. From there you should be able to see any events/issues with the pod such as bad images, missing secrets or whatever.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To do this via the command line try&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx get build pod
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;if you know the repository name:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx get build pod -r myrepo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then you should be able to see the pod name for the pipeline in question. You can then use &lt;code&gt;kubectl&lt;/code&gt; to destribe the issue:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl describe pod the-actual-pod-name-for-your-pipeline&lt;span style=&#34;color:#e6db74&#34;&gt;```&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;why-does-jenkins-x-fail-to-download-plugins&#34;&gt;Why does Jenkins X fail to download plugins?&lt;/h2&gt;
+&lt;p&gt;When I run a &lt;code&gt;jx&lt;/code&gt; command I get an error like&amp;hellip;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt; Get https://github.com/jenkins-x/jx-..../releases/download/v..../jx-.....tar.gz: dial tcp: i/o timeout&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;This sounds like a network problem; the code in &lt;code&gt;jx&lt;/code&gt; is trying to download from &lt;code&gt;github.com&lt;/code&gt; and your laptop is having trouble resolving the &lt;code&gt;github.com&lt;/code&gt; domain.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;do you have a firewall / VPN / HTTP proxy blocking things?&lt;/li&gt;
+&lt;li&gt;is your &lt;code&gt;/etc/resolv.conf&lt;/code&gt; causing issues? e.g. if you have multiple entries for your company VPN?&lt;/li&gt;
+&lt;/ul&gt;
+
       </description>
     </item>
     
