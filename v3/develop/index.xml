@@ -219,18 +219,7 @@
 &lt;p&gt;One of the challenges with Jenkins X 3.x is the &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/source/&#34;&gt;source code is spread across a number of organisations and repositories&lt;/a&gt; since its highly decoupled into many &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/&#34;&gt;plugins and microservices&lt;/a&gt; so it can be confusing&lt;/p&gt;
 &lt;p&gt;If you know the specific plugin causing an issue, say &lt;a href=&#34;https://github.com/jenkins-x/jx-preview&#34;&gt;jx-preview&lt;/a&gt; then just raise the issue there in the issue tracker.&lt;/p&gt;
 &lt;p&gt;Otherwise use the &lt;a href=&#34;https://github.com/jenkins-x/issues&#34;&gt;issue tracker for Jenkins X 3.x&lt;/a&gt; and we can triage as required.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-list-the-apps-that-have-been-deployed&#34;&gt;How do I list the apps that have been deployed?&lt;/h2&gt;
-&lt;p&gt;You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the &lt;code&gt;releases&lt;/code&gt; section of your &lt;code&gt;helmfile.yaml&lt;/code&gt; file in your cluster git repository.&lt;/p&gt;
-&lt;p&gt;You can browse all the kubernetes resources in each namespace using the canonical layout in the &lt;code&gt;config-root&lt;/code&gt; folder. e.g. all charts are versioned in git as follows:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;config-root/
-  namespaces/
-    jx/
-      lighthouse/
-        lighthouse-webhooks-deploy.yaml    
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the above kubernetes resource, a &lt;code&gt;Deployment&lt;/code&gt; with name &lt;code&gt;lighthouse-webhooks&lt;/code&gt; in the namespace &lt;code&gt;jx&lt;/code&gt; which comes from the &lt;code&gt;lighthouse&lt;/code&gt; chart.&lt;/p&gt;
-&lt;p&gt;There could be some additional charts installed via Terraform for the &lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34;&gt;git operator&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/v3/guides/health/&#34;&gt;health subsystem&lt;/a&gt; which can be viewed via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm list --all-namespaces
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;why-does-jenkins-x-use-helmfile-template&#34;&gt;Why does Jenkins X use &lt;code&gt;helmfile template&lt;/code&gt;?&lt;/h2&gt;
+&lt;h2 id=&#34;why-does-jenkins-x-use-helmfile-template&#34;&gt;Why does Jenkins X use &lt;code&gt;helmfile template&lt;/code&gt;?&lt;/h2&gt;
 &lt;p&gt;If you look into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; file in your cluster git repository to see how the boot proccess works you may notice its defined a simple makefile and uses the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_helmfile_template.md&#34;&gt;jx gitops helmfile template&lt;/a&gt; command to convert the &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; &lt;code&gt;helmfile.yaml&lt;/code&gt; files referencing helm charts into YAML.&lt;/p&gt;
 &lt;p&gt;So why don&amp;rsquo;t we use &lt;code&gt;helmfile sync&lt;/code&gt; instead to apply the kubernetes resources from the charts directly into kubernetes?&lt;/p&gt;
 &lt;p&gt;The current approach has a &lt;a href=&#34;https://jenkins-x.io/v3/about/benefits/&#34;&gt;number of benefits&lt;/a&gt;:&lt;/p&gt;
@@ -286,20 +275,10 @@
 &lt;/ul&gt;
 &lt;p&gt;However since the steps to deploy a kubernetes cluster in Jenkins X is defined in a simple makefile stored in your cluster git repository its easy for developers to modify their cluster git repository to add any combination of tools to the makefile to use any permutation of  &lt;a href=&#34;https://helm.sh/&#34;&gt;helm 3&lt;/a&gt;, &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt;, &lt;a href=&#34;https://kustomize.io/&#34;&gt;kustomize&lt;/a&gt;, &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt;  and &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/kubectl/&#34;&gt;kubectl&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;So if you really wanted to opt out of the canonical GitOps, resource and secret management model above you can add a &lt;code&gt;helm upgrade&lt;/code&gt; or &lt;code&gt;helmfile sync&lt;/code&gt; command to your makefile. The entire boot job is defined in git in &lt;strong&gt;versionStream/git-operator/job.yaml&lt;/strong&gt; so you are free to go in whatever direction you prefer.&lt;/p&gt;
-&lt;h2 id=&#34;what-is-the-directory-layout&#34;&gt;What is the directory layout?&lt;/h2&gt;
-&lt;p&gt;To understand the directory layout see &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;this document&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
 &lt;p&gt;Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.&lt;/p&gt;
 &lt;p&gt;Since we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;helmfile template&lt;/a&gt; helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).&lt;/p&gt;
 &lt;p&gt;However its easy to add steps into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; to simulate helmfile hooks.&lt;/p&gt;
-&lt;h2 id=&#34;if-i-add-a-file-to-config-root-it-gets-deleted-why&#34;&gt;If I add a file to &lt;code&gt;config-root&lt;/code&gt; it gets deleted, why?&lt;/h2&gt;
-&lt;p&gt;The &lt;code&gt;config-root&lt;/code&gt; directory is regenerated on every boot job - basically every time you promote an application or merge a change into the main branch of your git dev cluster git repository.  For background see the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;dev git repository layout docs&lt;/a&gt;)&lt;/p&gt;
-&lt;p&gt;To add a new chart add to the &lt;code&gt;helmfiles/mynamespace/helmfile.yaml&lt;/code&gt; file follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;add chart guide&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;To add a new kubernetes resource &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;follow the add resources guide&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
-&lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Here is &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task&#34;&gt;another example of a sidecar in a pipeline&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;If you want to use a separate container inside a preview environment then add &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;charts or resources&lt;/a&gt; to the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-uninstall-jenkins-x&#34;&gt;How do I uninstall Jenkins X?&lt;/h2&gt;
 &lt;p&gt;We don&amp;rsquo;t yet have a nice uninstall command.&lt;/p&gt;
 &lt;p&gt;Though if you git clone your development git repository and cd into it you can run:&lt;/p&gt;
