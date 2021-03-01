@@ -388,16 +388,16 @@ mvn surefire-report:report
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;We need to store the reports somewhere, and in Kubernetes this means using a volume. Add this snippet to the bottom of &lt;code&gt;charts/jenkins-x-reports/templates/deployment.yaml&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;      &lt;span style=&#34;color:#66d9ef&#34;&gt;volumes&lt;/span&gt;:
-      - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: {{ .Values.service.reportVolumeName }}
-        &lt;span style=&#34;color:#66d9ef&#34;&gt;emptyDir&lt;/span&gt;: {}
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;volumes&lt;/span&gt;:
+      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.service.reportVolumeName }}&lt;/span&gt;
+        &lt;span style=&#34;color:#f92672&#34;&gt;emptyDir&lt;/span&gt;: {}
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and add this snippet to the container (just below above &lt;code&gt;ports&lt;/code&gt; will work well):&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;volumeMounts&lt;/span&gt;:
-        - &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: {{ .Values.service.reportVolumeName }}
-          &lt;span style=&#34;color:#66d9ef&#34;&gt;mountPath&lt;/span&gt;: {{ .Values.service.reportMountPath }}
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;volumeMounts&lt;/span&gt;:
+        - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.service.reportVolumeName }}&lt;/span&gt;
+          &lt;span style=&#34;color:#f92672&#34;&gt;mountPath&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.service.reportMountPath }}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now modify &lt;code&gt;charts/jenkins-x-reports/values.yaml&lt;/code&gt; and modify the &lt;code&gt;service&lt;/code&gt; and add (just after &lt;code&gt;internalPort&lt;/code&gt; will work well):&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;reportVolumeName&lt;/span&gt;: reports-volume
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;reportMountPath&lt;/span&gt;: /reports
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reportVolumeName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;reports-volume&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;reportMountPath&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;/reports&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You&amp;rsquo;ll notice that we&amp;rsquo;ve used &lt;code&gt;emptyDir{}&lt;/code&gt; to store the reports - this is transient and reports will be lost when the pod dies. We&amp;rsquo;ll replace this with a persistent volume later.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
@@ -405,11 +405,11 @@ mvn surefire-report:report
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Modify &lt;code&gt;charts/jenkins-x-reports/values.yaml&lt;/code&gt; and add the values for the upload service just after the existing service:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;serviceUpload&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;name&lt;/span&gt;: jenkins-x-reports-upload
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;type&lt;/span&gt;: ClusterIP
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;externalPort&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;80&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;internalPort&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;8081&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;serviceUpload&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkins-x-reports-upload&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;ClusterIP&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;externalPort&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;80&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;internalPort&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;8081&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Notice how we&amp;rsquo;ve given it a unique name, set the internal port correctly and removed the annotations that instruct Jenkins X to expose the service outside the cluster.&lt;/p&gt;
 &lt;p&gt;We now need to create a template for these values. Add the file &lt;code&gt;charts/jenkins-x-reports/templates/service-upload.yaml&lt;/code&gt;:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;apiVersion: v1
@@ -437,7 +437,7 @@ spec:
     app: {{ template &amp;quot;fullname&amp;quot; . }}
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This file is simply a copy of &lt;code&gt;service.yaml&lt;/code&gt; with the &lt;code&gt;service&lt;/code&gt; variable changed to &lt;code&gt;serviceUpload&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;We also need to add the upload port to the list of container ports. Just below &lt;code&gt;containerPort: {{ .Values.service.internalPort }}&lt;/code&gt; add:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;          &lt;span style=&#34;color:#66d9ef&#34;&gt;containerPort&lt;/span&gt;: {{ .Values.serviceUpload.internalPort }}
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;containerPort&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.serviceUpload.internalPort }}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Run this as an app on your Jenkins X cluster by pushing your code changes to GitHub. The app will build and can be tested in the staging environment.&lt;/p&gt;

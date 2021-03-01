@@ -40,46 +40,46 @@
         
         &lt;p&gt;In your development cluster the &lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#requirements&#34;&gt;jx-requirements.yml&lt;/a&gt; file is used to define which are the default environments are used for promotion on your repositories.&lt;/p&gt;
 &lt;p&gt;The &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L18&#34;&gt;default configuration&lt;/a&gt; for environments looks something like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: core.jenkins-x.io/v4beta1
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: Requirements
-&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
-  ...
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Requirements&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;which defaults to meaning that &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; are namespaces (&lt;code&gt;jx-staging&lt;/code&gt; and &lt;code&gt;jx-production&lt;/code&gt;) in the local cluster. &lt;code&gt;Staging&lt;/code&gt; will use &lt;code&gt;Auto&lt;/code&gt; promotion and &lt;code&gt;Production&lt;/code&gt; will use &lt;code&gt;Manual&lt;/code&gt; (more on that later).&lt;/p&gt;
 &lt;h2 id=&#34;multi-cluster&#34;&gt;Multi cluster&lt;/h2&gt;
 &lt;p&gt;When you setup a &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/&#34;&gt;Remote Cluster&lt;/a&gt; for &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt;  you can remove the above entries for those environments.&lt;/p&gt;
 &lt;p&gt;Then when you import the remote cluster repository into the development environment (to setup the CI/CD on pull requests and enable promotion) the generated Pull Request will modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to add remote entries for the remote cluster.&lt;/p&gt;
 &lt;p&gt;e.g. after importing the remote &lt;code&gt;production&lt;/code&gt; environment via &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; and the pull request merging it should look like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: core.jenkins-x.io/v4beta1
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: Requirements
-&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
-  ...
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;environments&lt;/span&gt;:
-    - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: dev
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: my-dev-environment
-    - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: staging
-    - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: production
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;owner&lt;/span&gt;: myowner
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: my-prod-repo
-      &lt;span style=&#34;color:#66d9ef&#34;&gt;remoteCluster&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Requirements&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+    - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-dev-environment&lt;/span&gt;
+    - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+    - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod-repo&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;remoteCluster&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;custom-environments-per-repository&#34;&gt;Custom environments per repository&lt;/h2&gt;
 &lt;p&gt;If you wish to use different sets of environments for different microservices you can override the environments that are used for promotion by adding a &lt;code&gt;.jx/settings.yaml&lt;/code&gt; with &lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#settings&#34;&gt;this format&lt;/a&gt; which overrides settings found the development environments &lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#requirements&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
 &lt;p&gt;e.g. add something like this to your &lt;code&gt;.jx/settings.yaml&lt;/code&gt; in a repository to override which environment repositories are promoted to:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;apiVersion&lt;/span&gt;: core.jenkins-x.io/v4beta1
-&lt;span style=&#34;color:#66d9ef&#34;&gt;kind&lt;/span&gt;: Settings
-&lt;span style=&#34;color:#66d9ef&#34;&gt;spec&lt;/span&gt;:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Settings&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
   &lt;span style=&#34;color:#75715e&#34;&gt;# lets replace the promote environments&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;ignoreDevEnvironments&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;promoteEnvironments&lt;/span&gt;:
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: my-staging
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;owner&lt;/span&gt;: myowner
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: some-repo-name
-  - &lt;span style=&#34;color:#66d9ef&#34;&gt;key&lt;/span&gt;: my-prod
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;owner&lt;/span&gt;: myowner
-    &lt;span style=&#34;color:#66d9ef&#34;&gt;repository&lt;/span&gt;: some-other-repo-name    
+  &lt;span style=&#34;color:#f92672&#34;&gt;ignoreDevEnvironments&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;promoteEnvironments&lt;/span&gt;:
+  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-staging&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-repo-name&lt;/span&gt;
+  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-other-repo-name    &lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>

@@ -94,7 +94,7 @@ time&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;
 &lt;p&gt;Intentamos automatizar esta configuración cuando usamos &lt;code&gt;jx create cluster&lt;/code&gt;, p.ej en AWS, el valor predeterminado es el rango de IP &lt;code&gt;100.64.0.0/10&lt;/code&gt; para que coincida con la mayoría de las direcciones IP del servicio Kubernetes.&lt;/p&gt;
 &lt;p&gt;En &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_cluster_eks/&#34;&gt;EKS&lt;/a&gt;, usamos ECR de manera predeterminada para evitar este problema. Del mismo modo, pronto cambiaremos por defecto a GCR y ACR en GKE y AKS respectivamente.&lt;/p&gt;
 &lt;p&gt;Por lo tanto, una solución alternativa es utilizar un &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/docker-registry/&#34;&gt;registro real de contenedores externos&lt;/a&gt; o habilitar el registro inseguro (&lt;code&gt;insecure-registry&lt;/code&gt;) en sus demonios de Docker en sus nodos en su clúster de Kubernetes.&lt;/p&gt;
-&lt;h2 id=&#34;helm-falla-con-el-error-upgrade-failed-incompatible-versions-client-server&#34;&gt;Helm falla con el Error: UPGRADE FAILED: incompatible versions client[&amp;hellip;] server[&amp;hellip;]&amp;rsquo;&lt;/h2&gt;
+&lt;h2 id=&#34;helm-falla-con-el-error-upgrade-failed-incompatible-versions-client-server&#34;&gt;Helm falla con el Error: UPGRADE FAILED: incompatible versions client[&amp;hellip;] server[&amp;hellip;]&#39;&lt;/h2&gt;
 &lt;p&gt;En términos generales, esto sucede cuando su laptop tiene una versión de Helm diferente a la versión utilizada en nuestras imágenes de Docker y/o la versión de Helm que se ejecuta en su servidor.&lt;/p&gt;
 &lt;p&gt;La solución más simple para esto es &lt;a href=&#34;https://jenkins-x.io/news/helm-without-tiller/&#34;&gt;no usar tiller en absoluto&lt;/a&gt;, lo que en realidad ayuda a evitar que este problema suceda y resuelve una serie de problemas de seguridad también.&lt;/p&gt;
 &lt;p&gt;Sin embargo, cambiar de usar Tiller a No Tiller requiere una re-instalación de Jenkins X (¿aunque podría intentar hacerlo en un conjunto separado de namespaces y luego mover los proyectos gradualmente?).&lt;/p&gt;
@@ -232,11 +232,11 @@ Temporary Error: Could not find an IP address &lt;span style=&#34;color:#66d9ef&
 &lt;p&gt;Al ejecutar minikube localmente, &lt;code&gt;jx&lt;/code&gt; usa de manera predeterminada &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; como una forma de usar nombres DNS agradables para los servicios y evitar el hecho de que la mayoría de las computadoras portátiles no pueden usar DNS. Sin embargo, a veces &lt;a href=&#34;http://nip.io/&#34;&gt;nip.io&lt;/a&gt; tiene problemas y no funciona.&lt;/p&gt;
 &lt;p&gt;Para evitar usar nip.io, puede hacer lo siguiente:&lt;/p&gt;
 &lt;p&gt;Edite el archivo &lt;code&gt;~/.jx/cloud-environments/env-minikube/myvalues.yaml&lt;/code&gt; y agregue el siguiente contenido:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;expose&lt;/span&gt;:
-  &lt;span style=&#34;color:#66d9ef&#34;&gt;Args&lt;/span&gt;:
-    - --exposer
-    - NodePort
-    - --http
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;expose&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;Args&lt;/span&gt;:
+    - --&lt;span style=&#34;color:#ae81ff&#34;&gt;exposer&lt;/span&gt;
+    - &lt;span style=&#34;color:#ae81ff&#34;&gt;NodePort&lt;/span&gt;
+    - --&lt;span style=&#34;color:#ae81ff&#34;&gt;http&lt;/span&gt;
     - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;true&amp;#34;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Luego, vuelva a ejecutar &lt;code&gt;jx install&lt;/code&gt; y esto cambiará los servicios que se expondrán en los puertos de nodo en lugar de usar el ingreso y DNS.&lt;/p&gt;
 &lt;p&gt;Entonces, si escribes:&lt;/p&gt;
