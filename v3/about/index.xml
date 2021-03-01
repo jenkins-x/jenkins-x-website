@@ -125,9 +125,17 @@
 &lt;h2 id=&#34;breaking-changes&#34;&gt;Breaking Changes&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;the new tekton version (0.20.x) now requires kubernetes 1.17 or later. If your cluster is older and you are using the cloud just ugprade your kubernetes version before upgrading your cluster. Otherwise you may want to explicitly override your &lt;code&gt;tekton-pipeline&lt;/code&gt; version to pin it at &lt;code&gt;0.19.1&lt;/code&gt; instead in your &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/helmfiles/tekton-pipelines/helmfile.yaml#L12&#34;&gt;helmfiles/tekton-pipelines/helmfile.yaml&lt;/a&gt; file&lt;/li&gt;
+&lt;li&gt;if you are upgrading from an alpha cluster you may have vault installed in the &lt;code&gt;secret-infra&lt;/code&gt; namespace. check out the &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/config/vault/#after-an-upgrade-the-boot-job-is-waiting-for-vault-in-jx-vault&#34;&gt;FAQ on vault in the wrong namespace&lt;/a&gt; for how to upgrade.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;changes&#34;&gt;Changes&lt;/h2&gt;
 &lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;A preview can fail to create for a multitude of reasons; bad helm charts, missing secrets/volumes, invalid configuration in &lt;code&gt;jx-requirements.yml&lt;/code&gt;, bad image names, no capacity on the server to name but a few. Unfortunately &lt;code&gt;helmfile sync&lt;/code&gt; does not give much information other than it succeeded of failed.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;to improve feedback on why some previews can fail we have added additional output in the &lt;a href=&#34;https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md&#34;&gt;jx preview create&lt;/a&gt; command to tail the kubernetes events in the preview namespace. This basically runs &lt;code&gt;kubectl exec get event -n $PREVIEW_NAMESPACE -w&lt;/code&gt; and adds the output to the pipeline output (prefixed with &lt;code&gt;$PREVIEW_NAMESPACE:&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;this means the reason for why a preview fails should appear as a kubernetes event in the pipeline log&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;we have a shiny new &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/slack/&#34;&gt;Slack bot for Jenkins X&lt;/a&gt; to help notify developers of failing pipelines&lt;/p&gt;
 &lt;/li&gt;
