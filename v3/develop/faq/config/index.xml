@@ -172,7 +172,44 @@ echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
 &lt;p&gt;Your cloud provider could charge per read of a secret and so a frequent poll of your secrets could cost $$$. You may want to tone down the poll period.&lt;/p&gt;
 &lt;p&gt;You can do this via the &lt;code&gt;POLLER_INTERVAL_MILLISECONDS&lt;/code&gt; setting in the &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets#configuration&#34;&gt;kubernetes external secrets configuration&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;For more details &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;see how to configure charts&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-switch-to-gsm-from-vault&#34;&gt;How do I switch to GSM from Vault?&lt;/h2&gt;
+&lt;p&gt;We recommend you use &lt;a href=&#34;https://jenkins-x.io/v3/devops/cloud-native/#prefer-cloud-over-kubernetes&#34;&gt;cloud secret managers over vault&lt;/a&gt; as its easier to manage; let your cloud provider do the undifferentiated heavy lifting for you.&lt;/p&gt;
+&lt;p&gt;If you spin up a cluster on vault and want to switch over to, say, GSM here&amp;rsquo;s how:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;set the &lt;code&gt;gsm&lt;/code&gt; variable to true in terraform as &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/master/README.md#getting-started&#34;&gt;described in the getting started guide&lt;/a&gt; using your terraform/infrastructure git repository:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gsm = true&amp;#34;&lt;/span&gt; &amp;gt;&amp;gt; values.auto.tfvars 
 
+git add *
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: enable gsm&amp;#34;&lt;/span&gt;
+
+terraform plan
+terraform apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;in your dev cluster git repository (which has a &lt;code&gt;helmfile.yaml&lt;/code&gt; inside) modify the &lt;code&gt;jx-requirement.yml&lt;/code&gt; switch the &lt;code&gt;secretStorage&lt;/code&gt; line to:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gsm&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;download &lt;a href=&#34;https://github.com/GoogleContainerTools/kpt/releases&#34;&gt;kpt&lt;/a&gt; and add it to your $PATH&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the following to replace your vault secret mapping files with gsm versions:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;rm -rf .jx/secret/mapping
+
+kpt pkg get https://github.com/jenkins-x/jx3-gitops-template.git/.jx/secret/gsm/mapping .jx/secret/mapping
+ls -al .jx/secret/mapping
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# echo we should see secret-mappings.yaml&lt;/span&gt;
+git add .jx/secret
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: migrate to gsm secret mapping&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# now lets push and watch the git operator&lt;/span&gt;
+git push
+jx admin log -w
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
