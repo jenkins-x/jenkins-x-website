@@ -153,7 +153,10 @@ kubectl delete -R -f config-root/cluster
 &lt;p&gt;You can then &lt;code&gt;kubectl exec&lt;/code&gt; into the pod at that step and look around and try running commands inside the pod/container.&lt;/p&gt;
 &lt;p&gt;e.g. using the pod name from the above page and the container name you can do something like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c name-of-step-container name-of-pod sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-access-a-secret-from-my-pipeline&#34;&gt;How do I access a Secret from my pipeline?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-access-the-preview-namespace-or-url&#34;&gt;How do I access the preview namespace or URL?&lt;/h2&gt;
+&lt;p&gt;After the &lt;a href=&#34;https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md&#34;&gt;jx preview create&lt;/a&gt; step in a pull request pipeline you can access a number of &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#environment-variables&#34;&gt;preview environment variables&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For details see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#additional-preview-steps&#34;&gt;how to add additional preview steps&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-access-a-secret-from-my-pipeline&#34;&gt;How do I access a Secret from my pipeline?&lt;/h2&gt;
 &lt;p&gt;Once you have a kubernetes Secret (see &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#create-a-new-secret&#34;&gt;how to create them&lt;/a&gt;) you can access then in a pipeline either:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;as an &lt;a href=&#34;https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables&#34;&gt;environment variable in a step&lt;/a&gt;&lt;/li&gt;
@@ -221,7 +224,32 @@ kubectl delete -R -f config-root/cluster
 &lt;/ul&gt;
 &lt;p&gt;e.g. see the &lt;strong&gt;Pod&lt;/strong&gt; link to the left of the  &lt;strong&gt;Steps&lt;/strong&gt; / &lt;strong&gt;Logs&lt;/strong&gt; links in the nav bar&lt;/p&gt;
 &lt;iframe width=&#34;646&#34; height=&#34;327&#34; src=&#34;https://www.youtube.com/embed/2LCPHi0BnUg&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
-&lt;h3 id=&#34;diagnose-pipeline-failure-via-the-cli&#34;&gt;Diagnose pipeline failure via the CLI&lt;/h3&gt;
+&lt;h2 id=&#34;my-cluster-is-out-of-resources&#34;&gt;My cluster is out of resources&lt;/h2&gt;
+&lt;p&gt;If your cluster is out of resources and cannot deploy pods:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;try modify your terraform / cluster to add more nodes, increase the auto scaling or add bigger nodes to the node pool. You can also add an additional node pool with bigger nodes&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;as a short term fix try scaling down some deployments - though note the next boot job will scale things back up again:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get deploy
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# pick one to scale down&lt;/span&gt;
+kubectl scale deploy someDeploymentName --replicas&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;remove preview environments via:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx delete preview 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;remove deployments you don&amp;rsquo;t need by removing entries from the &lt;code&gt;releases:&lt;/code&gt; section in &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;e.g. e.g. to remove an application from the &lt;code&gt;jx-staging&lt;/code&gt; namespace remove releases from  &lt;code&gt;helmfiles/jx-staging/helmfile.yaml&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;diagnose-pipeline-failure-via-the-cli&#34;&gt;Diagnose pipeline failure via the CLI&lt;/h2&gt;
 &lt;p&gt;To do this via the command line try&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx get build pod
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;if you know the repository name:&lt;/p&gt;
