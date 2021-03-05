@@ -116,7 +116,15 @@ kubectl delete -R -f config-root/cluster
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the above kubernetes resource, a &lt;code&gt;Deployment&lt;/code&gt; with name &lt;code&gt;lighthouse-webhooks&lt;/code&gt; in the namespace &lt;code&gt;jx&lt;/code&gt; which comes from the &lt;code&gt;lighthouse&lt;/code&gt; chart.&lt;/p&gt;
 &lt;p&gt;There could be some additional charts installed via Terraform for the &lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34;&gt;git operator&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/v3/guides/health/&#34;&gt;health subsystem&lt;/a&gt; which can be viewed via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm list --all-namespaces
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-delete-an-application&#34;&gt;How do I delete an application?&lt;/h2&gt;
+&lt;p&gt;You can remove an application or helm chart from an environment by removing the &lt;code&gt;chart:&lt;/code&gt; entry in the &lt;code&gt;helmfiles/$namespace/helmfile.yaml&lt;/code&gt; file in your dev git repository and peforming a git commit and pushing the change (usually via a Pull Request).&lt;/p&gt;
+&lt;p&gt;Once the pull request is merged, the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;boot job will trigger&lt;/a&gt; which will remove the application from kubernetes.&lt;/p&gt;
+&lt;h3 id=&#34;stopping-new-releases&#34;&gt;Stopping new releases&lt;/h3&gt;
+&lt;p&gt;If the application you are removing was released via Jenkins X then the next time there is a change committed to your applications git repsitory a new release will be triggered which will be promoted again.&lt;/p&gt;
+&lt;p&gt;So to stop new releases you need to remove the application from the &lt;code&gt;.jx/gitops/source-configy.yaml&lt;/code&gt; repository.&lt;/p&gt;
+&lt;p&gt;This will stop Jenkins X creating webhooks and firing pipelines when you make changes.&lt;/p&gt;
+&lt;p&gt;You may also want to remove the webhook from the repository to be safe.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
 &lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Here is &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#using-a-sidecar-in-a-task&#34;&gt;another example of a sidecar in a pipeline&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;If you want to use a separate container inside a preview environment then add &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;charts or resources&lt;/a&gt; to the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
