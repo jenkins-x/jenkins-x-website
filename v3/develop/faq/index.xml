@@ -121,8 +121,14 @@ kubectl delete -R -f config-root/cluster
 &lt;p&gt;Once the pull request is merged, the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;boot job will trigger&lt;/a&gt; which will remove the application from kubernetes.&lt;/p&gt;
 &lt;h3 id=&#34;stopping-new-releases&#34;&gt;Stopping new releases&lt;/h3&gt;
 &lt;p&gt;If the application you are removing was released via Jenkins X then the next time there is a change committed to your applications git repsitory a new release will be triggered which will be promoted again.&lt;/p&gt;
-&lt;p&gt;So to stop new releases you need to remove the application from the &lt;code&gt;.jx/gitops/source-configy.yaml&lt;/code&gt; repository.&lt;/p&gt;
-&lt;p&gt;This will stop Jenkins X creating webhooks and firing pipelines when you make changes.&lt;/p&gt;
+&lt;p&gt;So to stop new releases you need to remove the application from the &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; repository.&lt;/p&gt;
+&lt;p&gt;You should also ensure that the &lt;code&gt;SourceRepository&lt;/code&gt; has been deleted. Unfortunately when using &lt;code&gt;kubectl apply&lt;/code&gt; this doesn&amp;rsquo;t usually get removed (though it does with &lt;code&gt;kapp&lt;/code&gt;) so you may want to do:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# view all the SourceRepository resources:&lt;/span&gt;
+kubectl get sr
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# find the one that you want remove then:&lt;/span&gt;
+kubectl delete sr $theNameToDelete
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will stop Jenkins X creating webhooks and firing pipelines when you make changes.&lt;/p&gt;
 &lt;p&gt;You may also want to remove the webhook from the repository to be safe.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-use-testcontainers&#34;&gt;How do I use testcontainers?&lt;/h2&gt;
 &lt;p&gt;If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a &lt;a href=&#34;https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars&#34;&gt;sidecar container in Tekton&lt;/a&gt;.&lt;/p&gt;
