@@ -1394,6 +1394,18 @@ if (!doNotTrack) {
       
       
       
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidescluster-recoverycluster-demo" href="/v3/admin/guides/cluster-recovery/cluster-demo/">Cluster Recovery Demo</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3adminguidescluster-recoverycluster-rebuild" href="/v3/admin/guides/cluster-recovery/cluster-rebuild/">Cluster Rebuild Example</a>
+      
+      
     </li>
   </ul>
 </ul>
@@ -1645,14 +1657,6 @@ if (!doNotTrack) {
 
 
 
-<nav id="TableOfContents">
-  <ul>
-    <li><a href="#gcp-specific">GCP specific</a></li>
-    <li><a href="#recover">Recover</a></li>
-    <li><a href="#what-is-not-recovered">What is not recovered</a></li>
-  </ul>
-</nav>
-
 
 
           </div>
@@ -1709,75 +1713,7 @@ if (!doNotTrack) {
 	<h1>Cluster Recovery</h1>
         <div class="lead">Cluster Recovery</div>
 	
-	<p>This section describes cluster recovery situations for when things go bad.  It can also be used to reguary recreate clusters, this is something the Jenkins X project does itself as we prefer to treat our clusters as cattle and not pets, giving confidence that we can restore services at any time.</p>
-<p>Disclaimer: there may well be better approaches so if you know of better ways please contribute and help improve the experience.  There are some manual steps below that we know to work but expect we can improve.</p>
-<h1 id="demo">Demo</h1>
-<p>The following demo walks you through cluster recovery</p>
-<iframe width="700" height="315" src="https://www.youtube.com/embed/2QgX3cn0GqU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-<p>see <a href="https://www.youtube.com/playlist?list=PLr_PmC4W69dKM3fo8OK729fdmX_MTqdHd">other demos here</a></p>
-<h1 id="cluster-applications-and-services">Cluster applications and services</h1>
-<p>Jenkins X embraces GitOps, details of any application or configuration are stored declaratively in Git.  Jenkins X recommends using external storage if you require persistence to be preserved.  Cloud Storage buckets are great at achieving this.  With that said Jenkins X has one service that writes data to a persistent volume and is not backed up in cloud storage.  The current use of Chartmuseuam to store helm charts for applications means if we need to recreate a cluster we will need to retrigger release pipelines for any application running in the staging or production cluster.</p>
-<p>The Jenkins X project itself does not use Chartmuseum, instead it uses Work Load Identity and <a href="https://github.com/hayorov/helm-gcs">helm gcs plugin</a> to write directly to a GCP bucket.  You could consider using this approach but as well Jenkins X will look to resolve this by adding OOTB support for buckets or other external repositories for charts.</p>
-<p>For now you will need to modify your cluster git repository and remove the helmfile repository that points to the internal chartmuseum service.</p>
-<p>For example: <a href="https://github.com/cb-kubecd/jx3-demo-walk-cluster/blob/ce3fa07834e93e44b2d19882b82a7de51f627ba2/helmfiles/jx-staging/helmfile.yaml#L7-L15">https://github.com/cb-kubecd/jx3-demo-walk-cluster/blob/ce3fa07834e93e44b2d19882b82a7de51f627ba2/helmfiles/jx-staging/helmfile.yaml#L7-L15</a></p>
-<pre><code>filepath: &quot;&quot;
-environments:
- default:
-   values:
-   - jx-values.yaml
-namespace: jx-staging
-repositories:
-- name: dev
- url: http://jenkins-x-chartmuseum.jx.svc.cluster.local:8080
-releases:
-- chart: dev/jx3-golang1
- version: 0.0.4
- name: jx3-golang1
- values:
- - jx-values.yaml
-templates: {}
-renderedvalues: {}
-</code></pre><p>Once you recover any infrastructure below you will then need to trigger release pipelines again using</p>
-<pre><code>jx start pipeline
-</code></pre><h1 id="infrastructure">Infrastructure</h1>
-<p>Cloud Infrastructure is managed by Terraform.  We recommend storing the Terraform state file in a <a href="https://www.terraform.io/docs/backends/index.html">secure backend</a> or use a service like <a href="https://app.terraform.io/">Terraform Cloud</a> as this means you can recover your Cloud Infrastructure in situations where it is deleted.</p>
-<h2 id="gcp-specific">GCP specific</h2>
-<p>For Google Container Engine there is a manual task you need to perform because the Terraform module does not manage deleting Cloud DNS Manage Zones that contain record sets.  This is something we hope to address in the future but if you are using DNS you will need to manually delete your Managed Zone, the easiest way is via the GCP console.</p>
-<p>Select your managed zone <a href="https://console.cloud.google.com/net-services/dns/zones">https://console.cloud.google.com/net-services/dns/zones</a>
-<img src="/images/v3/gcp_select_zone.png" alt="Select Zone"></p>
-<p>Select all record set checkbox and click the DELETE RECORD SETS button
-<img src="/images/v3/gcp_delete_recordsets.png" alt="Delete Record Sets"></p>
-<p>Now select the DELETE ZONE button at the top</p>
-<p><img src="/images/v3/gcp_delete_zone.png" alt="Delete Zone"></p>
-<h2 id="recover">Recover</h2>
-<p>The Jenkins X terraform modules write some details into a cluster once it is created, this can cause issues when applying the Terraform plan if that cluster is not available.</p>
-<p>You will need to modify the state file so navigate to your local clone of your infrastructure git repository</p>
-<p>Set your bot username and personal access token <code>TF_VAR_</code>s</p>
-<pre><code>export TF_VAR_jx_bot_username=
-export TF_VAR_jx_bot_token=
-</code></pre><p>If you are using Terraform Cloud you can get you state file by adding this to your <code>main.tf</code></p>
-<pre><code># Enable to work with local and remote states
-# run terraform init after uncommenting below
-terraform {
-  backend &quot;remote&quot; {
-    hostname = &quot;app.terraform.io&quot;
-    organization = &quot;foo&quot;
-    workspaces {
-      name = &quot;bar&quot;
-    }
-  }
-}
-</code></pre><p>If you already have a local state file make a backup of it, e.g:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cp terraform.tfstate terraform.tfstate.backup
-</code></pre></div><p>now modify the state file:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">terraform state rm module.jx
-terraform refresh
-terraform state pull &gt; terraform.tfstate
-terraform plan
-terraform apply
-</code></pre></div><h2 id="what-is-not-recovered">What is not recovered</h2>
-<p>Any Custom Resources not stored in git will not be recovered, for example Jenkins X Pipeline Activities.  There are solutions like <a href="https://velero.io/">Velero</a> that handles backups which could be used.</p>
-
+	
         <div class="section-index">
     
     
@@ -1864,7 +1800,12 @@ terraform apply
             
         
             
-        
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/admin/guides/cluster-recovery/cluster-demo/">Cluster Recovery Demo</a>
+                    </h5>
+                    <p>Cluster Recovery Demo</p>
+                </div>
             
         
             
@@ -1945,6 +1886,19 @@ terraform apply
         
             
         
+            
+        
+            
+        
+            
+        
+            
+                <div class="entry">
+                    <h5>
+                        <a href="/v3/admin/guides/cluster-recovery/cluster-rebuild/">Cluster Rebuild Example</a>
+                    </h5>
+                    <p>An example how to rebuild a existing environment back to its original state prior to shutdown.</p>
+                </div>
             
         
             
@@ -2048,7 +2002,7 @@ terraform apply
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified February 23, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/1cb365945bbd83f473897fe4746d6cbb6290e9c8">fix: better layout (1cb365945b)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified March 6, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/d81130592882c9b0008f5d6e4cfedf10fd1532b5">docs: Add cluster rebuild example (d811305928)</a>
 </div>
 </div>
 
