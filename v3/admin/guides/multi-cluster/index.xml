@@ -13,5 +13,348 @@
       
     
     
+    <item>
+      <title>V3: Multi-Cluster</title>
+      <link>https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster/</guid>
+      <description>
+        
+        
+        &lt;p&gt;We recommend using separate clusters for your &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; environments. This lets you completely isolate your environments which improves security.&lt;/p&gt;
+&lt;h2 id=&#34;setting-up-multi-cluster&#34;&gt;Setting up multi cluster&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Follow the &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;administration documentation&lt;/a&gt; to setup a new Development Cluster (or skip this step if already in place).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Follow the mentioned approach at the previous point in order to setup new and additional clusters for the desired remote environments:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;For remote environments (e.g. &lt;code&gt;Preprod&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt;) you typically won&amp;rsquo;t need lots of the development tools such as:
+&lt;ul&gt;
+&lt;li&gt;Lighthouse&lt;/li&gt;
+&lt;li&gt;Tekton&lt;/li&gt;
+&lt;li&gt;Webhooks&lt;/li&gt;
+&lt;li&gt;Nexus / Bucketrepo&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;And install only services to run and expose your applications, e.g.:
+&lt;ul&gt;
+&lt;li&gt;Nginx-ingress&lt;/li&gt;
+&lt;li&gt;Cert-manager&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; for &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/&#34;&gt;populating Secrets from your secret store&lt;/a&gt; (vault or cloud provider secret manager)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/pusher-wave#wave&#34;&gt;push-wave&lt;/a&gt; for automatically performing rolling upgrades when secrets are rotated in your secret store&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Then when you have a git repository URL for your &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; cluster, &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/#import-an-existing-project&#34;&gt;import the git repository&lt;/a&gt; like you would any other git repository into your Development cluster using the &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; command (command should be run in the &lt;code&gt;jx&lt;/code&gt; namespace):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx project import --url https://github.com/myowner/my-prod-repo.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will create a Pull Request on your development cluster git repository to link to the &lt;code&gt;Preprod&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; git repository on promotions of apps.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: Jenkins X will &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#importing--creating-quickstarts&#34;&gt;push additional configuration files&lt;/a&gt; to the created Pull Request, so it is recommended to wait until the Pull Request is auto-merged and avoid manual intervention.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;changes-to-jx-requirementsyml&#34;&gt;Changes to &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;The above &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; should modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file in your development cluster to reference the remote production/pre-production cluster.&lt;/p&gt;
+&lt;p&gt;So your &lt;code&gt;jx-requirements.yml&lt;/code&gt; should have started something like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-dev-environment&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging                                                   &lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After importing the remote environment via &lt;a href=&#34;https://github.com/jenkins-x/jx-project/blob/master/docs/cmd/project_import.md&#34;&gt;jx project import&lt;/a&gt; and merging the pull request, it should look like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-dev-environment&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod-repo&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod-repo&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;remoteCluster&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once everything is correctly setup, it will be possible to deploy applications to the newly created remote environment/s.&lt;/p&gt;
+&lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
+&lt;p&gt;The multi cluster setup of Jenkins X is designed around the following goals:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;you have full control over production and pre-production clusters, choosing exactly what software is installed there
+&lt;ul&gt;
+&lt;li&gt;there are no development tools installed: no tekton, lighthouse, container registries and no images are built in production&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;immutable infrastructure configured via GitOps with maximum traceability and feedback
+&lt;ul&gt;
+&lt;li&gt;easy to review changes on production via git and not requiring access to production&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;development-cluster&#34;&gt;Development Cluster&lt;/h3&gt;
+&lt;p&gt;The development cluster:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;runs all pipelines on your applications to handle pull requests and performs releases
+&lt;ul&gt;
+&lt;li&gt;releases of applications create pull requests on remote cluster repositories&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;handles all webhooks for pull requests on remove environments and runs pipelines to validate changes to remote environments
+&lt;ul&gt;
+&lt;li&gt;reports back to GitHub the status of pull request pipelines&lt;/li&gt;
+&lt;li&gt;visualises the pipelines in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/&#34;&gt;usual Jenkins X UIs&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;supports auto-merge via ChatOps when approved&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;remote-cluster&#34;&gt;Remote Cluster&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;runs the &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/operator/&#34;&gt;git operator&lt;/a&gt; which polls the main branch in the remote cluster for changes&lt;/li&gt;
+&lt;li&gt;when a change is found a &lt;code&gt;Job&lt;/code&gt; is run to perform the &lt;code&gt;kubectl apply&lt;/code&gt; or &lt;code&gt;helmfile sync&lt;/code&gt; or whatever&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;remote-cluster-recommendations&#34;&gt;Remote Cluster Recommendations&lt;/h2&gt;
+&lt;p&gt;We do recommend using the Jenkins X GitOps pipeline approach in &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;production and preproduction for these reasons&lt;/a&gt; then all changes to git result in the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;kubernetes resources being checked into git&lt;/a&gt; so they can be easily reviewed without reviewers needing access to production.&lt;/p&gt;
+&lt;p&gt;You may want to reuse existing built in charts such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;kubernetes external secrets&lt;/a&gt; for &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/&#34;&gt;populating Secrets from your secret store&lt;/a&gt; (vault or cloud provider secret manager)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/pusher-wave#wave&#34;&gt;push-wave&lt;/a&gt; for automatically performing rolling upgrades when secrets are rotated in your secret store&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;using-helmfile-sync&#34;&gt;using &lt;code&gt;helmfile sync&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;If you want to just use something like &lt;code&gt;helmfile sync&lt;/code&gt; to deploy charts in production you could use the following &lt;code&gt;Makefile&lt;/code&gt; in your production/pre-production repository:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-make&#34; data-lang=&#34;make&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;apply&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+    helmfile sync
+    
+&lt;span style=&#34;color:#a6e22e&#34;&gt;pr&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+    helmfile lint
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;though you will lose &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;these benefits&lt;/a&gt;. You will also need to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;add your own &lt;a href=&#34;https://github.com/jenkins-x-charts/pusher-wave#quick-start&#34;&gt;pusher-wave integration&lt;/a&gt; for each chart you want to perform a rolling upgrade if the underlying secrets are rotated.&lt;/li&gt;
+&lt;li&gt;manually populate all secrets in each remote environments via the underlying secret store as you will not be using the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret&#34;&gt;jx-secret&lt;/a&gt; mechanism built into the default Jenkins X GitOps pipelines for doing this.&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Multi-Cluster Example</title>
+      <link>https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster-example/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster-example/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This is an example on how to build a multi-cluster environment having two separate cluster repos (i.e. &amp;lsquo;dev&amp;rsquo; and &amp;lsquo;prod&amp;rsquo;). The steps will include building a GKE/GSM/DSN environment from scratch for both environments, and deploying projects to staging and the remote production. It will use DNS (&lt;code&gt;jx3rocks.com&lt;/code&gt;), TLS, Let&amp;rsquo;s Encrypt certificates. This example is intended for an audience already familiar with Jenkins X operability and focuses on an example of actual commands used to build a multi-cluster environment. Additional information regarding using Google as the provider for this example can be found under &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/tls_dns/#prerequisites&#34;&gt;Google Cloud Platform Prequisites&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;generate-the-infra-and-cluster-repos-for-dev-and-prod&#34;&gt;Generate the Infra and Cluster Repos for Dev and Prod&lt;/h3&gt;
+&lt;p&gt;Using a command-line based approach, the example employs a process modeled after the doc &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/google&#34;&gt;Setup Jenkins X on Google Cloud with GKE&lt;/a&gt;, and will use Google Secret Manger. It requires the installation of &lt;a href=&#34;https://git-scm.com/downloads&#34;&gt;Git&lt;/a&gt; and &lt;a href=&#34;https://hub.github.com/&#34;&gt;Hub&lt;/a&gt; command line tools.&lt;/p&gt;
+&lt;p&gt;The following are the values used for the creation of the Infra and Cluster repos for both the Dev and Prod environments:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Repo Source:		jx3-gitops-repositories
+Prod Infra Repo:	jx3-terraform-gke.prd
+Prod Cluster Repo:	jx3-gke-gsm.prd
+Dev Infra Repo:		jx3-terraform-gke.dev
+Dev Cluster Repo:	jx3-gke-gsm.dev
+Git Organization:	$JX3ORG
+JX3 Root Directory:	$JX3HOME
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Building &lt;code&gt;PROD INFRA&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-terraform-gke.prd&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+git clone https://github.com/jx3-gitops-repositories/jx3-terraform-gke.git jx3-terraform-gke.prd
+cd  jx3-terraform-gke.prd
+git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.prd.git
+hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.prd
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
+git push -u origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Building &lt;code&gt;PROD CLUSTER&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-gke-gsm.prd&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+git clone https://github.com/jx3-gitops-repositories/jx3-gke-gsm.git jx3-gke-gsm.prd
+cd jx3-gke-gsm.prd
+git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd.git
+hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
+git push -u origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Building &lt;code&gt;DEV INFRA&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-terraform-gke.dev&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+git clone https://github.com/jx3-gitops-repositories/jx3-terraform-gke.git jx3-terraform-gke.dev
+cd  jx3-terraform-gke.dev
+git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.dev.git
+hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.dev
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
+git push -u origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Buidling &lt;code&gt;DEV CLUSTER&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-gke-gsm.prd&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+git clone https://github.com/jx3-gitops-repositories/jx3-gke-gsm.git jx3-gke-gsm.prd
+cd jx3-gke-gsm.prd
+git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd.git
+hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
+git push -u origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;initialize-the-prod-cluster-repo&#34;&gt;Initialize the Prod cluster repo&lt;/h3&gt;
+&lt;p&gt;Prior to building the prod infra repo, prepare the production cluster repo for use by removing unecessary components.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- key: production/d&amp;#39;&lt;/span&gt; jx-requirements.yml 
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;s/-jx././g&amp;#39;&lt;/span&gt; jx-requirements.yml 
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: prod cluster repo init&amp;#34;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;build-the-prod-infra-with-terraform&#34;&gt;Build the prod infra with Terraform&lt;/h3&gt;
+&lt;p&gt;The following TF_VAR environment variables are set prior to running Terraform commands:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;TF_VAR_gcp_project=&amp;lt;prod google project&amp;gt;
+TF_VAR_apex_domain_gcp_project=&amp;lt;dns google project&amp;gt;
+TF_VAR_jx_bot_username=&amp;lt;git username&amp;gt;
+TF_VAR_jx_bot_token=&amp;lt;git token&amp;gt;
+TF_VAR_tls_email=mymail@jx3rocks.com
+
+TF_VAR_apex_domain=jx3rocks.com
+TF_VAR_subdomain=prd
+
+TF_VAR_gsm=true
+TF_VAR_cluster_name=jx3prd
+TF_VAR_cluster_location=us-east4-c
+TF_VAR_jx_git_url=https://github.com/${JX3ORG}/jx3-gke-gsm.prd.git
+TF_VAR_lets_encrypt_production=true
+TF_VAR_force_destroy=true
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Additional details on Terraform settings can be found under &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/master/README.md&#34;&gt;Google Terraform Quickstart Template&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Commands to build infrastructure:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.prd
+bin/create.sh                &lt;span style=&#34;color:#75715e&#34;&gt;# Performs terraform init, plan and apply&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Validate the prod certificate is active and health checks pass:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud container clusters get-credentials jx3prd --zone us-east4-c --project &amp;lt;prod gcp project&amp;gt;
+export PROD_CONTEXT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;kubectl config current-context&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;
+jx ns jx
+&lt;span style=&#34;color:#75715e&#34;&gt;# Wait until the following status are all &amp;#34;green&amp;#34;&lt;/span&gt;
+jx health status --all-namespaces -w
+
+NAME                          NAMESPACE                     STATUS    ERROR MESSAGE
+certmanager-tls               kuberhealthy                  OK                   
+daemonset                     kuberhealthy                  OK                   
+deployment                    kuberhealthy                  OK                   
+dns-status-internal           kuberhealthy                  OK                   
+jx-bot-token                  jx                            OK                   
+jx-install                    jx-git-operator               OK                   
+jx-pod-status                 kuberhealthy                  OK                   
+jx-secrets                    kuberhealthy                  OK                   
+jx-webhook                    jx                            OK                   
+jx-webhook-events             jx                            OK                   
+network-connection-check      kuberhealthy                  OK   
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;initialize-the-dev-cluster-repo&#34;&gt;Initialize the Dev cluster repo&lt;/h3&gt;
+&lt;p&gt;Prepare the dev cluster repo for use by removing unecessary components.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.dev
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- key: production/d&amp;#39;&lt;/span&gt; jx-requirements.yml 
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;s/-jx././g&amp;#39;&lt;/span&gt; jx-requirements.yml 
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: dev cluster repo init&amp;#34;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;build-the-dev-infra-with-terraform&#34;&gt;Build the dev infra with Terraform&lt;/h3&gt;
+&lt;p&gt;The following TF_VAR environment variables are set prior to running Terraform commands:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;TF_VAR_gcp_project=&amp;lt;dev google project&amp;gt;
+TF_VAR_apex_domain_gcp_project=&amp;lt;dns google project&amp;gt;
+TF_VAR_jx_bot_username=&amp;lt;git username&amp;gt;
+TF_VAR_jx_bot_token=&amp;lt;git token&amp;gt;
+TF_VAR_tls_email=mymail@jx3rocks.com
+
+TF_VAR_apex_domain=jx3rocks.com
+TF_VAR_subdomain=dev
+
+TF_VAR_gsm=true
+TF_VAR_cluster_name=jx3dev
+TF_VAR_cluster_location=us-east1-b
+TF_VAR_jx_git_url=https://github.com/${JX3ORG}/jx3-gke-gsm.dev.git
+TF_VAR_lets_encrypt_production=true
+TF_VAR_force_destroy=true
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Additional details on Terraform settings can be found under &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/master/README.md&#34;&gt;Google Terraform Quickstart Template&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Commands to build intrastructure:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.dev
+bin/create.sh                &lt;span style=&#34;color:#75715e&#34;&gt;# Performs terraform init, plan and apply&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To validate the prod certificate is active and health checks pass:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;gcloud container clusters get-credentials jx3dev --zone us-east1-b --project &amp;lt;dev gcp project&amp;gt;
+export DEV_CONTEXT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;kubectl config current-context&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;
+jx ns jx
+&lt;span style=&#34;color:#75715e&#34;&gt;# Wait until the following status are all &amp;#34;green&amp;#34;&lt;/span&gt;
+jx health status --all-namespaces -w
+
+NAME                          NAMESPACE                     STATUS                        ERROR MESSAGE
+certmanager-tls               kuberhealthy                  OK                   
+daemonset                     kuberhealthy                  OK                   
+deployment                    kuberhealthy                  OK                   
+dns-status-internal           kuberhealthy                  OK                   
+jx-bot-token                  jx                            OK                   
+jx-install                    jx-git-operator               OK                   
+jx-pod-status                 kuberhealthy                  OK                   
+jx-secrets                    kuberhealthy                  OK                   
+jx-webhook                    jx                            OK                   
+jx-webhook-events             jx                            OK                   
+network-connection-check      kuberhealthy                  OK   
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;import-remote-prod-repo&#34;&gt;Import Remote Prod Repo&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Make sure you&amp;#39;re in the dev cluster&lt;/span&gt;
+kubectl config use-context $DEV_CONTEXT
+jx ns jx
+jx project import --url https://github.com/jx3rocks/jx3-gke-gsm.prd.git 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;we are now going to create a Pull Request on the development cluster git repository to setup CI/CD via GitOps
+
+created file /tmp/jx-git-643546451/.jx/gitops/source-config.yaml
+Created Pull Request: https://github.com/jx3rocks/jx3-gke-gsm.dev/pull/1
+
+we now need to wait for the Pull Request to merge so that CI/CD can be setup via GitOps
+
+Waiting up to 20m0s for the pull request https://github.com/jx3rocks/jx3-gke-gsm.dev/pull/1 to merge with poll period 20s....
+Pull Request https://github.com/jx3rocks/jx3-gke-gsm.dev/pull/1 was merged at sha 92e226e6e52cc96c1a84ba8dc455900d41cfe09d after waiting 2m1.698196955s
+
+waiting up to 20m0s for a trigger to be added to the lighthouse configuration in ConfigMap config in namespace jx for repository: jx3rocks/jx3-gke-gsm-prd
+you can watch the boot job to update the configuration via: jx admin log
+for more information on how this works see: https://jenkins-x.io/docs/v3/about/how-it-works/#importing--creating-quickstarts
+
+
+WARNING: It looks like the boot job failed to setup this project.
+You can view the log via: jx admin log
+error: failed to wait for repository to be setup in lighthouse: failed to find trigger in the lighthouse configuration in ConfigMap config in namespace jx for repository: jx3rocks/jx3-gke-gsm-prd within 20m0s
+error: failed to wait for the pipeline to be setup jx3rocks/jx3-gke-gsm-prd: failed to run &#39;jx pipeline wait --owner jx3rocks --repo jx3-gke-gsm-prd&#39; command in directory &#39;&#39;, output: &#39;&#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;environments&#34;&gt;Environments&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Development&lt;/span&gt;
+kubectl config use-context $DEV_CONTEXT
+kubectl get env
+NAME              NAMESPACE            KIND          PROMOTION   ORDER   GIT URL                                           GIT BRANCH
+dev               jx                   Development   Never               https://github.com/jx3rocks/jx3-gke-gsm.dev.git   master
+jx3-gke-gsm-prd   jx-jx3-gke-gsm-prd   Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;     https://github.com/jx3rocks/jx3-gke-gsm.prd.git   master
+staging           jx-staging           Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;     
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Production&lt;/span&gt;
+kubectl config use-context $PROD_CONTEXT
+kubectl get env
+NAME      NAMESPACE    KIND          PROMOTION   ORDER   GIT URL                                           GIT BRANCH
+dev       jx           Development   Never               https://github.com/jx3rocks/jx3-gke-gsm.prd.git   master
+staging   jx-staging   Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;           
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;set-dev-container-registry-to-public&#34;&gt;Set Dev Container Registry to Public&lt;/h3&gt;
+&lt;p&gt;In order to deploy applications to the remote prod environment it is required that the dev container registry is publically available. The image below highlights how you can make the change using the Google console.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/setContainer.png&#34; alt=&#34;Container Setting&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;deploy-quickstart-project&#34;&gt;Deploy Quickstart Project&lt;/h3&gt;
+&lt;p&gt;To ensure everything is working as intended, the following commands will create and deploy a simple NodeJS app to staging and the remote production.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl config use-context $DEV_CONTEXT
+jx ns jx
+&lt;span style=&#34;color:#75715e&#34;&gt;# Using quickstart deploy app to staging&lt;/span&gt;
+jx project quickstart --git-token &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;TF_VAR_jx_bot_token&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; --git-username &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;TF_VAR_jx_bot_user&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; --filter node-http --org &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; --batch-mode  --name node-http01
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Confirm deployments&lt;/span&gt;
+kubectl config use-context $DEV_CONTEXT
+kubectl get environments
+NAME              NAMESPACE            KIND          PROMOTION   ORDER   GIT URL                                           GIT BRANCH
+dev               jx                   Development   Never               https://github.com/jx3rocks/jx3-gke-gsm.dev.git   master
+jx3-gke-gsm-prd   jx-jx3-gke-gsm-prd   Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;     https://github.com/jx3rocks/jx3-gke-gsm.prd.git   master
+staging           jx-staging           Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;   
+
+jx get applications
+APPLICATION STAGING PODS URL
+node-http01 0.0.1   1/1  https://node-http01.dev.jx3rocks.com
+
+jx get applications -e jx3-gke-gsm-prd
+APPLICATION
+node-http01
+
+kubectl config use-context $PROD_CONTECT
+kubectl get environments
+kubectl get env
+NAME      NAMESPACE    KIND          PROMOTION   ORDER   GIT URL                                           GIT BRANCH
+dev       jx           Development   Never               https://github.com/jx3rocks/jx3-gke-gsm.prd.git   master
+staging   jx-staging   Permanent     Auto        &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;           
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# URLS&lt;/span&gt;
+Dev:  https://node-http01.dev.jx3rocks.com
+Prod: https://node-http01.prd.jx3rocks.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
   </channel>
 </rss>
