@@ -113,10 +113,21 @@
 &lt;li&gt;act as an artifact repository (e.g. to deploy maven artifacts)&lt;/li&gt;
 &lt;li&gt;implement a chart repository for releasing helm charts&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;To enable &lt;code&gt;bucketrepo&lt;/code&gt; use the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
+&lt;p&gt;To replace &lt;code&gt;nexus&lt;/code&gt; by &lt;code&gt;bucketrepo&lt;/code&gt; use the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default the local file system in the bucket repo is used to store artifacts.&lt;/p&gt;
-&lt;p&gt;To enable cloud storage for artifacts in &lt;code&gt;bucketrepo&lt;/code&gt; you need to enable the &lt;code&gt;storage.repository&lt;/code&gt; configuration in which case a cloud bucket is used instead. See the &lt;a href=&#34;#storage&#34;&gt;storage section for more details&lt;/a&gt;.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then replace the nexus chart in &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt; by:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkins-x/bucketrepo&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you also want to replace &lt;code&gt;chartmuseum&lt;/code&gt; by bucketrepo, change &lt;code&gt;jx-requirements.yml&lt;/code&gt; with:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Requirements&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;chartRepository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://bucketrepo.jx.svc.cluster.local/bucketrepo/charts&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Another alternative for the helm chart repository is to use Github gh-pages, as explained &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/config/registries/#how-do-i-switch-to-github-pages-for-charts&#34;&gt;here&lt;/a&gt;. Note that in that case and if you don&amp;rsquo;t have any maven artifact, you don&amp;rsquo;t need bucketrepo.&lt;/p&gt;
+&lt;p&gt;By default the local file system in the bucket repo is used to store artifacts.&lt;/p&gt;
+&lt;p&gt;To enable cloud storage for artifacts in &lt;code&gt;bucketrepo&lt;/code&gt; you need to enable the &lt;code&gt;storage.repository&lt;/code&gt; configuration in &lt;code&gt;jx-requirements.yml&lt;/code&gt;, in which case a cloud bucket is used instead. See the &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/config/storage&#34;&gt;storage section for more details&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;none&#34;&gt;None&lt;/h3&gt;
 &lt;p&gt;If you want to disable the artifact repository (nexus) but still use ChartMuseum for charts you can use the following:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
