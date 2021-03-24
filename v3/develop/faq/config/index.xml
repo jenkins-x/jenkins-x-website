@@ -55,7 +55,28 @@
 &lt;h2 id=&#34;how-do-i-customise-an-app-in-an-environment&#34;&gt;How do I customise an App in an Environment?&lt;/h2&gt;
 &lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;how to customise a chart&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-add-a-kubernetes-resource&#34;&gt;How do I add a kubernetes resource?&lt;/h2&gt;
+&lt;h2 id=&#34;how-do-i-use-a-chart-from-a-secure-repository&#34;&gt;How do I use a chart from a secure repository&lt;/h2&gt;
+&lt;p&gt;Some chart repositories need a username and password to access them.&lt;/p&gt;
+&lt;p&gt;So to access those chart repositories you can the username and password into the &lt;code&gt;helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;However the username/passwords are probably secret. So you can &lt;a href=&#34;https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/&#34;&gt;create a kubernetes Secret&lt;/a&gt; called &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; which is automatically used in the &lt;a href=&#34;v3/about/how-it-works/#boot-job&#34;&gt;boot Job&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;e.g.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# lets make sure we are in the jx-git-operator namespace&lt;/span&gt;
+jx ns jx-git-operator
+
+kubectl create secret generic jx-boot-job-env-vars &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;MYREPO_USERNAME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;someuser &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;MYREPO_PASSWORD&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;S!B\*d$zDsb=&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Any environment variables defined in the &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; Secret can then be used in your &lt;code&gt;helmfile.yaml&lt;/code&gt; as follows:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myrepo&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://something.com &lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;username&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{{ requiredEnv &amp;#34;MYREPO_USERNAME&amp;#34; }}&amp;#39;&lt;/span&gt; 
+  &lt;span style=&#34;color:#f92672&#34;&gt;password&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{{ requiredEnv &amp;#34;MYREPO_PASSWORD&amp;#34; }}&amp;#39;&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myrepo/mychart &lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mychart&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-add-a-kubernetes-resource&#34;&gt;How do I add a kubernetes resource?&lt;/h2&gt;
 &lt;p&gt;To add a new kubernetes resource &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;follow the add resources guide&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;The default &lt;code&gt;helmfile.yaml&lt;/code&gt; files take references to helm charts.&lt;/p&gt;
 &lt;p&gt;If you want to deploy one or more kubernetes resources &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;wrap them in a local chart in your dev cluster git repository&lt;/a&gt;&lt;/p&gt;
