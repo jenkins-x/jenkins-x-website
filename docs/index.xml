@@ -17378,69 +17378,6 @@ If there are any questions about your changes, or suggestions for improvements, 
     </item>
     
     <item>
-      <title>V3: Version Stream Manual Migrations</title>
-      <link>https://jenkins-x.io/v3/admin/setup/upgrades/migrations/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/v3/admin/setup/upgrades/migrations/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;version-stream-manual-migrations&#34;&gt;Version Stream Manual Migrations&lt;/h2&gt;
-&lt;p&gt;The sections below document manual migration steps required that occur from time to time where an automated upgrade is
-not possible or practical&lt;/p&gt;
-&lt;h3 id=&#34;v00969&#34;&gt;v0.0.969&lt;/h3&gt;
-&lt;p&gt;NB: These steps are only relevant if you are using Hashicorp Vault as secret storage within &lt;code&gt;jx&lt;/code&gt;. Ignore for all other secret stores&lt;/p&gt;
-&lt;p&gt;v0.0.969 introduced a change to remove Hashicorp Vault from &lt;code&gt;jx&lt;/code&gt; control and become an explicit cluster dependency
-installed either via Terraform (for cloud environments) or Helm (for on-premise). The reasoning behind this is to reduce
-cyclic complexity within &lt;code&gt;jx&lt;/code&gt; where the platform requires secrets and the &lt;code&gt;jx&lt;/code&gt; platform is also responsible for provisioning
-where to store these secrets.&lt;/p&gt;
-&lt;h4 id=&#34;migration-steps&#34;&gt;Migration steps&lt;/h4&gt;
-&lt;ol&gt;
-&lt;li&gt;First delete all your external-secrets and secrets within your cluster to temporarily stop External Secrets trying to synchronise
-these by running the following&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl get es -n jx --no-headers&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true | awk &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/./{print $1}&amp;#39;&lt;/span&gt; | tee &amp;gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;xargs kubectl delete -n jx es&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &amp;gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;xargs kubectl delete -n jx secret&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;If using Terraform then upgrade your infrastructure using the latest jx terraform module for your provider
-From your Terraform repo,&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;rm -rf .terraform
-terraform init
-terraform apply
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;Alternatively if not using Terraform, simply install the following charts in the &lt;code&gt;jx-vault&lt;/code&gt; namespace,&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;helm repo add jx3 https://storage.googleapis.com/jenkinsxio/charts
-helm repo add banzaicloud-stable https://kubernetes-charts.banzaicloud.com
-helm repo update
-helm install vault-operator banzaicloud-stable/vault-operator --version 1.10.0 -n jx-vault 
-helm install vault-instance jx3/vault-instance --version 1.0.15 -n jx-vault 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;4&#34;&gt;
-&lt;li&gt;
-&lt;p&gt;If you wish to migrate secrets from your existing (soon to be decommissioned) Vault then now is the time to do that by
-connecting to the new Vault instance in &lt;code&gt;jx-vault&lt;/code&gt; and putting secrets you want to maintain there&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Run the &lt;code&gt;jx gitops upgrade&lt;/code&gt; process and commit the files to git and push to trigger the boot job. (Don&amp;rsquo;t worry if
-you&amp;rsquo;ve already done this step previously - in which case just re-trigger a boot job with a dummy commit).
-This boot job will populate any missing secrets in Vault within the &lt;code&gt;jx secret populate&lt;/code&gt; step&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;After the boot job completes confirm the presence of synchronised External Secrets by running&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;kubectl get es -n jx
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;7&#34;&gt;
-&lt;li&gt;Once you&amp;rsquo;re happy with your new Vault installation you can tidy up the older vault in &lt;code&gt;secret-infra&lt;/code&gt; by removing
-the vault-instance and vault-operator from your helmfile located in &lt;code&gt;helmfiles/secret-infra/helmfile.yaml&lt;/code&gt; and
-running a boot job&lt;/li&gt;
-&lt;/ol&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>V3: What is Jenkins X?</title>
       <link>https://jenkins-x.io/v3/about/what/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -18893,6 +18830,49 @@ You can now edit the code in your IDE and run build/test commands inside the &lt
 &lt;/figcaption&gt;
 &lt;/figure&gt;
 
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Getting Started</title>
+      <link>https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Make sure you have got the &lt;a href=&#34;https://jenkins-x.io/v3/guides/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; and you have installed &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;version 3&lt;/a&gt; before proceeding.&lt;/p&gt;
+&lt;h2 id=&#34;adding-jenkins-servers-into-jenkins-x&#34;&gt;Adding Jenkins Servers into Jenkins X&lt;/h2&gt;
+&lt;p&gt;You can use Jenkins X to install one or more Jenkins servers by running the following command in a git clone of your dev cluster git repository:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops jenkins add --name myjenkins
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That will add a new &lt;code&gt;helmfile/myjenkins/helmfile.yaml&lt;/code&gt; file for the jenkins charts along with &lt;code&gt;helmfile/myjenkins/values.yaml&lt;/code&gt; file that can be used to configure the &lt;a href=&#34;https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/VALUES_SUMMARY.md&#34;&gt;jenkins helm chart configuration values&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now git commit that file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: added new jenkins service&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;importing-projects-or-creating-quickstarts&#34;&gt;Importing projects or creating quickstarts&lt;/h3&gt;
+&lt;p&gt;If you want to import repositories into your jenkins server or create quickstarts using &lt;code&gt;Jenkinsfile&lt;/code&gt; files then follow the usual &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34;&gt;user guide approach of creating projects&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Your new jenkins server will be added to the &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file and so will be available to developers as a Jenkins server that can be used when importing projects.&lt;/p&gt;
+&lt;h3 id=&#34;configure-jenkins&#34;&gt;Configure Jenkins&lt;/h3&gt;
+&lt;p&gt;To configure your Jenkins server edit the &lt;code&gt;helmfile/myjenkins/values.yaml&lt;/code&gt; according to the &lt;a href=&#34;https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/VALUES_SUMMARY.md&#34;&gt;configuration guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Each Jenkins server has its own namespace so that its possible to use fine grained role based access for each server using Kubernetes RBAC.&lt;/p&gt;
+&lt;p&gt;In addition by default each Jenkins server gets to share the pipeline git user name and token so that it can access private git repositories in the same way as tekton pipelines.&lt;/p&gt;
+&lt;h3 id=&#34;job-dsl&#34;&gt;Job DSL&lt;/h3&gt;
+&lt;p&gt;When you import projects or create quickstarts with the above approach, your projects get added to the jenkins server you choose in  &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Then during the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;boot job&lt;/a&gt; Jenkins X will create a &lt;a href=&#34;https://plugins.jenkins.io/job-dsl/&#34;&gt;Jenkins Job DSL script&lt;/a&gt; for each project in your &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file for each Jenkins server.&lt;/p&gt;
+&lt;p&gt;The Job DSL scripts are generated in the file &lt;code&gt;helmfiles/myjenkins/job-values.yaml&lt;/code&gt; which is then passed into the &lt;a href=&#34;https://github.com/jenkinsci/helm-charts&#34;&gt;Jenkins helm chart&lt;/a&gt; via the &lt;code&gt;values:&lt;/code&gt; item in the &lt;code&gt;helmfiles/myjenkins/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;By default the boot job uses &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/jenkins/templates&#34;&gt;these templates for the Job DSL&lt;/a&gt; for folders (e.g. organisations) and for repositories.&lt;/p&gt;
+&lt;p&gt;You can configure which templates you wish to use in the &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file; either globally or on a per organsation or repository basis. Please refer to the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.SourceConfig&#34;&gt;SourceConfig&lt;/a&gt; reference guide. In particularly see how you can specify &lt;code&gt;jenkinsFolderTemplate&lt;/code&gt; or &lt;code&gt;jenkinsJobTemplate&lt;/code&gt; values at the global, organisation or repository level inside the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/config.md#gitops.jenkins-x.io/v1alpha1.JenkinsServer&#34;&gt;jenkinsServer&lt;/a&gt; entry.&lt;/p&gt;
+&lt;h3 id=&#34;accessing-the-jenkins-server&#34;&gt;Accessing the Jenkins server&lt;/h3&gt;
+&lt;p&gt;You can switch to the jenkins namespace via the following and see the host name to open the console:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ns myjenkins
+
+kubectl get ing
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jenkins X will have generated a username of &lt;strong&gt;admin&lt;/strong&gt; and a random password which is stored in your secret store (either Vault or your cloud secret manager).&lt;/p&gt;
+&lt;p&gt;To find the admin password so that you can login to Jenkins try:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get secret jenkins -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.jenkins-admin-password}&amp;#34;&lt;/span&gt; | base64 --decode
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can find the URL to open Jenkins via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;echo http://&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;kubectl get ingress jenkins -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.spec.rules[0].host}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
