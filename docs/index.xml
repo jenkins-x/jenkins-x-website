@@ -17386,27 +17386,38 @@ If there are any questions about your changes, or suggestions for improvements, 
       <description>
         
         
-        &lt;p&gt;Jenkins X aims to automate and accelerate Continuous Integration and Continuous Delivery for developers on the cloud and/or Kubernetes so they can focus on building awesome software and not waste time figuring out how to use the cloud or manually create and maintain pipelines.&lt;/p&gt;
-&lt;p&gt;Jenkins X 3 focuses on a few main areas:&lt;/p&gt;
+        &lt;p&gt;Jenkins X automates and accelerates Continuous Integration and Continuous Delivery for developers on the cloud, so they can focus on building awesome software.&lt;/p&gt;
+&lt;p&gt;Embracing popular open source projects Jenkins X automates the setup and management to provide an integrated Cloud Native solution teams can use to develop better software faster and more reliably that traditional non cloud solutions.&lt;/p&gt;
+&lt;p&gt;Open Source projects that Jenkins X integrates with:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; target platform Jenkins X is installed onto, optionally deploy and run applications built with Jenkins X&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; Cloud Native pipeline orchestration&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://comcast.github.io/kuberhealthy/&#34;&gt;Kuberhealthy&lt;/a&gt; Periodic health checks of the systems&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://grafana.com&#34;&gt;Grafana&lt;/a&gt; &lt;strong&gt;[optional]&lt;/strong&gt; Centralised logs and Observability&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.jenkins.io/&#34;&gt;Jenkins&lt;/a&gt; &lt;strong&gt;[optional]&lt;/strong&gt; traditional pipeline orchestration&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sonatype.com/nexus/repository-oss&#34;&gt;Nexus&lt;/a&gt; &lt;strong&gt;[optional]&lt;/strong&gt; artifact repository&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;At a high level Jenkins X can be split into a few areas:&lt;/p&gt;
 &lt;h3 id=&#34;infrastructure&#34;&gt;Infrastructure&lt;/h3&gt;
-&lt;p&gt;Moving management of infrastructure outside of Jenkins X, favouring solutions like Terraform.  This reduces the surface area of Jenkins X and leverages expert OSS projects and communities around managing infrastructure and cloud resources.&lt;/p&gt;
+&lt;p&gt;Jenkins X aims to use the cloud well, Kubernetes to host the core services, storage buckets for long term storage, container registries and hosted serivces like secrets managers. All of this needs to be created and managed.  Jenkins X defers to &lt;a href=&#34;https://www.terraform.io/&#34;&gt;Terraform&lt;/a&gt; to setup and manage the Cloud infrastructure needed by Jenkins X.&lt;/p&gt;
+&lt;h3 id=&#34;gitops&#34;&gt;GitOps&lt;/h3&gt;
+&lt;p&gt;The entire Jenkins X experience is based around Git.  The installation, extensions and applications you develop are managed via a cluster Git repository which is the desired state of your Kubernetes cluster.  A Kubernetes operator runs inside the cluster and polls for changes in the Git repository, applying verified and approved updates.  The cluster Git repository uses &lt;a href=&#34;https://github.com/roboll/helmfile/&#34;&gt;Helmfile&lt;/a&gt; to describe the helm charts that should be used to install software.  Jenkins X generates the Kubernetes resources defined in the Helmfiles, commits back to Git so the exact state can always be seen via Git.&lt;/p&gt;
+&lt;p&gt;Using GitOps means familiar processes can be followed when making any change to the cluster, using reviews, automation, traceability and rollbacks to give better control over consuming changes.&lt;/p&gt;
+&lt;p&gt;Jenkins X also uses GitOps as the way to &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades&#34;&gt;upgrade&lt;/a&gt;, including new releases of images, helm charts and pakages.&lt;/p&gt;
 &lt;h3 id=&#34;secret-management&#34;&gt;Secret Management&lt;/h3&gt;
-&lt;p&gt;Adding an abstraction layer above secret management solutions so users can choose where the source of secrets can be stored, preferably outside of the Kubernetes cluster.  This is a good practice for disaster recovery scenarios.&lt;/p&gt;
+&lt;p&gt;Using GitOps as above does present a challenge of where to store secrets for your cluster as keeping them in Git is insecure.  There is a way to &lt;a href=&#34;https://github.com/bitnami-labs/sealed-secrets&#34;&gt;encrypt secrets and store them in Git&lt;/a&gt; but there is a usability issue which makes the approach non trivial to use.  Jenkins X prefers to work with real secret provider solutions like &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;Vault&lt;/a&gt; or where possible cloud hosted solutions like &lt;a href=&#34;https://cloud.google.com/secret-manager&#34;&gt;Google&lt;/a&gt;, Azure or Amazon Secrets managers.&lt;/p&gt;
+&lt;p&gt;Jenkins X GitOps works with &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;External Secrets&lt;/a&gt; to provide an integrated experience so your secrets source of truth is a secrets manager and the values are replicated into the cluster when needed.&lt;/p&gt;
+&lt;h3 id=&#34;pipelines&#34;&gt;Pipelines&lt;/h3&gt;
+&lt;p&gt;By default Jenkins X ships with Tekton for a clean declarative cloud native way to describe &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/&#34;&gt;pipelines&lt;/a&gt;.  Combined with Lighthouse Jenkins X makes it easy to inherit versioned shared pipeline steps via Git and a simple syntax providing flexibility and easy maintenance.&lt;/p&gt;
+&lt;p&gt;Jenkins X can also work well with Jenkins for users that have traditional workloads.  This is not installed by default but with Jenkins X it is easy to install any helm chart and so designed to work great with our inspirational project Jenkins.&lt;/p&gt;
+&lt;h3 id=&#34;chatops&#34;&gt;ChatOps&lt;/h3&gt;
+&lt;p&gt;With the ever growing number of microservices needing automation, Jenkins X provides the ability to interact with pipelines via comments on pull requests.  &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;Lighthouse&lt;/a&gt; has evolved from &lt;a href=&#34;https://github.com/kubernetes/test-infra/tree/master/prow#&#34;&gt;Prow&lt;/a&gt; which is used heavily in the Kubernetes ecosystem to provide a consistent developer workflow for triggering tests, approvals, hold and other common commands developers use in their everyday activities.&lt;/p&gt;
 &lt;h3 id=&#34;developer-experience&#34;&gt;Developer experience&lt;/h3&gt;
-&lt;p&gt;Jenkins X 3.x includes a revived focus on developer experience.  The introduction of Jenkins X plugins for &lt;a href=&#34;https://octant.dev/&#34;&gt;Octant&lt;/a&gt; has addressed a long standing request from the open source community.  Jenkins X 3.x will be focussing on new visualisations  to help developers, operators and cross functioning teams.&lt;/p&gt;
-&lt;p&gt;With the jx CLI refactoring described below Jenkins X 3.x is reviewing consistency and usability around CLI experience, please continue to raise &lt;a href=&#34;https://github.com/jenkins-x/jx-docs/issues&#34;&gt;issues&lt;/a&gt; and reach out in slack / &lt;a href=&#34;https://jenkinsx.discourse.group/&#34;&gt;discourse&lt;/a&gt; to help improve.&lt;/p&gt;
-&lt;h3 id=&#34;maintainability&#34;&gt;Maintainability&lt;/h3&gt;
-&lt;p&gt;Created a new &lt;code&gt;jx&lt;/code&gt; CLI which includes an extensible plugin model where each main subcommand off the jx base is it&amp;rsquo;s own releasable git repository.  This has significantly improved the Jenkins X codebase which helps with maintainability and contributions.&lt;/p&gt;
-&lt;h3 id=&#34;removing-complexity-and-magic&#34;&gt;Removing complexity and magic&lt;/h3&gt;
-&lt;p&gt;Removing complexity out of Jenkins X and reusing other solutions wherever possible.  Jenkins X 2.x was tightly coupled to helm 2 for example.  There were &lt;code&gt;jx&lt;/code&gt; CLI steps that wrapped helm commands when installing applications into the cluster which injected secrets from an internal Vault and ultimately made it very confusing for users and maintainers.&lt;/p&gt;
-&lt;p&gt;Jenkins X 3.x prefers to avoid wrapping other CLIs unless a consistent higher level UX is being provided say around managing secrets and underlying commands being executed are clearly printed in users terminals.&lt;/p&gt;
-&lt;h3 id=&#34;documentation&#34;&gt;Documentation&lt;/h3&gt;
-&lt;p&gt;We had lots of feedback from users about the Jenkins X documentation was incomplete, inconsistent, old, not relevant or claimed to work but simply did not.&lt;/p&gt;
-&lt;p&gt;Jenkins X 3.x will clearly mark areas that have not been tested and are more experimental while also providing a clearer capability matrix indicating to users the maturity of features and supported platforms.  Added to this we plan to make it easier for users, teams, companies to contribute to Jenkins X.&lt;/p&gt;
-&lt;p&gt;A &lt;a href=&#34;https://github.com/jenkins-x/jx-community/tree/master/sig-docs&#34;&gt;special interest group&lt;/a&gt; for docs has been set up with the focus on Jenkins X 3.x and will continue to evolve.&lt;/p&gt;
-&lt;h3 id=&#34;open-source&#34;&gt;Open source&lt;/h3&gt;
-&lt;p&gt;Jenkins X 3.x is not only open source but developed and maintained in open source communities. Slack, Discourse and focused special interest groups provide ways for developers, users or keen people to be part of the Jenkins X journey.&lt;/p&gt;
-&lt;p&gt;Jenkins X 3.x will provide clear extension points for non open source functionality to be added but not affect the OSS core.&lt;/p&gt;
+&lt;p&gt;Along with ChatOps mentioned above Jenkins X aims to help developers have a consistent way of working with their microservices, using a CLI or GUI developers can leverage proven approaches recomended by the &lt;a href=&#34;https://www.amazon.co.uk/Accelerate-Software-Performing-Technology-Organizations/dp/1942788339&#34;&gt;Accelerate book&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Whether creating or importing new projects that automates the setup of CI and CD, packaging applications so they can deploy and run on Kubernetes or simply release as libraries for downstream applications to use.  Jenkins X helps teams have consistency in the way they are built, developed and improved.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;jx&lt;/code&gt; CLI helps developers interact with Jenkins X using their terminal.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/ui&#34;&gt;For GUI&amp;rsquo;s&lt;/a&gt;, Jenkins X has a plugin for &lt;a href=&#34;https://octant.dev/&#34;&gt;Octant&lt;/a&gt;.  Octant runs outside of the cluster and uses the authentication and permissions users have to interact with Kubernetes resources.&lt;/p&gt;
+&lt;p&gt;There is also a read only in cluster pipeline dashboard that links via pull requests so users can view logs of builds.&lt;/p&gt;
 
       </description>
     </item>
