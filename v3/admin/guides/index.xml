@@ -124,7 +124,7 @@ promtail-f26j8                                   1/1     Running   &lt;span styl
 &lt;li&gt;the default user is &lt;code&gt;admin&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;the default password has been auto-generated at installation time, you can retrieve it with the following command:&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl -n jx-observability get secret grafana --template&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{{index .data &amp;#34;admin-password&amp;#34;}}&amp;#39;&lt;/span&gt; | base64 -D
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl -n jx-observability get secret grafana --template&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{{index .data &amp;#34;admin-password&amp;#34;}}&amp;#39;&lt;/span&gt; | base64 --decode
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once you are logged-in, you can play with the pre-defined dashboards, or with the &lt;a href=&#34;https://grafana.com/docs/grafana/latest/explore/&#34;&gt;Grafana Explorer&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
 &lt;p&gt;The configuration is defined in &amp;ldquo;values files&amp;rdquo; stored in the Jenkins X Version Stream:&lt;/p&gt;
@@ -142,6 +142,52 @@ promtail-f26j8                                   1/1     Running   &lt;span styl
 &lt;li&gt;for example, &lt;code&gt;values/grafana/values.yaml&lt;/code&gt; for Grafana, or &lt;code&gt;values/prometheus/values.yaml&lt;/code&gt; for Prometheus&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Preview Environments</title>
+      <link>https://jenkins-x.io/v3/admin/guides/preview-environments/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/preview-environments/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/&#34;&gt;Preview environments&lt;/a&gt; are temporary environments created automatically by Jenkins X for each Pull Request.&lt;/p&gt;
+&lt;p&gt;This is very nice, but if you start adding applications to your Jenkins X cluster, and each application repository has a few opened Pull Requests - each with a preview environment including a few dependencies - then you&amp;rsquo;ll quickly get tens of preview environments and a lot more running pods. But these pods are usually only used to run the integration tests in the Pull Request pipelines, or when someone manually visit the preview environment URL. Most of the times, these pods are just idle, waiting and using resources. What if you could easily scale them down when they are idle?&lt;/p&gt;
+&lt;p&gt;This guide will help you install &lt;a href=&#34;https://github.com/dailymotion-oss/osiris&#34;&gt;Osiris&lt;/a&gt; in your Jenkins X cluster. Osiris is a Kubernetes component which will inject itself as a proxy in front of your applications, and scale them down when it notices that they are idle for more than a pre-configured period. And if someone wants to access your application, Osiris will receive the request, scale up the application, and forward the request to the application.&lt;/p&gt;
+&lt;p&gt;Combined with a cluster autoscaler, Osiris will help you scale down/up your cluster nodes automatically based on your workload.&lt;/p&gt;
+&lt;h2 id=&#34;installation&#34;&gt;Installation&lt;/h2&gt;
+&lt;p&gt;Please follow the usual &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;getting started guide for boot and helm 3&lt;/a&gt; first.&lt;/p&gt;
+&lt;p&gt;The first step is to edit your main &lt;code&gt;helmfile.yaml&lt;/code&gt; file located in the root directory of your development environment git repository, so that it references the &lt;code&gt;helmfiles/osiris-system/helmfile.yaml&lt;/code&gt; file, such as:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;helmfiles&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/jx/helmfile.yaml&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/osiris-system/helmfile.yaml&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/tekton-pipelines/helmfile.yaml&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The second step is to create the &lt;code&gt;helmfiles/osiris-system/helmfile.yaml&lt;/code&gt; file, with the following content:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;osiris-system&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;osiris/osiris&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Commit and push these changes, and after a few minutes you should see a few osiris pods running in the &lt;code&gt;osiris-system&lt;/code&gt; namespace:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -n osiris-system
+NAME                                           READY   STATUS    RESTARTS   AGE
+osiris-activator-696b8c85f9-99hnn              1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          31m
+osiris-endpoints-controller-67f4877645-k4pxv   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          31m
+osiris-endpoints-hijacker-686586df7c-72cmx     1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          31m
+osiris-proxy-injector-847f6f46c6-bjjtp         1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          31m
+osiris-zeroscaler-5d757dcb98-kl7ts             1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          31m
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;usage&#34;&gt;Usage&lt;/h2&gt;
+&lt;p&gt;Osiris requires specific annotations to be added to your application&amp;rsquo;s Deployment and Service, otherwise it won&amp;rsquo;t do anything. You can read the &lt;a href=&#34;https://github.com/dailymotion-oss/osiris&#34;&gt;Osiris documentation&lt;/a&gt; to see which annoations you need to add to your resources.&lt;/p&gt;
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;The configuration is defined in a &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/osiris/osiris/values.yaml.gotmpl&#34;&gt;&amp;ldquo;values file&amp;rdquo; stored in the Jenkins X Version Stream&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you want to change anything from the default configuration, you can either:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;submit a Pull Request if you believe this change is benefic for everybody&lt;/li&gt;
+&lt;li&gt;or create a new values file in your development environment git repositor: &lt;code&gt;values/osiris/values.yaml&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
       </description>
