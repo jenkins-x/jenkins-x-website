@@ -13,5 +13,170 @@
       
     
     
+    <item>
+      <title>V3: Platform Observability</title>
+      <link>https://jenkins-x.io/v3/admin/guides/observability/platform-observability/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/observability/platform-observability/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This guide will help you install, configure and use an observability stack in your Jenkins X cluster.&lt;/p&gt;
+&lt;p&gt;We selected the &lt;a href=&#34;http://grafana.com/&#34;&gt;Grafana&lt;/a&gt; stack because:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it&amp;rsquo;s &lt;a href=&#34;https://grafana.com/oss/&#34;&gt;open-source&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;it has support for &lt;a href=&#34;https://grafana.com/oss/loki/&#34;&gt;logs&lt;/a&gt;, &lt;a href=&#34;https://grafana.com/oss/prometheus/&#34;&gt;metrics&lt;/a&gt;, and &lt;a href=&#34;https://grafana.com/oss/tempo/&#34;&gt;distributed traces&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;it has a low memory footprint, and a great Kubernetes integration&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;installation&#34;&gt;Installation&lt;/h2&gt;
+&lt;p&gt;Please follow the usual &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;getting started guide for boot and helm 3&lt;/a&gt; first.&lt;/p&gt;
+&lt;p&gt;The first step is to edit your main &lt;code&gt;helmfile.yaml&lt;/code&gt; file located in the root directory of your development environment git repository, so that it references the &lt;code&gt;helmfiles/jx-observability/helmfile.yaml&lt;/code&gt; file, such as:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;helmfiles&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/jx/helmfile.yaml&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/jx-observability/helmfile.yaml&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/tekton-pipelines/helmfile.yaml&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The second step is to create the &lt;code&gt;helmfiles/jx-observability/helmfile.yaml&lt;/code&gt; file, with the following content:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-observability&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx3/grafana-dashboard&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;grafana/loki&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;grafana/promtail&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;grafana/grafana&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prometheus-community/prometheus&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Commit and push these changes, and after a few minutes you should see grafana, loki, promtail, and prometheus pods running in the &lt;code&gt;jx-observability&lt;/code&gt; namespace:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -n jx-observability
+NAME                                             READY   STATUS    RESTARTS   AGE
+grafana-5858dbfcc4-ldhtc                         2/2     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          8m25s
+loki-0                                           1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+prometheus-alertmanager-8697d479dd-9nqt7         2/2     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+prometheus-kube-state-metrics-685b975bb7-cds8s   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+prometheus-node-exporter-djdr6                   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+prometheus-server-65ff7b48dd-kqj2d               2/2     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+promtail-f26j8                                   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          10m
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;whos-who&#34;&gt;Who&amp;rsquo;s who&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://grafana.com/docs/loki/latest/clients/promtail/&#34;&gt;Promtail&lt;/a&gt; collects the logs from all running containers
+&lt;ul&gt;
+&lt;li&gt;it is deployed as a daemonset on every node of the cluster so that it can read the Kubernetes log files&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://grafana.com/docs/loki/latest/&#34;&gt;Loki&lt;/a&gt; ingests the logs - pushed by promtail - and exposes a query API&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://prometheus.io/&#34;&gt;Prometheus&lt;/a&gt; (server) collects and ingests the metrics from the running pods
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://prometheus.io/docs/alerting/latest/alertmanager/&#34;&gt;Prometheus Alertmanager&lt;/a&gt; handles alerts - generated by Prometheus server, Loki or Grafana&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://prometheus.io/docs/guides/node-exporter/&#34;&gt;Prometheus Node Exporter&lt;/a&gt; collects hardware- and kernel-related metrics
+&lt;ul&gt;
+&lt;li&gt;it is deployed as a daemonset on every node of the cluster&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kubernetes/kube-state-metrics&#34;&gt;Kube State Metrics&lt;/a&gt; collects metrics from the Kubernetes API&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://grafana.com/docs/grafana/latest/&#34;&gt;Grafana&lt;/a&gt; is the UI that brings everything together&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/grafana-dashboard&#34;&gt;Grafana Dashboard&lt;/a&gt; is a Helm Chart that contains Grafana Dashboards for Jenkins X, stored in Kubernetes ConfigMaps&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;usage&#34;&gt;Usage&lt;/h2&gt;
+&lt;p&gt;Grafana is exposed through an ingress - you can retrieve its URL with the following command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get ing -n jx-observability
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The default credentials are stored in the &lt;code&gt;grafana&lt;/code&gt; Kubernetes Secret:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the default user is &lt;code&gt;admin&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;the default password has been auto-generated at installation time, you can retrieve it with the following command:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl -n jx-observability get secret grafana --template&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{{index .data &amp;#34;admin-password&amp;#34;}}&amp;#39;&lt;/span&gt; | base64 --decode
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once you are logged in, you can play with the pre-defined dashboards, or with the &lt;a href=&#34;https://grafana.com/docs/grafana/latest/explore/&#34;&gt;Grafana Explorer&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This is an example of a pre-defined dashboard, for &lt;a href=&#34;https://cert-manager.io/&#34;&gt;cert-manager&lt;/a&gt;, where we display on the same dashboard metrics collected by Prometheus (including the certificates expiration dates) and logs collected by Loki/Promtail:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/observability_platform_cert-manager.png&#34; alt=&#34;cert-manager grafana dashboard for Jenkins X&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;The configuration is defined in &amp;ldquo;values files&amp;rdquo; stored in the Jenkins X Version Stream:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/grafana/grafana&#34;&gt;Grafana configuration&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/grafana/loki&#34;&gt;Loki configuration&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/grafana/promtail&#34;&gt;Promtail configuration&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/prometheus-community/prometheus&#34;&gt;Prometheus configuration&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you want to change anything from the default configuration, you can either:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;submit a Pull Request if you believe this change is beneficial for everybody&lt;/li&gt;
+&lt;li&gt;or create a new values file in your development environment git repository, in the &lt;code&gt;values&lt;/code&gt; directory
+&lt;ul&gt;
+&lt;li&gt;for example, &lt;code&gt;values/grafana/values.yaml&lt;/code&gt; for Grafana, or &lt;code&gt;values/prometheus/values.yaml&lt;/code&gt; for Prometheus&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;next-steps&#34;&gt;Next steps&lt;/h2&gt;
+&lt;p&gt;Once the Grafana stack is installed and configured, you can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;install the &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/observability/cd-indicators/&#34;&gt;Continuous Delivery Indicators&lt;/a&gt; addon&lt;/li&gt;
+&lt;li&gt;expose Prometheus metrics from your own applications&lt;/li&gt;
+&lt;li&gt;create Grafana dashboards for your applications&lt;/li&gt;
+&lt;li&gt;contribute to the &lt;a href=&#34;https://github.com/jenkins-x-charts/grafana-dashboard&#34;&gt;Jenkins X Grafana Dashboards&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Continuous Delivery Indicators</title>
+      <link>https://jenkins-x.io/v3/admin/guides/observability/cd-indicators/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/observability/cd-indicators/</guid>
+      <description>
+        
+        
+        &lt;p&gt;This guide will help you install, configure and use the &lt;a href=&#34;https://github.com/jenkins-x/cd-indicators&#34;&gt;Continuous Delivery Indicators&lt;/a&gt; addon in your Jenkins X cluster.&lt;/p&gt;
+&lt;p&gt;This addon will automatically:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;collect metrics from cluster events and git events: pull requests, pipelines, releases, deployments, &amp;hellip;&lt;/li&gt;
+&lt;li&gt;store them in a &lt;a href=&#34;https://www.postgresql.org/&#34;&gt;PostgreSQL&lt;/a&gt; database&lt;/li&gt;
+&lt;li&gt;expose &lt;a href=&#34;http://grafana.com/&#34;&gt;Grafana&lt;/a&gt; dashboards to visualize Continuous Delivery Indicators&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This is an example of a pre-defined dashboard to visualize Continuous Delivery Indicators for a single repository (application):&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/observability_cd_indicators_repository.png&#34; alt=&#34;Continuous Delivery Indicators for a single repository&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;installation&#34;&gt;Installation&lt;/h2&gt;
+&lt;p&gt;Note that this addon requires a running Grafana instance in your cluster, so you should install it first, using the &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/observability/platform-observability/&#34;&gt;platform observability guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Please follow the usual &lt;a href=&#34;https://jenkins-x.io/v3/admin/platform/&#34;&gt;getting started guide for boot and helm 3&lt;/a&gt; first.&lt;/p&gt;
+&lt;p&gt;Installing this addon is a 1 step operation: you need to edit the &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt; file in your development environment git repository, so that it references the &lt;code&gt;jx3/cd-indicators&lt;/code&gt; chart, such as:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx3/cd-indicators&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Commit and push these changes, and after a few minutes you should see 2 new pods running in the &lt;code&gt;jx&lt;/code&gt; namespace:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ kubectl get pod -n jx
+NAME                             READY   STATUS    RESTARTS   AGE
+cd-indicators-57f85df9fb-fltjp   1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          13m
+cd-indicators-postgresql-0       1/1     Running   &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;          13m
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;usage&#34;&gt;Usage&lt;/h2&gt;
+&lt;p&gt;This addon will also expose:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a &lt;a href=&#34;https://grafana.com/docs/grafana/latest/datasources/&#34;&gt;Grafana datasource&lt;/a&gt; for the embedded PostgreSQL database - named &lt;code&gt;Indicators&lt;/code&gt; - in a Kubernetes Secret&lt;/li&gt;
+&lt;li&gt;multiple &lt;a href=&#34;https://grafana.com/docs/grafana/latest/dashboards/&#34;&gt;Grafana dashboards&lt;/a&gt; - with the &lt;code&gt;cd-indicators&lt;/code&gt; tag - in Kubernetes ConfigMaps&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The Grafana instance will automatically find these new resources and use them. So if you go to your Grafana URL, you should now see a new datasource and new dashboards. Of course, it might take a few hours/days/weeks to get enough data to get nice-looking dashboards.&lt;/p&gt;
+&lt;p&gt;You can either:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;enrich the existing dashboards, and submit Pull Requests on the &lt;a href=&#34;https://github.com/jenkins-x/cd-indicators&#34;&gt;cd-indicators github repository&lt;/a&gt; so that everybody can benefit from your improvements&lt;/li&gt;
+&lt;li&gt;or create your own dashboards. We recommend that you store them in a git repository, and publish them as ConfigMaps in your cluster - see the &lt;a href=&#34;https://github.com/jenkins-x/cd-indicators&#34;&gt;cd-indicators github repository&lt;/a&gt; for an example.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;And because we&amp;rsquo;re re-using the same Grafana instance which already has the Prometheus (metrics) and Loki (logs) datasources, you can build dashboards combining data from all sources, to get a complete overview of your application and its lifecycle: development, build, release, deployment, runtime.&lt;/p&gt;
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;The configuration is defined in a &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/tree/master/charts/jx3/cd-indicators/values.yaml&#34;&gt;&amp;ldquo;values file&amp;rdquo; stored in the Jenkins X Version Stream&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you want to change anything from the default configuration, you can either:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;submit a Pull Request if you believe this change is beneficial for everybody&lt;/li&gt;
+&lt;li&gt;or create a new values file in your development environment git repositor: &lt;code&gt;values/cd-indicators/values.yaml&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You should at least configure the &lt;code&gt;gitOwners&lt;/code&gt;, to ensure you will only collect metrics for your own repositories, and not for Jenkins X&amp;rsquo;s own applications - see &lt;a href=&#34;https://github.com/jenkins-x/cd-indicators/blob/main/charts/cd-indicators/values.yaml&#34;&gt;the default values&lt;/a&gt;. In your &lt;code&gt;values/cd-indicators/values.yaml&lt;/code&gt; file you can write:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;config&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;gitOwners&lt;/span&gt;:
+  - &lt;span style=&#34;color:#ae81ff&#34;&gt;my_github_organization&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
   </channel>
 </rss>
