@@ -60,6 +60,32 @@
     </item>
     
     <item>
+      <title>Blog: Scaling Preview Environments with Osiris</title>
+      <link>https://jenkins-x.io/blog/2021/04/01/jx3-osiris-preview-envs/</link>
+      <pubDate>Thu, 01 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/04/01/jx3-osiris-preview-envs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;One of Jenkins X&amp;rsquo;s core features is the &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/&#34;&gt;preview environments&lt;/a&gt;: temporary environments created automatically for each Pull Requests, to deploy your application and its dependencies. You can then use this preview environment to run integration tests, or manually use/test your application.&lt;/p&gt;
+&lt;p&gt;This is all great until you have more and more applications, each with a few dependencies (postgresql, mongodb, &amp;hellip;) and a few opened pull requests at any time. This means that you&amp;rsquo;ll get more and more pods running in your Kubernetes cluster, in addition to Jenkins X&amp;rsquo;s own components, your build pipelines, and of course your staging and production applications - unless you are using &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/&#34;&gt;multi-cluster&lt;/a&gt;. The result is that you&amp;rsquo;ll need more nodes or bigger nodes. Which means more money.&lt;/p&gt;
+&lt;p&gt;But, these preview environments are in fact idle most of the time: they are only used for the integration tests, and sometimes when someone manually uses them. The rest of the time - including all night for example - they are just staying there, idle, and consuming resources. What if we could easily scale them down when they are idle, and automatically bring them up when we need them? So that a Pull Request staying opened for 2 weeks because someone went on vacation won&amp;rsquo;t consume resources in your cluster.&lt;/p&gt;
+&lt;h3 id=&#34;osiris&#34;&gt;Osiris&lt;/h3&gt;
+&lt;p&gt;Enter &lt;a href=&#34;https://github.com/dailymotion-oss/osiris&#34;&gt;Osiris&lt;/a&gt;! Initially created by the &lt;a href=&#34;https://github.com/deislabs&#34;&gt;Deislabs team&lt;/a&gt;, Osiris is a Kubernetes component that will automatically scale down your &amp;ldquo;idle&amp;rdquo; pods, and scale them up when a request comes in. Although the &lt;a href=&#34;https://github.com/deislabs/osiris&#34;&gt;original project&lt;/a&gt; has been archived, the &lt;a href=&#34;https://github.com/dailymotion-oss&#34;&gt;Dailymotion team&lt;/a&gt; has taken over the maintenance of &lt;a href=&#34;https://github.com/dailymotion-oss/osiris&#34;&gt;a fork&lt;/a&gt;. And they have been using it with success in their Jenkins X dev cluster for more than 2 years: they regularly have around 50 preview environments active at any time, and&amp;hellip; 0 pods from these environments running at night - or on weekends. Coupled with a cluster autoscaler, it means that their Kubernetes cluster use between 3 and more than 20 nodes depending on the workload. Being able to scale down to a minimum number of nodes is a great benefit when using cloud resources.&lt;/p&gt;
+&lt;h3 id=&#34;how-can-you-benefit-from-it-in-your-own-jenkins-x-cluster&#34;&gt;How can you benefit from it in your own Jenkins X cluster?&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;first, you&amp;rsquo;ll need to follow the &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/preview-environments/&#34;&gt;admin guide to enable Osiris in your dev cluster&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;and then, you&amp;rsquo;ll need to add annotations to your Deployment/Statefulset and Service manifests - as explained in the &lt;a href=&#34;https://github.com/dailymotion-oss/osiris&#34;&gt;Osiris documentation&lt;/a&gt; - in your application&amp;rsquo;s Helm chart&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Note that if you store data, you&amp;rsquo;ll need to use persistent volumes (for postgresql, mongodb, &amp;hellip;) so that you won&amp;rsquo;t lose your data after a scale down/up of your pods.&lt;/p&gt;
+&lt;h3 id=&#34;how-does-it-work&#34;&gt;How does it work?&lt;/h3&gt;
+&lt;p&gt;Osiris will automatically inject itself as a proxy in front of all the pods with the right annotation, so that it can see all requests for your pods. If it doesn&amp;rsquo;t see any request for a configurable amount of time - 10 minutes by default - it will scale down the deployment (or statefulset), and place itself behind the associated service. So that if a new request comes in, Osiris will be able to scale up the deployment (or statefulset), and then forward the request to the new pod.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: cdCon 2021 - Call for Jenkins X Proposals</title>
       <link>https://jenkins-x.io/blog/2021/02/25/cdcon-cfp/</link>
       <pubDate>Thu, 25 Feb 2021 00:00:00 +0000</pubDate>
@@ -3063,205 +3089,6 @@ NOTE: Please be sure to sign up for &lt;a href=&#34;http://honeycomb.io&#34;&gt;
 &lt;/figure&gt;
 &lt;p&gt;A &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary to attend the Contributor Summit, but if you don&amp;rsquo;t want to miss out on &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; you can get yours using &lt;strong&gt;JWFOSS&lt;/strong&gt; for a 30% discount.&lt;/p&gt;
 
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Installing Jenkins X on Alibaba Cloud Container Service</title>
-      <link>https://jenkins-x.io/blog/2019/06/17/alibaba-container-service-jenkins-x/</link>
-      <pubDate>Mon, 17 Jun 2019 07:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/06/17/alibaba-container-service-jenkins-x/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/alibaba-cloud-logo.svg&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Installing Jenkins X on Alibaba Cloud Container Service&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;h1 id=&#34;installing-jenkins-x-in-alibaba-kubernetes-container-service&#34;&gt;Installing Jenkins X in Alibaba Kubernetes Container Service&lt;/h1&gt;
-&lt;p&gt;Jenkins X has just added initial support to install in &lt;a href=&#34;https://www.alibabacloud.com/product/container-service&#34;&gt;Alibaba Container Service&lt;/a&gt;, its Kubernetes offering.&lt;/p&gt;
-&lt;p&gt;The following instructions allow installation in a managed Kubernetes cluster in any region outside of mainland China, where more configuration is needed avoid using Google services blocked by chinese authorities (Docker images in GCR). There is a &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-platform/issues/5551&#34;&gt;pending issue&lt;/a&gt; for that.&lt;/p&gt;
-&lt;h2 id=&#34;creating-a-kubernetes-cluster&#34;&gt;Creating a Kubernetes Cluster&lt;/h2&gt;
-&lt;p&gt;Alibaba requires several things in order to create a Kubernetes cluster, so it is easier to do it through the &lt;a href=&#34;https://cs.console.aliyun.com/&#34;&gt;web UI&lt;/a&gt; the first time.&lt;/p&gt;
-&lt;p&gt;The following services need to be activated: Container Service, Resource Orchestration Service (ROS), RAM, and Auto Scaling service, and created the &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/86484.htm?spm=a2c63.p38356.b99.38.663a333eMXExon&#34;&gt;Container Service roles&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;If we want to use the command line we can install the &lt;a href=&#34;https://github.com/aliyun/aliyun-cli&#34;&gt;&lt;code&gt;aliyun&lt;/code&gt;&lt;/a&gt; cli. I have added all the steps needed below in case you want to use it.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;brew install aliyun-cli
-aliyun configure
-REGION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;ap-southeast-1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The clusters need to be created in a VPC, so that needs to be created with VSwitches for each zone to be used.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;aliyun vpc CreateVpc &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --VpcName jx &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --Description &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Jenkins X&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --RegionId &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;REGION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --CidrBlock 172.16.0.0/12
-
-&lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ResourceGroupId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rg-acfmv2nomuaaaaa&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;RequestId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2E795E99-AD73-4EA7-8BF5-F6F391000000&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;RouteTableId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vtb-t4nesimu804j33p4aaaaa&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;VRouterId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vrt-t4n2w07mdra52kakaaaaa&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;VpcId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vpc-t4nszyte14vie746aaaaa&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-
-VPC&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;vpc-t4nszyte14vie746aaaaa
-
-aliyun vpc CreateVSwitch &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --VSwitchName jx &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --VpcId &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;VPC&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --RegionId &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;REGION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --ZoneId &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;REGION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;a &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --Description &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Jenkins X&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --CidrBlock 172.16.0.0/24
-
-&lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;RequestId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;89D9AB1F-B4AB-4B4B-8CAA-F68F84417502&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;VSwitchId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;vsw-t4n7uxycbwgtg14maaaaa&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-
-VSWITCH&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;vsw-t4n7uxycbwgtg14maaaaa
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next, a keypair (or password) is needed for the cluster instances.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;aliyun ecs ImportKeyPair &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --KeyPairName jx &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --RegionId &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;REGION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --PublicKeyBody &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat ~/.ssh/id_rsa.pub&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The last step is to create the cluster using the just created VPC, VSwitch and Keypair. It&amp;rsquo;s important to select the option &lt;em&gt;Expose API Server with EIP&lt;/em&gt; (&lt;code&gt;public_slb&lt;/code&gt; in the API json) to be able to connect to the API from the internet.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF &amp;gt; cluster.json
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;name&amp;#34;: &amp;#34;jx-rocks&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;cluster_type&amp;#34;: &amp;#34;ManagedKubernetes&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;disable_rollback&amp;#34;: true,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;timeout_mins&amp;#34;: 60,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;region_id&amp;#34;: &amp;#34;${REGION}&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;zoneid&amp;#34;: &amp;#34;${REGION}a&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;snat_entry&amp;#34;: true,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;cloud_monitor_flags&amp;#34;: false,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;public_slb&amp;#34;: true,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;worker_instance_type&amp;#34;: &amp;#34;ecs.c4.xlarge&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;num_of_nodes&amp;#34;: 3,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;worker_system_disk_category&amp;#34;: &amp;#34;cloud_efficiency&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;worker_system_disk_size&amp;#34;: 120,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;worker_instance_charge_type&amp;#34;: &amp;#34;PostPaid&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;vpcid&amp;#34;: &amp;#34;${VPC}&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;vswitchid&amp;#34;: &amp;#34;${VSWITCH}&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;container_cidr&amp;#34;: &amp;#34;172.20.0.0/16&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;service_cidr&amp;#34;: &amp;#34;172.21.0.0/20&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;key_pair&amp;#34;: &amp;#34;jx&amp;#34;
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-
-aliyun cs  POST /clusters &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --header &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Content-Type=application/json&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --body &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat create.json&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
-
-&lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cluster_id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cb643152f97ae4e44980f6199f298f223&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;request_id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;0C1E16F8-6A9E-4726-AF6E-A8F37CDDC50C&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;task_id&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;T-5cd93cf5b8ff804bb40000e1&amp;#34;&lt;/span&gt;,
-    &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;instanceId&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cb643152f97ae4e44980f6199f298f223&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-
-CLUSTER&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;cb643152f97ae4e44980f6199f298f223
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We can now download &lt;code&gt;kubectl&lt;/code&gt; configuration with&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;aliyun cs GET /k8s/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;CLUSTER&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/user_config | jq -r .config &amp;gt; ~/.kube/config-alibaba
-export KUBECONFIG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$KUBECONFIG:~/.kube/config-alibaba
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Another detail before being able to install applications that use &lt;code&gt;PersistentVolumeClaims&lt;/code&gt; is to &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/86612.htm#a2c63.p38356.879954.i0.11497ec4J5rKJd&#34;&gt;configure a default storage class&lt;/a&gt;. There are several volume options that can be listed with &lt;code&gt;kubectl get storageclass&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;NAME                          PROVISIONER     AGE
-alicloud-disk-available       alicloud/disk   44h
-alicloud-disk-common          alicloud/disk   44h
-alicloud-disk-efficiency      alicloud/disk   44h
-alicloud-disk-ssd             alicloud/disk   44h
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Each of them matches the following cloud disks:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;alicloud-disk-common: basic cloud disk (minimum size 5GiB). Only available in some zones (us-west-1a, cn-beijing-b,&amp;hellip;)&lt;/li&gt;
-&lt;li&gt;alicloud-disk-efficiency: high-efficiency cloud disk, ultra disk (minimum size 20GiB).&lt;/li&gt;
-&lt;li&gt;alicloud-disk-ssd: SSD disk (minimum size 20GiB).&lt;/li&gt;
-&lt;li&gt;alicloud-disk-available: provides highly available options, first attempts to create a high-efficiency cloud disk. If the corresponding AZ&amp;rsquo;s efficient cloud disk resources are sold out, tries to create an SSD disk. If the SSD is sold out, tries to create a common cloud disk.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;To set SSDs as the default:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl patch storageclass alicloud-disk-ssd &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    -p &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;metadata&amp;#34;: {&amp;#34;annotations&amp;#34;: {&amp;#34;storageclass.kubernetes.io/is-default-class&amp;#34;:&amp;#34;true&amp;#34;}}}&amp;#39;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: Alibaba cloud disks must be &lt;a href=&#34;https://www.alibabacloud.com/help/doc-detail/25513.htm#h2-url-2&#34;&gt;more than 5GiB (basic) or 20GiB (SSD and Ultra)&lt;/a&gt;) so we will need to configure any service that is deployed with PVCs to have that size as a minimum or the &lt;code&gt;PersistentVolume&lt;/code&gt; provision will fail. The Jenkins X deployments &lt;a href=&#34;https://github.com/jenkins-x/cloud-environments/blob/master/env-alibaba/myvalues.yaml&#34;&gt;are already configured with this in mind&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;installing-jenkins-x&#34;&gt;Installing Jenkins X&lt;/h2&gt;
-&lt;p&gt;Alibaba Kubernetes clusters won&amp;rsquo;t be able to pull images from the insecure docker registry included in Jenkins X, we need to use Alibaba&amp;rsquo;s Container Registry by going to &lt;a href=&#34;https://cr.console.aliyun.com&#34;&gt;https://cr.console.aliyun.com&lt;/a&gt; and setting a password.&lt;/p&gt;
-&lt;p&gt;Then we need to create a Container Registry namespace that allows us to push any image and make them public by default.&lt;/p&gt;
-&lt;p&gt;From the web UI we can create a Docker login password that we will be using later.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;NAMESPACE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jenkins-x-&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat /dev/urandom | env LC_CTYPE&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;C tr -dc &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;a-z&amp;#39;&lt;/span&gt; | fold -w &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt; | head -n 1&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF &amp;gt; namespace.json
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;Namespace&amp;#34;: {
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        &amp;#34;Namespace&amp;#34;: &amp;#34;${NAMESPACE}&amp;#34;
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    }
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-aliyun cr PUT /namespace &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --header &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Content-Type=application/json&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --body &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat namespace.json&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
-
-cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF &amp;gt; namespace.json
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;namespace&amp;#34;: {
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        &amp;#34;namespace&amp;#34;: &amp;#34;${NAMESPACE}&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        &amp;#34;defaultVisibility&amp;#34;: &amp;#34;PUBLIC&amp;#34;,
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        &amp;#34;autoCreate&amp;#34;: true
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    }
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-
-aliyun cr POST /namespace/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;NAMESPACE&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --header &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Content-Type=application/json&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --body &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat namespace.json&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now we can install Jenkins X as usual, passing the &lt;code&gt;--provider alibaba&lt;/code&gt; flag.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx install &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --provider alibaba &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --default-admin-password&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;admin &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --default-environment-prefix&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx-rocks &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --tekton &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --docker-registry&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;registry.&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;REGION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;.aliyuncs.com &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    --docker-registry-org&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;NAMESPACE&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    -b
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After installation we need to add the Container Registry credentials to the cluster, the Docker password we have previously created.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;AUTH&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo -n &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;DOCKER_USERNAME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;DOCKER_PASSWORD&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | base64&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-DATA&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | base64
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    &amp;#34;auths&amp;#34;: {
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        &amp;#34;registry.${REGION}.aliyuncs.com&amp;#34;: {
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;            &amp;#34;auth&amp;#34;: &amp;#34;${AUTH}&amp;#34;
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        }
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    }
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl apply -f -
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;apiVersion: v1
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;kind: Secret
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;type: Opaque
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;metadata:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: jenkins-docker-cfg
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: jx
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;data:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  config.json: ${DATA}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;installing-addons&#34;&gt;Installing Addons&lt;/h2&gt;
-&lt;p&gt;Addons can be installed normally with the caveat mentioned above about PVC minimum size. Which means that we may need to pass some Helm values to the &lt;code&gt;create addon&lt;/code&gt; command, depending on the chart we are installing.&lt;/p&gt;
-&lt;p&gt;For instance to install Prometheus with 20Gi disks:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon prometheus &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;    -s alertmanager.persistentVolume.size&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;20Gi,pushgateway.persistentVolume.size&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;20Gi,server.persistentVolume.size&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;20Gi
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;tekton&#34;&gt;Tekton&lt;/h2&gt;
-&lt;p&gt;Tekton builds need to be configured to use PVCs bigger than 20Gi due to the same reasons. The default is to use 5GiB PVCs.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl apply -f -
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;apiVersion: v1
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;kind: ConfigMap
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;metadata:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: config-artifact-pvc
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: jx
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;data:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  size: 20Gi
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
