@@ -14,6 +14,53 @@
     
     
     <item>
+      <title>Blog: Jenkins X v3: now with built-in observability</title>
+      <link>https://jenkins-x.io/blog/2021/04/01/jx3-builtin-observability/</link>
+      <pubDate>Thu, 01 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/04/01/jx3-builtin-observability/</guid>
+      <description>
+        
+        
+        &lt;p&gt;As a Continuous Delivery platform, Jenkins X has a central part in your infrastructure. If it becomes unstable or unusable, it will impact the whole software delivery of your organization.&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Your CI/CD pipelines are a part of your production story. Observability for CI/CD is observability for a critical prod component.&lt;/p&gt;&amp;mdash; Jaana Dogan ヤナ ドガン (@rakyll) &lt;a href=&#34;https://twitter.com/rakyll/status/1341177825525547012?ref_src=twsrc%5Etfw&#34;&gt;December 22, 2020&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;This is why observability is a critical topic for Jenkins X, and work has started to get observability built-in for Jenkins X v3:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Platform Observability&lt;/strong&gt;: visualize logs and metrics for everything running in the Kubernetes cluster: Jenkins X&amp;rsquo;s own components - Tekton, Lighthouse, cert-manager, &amp;hellip; - but also your own applications, that will be deployed either in preview environments or in the staging/prod environments.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Continuous Delivery Indicators&lt;/strong&gt;: visualize pull requests, pipelines, releases, and deployments metrics, collected from cluster events and git events.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We&amp;rsquo;re using &lt;a href=&#34;https://grafana.com/&#34;&gt;Grafana&lt;/a&gt; as the central visualization component: the main entry point from which you can get a complete overview of both your application&amp;rsquo;s lifecycle - development, build, tests, releases, deployments, runtime - and your Continuous Delivery platform.&lt;/p&gt;
+&lt;h2 id=&#34;platform-observability&#34;&gt;Platform Observability&lt;/h2&gt;
+&lt;p&gt;Platform observability is not enabled by default for the moment, so the first step is to enable it, as explained in the &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/observability/platform-observability/&#34;&gt;platform observability admin guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Once it&amp;rsquo;s done, you&amp;rsquo;ll get a running Grafana instance, pre-configured with data sources for applications logs - using &lt;a href=&#34;https://grafana.com/oss/loki/&#34;&gt;Loki&lt;/a&gt; - and applications metrics - using &lt;a href=&#34;https://prometheus.io/&#34;&gt;Prometheus&lt;/a&gt;. But most important, it comes with a set of pre-defined &lt;a href=&#34;https://github.com/jenkins-x-charts/grafana-dashboard&#34;&gt;Grafana dashboards&lt;/a&gt; for the main platform components: Tekton, Lighthouse, cert-manager, &amp;hellip;&lt;/p&gt;
+&lt;p&gt;Here is an example of such a dashboard, using a mix of data sources to display &lt;a href=&#34;https://cert-manager.io/&#34;&gt;cert-manager&lt;/a&gt; metrics collected by Prometheus - including the certificates expiration dates - and logs collected by Loki/Promtail:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/observability_platform_cert-manager.png&#34; alt=&#34;cert-manager grafana dashboard for Jenkins X&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;continuous-delivery-indicators&#34;&gt;Continuous Delivery Indicators&lt;/h2&gt;
+&lt;p&gt;Continuous Delivery Indicators&#39; main goal is to give people insights into their workflows/processes so that they can continuously improve them. This is based on the &lt;a href=&#34;https://www.devops-research.com/research.html&#34;&gt;DORA devops metrics&lt;/a&gt; and the &lt;a href=&#34;https://queue.acm.org/detail.cfm?id=3454124k&#34;&gt;SPACE framework&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/cd-indicators&#34;&gt;CD Indicators&lt;/a&gt; addon is not enabled by default for the moment, so the first step is to enable it, as explained in the &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/observability/cd-indicators/&#34;&gt;continuous delivery indicators admin guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Once it&amp;rsquo;s done, you&amp;rsquo;ll get a running collector, along with a PostgreSQL database. The collector will listen for various events, both from the cluster and the git repositories, and store pull requests, pipelines, releases, and deployments data in the PostgreSQL database. The addon will also expose a new Grafana data source along with pre-configured Grafana dashboards, which will be picked up by your running Grafana instance.&lt;/p&gt;
+&lt;p&gt;Here is an example of such a dashboard, displaying various indicators for a single repository/application: contributors, reviews, pull requests, releases, deployments, &amp;hellip;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/observability_cd_indicators_repository.png&#34; alt=&#34;Continuous Delivery Indicators for a single repository&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;roadmap&#34;&gt;Roadmap&lt;/h2&gt;
+&lt;p&gt;This is only the beginning! The next steps - in no particular order:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;configure alerting - using Prometheus alertmanager and Grafana alerting features - with a set of pre-defined alerts&lt;/li&gt;
+&lt;li&gt;improve the dashboards&lt;/li&gt;
+&lt;li&gt;enable it by default, so that users can benefit from it out of the box&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Contributions are welcomed:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions&#34;&gt;Grafana/loki/prometheus/&amp;hellip; configuration in the versionstream&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-charts/grafana-dashboard&#34;&gt;Grafana dashboards&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/cd-indicators&#34;&gt;Continuous Delivery Indicators Collector &amp;amp; Grafana dashboards&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: cdCon 2021 - Call for Jenkins X Proposals</title>
       <link>https://jenkins-x.io/blog/2021/02/25/cdcon-cfp/</link>
       <pubDate>Thu, 25 Feb 2021 00:00:00 +0000</pubDate>
@@ -3216,45 +3263,6 @@ cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF | kubectl app
 &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  size: 20Gi
 &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: DevOps World-Jenkins World 2019 San Francisco: Agenda is Live</title>
-      <link>https://jenkins-x.io/blog/2019/06/06/jenkins-world-agenda/</link>
-      <pubDate>Thu, 06 Jun 2019 12:20:42 -0700</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/06/06/jenkins-world-agenda/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/2019-dwjw-san-fran-rev.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; is the largest Jenkins gathering of the year.  From August 12 - 15, 2019 the event will take place at the Moscone West Center in San Francisco.  The event boasts 100+ sessions, and will offer training, hands-on workshops, onsite certification, contributor summit and much more.  Conference attendees can expect to be inspired while learning the latest innovations from industry leaders. Attendees will learn the value that digital transformation has in delivering software more efficiently, more quickly and with higher quality.&lt;/p&gt;
-&lt;p&gt;We are excited to announce most of the agenda for DevOps World | Jenkins World San Francisco is now live. We will continue to fill out the agenda with more sessions, trainings/workshops, and activities in the coming weeks. Below is a sampling of the Jenkins X sessions taking place at DevOps World | Jenkins World San Francisco:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Continuous Delivery with Jenkins X Workshop&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We need a tool that will allow us to leverage all the latest and greatest processes and tools. At the same time, we need them to be simple and straightforward so that everyone can benefit from them. That is the primary objective behind the Jenkins X project. It brings power by combining best practices and tools while keeping it so simple that anyone can use it.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Cloud Native CI/CD with Jenkins X and Tekton&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this talk, we’ll explain the CI/CD challenges in a cloud native landscape, and show how Jenkins X rises to them by leveraging open source cloud native technologies like Tekton.  We will describe how the Jenkins X project has evolved on it&amp;rsquo;s own cloud native journey and the amazing benefits we are gaining by using the cloud well.  People who attend will leave with a better understanding of the awesome new technologies, architecture and benefits which are transforming the way we build, release, deploy and run our software.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Jenkins X Optimized for GCP -  Craig Barber&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Jenkins X is an industry-wide leap forward to provide developers with a cloud native CI/CD experience. As the next evolution in the Jenkins space, Jenkins X redefines how CI/CD workloads run. In this talk, we will guide you on how to deploy, configure and use Jenkins X CI/CD pipelines within the Google Kubernetes Engine while taking full advantage of Jenkins X&amp;rsquo;s native integration with GCP&amp;rsquo;s industry leading services.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Integrating JX (Serverless) with your Business&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;CI/CD + GitOps is changing the way that we build software, it comes with a great cultural change and challenges but a lot of advantages. While using JX is an amazing starting point to get familiar with CI/CD and GitOps, companies can integrate with these tools in a whole new level to build the next generation SaaS offerings. In this presentation we will look at the Kubernetes Resources provided by JX and how can we integrate our own domain specific concepts to leverage JX from inside our services/products.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;See the full agenda &lt;a href=&#34;https://web.cvent.com/event/eac49765-9235-4b96-aaba-3bcb9cc837c3/websitePage:645d57e4-75eb-4769-b2c0-f201a0bfc6ce&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The Jenkins X creators and contributors will be onsite to mingle and answer any Jenkins X technical questions you might have.  Come if you are simply curious and just want to learn more or ask the experts those Jenkins X questions that has been keeping you up at night.&lt;/p&gt;
-&lt;p&gt;Hope to see you there!&lt;/p&gt;
-
       </description>
     </item>
     
