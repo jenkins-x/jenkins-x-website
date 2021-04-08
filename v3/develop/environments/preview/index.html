@@ -25,11 +25,11 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/environments/preview/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-03-31T10:57:55&#43;02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-04-08T15:46:56&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Previews">
 <meta itemprop="description" content="Preview Environments">
-<meta itemprop="dateModified" content="2021-03-31T10:57:55&#43;02:00" />
+<meta itemprop="dateModified" content="2021-04-08T15:46:56&#43;01:00" />
 <meta itemprop="wordCount" content="1178">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Previews"/>
@@ -5648,15 +5648,15 @@ the main branch and initiate a release candidate build with the new feature:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">    /approve
 </code></pre></div><p>The code is merged to the <code>main</code> branch, and the release is created and will appear in the <code>Releases</code> tab of the git repository along with any associated images or helm charts. Usually this then triggers <a href="/v3/develop/environments/promotion/">Promotion</a> to other environments.</p>
 <h2 id="how-it-works">How it works</h2>
-<p>the <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md">jx preview create</a> command creates a new <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview">Preview</a> custom resource for each Pull Request on each repository so that we can track the resources and cleanly remove them when you run <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_destroy.md">jx preview destroy</a> pr <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_gc.md">jx preview gc</a></p>
+<p>the <a href="/v3/develop/reference/jx/preview/create">jx preview create</a> command creates a new <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview">Preview</a> custom resource for each Pull Request on each repository so that we can track the resources and cleanly remove them when you run <a href="/v3/develop/reference/jx/preview/destroy">jx preview destroy</a> pr <a href="/v3/develop/reference/jx/preview/gc">jx preview gc</a></p>
 <p>For reference see the <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSpec">Preview.Spec</a> documentation</p>
-<p>Once the  <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview">Preview</a> resource is created with its associated preview namespace the  <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md">jx preview create</a>  command will execute <code>helmfile sync</code> of the <strong>preview/helmfile.yaml</strong> file to deploy all of the associated helm charts to the preview namespace.</p>
+<p>Once the  <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview">Preview</a> resource is created with its associated preview namespace the  <a href="/v3/develop/reference/jx/preview/create">jx preview create</a>  command will execute <code>helmfile sync</code> of the <strong>preview/helmfile.yaml</strong> file to deploy all of the associated helm charts to the preview namespace.</p>
 <p>When the <code>helmfile sync</code> is complete a comment is added to the Pull Request that the preview has been created. If a URL can be detected in the preview namespace it is added to the Pull Request as a comment so that your team can try it out and give fast feedback.</p>
 <img src="/images/pr-comment.png" class="img-thumbnail">
-<p>When the Pull Request is merged or closed the <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_gc.md">jx preview gc</a> command kicks in periodically to remove any old preview environments.</p>
+<p>When the Pull Request is merged or closed the <a href="/v3/develop/reference/jx/preview/gc">jx preview gc</a> command kicks in periodically to remove any old preview environments.</p>
 <h2 id="when-previews-fail">When previews fail</h2>
 <p>A preview can fail to create for a multitude of reasons; bad helm charts, missing secrets/volumes, invalid configuration in <code>jx-requirements.yml</code>, bad image names, no capacity on the server to name but a few. Unfortunately <code>helmfile sync</code> does not give much information other than it succeeded of failed which can be confusing.</p>
-<p>To improve feedback on why some previews can fail we have added additional output in the <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md">jx preview create</a> command to tail the kubernetes events in the preview namespace. This basically runs <code>kubectl exec get event -n $PREVIEW_NAMESPACE -w</code> and adds the output to the pipeline output (prefixed with <code>$PREVIEW_NAMESPACE:</code></p>
+<p>To improve feedback on why some previews can fail we have added additional output in the <a href="/v3/develop/reference/jx/preview/create">jx preview create</a> command to tail the kubernetes events in the preview namespace. This basically runs <code>kubectl exec get event -n $PREVIEW_NAMESPACE -w</code> and adds the output to the pipeline output (prefixed with <code>$PREVIEW_NAMESPACE:</code></p>
 <p>This means the reason for why a preview fails should appear as a kubernetes event in the pipeline log.</p>
 <p>e.g. if you make a mistake configuraing the helm chart on your preview you should see the error in the pipeline log. To fix the error just modify the code and git commit and push the fix and you should see the new results in the pipeline log.</p>
 <h2 id="adding-more-resources">Adding more resources</h2>
@@ -5684,7 +5684,7 @@ the main branch and initiate a release candidate build with the new feature:</p>
 </span><span style="color:#e6db74">    source .jx/variables.sh
 </span><span style="color:#e6db74">    curl -v $PREVIEW_URL</span>    
 </code></pre></div><h3 id="environment-variables">Environment variables</h3>
-<p>The following variables are added to the <code>.jx/variables.sh</code> file by the <a href="https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md">jx preview create</a> command:</p>
+<p>The following variables are added to the <code>.jx/variables.sh</code> file by the <a href="/v3/develop/reference/jx/preview/create">jx preview create</a> command:</p>
 <ul>
 <li><code>PREVIEW_URL</code> the URL of the preview environment if it can be discovered</li>
 <li><code>PREVIEW_NAME</code> the name of the <code>Preview</code> custom resource which has the full metadata</li>
@@ -5757,7 +5757,7 @@ the main branch and initiate a release candidate build with the new feature:</p>
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified March 31, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/44bb6b33f15befb15803ed262dac5fbc0171de21">chore: add an admin guide to install osiris for preview envs (44bb6b33f1)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified April 8, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/66ebb44b5fb93830db91f396cb731eec03ab808c">chore: fix bad links (66ebb44b5f)</a>
 </div>
 </div>
 
