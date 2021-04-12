@@ -37,6 +37,31 @@
 &lt;p&gt;The &lt;code&gt;config-root&lt;/code&gt; directory is regenerated on every boot job - basically every time you promote an application or merge a change into the main branch of your git dev cluster git repository.  For background see the &lt;a href=&#34;https://github.com/jenkins-x/jx-gitops/blob/master/docs/git_layout.md&#34;&gt;dev git repository layout docs&lt;/a&gt;)&lt;/p&gt;
 &lt;p&gt;To add a new chart add to the &lt;code&gt;helmfiles/mynamespace/helmfile.yaml&lt;/code&gt; file follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;add chart guide&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;To add a new kubernetes resource &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-resources&#34;&gt;follow the add resources guide&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-a-user-to-my-jenkins-x-installation&#34;&gt;How do I add a user to my Jenkins X installation?&lt;/h2&gt;
+&lt;p&gt;There are a number of different levels of access you may wish to grant:&lt;/p&gt;
+&lt;h3 id=&#34;git&#34;&gt;git&lt;/h3&gt;
+&lt;p&gt;When developers are &lt;a href=&#34;https://jenkins-x.io/v3/develop/developing/&#34;&gt;developing software that has its CI/CD automated by Jenkins X&lt;/a&gt; then usually letting the developer access git is enough.&lt;/p&gt;
+&lt;h3 id=&#34;dashboard&#34;&gt;dashboard&lt;/h3&gt;
+&lt;p&gt;Though being able to see the logs of pipelines is useful so you probably want to either share the basic auth user/password for the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt; or to configure full Auth0/OAuth single sign on access to the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt;. Then developers will be able to browse the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt; or click on Pull Request and Release links on your git website.&lt;/p&gt;
+&lt;h3 id=&#34;kubernetes&#34;&gt;kubernetes&lt;/h3&gt;
+&lt;p&gt;If you want to give full access to Jenkins X so that developers can access kubernetes resources via &lt;code&gt;kubectl&lt;/code&gt;, can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/&#34;&gt;jx cli&lt;/a&gt; or can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;Octant console&lt;/a&gt; then you need to grant Cloud IAM roles to the developer using your cloud infrastructure.&lt;/p&gt;
+&lt;p&gt;If the developer does not have access to the kubernetes cluster we need to setup their &lt;code&gt;~/.kube/config&lt;/code&gt; file so that they can access it.&lt;/p&gt;
+&lt;p&gt;If you are using Google&amp;rsquo;s GKE then you can browse the &lt;a href=&#34;https://console.cloud.google.com&#34;&gt;GKE Console&lt;/a&gt; to view all the clusters and click on the &lt;code&gt;Connect&lt;/code&gt; button next to your development cluster and then that lets you copy/paste the command to connect to the cluster.&lt;/p&gt;
+&lt;p&gt;For other types of clusters please review the Kubernetes documentation for how to grant access to your cluster via your cloud providers CLI / web console.&lt;/p&gt;
+&lt;h4 id=&#34;testing-kubernetes-access&#34;&gt;testing kubernetes access&lt;/h4&gt;
+&lt;p&gt;Once your user has access to the kubernetes cluster:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/jx3/&#34;&gt;install the jx binary&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If Jenkins X was installed in the namespace &lt;code&gt;jx&lt;/code&gt; then the following should &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/developing/kube-context/&#34;&gt;switch your context&lt;/a&gt; to the &lt;code&gt;jx&lt;/code&gt; namespace:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ns jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To view the environments try:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get environments
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To view the SourceRepositories:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sr
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/cli/&#34;&gt;jx cli&lt;/a&gt; try:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline grid
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;(and hit Ctrl-c or &lt;code&gt;q&lt;/code&gt; to quit)&lt;/p&gt;
 
       </description>
     </item>
