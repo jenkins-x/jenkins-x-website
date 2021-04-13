@@ -14,5 +14,121 @@
       
     
     
+    <item>
+      <title>V3: Enable WebHooks</title>
+      <link>https://jenkins-x.io/v3/admin/platforms/on-premise/webhooks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/platforms/on-premise/webhooks/</guid>
+      <description>
+        
+        
+        &lt;p&gt;If your cluster is not accessible on the internet and you can&amp;rsquo;t open a firewall to allow services like GitHub to access your ingress then you will need to enable webhooks as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://ngrok.com/&#34;&gt;install and setup ngrok&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;setup a webhook tunnel to your laptop find your hook host name:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;copy the hook host name into&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ngrok http http://yourHookHost
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;copy your personal ngrok domain name of the form &lt;code&gt;abcdef1234.ngrok.io&lt;/code&gt; into the &lt;code&gt;charts/jenkins-x/jxboot-helmfile-resources/values.yaml&lt;/code&gt; file in the &lt;code&gt;ingress.customHosts.hosts&lt;/code&gt; file so that your file looks like this&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;customHosts&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;hook&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;abcdef1234.ngrok.io&amp;#34;&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Vault</title>
+      <link>https://jenkins-x.io/v3/admin/platforms/on-premise/vault/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/platforms/on-premise/vault/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; that in the following instructions it is left to the user to manage, backup and restore the vault installation once it has been installed.&lt;/p&gt;
+&lt;p&gt;For production workloads &lt;a href=&#34;https://jenkins-x.io/v3/devops/patterns/prefer_cloud_over_kube/&#34;&gt;we recommend you use a cloud provider secret store&lt;/a&gt; or &lt;a href=&#34;https://www.hashicorp.com/resources/running-vault-as-a-service-on-hashicorp-cloud-platform&#34;&gt;Vault as a service&lt;/a&gt;. Managing on premise vault instances is undifferentiated heavy lifting that should be outsourced to a cloud provider if you can.&lt;/p&gt;
+&lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
+&lt;p&gt;The prerequisites are the &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/on-premise/#prerequisites&#34;&gt;same as regular on premise kubernetes&lt;/a&gt; around having a kubernetes cluster with ingress and storage&lt;/p&gt;
+&lt;p&gt;The difference is for vault:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes-vault/generate&#34; target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create the cluster Git Repository&lt;/a&gt; based on the &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes-vault/generate&#34;&gt;jx3-gitops-repositories/jx3-kubernetes-vault&lt;/a&gt; template&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;if the above button does not work then please &lt;a href=&#34;https://github.com/login&#34;&gt;Login to GitHub&lt;/a&gt; first and then retry the button&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;make sure you have a recent &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; binary installed on your &lt;code&gt;$PATH&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;setup the Vault instance in your cluster. From inside a git clone of the git repository you have just created above run the following:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd infra
+helmfile sync
+sleep &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;
+jx secret vault port-forward&amp;amp;
+jx secret vault wait
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;if that succeeds you should have a vault instance running in the &lt;code&gt;jx-vault&lt;/code&gt; namespace&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;find out what your ingress domain is for your cluster then modify the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and modify the &lt;code&gt;ingress.domain&lt;/code&gt; section&amp;hellip;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+...
+&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mydomain.com&lt;/span&gt;
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;verify your cluster does not already have an &lt;a href=&#34;https://www.nginx.com/&#34;&gt;nginx&lt;/a&gt; installation. If it does then please remove the &lt;code&gt;nginx&lt;/code&gt; line from your &lt;code&gt;helmfile.yaml&lt;/code&gt; file and remove the &lt;code&gt;helmfiles/nginx&lt;/code&gt; files. If you are using a custom nginx installation then you will need to figure out your domain by hand and won&amp;rsquo;t be able to let Jenkins X detect the load balancer IP from its included nginx installation.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;git add, commit and push your changes:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add *
+git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: added domain&amp;#34;&lt;/span&gt;
+git push origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;ensure you are connected to your cluster so you can run the following &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; commands&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
+kubectl get node      
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34; 
+target=&#34;github&#34; class=&#34;btn bg-primary text-light&#34; 
+title=&#34;install the git operator to setup Jenkins X in your cluster&#34;&gt;
+Install the git operator
+&lt;/a&gt; from inside a git clone of the git repository you created above.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;switch to the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ns jx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
   </channel>
 </rss>
