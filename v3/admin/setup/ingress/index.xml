@@ -52,5 +52,89 @@
       </description>
     </item>
     
+    <item>
+      <title>V3: OAuth</title>
+      <link>https://jenkins-x.io/v3/admin/setup/ingress/oauth/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/setup/ingress/oauth/</guid>
+      <description>
+        
+        
+        &lt;p&gt;By default Jenkins X installs a publically accessible GUI for viewing pipelines.  This is automatically linked to via the &amp;ldquo;details&amp;rdquo; on pull requests.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/gui-link1.png&#34; alt=&#34;Pull Request&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The initial installation will protect this GUI with basic auth however if you want to share access then you might prefer to configure OAuth using Google or GitHub for example instead.&lt;/p&gt;
+&lt;p&gt;This guide will use &lt;a href=&#34;https://github.com/oauth2-proxy/oauth2-proxy&#34;&gt;oauth2-proxy&lt;/a&gt; to protect the Pipeline Visualizer UI with OAuth.  There are more advanced configuration settings and provider examples in the documentation &lt;a href=&#34;https://github.com/oauth2-proxy/oauth2-proxy/blob/7def4bf/docs/docs/configuration/auth.md&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; There is a limitation of using oauth2-proxy with this configuration at the moment where only one service can be protected via one running oauth2-proxy deployment.  This is because the redirect URL that is configured in the OAuth providers can only map to a single oauth2-proxy callback URL.  If you would like a more generic SSO solution then you could look at integrating with &lt;a href=&#34;https://github.com/dexidp/dex#dex---a-federated-openid-connect-provider&#34;&gt;Dex&lt;/a&gt; or &lt;a href=&#34;https://www.keycloak.org/&#34;&gt;Keycloak&lt;/a&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;IMPORTANT&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;TLS and DNS is required, please follow &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/ingress/tls_dns&#34;&gt;this&lt;/a&gt; guide if they not already setup&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Choose your OAuth provider and get the client ID and client secret using this (&lt;a href=&#34;https://github.com/oauth2-proxy/oauth2-proxy/blob/7def4bf/docs/docs/configuration/auth.md&#34;&gt;https://github.com/oauth2-proxy/oauth2-proxy/blob/7def4bf/docs/docs/configuration/auth.md&lt;/a&gt;)&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;As an example here are two screenshots for using Google and GitHub&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/oauth_gh.png&#34; alt=&#34;GitHub&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/oauth_google.png&#34; alt=&#34;Google&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;setup&#34;&gt;Setup&lt;/h1&gt;
+&lt;p&gt;We will be editing helmfiles so clone your cluster git repository and move into the root directory.&lt;/p&gt;
+&lt;p&gt;Add the oauth2 proxy helm chart, this will redirect requests to to the configured OAuth provider:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops helmfile add --chart k8s-at-home/oauth2-proxy
+jx gitops helmfile resolve
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;you should see the new chart added to the end of the file &lt;code&gt;./helmfiles/jx/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add ./helmfiles/jx/helmfile.yaml
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;chore: add oauth2 proxy&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default Jenkins X is configured to use GitHub as the OAuth provider, to change this edit the file &lt;code&gt;./helmfiles/jx/helmfile.yaml&lt;/code&gt; and add &lt;strong&gt;extraArgs&lt;/strong&gt; config like the google example here:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;k8s-at-home/oauth2-proxy&lt;/span&gt;
+ &lt;span style=&#34;color:#f92672&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;5.0.3&lt;/span&gt;
+ &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;oauth2-proxy&lt;/span&gt;
+ &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;../../versionStream/charts/k8s-at-home/oauth2-proxy/values.yaml&lt;/span&gt;
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-values.yaml&lt;/span&gt;
+ - &lt;span style=&#34;color:#f92672&#34;&gt;extraArgs&lt;/span&gt;:
+     &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;google&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For a full list of supported providers see &lt;a href=&#34;https://github.com/oauth2-proxy/oauth2-proxy/blob/7def4bf/docs/docs/configuration/auth.md&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;By default this configuration works with the Pipeline Visualizer however you can override the default Jenkins X oauth2-proxy helm config to be any ingress if you prefer instead.
+i.e. this is the default so you could override the helm value from &lt;code&gt;dashboard&lt;/code&gt; to be &lt;code&gt;nexus&lt;/code&gt; if you wanted OAuth on Nexus instead.  No need to do anything if it is the Pipeline Visualizer you want OAuth for.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+ &lt;span style=&#34;color:#f92672&#34;&gt;hosts&lt;/span&gt;:
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;dashboard{{ .Values.jxRequirements.ingress.namespaceSubDomain }}{{ .Values.jxRequirements.ingress.domain }}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next we need to tell the Kubernetes Ingress that it needs to use our new OAuth provider.&lt;/p&gt;
+&lt;p&gt;Create a file &lt;code&gt;./helmfiles/jx/pv-values.yaml&lt;/code&gt; with the following contents, this also unsets the basic auth config which was enabled during the initial installation:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+ &lt;span style=&#34;color:#f92672&#34;&gt;annotations&lt;/span&gt;:
+   &lt;span style=&#34;color:#f92672&#34;&gt;nginx.ingress.kubernetes.io/auth-secret&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+   &lt;span style=&#34;color:#f92672&#34;&gt;nginx.ingress.kubernetes.io/auth-type&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+   &lt;span style=&#34;color:#f92672&#34;&gt;nginx.ingress.kubernetes.io/auth-signin&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://$host/oauth2/start?rd=$escaped_request_uri&lt;/span&gt;
+   &lt;span style=&#34;color:#f92672&#34;&gt;nginx.ingress.kubernetes.io/auth-url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://$host/oauth2/auth&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now reference the new &lt;code&gt;pv-values.yaml&lt;/code&gt; file for the pipeline visualizer chart in &lt;code&gt;./helmfiles/jx/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;i.e.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx3/jx-pipelines-visualizer&lt;/span&gt;
+ &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-pipelines-visualizer&lt;/span&gt;
+ &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;../../versionStream/charts/jx3/jx-pipelines-visualizer/values.yaml.gotmpl&lt;/span&gt;
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-values.yaml&lt;/span&gt;
+ - &lt;span style=&#34;color:#ae81ff&#34;&gt;pv-values.yaml&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now add, commit and push the changes&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add --all
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;chore: enable OAuth for pipeline visualizer&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will trigger the boot pipeline which you can follow with&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once the logs start applying the generated Kubernetes resources you can CTRL+C to stop following the logs and populate the secrets in you secret store such as Vault, or Google Secrets Manager for example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -i
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;filter for &lt;code&gt;oauth&lt;/code&gt; and select &lt;code&gt;client id&lt;/code&gt; and &lt;code&gt;client secret&lt;/code&gt; options using the space bar&lt;/p&gt;
+&lt;p&gt;Now enter the client id and secret you got from the Prerequisites step above.&lt;/p&gt;
+&lt;p&gt;Once entered you can wait to see the oauth2-proxy pod become Available using&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl get deploy/oauth2-proxy -w
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;When &lt;code&gt;Ready&lt;/code&gt; you can access the pipeline visualizer using the hostname from&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kubectl get ing jx-pipelines-visualizer
+&lt;/code&gt;&lt;/pre&gt;
+      </description>
+    </item>
+    
   </channel>
 </rss>
