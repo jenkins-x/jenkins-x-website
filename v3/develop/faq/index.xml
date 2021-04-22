@@ -85,7 +85,22 @@
 &lt;h2 id=&#34;does-jenkins-x-support-helmfile-hooks&#34;&gt;Does Jenkins X support helmfile hooks?&lt;/h2&gt;
 &lt;p&gt;Helmfile hooks allow programs to be executed during the lifecycle of the application of your helmfiles.&lt;/p&gt;
 &lt;p&gt;Since we default to using &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/#why-does-jenkins-x-use-helmfile-template&#34;&gt;helmfile template&lt;/a&gt; helmfile hooks are not supported for cluster git repositories (though you can use them in preview environments).&lt;/p&gt;
-&lt;p&gt;However its easy to add steps into the &lt;strong&gt;versionStream/src/Makefile.mk&lt;/strong&gt; to simulate helmfile hooks.&lt;/p&gt;
+&lt;p&gt;However you can support it with the following example:&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-a-post-install-hook-in-a-cluster&#34;&gt;How do I add a post install hook in a cluster?&lt;/h2&gt;
+&lt;p&gt;If you want to perform some tasks after a promotion or configuration change in your cluster you can modify the &lt;code&gt;Makefile&lt;/code&gt; in your git repository.&lt;/p&gt;
+&lt;p&gt;e.g. use something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-makefile&#34; data-lang=&#34;makefile&#34;&gt;POST_APPLY_HOOK &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; post-apply-hook
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;post-apply-hook&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;
+	echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;TODO run some tests now or trigger a Job or something...&amp;#34;&lt;/span&gt;
+
+&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;include&lt;/span&gt; &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;versionStream/src/Makefile.mk&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To trigger the tests you could:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;download binaries and run them locally via a shell script&lt;/li&gt;
+&lt;li&gt;create a kubernetes &lt;code&gt;Job&lt;/code&gt; and verify that the job succeeds via &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/verify/job/&#34;&gt;jx verify job&lt;/a&gt; which also tails the log&lt;/li&gt;
+&lt;li&gt;trigger a pipeline via &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/start/&#34;&gt;jx pipeline start&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id=&#34;how-do-i-uninstall-jenkins-x&#34;&gt;How do I uninstall Jenkins X?&lt;/h2&gt;
 &lt;p&gt;We don&amp;rsquo;t yet have a nice uninstall command.&lt;/p&gt;
 &lt;p&gt;Though if you git clone your development git repository and cd into it you can run:&lt;/p&gt;
