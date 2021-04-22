@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/reference/variables/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-04-06T17:20:32&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-04-22T18:28:22&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Variables">
 <meta itemprop="description" content="Environment variables available inside Pipelines">
-<meta itemprop="dateModified" content="2021-04-06T17:20:32&#43;01:00" />
-<meta itemprop="wordCount" content="388">
+<meta itemprop="dateModified" content="2021-04-22T18:28:22&#43;01:00" />
+<meta itemprop="wordCount" content="557">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Variables"/>
 <meta name="twitter:description" content="Environment variables available inside Pipelines"/>
@@ -5755,22 +5755,71 @@ if (!doNotTrack) {
 	       
 	<h3 id="environment-variables">Environment Variables</h3>
 <p>The following tekton parameters and environment variables are available inside the pipeline catalog. They are populated by <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a></p>
-<ul>
-<li><code>BUILD_ID</code> a unique long number for this build</li>
-<li><code>JOB_NAME</code> the name of the build which matches the name in the <code>presubmit</code> or <code>postsubmit</code> in your <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> <code>triggers.yaml</code></li>
-<li><code>JOB_SPEC</code> is of the form <code>type:presumit</code> or <code>type:postsubmit</code> so you know what kind of job you are inside</li>
-<li><code>PULL_BASE_REF</code> the base branch name. e.g. <code>master</code> or <code>main</code></li>
-<li><code>PULL_BASE_SHA</code> the base git SHA being built</li>
-<li><code>REPO_NAME</code> the name of the git repository</li>
-<li><code>REPO_OWNER</code> the owner of the git repository (a user or organisation)</li>
-<li><code>REPO_URL</code> the git URL to clone the repository being built</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BUILD_ID</td>
+<td>a unique long number for this build</td>
+</tr>
+<tr>
+<td>JOB_NAME</td>
+<td>the name of the build which matches the name in the <code>presubmit</code> or <code>postsubmit</code> in your <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> <code>triggers.yaml</code></td>
+</tr>
+<tr>
+<td>JOB_SPEC</td>
+<td>is of the form <code>type:presumit</code> or <code>type:postsubmit</code> so you know what kind of job you are inside</td>
+</tr>
+<tr>
+<td>PULL_BASE_REF</td>
+<td>the base branch name. e.g. <code>master</code> or <code>main</code></td>
+</tr>
+<tr>
+<td>PULL_BASE_SHA</td>
+<td>the base git SHA being built</td>
+</tr>
+<tr>
+<td>REPO_NAME</td>
+<td>the name of the git repository</td>
+</tr>
+<tr>
+<td>REPO_OWNER</td>
+<td>the owner of the git repository (a user or organisation)</td>
+</tr>
+<tr>
+<td>REPO_URL</td>
+<td>the git URL to clone the repository being built</td>
+</tr>
+</tbody>
+</table>
 <p>Pull Requests <code>presubmit</code> also have the following values:</p>
-<ul>
-<li><code>PULL_NUMBER</code> the number of the pull request</li>
-<li><code>PULL_PULL_REF</code> the git reference of the pull request; something like <code>refs/pull/123/head</code></li>
-<li><code>PULL_PULL_SHA</code>  the git SHA of the pull request</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PULL_NUMBER</td>
+<td>the number of the pull request</td>
+</tr>
+<tr>
+<td>PULL_PULL_REF</td>
+<td>the git reference of the pull request; something like <code>refs/pull/123/head</code></td>
+</tr>
+<tr>
+<td>PULL_PULL_SHA</td>
+<td>the git SHA of the pull request</td>
+</tr>
+</tbody>
+</table>
 <h4 id="additional-environment-variables">Additional environment variables</h4>
 <p>If your pipeline runs the <a href="https://github.com/jenkins-x/jx-gitops/blob/master/docs/cmd/jx-gitops_variables.md">jx gitops variables</a> command it will lazily create the <code>.jx/variables.sh</code> script which will default a bunch more environment variables if they are not already populated in your git repository.</p>
 <p><strong>NOTE</strong> that these variables are dynamically created during the execution of the pipeline pod; so to access them you must <code>source .jx/variables.sh</code> inside your step.</p>
@@ -5779,20 +5828,106 @@ if (!doNotTrack) {
   <span style="color:#f92672">name</span>: <span style="color:#ae81ff">my-step</span>
   <span style="color:#f92672">script</span>: |<span style="color:#e6db74">
 </span><span style="color:#e6db74">    #!/usr/bin/env bash
-</span><span style="color:#e6db74">    source /workspace/source/.jx/variables.sh
+</span><span style="color:#e6db74">    source .jx/variables.sh
 </span><span style="color:#e6db74">    echo &#34;now we can use variables like this: ${VERSION}&#34;</span>    
 </code></pre></div><p>Available variables:</p>
-<ul>
-<li><code>APP_NAME</code> the name of the application which defaults to the <code>$REPO_NAME</code></li>
-<li><code>BRANCH_NAME</code> is really the pull request name so something like <code>PR-123</code></li>
-<li><code>BUILD_NUMBER</code> the human readable short build number relative to the repository and branch. So builds start at 1 and go up incrementally</li>
-<li><code>DOCKERFILE_PATH</code>  the location of the <code>Dockerfile</code> if it exists</li>
-<li><code>DOCKER_REGISTRY</code> the host name of the registry being used for image builds</li>
-<li><code>DOCKER_REGISTRY_ORG</code> the owner in the container registry (user name or organisation) to push images</li>
-<li><code>JX_CHART_REPOSITORY</code> the URL of the helm chart repository to use</li>
-<li><code>PIPELINE_KIND</code> the kind of pipeline being run <code>pullrequest</code> or <code>release</code></li>
-<li><code>VERSION</code> the version number used for releases (and used to tag images and git etc) or the preview version for pull requests</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP_NAME</td>
+<td>the name of the application which defaults to the <code>$REPO_NAME</code></td>
+</tr>
+<tr>
+<td>BRANCH_NAME</td>
+<td>is really the pull request name so something like <code>PR-123</code></td>
+</tr>
+<tr>
+<td>BUILD_NUMBER</td>
+<td>the human readable short build number relative to the repository and branch. So builds start at 1 and go up incrementally</td>
+</tr>
+<tr>
+<td>DOMAIN</td>
+<td>the domain name for your ingress (from <code>spec.ingress.domain</code> in your <code>jx-requirements.yml</code> file)</td>
+</tr>
+<tr>
+<td>GIT_BRANCH</td>
+<td>the real git branch being used (e.g. if on a Pull Request)</td>
+</tr>
+<tr>
+<td>DOCKERFILE_PATH</td>
+<td>the location of the <code>Dockerfile</code> if it exists</td>
+</tr>
+<tr>
+<td>DOCKER_REGISTRY</td>
+<td>the host name of the registry being used for image builds</td>
+</tr>
+<tr>
+<td>DOCKER_REGISTRY_ORG</td>
+<td>the owner in the container registry (user name or organisation) to push images</td>
+</tr>
+<tr>
+<td>JENKINS_X_URL</td>
+<td>the URL to view the current pipeline in the <a href="/v3/develop/ui/dashboard/">dashboard</a></td>
+</tr>
+<tr>
+<td>JX_CHART_REPOSITORY</td>
+<td>the URL of the helm chart repository to use</td>
+</tr>
+<tr>
+<td>NAMESPACE_SUB_DOMAIN</td>
+<td>the sub domain prefix added to <code>$DOMAIN</code> to create ingresses. e.g. <code>myservice.${NAMESPACE_SUB_DOMAIN}${DOMAIN}</code></td>
+</tr>
+<tr>
+<td>PIPELINE_KIND</td>
+<td>the kind of pipeline being run <code>pullrequest</code> or <code>release</code></td>
+</tr>
+<tr>
+<td>PUSH_CONTAINER_REGISTRY</td>
+<td>generally the same as <code>DOCKER_REGISTRY</code> but sometimes can be different (e.g. if using minikube/docker you could push to a local registry)</td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td>the version number used for releases (and used to tag images and git etc) or the preview version for pull requests</td>
+</tr>
+</tbody>
+</table>
+<h4 id="additional-pull-request-variables">Additional Pull Request variables</h4>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PR_BASE_REF</td>
+<td>the git branch which a Pull Request pipeline will</td>
+</tr>
+<tr>
+<td>PR_BASE_SHA</td>
+<td>the git sha which the Pull Request has been rebased on from the base branch the PR will merge to</td>
+</tr>
+<tr>
+<td>PR_HEAD_REF</td>
+<td>the git branch of the source of the Pull Request</td>
+</tr>
+<tr>
+<td>PR_HEAD_SHA</td>
+<td>the latest git sha of the Pull Request being processed</td>
+</tr>
+<tr>
+<td>PR_LABEL_${LabelName} = &lsquo;true&rsquo;</td>
+<td>where <code>${labelName}</code> is the upper case name of the Pull Request label with any special character like <code>-</code> or <code>/</code> replaced by <code>_</code> e.g. <code>PR_LABEL_ENV_STAGING</code> for the label <code>env/staging</code></td>
+</tr>
+</tbody>
+</table>
 <p>If you want to define dynamic environment variables in one step for use in later steps you can append new variables to <code>.jx/variables.sh</code> and then add the <code>source .jx/variables.sh</code> later in your pipeline</p>
 
 	
@@ -5857,7 +5992,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified April 6, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/28a3391a74fddfbdcb40a7dfadc77ccc9c59a254">fix: add jx CLI links (28a3391a74)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified April 22, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/4f34718ef7f7f8045d0fdfb15b5acc735169385e">fix: add docs for PR environment variables (4f34718ef7)</a>
 </div>
 </div>
 
