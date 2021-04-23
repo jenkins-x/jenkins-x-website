@@ -302,6 +302,21 @@ jx pipeline effective
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline convert 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The pipelines should be modified and if you have a &lt;code&gt;Kptfile&lt;/code&gt; it will be removed.&lt;/p&gt;
 &lt;p&gt;If you have any old &lt;code&gt;jenkins-x.yml&lt;/code&gt; files, those will be converted across to the new &lt;code&gt;.lighthouse&lt;/code&gt; tekton notation too.&lt;/p&gt;
+&lt;h2 id=&#34;recreating-pipelines&#34;&gt;Recreating pipelines&lt;/h2&gt;
+&lt;p&gt;If you created/imported your repository a long time ago (particularly before the GA version of 3.x) you may have old steps and images inside your &lt;code&gt;.lighthouse/jenkins-x/*.yaml&lt;/code&gt; files.&lt;/p&gt;
+&lt;p&gt;So it&amp;rsquo;s a good idea to recreate them from the latest catalog which are then simpler and &lt;a href=&#34;https://jenkins-x.io/blog/2021/02/25/gitops-pipelines/#sharing-tasks-and-steps-across-repositories&#34;&gt;easier to keep up to date with the version stream&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/blog/2021/02/25/gitops-pipelines/#customizing-an-inherited-step&#34;&gt;easier to custommize locally&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can do that via the following from inside a git clone of your repository:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;rm -rf .lighthouse charts preview
+jx project import
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This should recreate the directories:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;.lighthouse&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;charts&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;preview&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;from the latest pipeline catalog; there should be no need to create a Pull Request on your dev cluster git repository as all the webhooks should be setup already.&lt;/p&gt;
+&lt;p&gt;You can use the git history to compare changes in case you had made any custom pipeline changes.&lt;/p&gt;
+&lt;p&gt;If you are worried about losing changes you can add &lt;code&gt;--dry-run&lt;/code&gt; to &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/project/import/&#34;&gt;jx project import&lt;/a&gt; which will give you a chance to review the changes before committing. Though you can always use git to revert thing too ;)&lt;/p&gt;
 &lt;h2 id=&#34;upgrading-pipelines-and-helm-charts-via-kpt&#34;&gt;Upgrading pipelines and helm charts via kpt&lt;/h2&gt;
 &lt;p&gt;You can upgrade any git repository in the same way you upgrade your &lt;a href=&#34;https://jenkins-x.io/v3/guides/upgrade/#cluster&#34;&gt;clusters git repository&lt;/a&gt; by running the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/gitops/upgrade&#34;&gt;jx gitops upgrade&lt;/a&gt; command inside a git checkout of your repository:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd my-quickstart-thingy
