@@ -214,7 +214,48 @@ echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;apiVersion: v1
         
         &lt;h2 id=&#34;how-do-i-add-a-new-secret&#34;&gt;How do I add a new Secret?&lt;/h2&gt;
 &lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#create-a-new-secret&#34;&gt;how to add a new Secret&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-change-the-secret-poll-period-in-kubernetes-external-secrets&#34;&gt;How do I change the secret poll period in kubernetes external secrets?&lt;/h2&gt;
+&lt;h2 id=&#34;how-do-i-edit-a-secret&#34;&gt;How do I edit a secret?&lt;/h2&gt;
+&lt;p&gt;Secrets are &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/&#34;&gt;stored in external secret storage&lt;/a&gt; like Vault or your cloud providers secret store.&lt;/p&gt;
+&lt;p&gt;So you can edit them in the underlying secret store directly (e.g. with your cloud providers CLI or the vault CLI).&lt;/p&gt;
+&lt;p&gt;Or you can use &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#edit-secrets&#34;&gt;jx secret edit&lt;/a&gt; command to do this for you.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#interactive-mode&#34;&gt;interactive mode&lt;/a&gt; is a nice way to find the secret and property you want to edit, then edit&amp;hellip;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -i
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-edit-the-bot-token&#34;&gt;How do I edit the bot token?&lt;/h2&gt;
+&lt;p&gt;The git operator secret is normally updated whenever you re-install the git operator via Terraform or &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/operator/&#34;&gt;install the operator via the CLI&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can delete the git operator via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm delete jx-git-operator -n jx-git-operator 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There are a number of other places you need to change the bot token.&lt;/p&gt;
+&lt;p&gt;First check out &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/config/secrets/#how-do-i-edit-a-secret&#34;&gt;how to edit secrets&lt;/a&gt; for background.&lt;/p&gt;
+&lt;p&gt;Secrets are &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/&#34;&gt;stored in external secret storage&lt;/a&gt; like Vault or your cloud providers secret store.&lt;/p&gt;
+&lt;p&gt;So you can edit them in the underlying secret store directly (e.g. with your cloud providers CLI or the vault CLI).&lt;/p&gt;
+&lt;p&gt;When you first boot up Jenkins X it will auto-populate the secrets in the external secret store with the bot user and password you pass in when you run.&lt;/p&gt;
+&lt;p&gt;The bot user and password is replicated into a number of different secrets. This is so that you can use separate accounts and tokens if you wish; or even change scopes per use.&lt;/p&gt;
+&lt;p&gt;Though it does mean you&amp;rsquo;ve a few different places to change the bot token if you choose to change it.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#interactive-mode&#34;&gt;interactive mode&lt;/a&gt; is probably the simplest way to change a secret:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -i
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then to change a bot token you will need to change these secrets:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Secret Name&lt;/th&gt;
+&lt;th&gt;Property&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;lighthouse-oauth-token&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;oauth&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;tekton-git&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;username&lt;/code&gt; &lt;code&gt;password&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Once you have made your changes you can verify the changes have taken place.&lt;/p&gt;
+&lt;p&gt;e.g. if you have &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34;&gt;ksd&lt;/a&gt; installed on your &lt;code&gt;$PATH&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get secret -oyaml lighthouse-oauth-token | ksd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-change-the-secret-poll-period-in-kubernetes-external-secrets&#34;&gt;How do I change the secret poll period in kubernetes external secrets?&lt;/h2&gt;
 &lt;p&gt;Your cloud provider could charge per read of a secret and so a frequent poll of your secrets could cost $$$. You may want to tone down the poll period.&lt;/p&gt;
 &lt;p&gt;You can do this via the &lt;code&gt;POLLER_INTERVAL_MILLISECONDS&lt;/code&gt; setting in the &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets#configuration&#34;&gt;kubernetes external secrets configuration&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;For more details &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;see how to configure charts&lt;/a&gt;&lt;/p&gt;
