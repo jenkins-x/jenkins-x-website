@@ -13,6 +13,31 @@
     
     
     <item>
+      <title>Blog: Jenkins X 3 - May 2021 LTS</title>
+      <link>https://jenkins-x.io/blog/2021/05/12/jx3-lts-may-21/</link>
+      <pubDate>Wed, 12 May 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/05/12/jx3-lts-may-21/</guid>
+      <description>
+        
+        
+        &lt;p&gt;May 2001 &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/lts/&#34;&gt;LTS release&lt;/a&gt; is now available!&lt;/p&gt;
+&lt;p&gt;LTS is a slower cadence version stream which contains a verified set of releases and configurations that have been used by teams tracking the bleeding edge Jenkins X.&lt;/p&gt;
+&lt;p&gt;Included in this release:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Protect Pipeline Visualiser with OAuth2 &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/ingress/oauth&#34;&gt;how to docs&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Terraform repositories are now protected by the Jenkins X version stream&lt;/li&gt;
+&lt;li&gt;external-dns helm chart upgrade to &lt;a href=&#34;https://artifacthub.io/packages/helm/bitnami/external-dns/5.0.0&#34;&gt;v5.0.0&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Reduce external secrets polling of cloud services to reduce cloud costs&lt;/li&gt;
+&lt;li&gt;[Jenkins] for users using Jenkins the &lt;a href=&#34;https://github.com/jenkinsci/tekton-client-plugin&#34;&gt;Tekton Client plugin&lt;/a&gt; is now installed by default&lt;/li&gt;
+&lt;li&gt;Stackdriver format logging enabled when using GKE and services that use &lt;a href=&#34;https://github.com/jenkins-x/jx-logging&#34;&gt;jx-logging&lt;/a&gt; library.  If you enable the Stackdriver API in GCP you will get well formatted logs and alerts via Stackdriver.&lt;/li&gt;
+&lt;li&gt;Jenkins X Grafana dashboards updates with Lighthouse telemetry&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Jenkins X 3.x GA is here!</title>
       <link>https://jenkins-x.io/blog/2021/04/15/jx-v3-ga/</link>
       <pubDate>Thu, 15 Apr 2021 00:00:00 +0000</pubDate>
@@ -2968,216 +2993,6 @@ demonstrates GitOps principles.&lt;/li&gt;
 &lt;p&gt;We have now started switching over to the new logo and expect to see some new swag available soon too. The old logo we will now consider as a mascot of the Jenkins X project. If you are looking to update your use of the logo, &lt;a href=&#34;https://github.com/cdfoundation/artwork&#34;&gt;here is the new artwork&lt;/a&gt;.&lt;/p&gt;
 &lt;img src=&#34;https://jenkins-x.io/news/new-logo-jenkins-x/jenkinsx-stacked-color.png&#34;&gt; 
 &lt;p&gt;It is a big change for the project but ultimately the reason we put so much time and energy into this is that is important to us we represent the spirit of Jenkins X in everything we do. So when you are using Jenkins X, and you see the new logo, we want you to feel part of the open and friendly community and we want your team to focus on what you really want to focus on: delivering quality software at speed and at any scale.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Increasing CI/CD Pipeline Observability in Jenkins X</title>
-      <link>https://jenkins-x.io/blog/2019/07/29/jenkins-x-observability/</link>
-      <pubDate>Mon, 29 Jul 2019 10:44:40 -0700</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/07/29/jenkins-x-observability/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://assets.devopsdays.org/events/2018/toronto/DevOpsDaysTO_May31_2018_ClaySmith.jpg&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Increasing CI/CD Pipeline Observability, implement tracing&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-Credit: [Minds Eye Creative](https://www.mindseyecreative.ca/) | [DevOps Days Toronto](https://devopsdays.org/events/2018-toronto/program/clay-smith/)
-&lt;h1 id=&#34;overview&#34;&gt;Overview&lt;/h1&gt;
-&lt;p&gt;You might have heard of Observability given that folks have been talking about this for a while now.  Sure, you might think it is just the latest tech buzzword.  However, the practice has been around for a long time now.&lt;/p&gt;
-&lt;p&gt;Observability is certainly relevant today given the Microservices architectures, distributed systems, and the characteristics of modern applications being deployed at a faster pace by leveraging CI/CD pipelines to Kubernetes, in this case using Jenkins X.  Indeed old practices of setting up monitoring after an app is deployed, are no longer acceptable.&lt;/p&gt;
-&lt;p&gt;Let’s face it, modern apps call for modern instrumentation, not only once they are deployed; even at build-time having proper instrumentation can help you gain insights into what is happening at various stages of the build and release process. This may include spotting any latency issues, performance and dependency download times.  In other words, instrumentation and monitoring should be baked into our deployment pipeline in Jenkins X!&lt;/p&gt;
-&lt;p&gt;Given that Jenkins X is the native CI/CD platform for Kubernetes, we must start thinking of Observability in the context of the build and release of our containerized applications via this platform, and not after the deployment process itself.&lt;/p&gt;
-&lt;h1 id=&#34;what-we-are-doing-today&#34;&gt;What we are doing today&lt;/h1&gt;
-&lt;p&gt;Today, I walk you through the process of increasing observability in your build and release pipeline by implementing tracing for a couple of events such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; which are part of a sample NodeJS application.&lt;/p&gt;
-
-
-&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
-
-NOTE: Tracing is only a small portion of other things that need to be in place.  Logging and Metrics are also required.  The combination and aggregation of this data allows you to understand how observable your pipeline is.
-&lt;/div&gt;
-
-&lt;figure&gt;
-&lt;img src=&#34;https://peter.bourgon.org/img/instrumentation/01.png&#34;/&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Metrics, Logs, Traces are all needed.&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-Diagram by: [Peter Bourgon](https://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html)
-&lt;h2 id=&#34;leveraging-third-party-tools&#34;&gt;Leveraging Third-Party Tools&lt;/h2&gt;
-&lt;p&gt;Jenkins X was built with extensibility and flexibility in mind.  Today, you can easily create &lt;strong&gt;QuickStarts&lt;/strong&gt; for a language not implemented.  You can also build &lt;strong&gt;addOns&lt;/strong&gt; to augment the platform functionality.  There are currently &lt;strong&gt;addOns&lt;/strong&gt; for &lt;code&gt;istio&lt;/code&gt;, &lt;code&gt;prometheus&lt;/code&gt; and &lt;code&gt;anchore&lt;/code&gt; to name a few.  Given this extensibility, we encourage our community to build these components and share with everyone.&lt;/p&gt;
-&lt;p&gt;If you look around, you’ll find that &lt;a href=&#34;http://Honeycomb.io&#34;&gt;Honeycomb.io&lt;/a&gt; is at the forefront of Observability.  We are collaborating with them to eventually have a &lt;em&gt;Honeycomb addOn&lt;/em&gt; for Jenkins X&lt;/p&gt;
-&lt;p&gt;In this post, we use the Honeycomb.io API to trace our pipeline events.&lt;/p&gt;
-&lt;h3 id=&#34;tracing-cicd-pipeline-events&#34;&gt;Tracing CI/CD Pipeline Events&lt;/h3&gt;
-&lt;p&gt;In this scenario we want to trace start and end times for certain events.  In our example NodeJS app, we have commands such as &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt;, which are part of our &lt;strong&gt;build-pack&lt;/strong&gt; pipeline out of the box.  To do start tracing, we modify the Tekton pipeline and inject calls to the Honeycomb.io API before and after these specific &lt;strong&gt;build pack&lt;/strong&gt; named steps.&lt;/p&gt;
-
-
-&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
-
-NOTE: Please be sure to sign up for &lt;a href=&#34;http://honeycomb.io&#34;&gt;honeycomb.io&lt;/a&gt; to obtain your &lt;strong&gt;API Key&lt;/strong&gt;
-&lt;/div&gt;
-
-&lt;h4 id=&#34;create-kubernetes-secret&#34;&gt;Create Kubernetes Secret&lt;/h4&gt;
-&lt;p&gt;Once we have our API Key, we want to create a Kubernetes Secret which is required to make API calls within our pipeline.  To do this, we create it in the &lt;code&gt;jx&lt;/code&gt; and &lt;code&gt;jx-staging&lt;/code&gt; namespaces.  For each namespace execute the following command (be sure to modify the namespace value as needed).&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl create secret generic honeycomb-creds —from-literal&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;BUILDEVENT_APIKEY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;KEY&amp;gt; --namespace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;NAMESPACE&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;modify-tekton-pipeline&#34;&gt;Modify Tekton Pipeline&lt;/h4&gt;
-&lt;p&gt;Now that we have our Kubernetes Secret in place, we will modify the &lt;code&gt;jenkins-x.yaml&lt;/code&gt; file, which currently has exactly one line as follows:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;buildpack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;javascript&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Let&amp;rsquo;s go over the important components of the YAML file once modified.  The first items I&amp;rsquo;d like to highlight, are the environment variables needed.  We need to provide honeycomb.io three key pieces of information:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;CI Provider&lt;/strong&gt;:  this is the JENKINS-X environment variable.  Honeycomb will add additional metadata fields to our dataset&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;BUILDEVENT_DATASET&lt;/strong&gt;: this indicates which dataset we want to populate (you can have many).&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;BUILDEVENT_APIKEY&lt;/strong&gt;: the Kubernetes Secret value, which is the API Key provided via the honeycomb site&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;buildPack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;javascript&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;env&lt;/span&gt;:
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;JENKINS-X&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;JENKINS-X&lt;/span&gt;
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;BUILDEVENT_DATASET&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;BUILDEVENT_APIKEY&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;valueFrom&lt;/span&gt;:
-      &lt;span style=&#34;color:#f92672&#34;&gt;secretKeyRef&lt;/span&gt;:
-        &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;BUILDEVENT_APIKEY&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-creds&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;strong&gt;build-pack&lt;/strong&gt; used for a NodeJS app is &lt;strong&gt;javascript&lt;/strong&gt; as detected by the language.  Hence, why the single line we had as the contents of the &lt;code&gt;jenkins-x.yaml&lt;/code&gt; file.&lt;/p&gt;
-&lt;p&gt;Because we know which build-pack is being used, we can determine which named steps exist.  As you can imagine, a typical &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; typically exist.&lt;/p&gt;
-&lt;p&gt;Therefore, we want to inject a timestamp &lt;strong&gt;before&lt;/strong&gt; and &lt;strong&gt;after&lt;/strong&gt; each of these named steps are called.  The following shows how I inject this.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;pipelines&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;overrides&lt;/span&gt;:
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullRequest&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo ===== pullrequest:build:before  sending honeycomb step trace  ===============&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-install-set-step-start-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo $(date +%s) &amp;gt; step_start&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-install-before-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =================================  $(cat step_start)  =================================&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;before&lt;/span&gt;
-
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullRequest&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo ===== pullrequest:build:after   sending honeycomb step trace  ===============&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-install-after-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =================================  $(cat step_start)  =================================&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-step-log-after-npm-install&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo npm-install | sum | cut -f 1 -d \ ) $(cat step_start) npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;after&lt;/span&gt;
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-test&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullRequest&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-test-set-step-start-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo $(date +%s) &amp;gt; step_start&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-test-before-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =================================  $(cat step_start)  =================================&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;before&lt;/span&gt;
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-test&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullRequest&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-npm-test-after-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =================================  $(cat step_start)  =================================&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-step-log-after-npm-test&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo npm-test | sum | cut -f 1 -d \ ) $(cat step_start) npm-test&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;after&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now that I have  captured timestamps for these two named steps, I want to send an API call to honeycomb as follows.  You will notice how I am using a binary called &lt;strong&gt;buildevents&lt;/strong&gt; this is downloaded during the setup of my pipelines which I discuss shortly.&lt;/p&gt;
-&lt;p&gt;By concatenating a few metadata pieces that exist as &lt;strong&gt;environment variables&lt;/strong&gt; in Jenkins X, I build a unique name which is needed by honeycomb to track things correctly.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;    - &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullRequest&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-build-name-concat&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat build_start)&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-send-success&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents build &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(cat build_start) success&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;after&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We do the same for the &lt;strong&gt;Release&lt;/strong&gt; pipeline&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# release pipeline releated calls&lt;/span&gt;
-
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo ===== release:build:before  sending honeycomb step trace  ===============&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-npm-install-step-start-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo $(date +%s) &amp;gt; release_step_start&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-npm-install-before-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo ================================= release  release-npm-install step start  $(cat release_step_start)  =================================&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;before&lt;/span&gt;
-
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-npm-install-after-timestamp&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo ================================= release npm-install step end  $(cat release_step_start)  =================================&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-step-log-after-npm-install&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents step &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(echo release-npm-install | sum | cut -f 1 -d \ ) $(cat release_step_start) release-npm-install&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;after&lt;/span&gt;
-
-    - &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;stage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;build&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-build-name-concat&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat release_start)&lt;/span&gt;
-      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-build-send-success&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents build &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; $(cat release_start) success&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;after&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is portion of the pipeline executes first hence the &lt;strong&gt;setup&lt;/strong&gt; node.  There are several things we want to accomplish in the setup of our pipelines.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Download the Build Events binary provided by Honeycomb, make it executable&lt;/li&gt;
-&lt;li&gt;Create the timestamp we will use to track the &lt;strong&gt;pullRequest&lt;/strong&gt; pipeline execution.  I do this by saving a temporary file with the timestamp.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This is done for both pipelines, as we are working with both.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;pullRequest&lt;/span&gt;:
-      &lt;span style=&#34;color:#f92672&#34;&gt;setup&lt;/span&gt;:
-        &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-          - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =========================== pullrequest:setup downloading Honeycomb.io buildevents binary ===========================&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;pullrequest-download-honeycomb-binary&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-set-binary-permissions&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;chmod 755 buildevents&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-display-buildevents-version&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;./buildevents --version&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-setup-build-timestamp&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo $(date +%s) &amp;gt; build_start&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;honeycomb-output-debug&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat build_start)   =======================================================&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;release&lt;/span&gt;:
-      &lt;span style=&#34;color:#f92672&#34;&gt;setup&lt;/span&gt;:
-        &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-        - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo =========================== release:setup downloading Honeycomb.io buildevents binary ===========================&lt;/span&gt;
-        - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-download-honeycomb-binary&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64&lt;/span&gt;
-        - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-set-binary-permissions&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;chmod 755 buildevents&lt;/span&gt;
-        - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-setup-build-timestamp&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo $(date +%s) &amp;gt; release_start&lt;/span&gt;
-        - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release-honeycomb-output-debug&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;sh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo the build is &amp;#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&amp;#34; and HONEYCOMB_BUILD_START=$(cat release_start)   =======================================================&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once this pipeline executes, the dashboard on the honeycomb.io site will show us the execution tracing as follows.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/news/jenkins-x-observability/honeycomb_trace_example.png&#34; alt=&#34;Honeycomb Dashboard&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As you can see, we have a unique name for our build being traced, underneath that we are tracking the two events &lt;code&gt;npm install&lt;/code&gt; and &lt;code&gt;npm test&lt;/code&gt; time spans.  We can easily see how long our dependencies are taking to download, and how long does it take to run the tests for the app.&lt;/p&gt;
-&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
-&lt;p&gt;Hopefully I’ve enticed you to at least look into why you might consider incorporating observability into your build and release process. There is a lot more that can be done.  In a future post, we will cover additional setup.&lt;/p&gt;
-&lt;h2 id=&#34;jenkins-world--devops-world-2019&#34;&gt;Jenkins World | DevOps World 2019&lt;/h2&gt;
-&lt;p&gt;I&amp;rsquo;ll be demoing this solution at various times while at the conference this year.  You can still register and get a big discount by using code: &lt;strong&gt;PREVIEW&lt;/strong&gt;.  You can find my full schedule on the &lt;a href=&#34;https://www.cloudbees.com/devops-world/san-francisco/agenda&#34;&gt;official website&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Cheers,&lt;br/&gt;
-&lt;a href=&#34;https://twitter.com/SharePointOscar&#34;&gt;@SharePointOscar&lt;/a&gt;&lt;/p&gt;
 
       </description>
     </item>
