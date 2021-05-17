@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 12 May 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 17 May 2021 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,89 @@
         
       
     
+    
+    <item>
+      <title>Blog: Don&#39;t use docker, use kubernetes</title>
+      <link>https://jenkins-x.io/blog/2021/05/17/dont-use-docker/</link>
+      <pubDate>Mon, 17 May 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/05/17/dont-use-docker/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Are you developing software that&amp;rsquo;s intended to run on kubernetes? If so we recommend not to use docker on your laptop.&lt;/p&gt;
+&lt;p&gt;Docker on Windows/MacOS helps you run a VM that can then run linux containers easily. But why bother?&lt;/p&gt;
+&lt;p&gt;We highly recommend just use a development kubernetes cluster - build and run your containers there instead then you&amp;rsquo;re closer to a production like environment.&lt;/p&gt;
+&lt;h2 id=&#34;why-use-kubernetes-instead-of-docker&#34;&gt;Why use kubernetes instead of docker?&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;why test on a completely different VM and container orchestrator than production? It&amp;rsquo;s better to test on a similar environment to where you are really going to deploy your code&lt;/li&gt;
+&lt;li&gt;test your kubernetes yaml / helm chart and associated configuration at the same time as you run your containers helps you catch mistakes earlier:
+&lt;ul&gt;
+&lt;li&gt;it&amp;rsquo;s not just about running the container image; it&amp;rsquo;s about lots of other things too like networking, configuration, secrets, storage/volumes, cloud infrastructure, service mesh, liveness/readiness/startup probes - so why not test all of those things rather than just the image?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;some corporate environments don&amp;rsquo;t let you run VMs on your laptop anyway so running docker locally isn&amp;rsquo;t an option&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;how-to-get-kubernetes&#34;&gt;How to get kubernetes?&lt;/h2&gt;
+&lt;p&gt;First you&amp;rsquo;ll need a kubernetes cluster.&lt;/p&gt;
+&lt;p&gt;I fully agree with James Ward that &lt;a href=&#34;https://twitter.com/_JamesWard/status/1393270529474408450?s=20&#34;&gt;developers should not need to run kubernetes&lt;/a&gt;. Friends don&amp;rsquo;t let friends setup and manage kubernetes clusters by hand :).&lt;/p&gt;
+&lt;p&gt;So try ask your infrastructure team for a development cluster or, if you can, use the cloud to set-up a managed kubernetes cluster. All the public clouds have a relatively straightforward way to spin up a fully managed kubernetes cluster for you that will be relatively inexpensive &amp;amp; they are easy to scale down when you don&amp;rsquo;t need them.&lt;/p&gt;
+&lt;p&gt;e.g. on &lt;a href=&#34;https://cloud.google.com/kubernetes-engine&#34;&gt;Google Cloud&lt;/a&gt; it&amp;rsquo;s a couple of clicks and about 5 minutes later you&amp;rsquo;ll have a fully managed kubernetes cluster ready to use. Its easy to enable auto-scaling too. Plus there&amp;rsquo;s a free tier.&lt;/p&gt;
+&lt;p&gt;If that&amp;rsquo;s not easy for you to achieve you could try reuse a namespace in your staging cluster? Though we don&amp;rsquo;t recommend developing on a production cluster; its too easy to accidentally mess up production; e.g. by using up too many resources or overwriting a cluster scoped resource like a &lt;code&gt;CustomResourceDefinition&lt;/code&gt; or &lt;code&gt;ClusterRole&lt;/code&gt; etc.&lt;/p&gt;
+&lt;p&gt;If you have zero budget you could try &lt;a href=&#34;https://minikube.sigs.k8s.io/docs/start/&#34;&gt;minikube&lt;/a&gt; or &lt;a href=&#34;https://kind.sigs.k8s.io/docs/user/quick-start/&#34;&gt;kind&lt;/a&gt; on top of docker; though its much better to reuse as close to the production setup of kubernetes as you can - there can be large variations in platform, version, setup, network, machine size and so forth.&lt;/p&gt;
+&lt;p&gt;If you are deploying software on kubernetes then I&amp;rsquo;d hope you&amp;rsquo;ve some managed kubernetes solution; so why not use that and spin up another cluster for your team for development?&lt;/p&gt;
+&lt;p&gt;If your budget is so stretched that you can&amp;rsquo;t afford 2 kubernetes clusters; one for production and one for development + staging; maybe it&amp;rsquo;s time to look at using just pure serverless / FaaS instead of kubernetes anyway? Even in that case it&amp;rsquo;s better to use your serverless / FaaS infrastructure than docker locally for similar reasons.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-connect-to-kubernetes&#34;&gt;How do I connect to kubernetes?&lt;/h2&gt;
+&lt;p&gt;So first you&amp;rsquo;ll need to &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/&#34;&gt;install kubectl&lt;/a&gt; and connect to your kubernetes cluster. This step is provider specific - so refer to your kubernetes provider / cloud vendor for that bit.&lt;/p&gt;
+&lt;p&gt;You can then verify you are connected by running some &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#get&#34;&gt;kubectl get&lt;/a&gt; commands such as&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
+kubectl get node
+kubectl get pod
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-replace-docker-with-kubernetes&#34;&gt;How do I replace docker with kubernetes?&lt;/h2&gt;
+&lt;h3 id=&#34;docker-run--kubectl-run&#34;&gt;docker run =&amp;gt; kubectl run&lt;/h3&gt;
+&lt;p&gt;Instead of &lt;code&gt;docker run&lt;/code&gt; to run container images you can use &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#run&#34;&gt;kubectl run&lt;/a&gt; to run a container image&lt;/p&gt;
+&lt;p&gt;If you wish to expose a DNS name for a pod you can use &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#expose&#34;&gt;kubectl expose&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;docker-build--kubectl-build&#34;&gt;docker build =&amp;gt; kubectl build&lt;/h3&gt;
+&lt;p&gt;A drop in replacement for &lt;code&gt;docker build&lt;/code&gt; is this &lt;a href=&#34;https://github.com/vmware-tanzu/buildkit-cli-for-kubectl#buildkit-cli-for-kubectl&#34;&gt;kubectl plugin&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/vmware-tanzu/buildkit-cli-for-kubectl/main/docs/pants-cast.svg&#34; alt=&#34;Pants Cast&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;compose--helm&#34;&gt;compose =&amp;gt; helm&lt;/h3&gt;
+&lt;p&gt;Some folks use docker compose files to define all of their various microservices; front end, back end, database etc.&lt;/p&gt;
+&lt;p&gt;If you have deployed your applications to staging/production then you are probably already using either &lt;a href=&#34;https://helm.sh/&#34;&gt;helm charts&lt;/a&gt; or kubernetes yaml to define those deployments and services already.&lt;/p&gt;
+&lt;p&gt;So just reuse all of them when running things locally in your own cluster/namespace.&lt;/p&gt;
+&lt;p&gt;Then you don&amp;rsquo;t have to keep 2 completely different configuration files in sync; you can usually just reuse the same helm charts in all environments and clusters.&lt;/p&gt;
+&lt;h3 id=&#34;testcontainers--sidecars&#34;&gt;testcontainers =&amp;gt; sidecars&lt;/h3&gt;
+&lt;p&gt;Some folks use &lt;a href=&#34;https://www.testcontainers.org/&#34;&gt;testcontainers&lt;/a&gt; for running extra containers in docker to make it easier to do testing. e.g. to run a database service to run tests using the database.&lt;/p&gt;
+&lt;p&gt;It does depend a little on what your solution is for CI.&lt;/p&gt;
+&lt;p&gt;If you are using &lt;a href=&#34;https://jenkins-x.io/v3&#34;&gt;Jenkins X&lt;/a&gt; or &lt;a href=&#34;https://github.com/tektoncd/pipeline&#34;&gt;tekton pipelines&lt;/a&gt; then you can &lt;a href=&#34;https://github.com/tektoncd/pipeline/blob/main/docs/taskruns.md#specifying-sidecars&#34;&gt;define sidecars&lt;/a&gt; in your pipeline to make sure you have whatever additional services you need when running your tests.&lt;/p&gt;
+&lt;p&gt;If you are using &lt;a href=&#34;https://www.jenkins.io/&#34;&gt;Jenkins&lt;/a&gt; then you can add the side cars to the &lt;code&gt;pod.yaml&lt;/code&gt; you use with the &lt;a href=&#34;https://plugins.jenkins.io/kubernetes/&#34;&gt;kubernetes plugin&lt;/a&gt; or you could reuse the &lt;a href=&#34;https://www.jenkins.io/blog/2021/04/21/tekton-plugin/&#34;&gt;tekton client plugin&lt;/a&gt; and use tekton pipelines and sidecars&lt;/p&gt;
+&lt;p&gt;If you are &lt;a href=&#34;https://github.com/features/actions&#34;&gt;GitHub Actions&lt;/a&gt; then you can spin up a kubernetes cluster using &lt;a href=&#34;https://kind.sigs.k8s.io/&#34;&gt;kind&lt;/a&gt; via this &lt;a href=&#34;https://github.com/marketplace/actions/kind-kubernetes-in-docker-action&#34;&gt;kind github action&lt;/a&gt; - you can then spin up whatever services you need for your tests via &lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#apply&#34;&gt;kubectl apply&lt;/a&gt; or &lt;code&gt;helm install&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;help-we-are-not-even-using-kubernetes-yet&#34;&gt;help! we are not even using kubernetes yet&lt;/h3&gt;
+&lt;p&gt;If you have not even started on your journey to kubernetes and have no idea what a &lt;a href=&#34;https://helm.sh/&#34;&gt;helm chart&lt;/a&gt; is, you could consider &lt;a href=&#34;https://jenkins-x.io/v3/admin/&#34;&gt;setting up Jenkins X&lt;/a&gt; in your cluster which will then:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34;&gt;automate setting up the CI / CD&lt;/a&gt; for your projects including automatically creating versioned container images and helm charts whenever you merge changes to the main branch&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/promotion/&#34;&gt;automatic promotion through environments via GitOps&lt;/a&gt; so that new versions of your services are automatically promoted to your &lt;code&gt;Staging&lt;/code&gt; environment and, by default, when approved are promoted to &lt;code&gt;Production&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/&#34;&gt;Preview Environments&lt;/a&gt; automatically spin up Preview Environments for your Pull Requests so you can get fast feedback before changes are merged to the main branch&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once someone on your team has &lt;a href=&#34;https://jenkins-x.io/v3/admin/&#34;&gt;setup up Jenkins X&lt;/a&gt; then please follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/developing/&#34;&gt;development guide&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;other-handy-kubectl-commands&#34;&gt;other handy kubectl commands&lt;/h3&gt;
+&lt;p&gt;You may find these handy:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#logs&#34;&gt;kubectl logs&lt;/a&gt; to view the logs of any running pod (which is kubernetes terminology for 1 or more containers deployed together as a single unit on the same node)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#port-forward&#34;&gt;kubectl port-forward&lt;/a&gt; lets you easily port forward from a pod to a local port so you can easily test things out without having to expose things via ingress&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;inner-loop&#34;&gt;inner loop&lt;/h3&gt;
+&lt;p&gt;If you want to optimise your inner loop so you can edit source code and see the changes running quickly on kubernetes then please check out the options for &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/inner-loop/&#34;&gt;inner development loop&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Lots of developers have grown fond of their docker installation over the years. Docker was a total game changer in its day!&lt;/p&gt;
+&lt;p&gt;However if you are building/testing/debugging software to deploy on kubernetes we highly recommend you consider reclaiming the memory, CPU &amp;amp; disk from your laptop and stop running docker locally and just use more kubernetes.&lt;/p&gt;
+&lt;p&gt;It will help you go faster, find those kubernetes related issues sooner and help you learn more about kubernetes which will be useful for figuring out production issues whenever they happen.&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Jenkins X 3 - May 2021 LTS</title>
@@ -2962,39 +3045,6 @@ demonstrates GitOps principles.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;getting-involved-with-the-jenkins-community&#34;&gt;Getting involved with the Jenkins Community&lt;/h2&gt;
 &lt;p&gt;Multiple presenters recommended the &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;Jenkins X Slack channels&lt;/a&gt; as the best source of help and information. For more ways to get involved, see the &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;Jenkins X community page&lt;/a&gt;. I&amp;rsquo;ll see you there.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: A New Logo for Jenkins X</title>
-      <link>https://jenkins-x.io/blog/2019/07/31/new-logo-jenkins-x/</link>
-      <pubDate>Wed, 31 Jul 2019 07:36:00 +0200</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/07/31/new-logo-jenkins-x/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Back in March 2018, the Jenkins X project burst onto the scene as the Jenkins counterpart for automated CI/CD for Kubernetes. As part of that launch featured the logo: a variation of the Jenkins logo, featuring a pipe-smoking ship captain with Kubernetes logo on his cap.&lt;/p&gt;
-&lt;p&gt;In software, we like to say that naming is hard - because it is. Another thing that is also hard is trying to capture the essence of a project in a logo. Logos pack a lot of meaning into a small space. Icons, such as the Jenkins logo, establish a strong emotional connection with many developers. So with that in mind we always listened closely to feedback on the new logo and how people perceive the project as a result of it.&lt;/p&gt;
-&lt;h2 id=&#34;why-we-are-changing-the-logo&#34;&gt;Why we are changing the logo&lt;/h2&gt;
-&lt;p&gt;In listening to various types of feedback from all sorts of different sources we heard many positive things but also some problems and confusion were highlighted.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Not everyone was a fan of the logo and we heard quite a few comments back about aspects that people didn’t like about it, with the ‘pipe-smoking’ featuring high on that list.&lt;/li&gt;
-&lt;li&gt;Confusion with Jenkins project - we also saw that the logo was more in keeping with A other Jenkins mascots, which led to confusion about what kind of project Jenkins X is - some perceived it as another plugin in the ecosystem.&lt;/li&gt;
-&lt;li&gt;We also heard that use of the Kubernetes logo was confusing or perhaps not completely within the remit of the Kubernetes logo guidelines.&lt;/li&gt;
-&lt;li&gt;From a practical perspective we also heard that the logo was too detailed and as a result would not work well as an icon, especially for a favicon. It  was seen as more of a mascot than a logo.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;With the setup of the CD.Foundation and Jenkins X being one of the founding projects, distinct from Jenkins, we felt the time was right to address this feedback. So we literally went back to the drawing board to think about what logo could better represent Jenkins X as a project. We thought about what we want people to associate with the project: open source, continuous delivery, speed, automation, stability, teams, etc. We also wanted a logo that could improve representation, so we wanted to avoid a human-based logo that might inadvertently encode gender, age and other factors. Additionally, the &amp;lsquo;X&amp;rsquo; has become a distinct part of the project&amp;rsquo;s identity and so we wanted to really emphasize it in the new logo.&lt;/p&gt;
-&lt;h2 id=&#34;designing-the-new-logo--community-feedback&#34;&gt;Designing the new logo &amp;amp; community feedback&lt;/h2&gt;
-&lt;p&gt;Ultimately we focussed on trying to visualize speed and automation which led to the idea of a robot. However, we still wanted to have a nod to the original Jenkins project featured in the logo somehow or the other. We explicitly decided to not stick with the nautical theme traditionally associated with Kubernetes and related projects. We went through a few iterations, refining and cutting down details as we went. The design effort was a close partnership with Craig Ross, Creative Director at the Linux Foundation and his team, who also produced the &lt;a href=&#34;https://cd.foundation/&#34;&gt;CD Foundation&lt;/a&gt;, CNCF, Network Service Mesh, and Tekton brands.&amp;quot;&lt;/p&gt;
-&lt;p&gt;After the core Jenkins X team had settled on a design they were happy with, we took it to the community for feedback and to address some of the details. We had alot of feedback, including all the things it reminded folks of (an upside-down koala, Bill Nye, Reddit logo, Flash Gordon, Tekton logo, etc). One overarching consistent theme about the original design was that it did not reflect the friendliness of the community. &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4144#issuecomment-497787629&#34;&gt;Kyounger&lt;/a&gt; in particular helped analyse this reaction and went the extra mile to propose a solution. We agreed and loved this suggestion and fed this back into the final version of the logo. Thanks alot Kenny &amp;amp; open source FTW!&lt;/p&gt;
-&lt;h2 id=&#34;jenkins--jenkins-x&#34;&gt;Jenkins &amp;amp; Jenkins X&lt;/h2&gt;
-&lt;p&gt;Jenkins X started life as a Jenkins subproject and is now an independent project with the Continuous Delivery Foundation (CDF). The bowtie in the new logo is an ever-present reminder of that provenance. Even though our logo and branding may be changing, under the umbrella of the CDF, we continue to work closely with the Jenkins project, sharing that same spirit of service towards developers’ CI/CD and productivity needs.&lt;/p&gt;
-&lt;h2 id=&#34;rolling-out-the-new-logo&#34;&gt;Rolling out the new logo&lt;/h2&gt;
-&lt;p&gt;We have now started switching over to the new logo and expect to see some new swag available soon too. The old logo we will now consider as a mascot of the Jenkins X project. If you are looking to update your use of the logo, &lt;a href=&#34;https://github.com/cdfoundation/artwork&#34;&gt;here is the new artwork&lt;/a&gt;.&lt;/p&gt;
-&lt;img src=&#34;https://jenkins-x.io/news/new-logo-jenkins-x/jenkinsx-stacked-color.png&#34;&gt; 
-&lt;p&gt;It is a big change for the project but ultimately the reason we put so much time and energy into this is that is important to us we represent the spirit of Jenkins X in everything we do. So when you are using Jenkins X, and you see the new logo, we want you to feel part of the open and friendly community and we want your team to focus on what you really want to focus on: delivering quality software at speed and at any scale.&lt;/p&gt;
 
       </description>
     </item>
