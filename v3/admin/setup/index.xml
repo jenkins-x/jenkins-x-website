@@ -64,6 +64,22 @@
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will use helm to install the &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt; which will trigger a Job to install Jenkins X (and re-trigger a Job whenever you commit to your git repository).&lt;/p&gt;
 &lt;p&gt;The terminal will display the logs as the boot &lt;code&gt;Job&lt;/code&gt; runs.&lt;/p&gt;
 &lt;p&gt;Jenkins X will now install itself.&lt;/p&gt;
+&lt;h2 id=&#34;http-proxy-settings&#34;&gt;HTTP proxy settings&lt;/h2&gt;
+&lt;p&gt;If you are behind a HTTP proxy and need to configure environment variables for HTTP proxy support then you can do this as follows.&lt;/p&gt;
+&lt;p&gt;For each environment variable you want to pass in use the &lt;code&gt;--set jxBootJobEnvVarSecrets.NAME=value&lt;/code&gt; argument.&lt;/p&gt;
+&lt;p&gt;e.g. something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export HTTP_PROXY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;http://my.proxy.com
+export NO_PROXY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;localhost,127.0.0.1,.local,0,1,2,3,4,5,6,7,8,9
+
+jx admin operator --url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;https://github.com/myorg/env-mycluster-dev.git &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --username mygituser --token mygittoken &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.HTTP_PROXY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$HTTP_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.HTTPS_PROXY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$HTTP_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.http_proxy&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$HTTP_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.https_proxy&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$HTTP_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.NO_PROXY&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$NO_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --set jxBootJobEnvVarSecrets.no_proxy&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$NO_PROXY &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This should result in a secret called &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; being created in the &lt;code&gt;jx-git-operator&lt;/code&gt; namespace. This secret should get replicated to the &lt;code&gt;jx&lt;/code&gt; namespace during the &lt;a href=&#34;&#34;&gt;boot job&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;viewing-the-logs&#34;&gt;Viewing the logs&lt;/h2&gt;
 &lt;p&gt;At any time you can tail the boot job logs via the &lt;a href=&#34;https://github.com/jenkins-x/jx-admin/blob/master/docs/cmd/jx-admin_log.md&#34;&gt;jx admin log&lt;/a&gt; command:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log

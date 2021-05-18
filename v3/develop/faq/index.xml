@@ -314,7 +314,19 @@ kubectl scale deploy someDeploymentName --replicas&lt;span style=&#34;color:#f92
 &lt;li&gt;do you have a firewall / VPN / HTTP proxy blocking things?&lt;/li&gt;
 &lt;li&gt;is your &lt;code&gt;/etc/resolv.conf&lt;/code&gt; causing issues? e.g. if you have multiple entries for your company VPN?&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;tekton-webhook-certs-have-expired&#34;&gt;Tekton webhook certs have expired?&lt;/h2&gt;
+&lt;h2 id=&#34;tekton-failed-calling-webhook-configwebhookpipelinetektondev&#34;&gt;Tekton failed calling webhook &amp;ldquo;config.webhook.pipeline.tekton.dev&amp;rdquo;&lt;/h2&gt;
+&lt;p&gt;When you first install tekton your cluster can get in a bit of a mess if the kubernetes admission/mutation webhooks are registered but tekton didn&amp;rsquo;t startup.&lt;/p&gt;
+&lt;p&gt;View the tekton based hooks via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get mutatingwebhookconfigurations | grep tekton
+kubectl get validatingwebhookconfigurations | grep tekton
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then find the tekton based ones and remove them. e.g. via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl delete mutatingwebhookconfigurations webhook.pipeline.tekton.dev
+kubectl delete validatingwebhookconfigurations config.webhook.pipeline.tekton.dev
+kubectl delete validatingwebhookconfigurations validation.webhook.pipeline.tekton.dev
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then try do a dummy git commit in your git repository which will &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;trigger another boot job&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can watch the boot job run via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log -w
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;tekton-webhook-certs-have-expired&#34;&gt;Tekton webhook certs have expired?&lt;/h2&gt;
 &lt;p&gt;Delete the tekton &lt;code&gt;webhook-certs&lt;/code&gt; tls secret. Then delete the &lt;code&gt;tekton-pipelines-webhook&lt;/code&gt; pod and the cert should be recreated again.&lt;/p&gt;
 
       </description>
