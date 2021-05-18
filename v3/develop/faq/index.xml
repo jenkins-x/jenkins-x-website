@@ -316,7 +316,9 @@ kubectl scale deploy someDeploymentName --replicas&lt;span style=&#34;color:#f92
 &lt;/ul&gt;
 &lt;h2 id=&#34;tekton-failed-calling-webhook-configwebhookpipelinetektondev&#34;&gt;Tekton failed calling webhook &amp;ldquo;config.webhook.pipeline.tekton.dev&amp;rdquo;&lt;/h2&gt;
 &lt;p&gt;When you first install tekton your cluster can get in a bit of a mess if the kubernetes admission/mutation webhooks are registered but tekton didn&amp;rsquo;t startup.&lt;/p&gt;
-&lt;p&gt;View the tekton based hooks via:&lt;/p&gt;
+&lt;p&gt;Another time folks hit this is if they delete the &lt;code&gt;tekton-pipelines&lt;/code&gt; namespace thinking that gets rid of tekton and then they find they can&amp;rsquo;t re-install tekton.&lt;/p&gt;
+&lt;p&gt;This is because admission/mutation webhooks are cluster scoped; not namespace scoped - so removing the tekton namespace does not remove these webhook resources - which then breaks any attempt to install tekton until you remove them.&lt;/p&gt;
+&lt;p&gt;You can view the current tekton based hooks via:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get mutatingwebhookconfigurations | grep tekton
 kubectl get validatingwebhookconfigurations | grep tekton
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then find the tekton based ones and remove them. e.g. via:&lt;/p&gt;
