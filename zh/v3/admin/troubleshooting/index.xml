@@ -1,0 +1,58 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jenkins X - Cloud Native CI/CD Built On Kubernetes – 故障排除</title>
+    <link>https://jenkins-x.io/zh/v3/admin/troubleshooting/</link>
+    <description>Recent content in 故障排除 on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    
+	  <atom:link href="https://jenkins-x.io/zh/v3/admin/troubleshooting/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>V3: Webhooks</title>
+      <link>https://jenkins-x.io/zh/v3/admin/troubleshooting/webhooks/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/v3/admin/troubleshooting/webhooks/</guid>
+      <description>
+        
+        
+        &lt;p&gt;当你做如下操作时，Webhooks 可以触发 &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;合并提交记录到你的默认分支&lt;/li&gt;
+&lt;li&gt;创建 Pull Request&lt;/li&gt;
+&lt;li&gt;推送代码到 Pull Request 对应的分支&lt;/li&gt;
+&lt;li&gt;在 Pull Request 上添加评论来触发 ChatOps&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果你的集群中的 webhooks 无效时，ChatOps 或者流水线将不会被触发。&lt;/p&gt;
+&lt;h3 id=&#34;前置条件&#34;&gt;前置条件&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Ingress&lt;/code&gt; 中 &lt;code&gt;hook&lt;/code&gt; 关于 &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;lighthouse&lt;/a&gt; 配置正确是 webhooks 有效的前提。&lt;/p&gt;
+&lt;p&gt;Ingress 默认会采用文件 &lt;code&gt;jx-requirements.yml&lt;/code&gt; 中 &lt;code&gt;ingress.domain&lt;/code&gt; 指定的域名。&lt;/p&gt;
+&lt;h3 id=&#34;问题诊断&#34;&gt;问题诊断&lt;/h3&gt;
+&lt;p&gt;你可以根据&lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/health/&#34;&gt;健康性指南&lt;/a&gt;来检查你系统以及 webhooks 是否健康。&lt;/p&gt;
+&lt;p&gt;首先，请确保 ingress 正常&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你会看到 &lt;code&gt;hook&lt;/code&gt; 的合法域名地址。然后，使用 curl 命令做一下测试：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;curl -v http://hook-jx.1.2.3.4.nip.io/hook
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;检查你的机器是否可以访问那个地址。另外，检查是否有一个运行中的 Pod &lt;code&gt;lighthouse-webhook-*&lt;/code&gt;？&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get pod -l app&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;lighthouse-webhooks
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你也可以通过 &lt;code&gt;jx ui&lt;/code&gt; 查看他们的状态、事件、日志等。&lt;/p&gt;
+&lt;p&gt;如果看起来都正常的话，然后打开你集群的 git 仓库&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get environments
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，点击链接 &lt;code&gt;GIT URL&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;打开你的 git 提供商的 &lt;strong&gt;Webbooks&lt;/strong&gt; 页面， 查看发送到 hook 地址的请求是否成功。对于 GitHub，你可以在 &lt;strong&gt;Settings&lt;/strong&gt; -&amp;gt;  &lt;strong&gt;Webhooks&lt;/strong&gt; 这里找到。&lt;/p&gt;
+&lt;p&gt;如果你的 git 无法访问 ingress 地址的话，你可以设置一个转发通道。请查看&lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/on-premise/#enable-webhooks&#34;&gt;借助 ngrok 使用 webhooks&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;aws-相关的问题&#34;&gt;AWS 相关的问题&lt;/h3&gt;
+&lt;p&gt;如果你在使用 AWS，你可以查看 &lt;a href=&#34;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html&#34;&gt;AWS 关于使用 ELB&lt;/a&gt; 的文档。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
