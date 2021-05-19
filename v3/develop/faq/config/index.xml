@@ -78,12 +78,13 @@
         &lt;h2 id=&#34;how-do-i-add-a-chart&#34;&gt;How do I add a chart?&lt;/h2&gt;
 &lt;p&gt;To add a new chart add to the &lt;code&gt;helmfiles/mynamespace/helmfile.yaml&lt;/code&gt; file follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#adding-charts&#34;&gt;add chart guide&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-customise-an-app-in-an-environment&#34;&gt;How do I customise an App in an Environment?&lt;/h2&gt;
-&lt;p&gt;With the new helm 3 based boot every environment uses boot - so there is a single way to configure anything whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether or not you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We use &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; to configure helm charts whether its in the &lt;code&gt;dev&lt;/code&gt;, &lt;code&gt;staging&lt;/code&gt; or &lt;code&gt;production&lt;/code&gt; environment and whether you are using &lt;a href=&#34;https://jenkins-x.io/v3/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;how to customise a chart&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Essentially you can create your own &lt;code&gt;values.yaml&lt;/code&gt; file for a chart in an environment to customise the chart for a specific environment and then reference that in the &lt;code&gt;releases:&lt;/code&gt; section in the &lt;code&gt;helmfile.yaml&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-use-a-chart-from-a-secure-repository&#34;&gt;How do I use a chart from a secure repository&lt;/h2&gt;
 &lt;p&gt;Some chart repositories need a username and password to access them.&lt;/p&gt;
 &lt;p&gt;So to access those chart repositories you can the username and password into the &lt;code&gt;helmfile.yaml&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;However the username/passwords are probably secret. So you can &lt;a href=&#34;https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/&#34;&gt;create a kubernetes Secret&lt;/a&gt; called &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; which is automatically used in the &lt;a href=&#34;v3/about/how-it-works/#boot-job&#34;&gt;boot Job&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;However the username/passwords are probably secret. So you can &lt;a href=&#34;https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/&#34;&gt;create a kubernetes Secret&lt;/a&gt; called &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; which is automatically used in the &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;boot Job&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;e.g.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# lets make sure we are in the jx-git-operator namespace&lt;/span&gt;
 jx ns jx-git-operator
@@ -361,7 +362,23 @@ VAULT_ROLE &lt;span style=&#34;color:#f92672&#34;&gt;?=&lt;/span&gt; secret-infr
     &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
       &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;:
       &lt;span style=&#34;color:#f92672&#34;&gt;secretName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-tls-secret-name&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-diagnose-webhooks&#34;&gt;How do I diagnose webhooks?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-to-add-custom-annotations-to-ingress-controller&#34;&gt;How To Add Custom Annotations to Ingress Controller?&lt;/h2&gt;
+&lt;p&gt;There may be times when you need to add your custom annotations to ingress resources.&lt;/p&gt;
+&lt;p&gt;The simplest way to do this is to modify the &lt;code&gt;jx-requirements.yml&lt;/code&gt; in your development git repository to add any ingress annotations you wish:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Requirements&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;annotations&lt;/span&gt;:
+      &lt;span style=&#34;color:#f92672&#34;&gt;myannotation&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;somevalue&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my.domain.com&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once you have commit and push this change it will &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;trigger another boot job&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can watch the boot job run via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log -w
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once its complete you should see the new annotations on any Ingress created by Jenkins X.&lt;/p&gt;
+&lt;p&gt;If you wish to add custom annotations to only a specific ingress then you can &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;customise the chart&lt;/a&gt; in the usual &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; way via a &lt;code&gt;values.yaml&lt;/code&gt; file you reference in your &lt;code&gt;helmfile.yaml&lt;/code&gt; file&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-diagnose-webhooks&#34;&gt;How do I diagnose webhooks?&lt;/h2&gt;
 &lt;p&gt;See &lt;a href=&#34;https://jenkins-x.io/v3/admin/troubleshooting/webhooks/&#34;&gt;How to diagnose webhooks&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-use-webhooks-without-a-public-ip&#34;&gt;How do I use webhooks without a public IP?&lt;/h2&gt;
 &lt;p&gt;If you are running on your laptop or in a private cluster you won&amp;rsquo;t be able to use webhooks on your git provider to trigger pipelines.&lt;/p&gt;

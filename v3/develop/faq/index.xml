@@ -192,10 +192,7 @@ git config --global credential.helper store
 &lt;p&gt;You can then &lt;code&gt;kubectl exec&lt;/code&gt; into the pod at that step and look around and try running commands inside the pod/container.&lt;/p&gt;
 &lt;p&gt;e.g. using the pod name from the above page and the container name you can do something like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c name-of-step-container name-of-pod sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-access-the-preview-namespace-or-url&#34;&gt;How do I access the preview namespace or URL?&lt;/h2&gt;
-&lt;p&gt;After the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/preview/create&#34;&gt;jx preview create&lt;/a&gt; step in a pull request pipeline you can access a number of &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#environment-variables&#34;&gt;preview environment variables&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;For details see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#additional-preview-steps&#34;&gt;how to add additional preview steps&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;how-do-i-access-a-secret-from-my-pipeline&#34;&gt;How do I access a Secret from my pipeline?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-access-a-secret-from-my-pipeline&#34;&gt;How do I access a Secret from my pipeline?&lt;/h2&gt;
 &lt;p&gt;Once you have a kubernetes Secret (see &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#create-a-new-secret&#34;&gt;how to create them&lt;/a&gt;) you can access then in a pipeline either:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;as an &lt;a href=&#34;https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables&#34;&gt;environment variable in a step&lt;/a&gt;&lt;/li&gt;
@@ -225,6 +222,96 @@ git config --global credential.helper store
 &lt;li&gt;&lt;a href=&#34;https://github.com/lerna/lerna&#34;&gt;lerna&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/mateodelnorte/meta&#34;&gt;meta&lt;/a&gt; see the &lt;a href=&#34;https://patrickleet.medium.com/mono-repo-or-multi-repo-why-choose-one-when-you-can-have-both-e9c77bd0c668&#34;&gt;blog post introducing meta&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h2 id=&#34;how-do-i-configure-a-different-branch-for-releases&#34;&gt;How do I configure a different branch for releases?&lt;/h2&gt;
+&lt;p&gt;If you look at the &lt;code&gt;postsubmits&lt;/code&gt; section  of the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/pipelines/#lighthouse&#34;&gt;trigger config&lt;/a&gt; in your &lt;code&gt;.lighthouse/jenkins-x/triggers.yaml&lt;/code&gt; file you will see the post submits (which is prow/lighthouse terminology for release pipelines).&lt;/p&gt;
+&lt;p&gt;By default the &lt;code&gt;branches:&lt;/code&gt; is setup with regular expressions for either &lt;code&gt;main&lt;/code&gt; or &lt;code&gt;master&lt;/code&gt; branches:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;...&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;postsubmits&lt;/span&gt;:
+  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;release&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;context&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;release&amp;#34;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;source&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;release.yaml&amp;#34;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;branches&lt;/span&gt;:
+    - &lt;span style=&#34;color:#ae81ff&#34;&gt;^main$&lt;/span&gt;
+    - &lt;span style=&#34;color:#ae81ff&#34;&gt;^master$&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Modify the &lt;code&gt;branches&lt;/code&gt; to use a different regular expression to denote the branch(s) you wish to use to trigger a new release.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Previews</title>
+      <link>https://jenkins-x.io/v3/develop/faq/previews/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/faq/previews/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;when-do-preview-environments-get-removed&#34;&gt;When do Preview Environments get removed?&lt;/h2&gt;
+&lt;p&gt;We have a background garbage collection job which removes Preview Environments after the Pull Request is closed/merged. You can run it any time you like via the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/preview/gc/&#34;&gt;jx preview gc&lt;/a&gt; command&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx preview gc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also view the current previews via  &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/preview/get/&#34;&gt;jx preview get&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx preview get
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and delete a preview by choosing one to delete via &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/preview/destroy/&#34;&gt;jx preview destroy&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx preview destroy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-access-the-preview-namespace-or-url&#34;&gt;How do I access the preview namespace or URL?&lt;/h2&gt;
+&lt;p&gt;After the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/preview/create&#34;&gt;jx preview create&lt;/a&gt; step in a pull request pipeline you can access a number of &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#environment-variables&#34;&gt;preview environment variables&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For details see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#additional-preview-steps&#34;&gt;how to add additional preview steps&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-other-services-into-a-preview&#34;&gt;How do I add other services into a Preview?&lt;/h2&gt;
+&lt;p&gt;see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#adding-more-resources&#34;&gt;how to add resources to your previews&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: ChatOps</title>
+      <link>https://jenkins-x.io/v3/develop/faq/chatops/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/faq/chatops/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;what-is-chatops&#34;&gt;What is ChatOps?&lt;/h2&gt;
+&lt;p&gt;We use the phrase &lt;em&gt;ChatOps&lt;/em&gt; to mean operating code changes, pipelines and GitOps promotion via chat. More specifically this usually is done via commenting on Pull Requests on your git providers website; though in the future this could be via Slack or web consoles too.&lt;/p&gt;
+&lt;h2 id=&#34;what-are-the-benefits-of-chatops&#34;&gt;What are the benefits of ChatOps?&lt;/h2&gt;
+&lt;p&gt;ChatOps helps developers collaborate on Pull Requests and speeds up merging of Pull Requests. We want to be able to merge changes as quickly as possible into master so that we continuously integrate code which minimises the downsides of long term feature branching and merge hell.&lt;/p&gt;
+&lt;p&gt;ChatOps  (and &lt;a href=&#34;#what-does-lighthouse-do&#34;&gt;lighthouse in particular&lt;/a&gt; also helps automate and speeds up tasks:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;developers don&amp;rsquo;t have to keep hitting reload on a Pull Request page waiting for all the tests to pass so that they can click &lt;code&gt;Merge&lt;/code&gt;. Just add a &lt;code&gt;/lgtm&lt;/code&gt; comment or approve the code review and the Pull Request will automatically get merged once its tests go green. This also avoids developers accidentally hitting &lt;code&gt;Merge&lt;/code&gt; before all the test pass!&lt;/li&gt;
+&lt;li&gt;all Pull Request are automatically rebased and tested against master before merging - further ensuring we don&amp;rsquo;t accidentally break master&lt;/li&gt;
+&lt;li&gt;batch merging of Pull Requests is supported to speed up merging Pull Requests.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For more details see &lt;a href=&#34;#what-does-lighthouse-do&#34;&gt;what does lighthouse do&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;which-kinds-of-webhook-support-chatops&#34;&gt;Which kinds of webhook support ChatOps?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; support these &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/chatops/&#34;&gt;ChatOps commands&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-re-trigger-a-pr-pipeline&#34;&gt;How do I re-trigger a PR pipeline?&lt;/h2&gt;
+&lt;p&gt;If a pipeline fails due to some compile error or failing test - fix the code and push your changes and the Pull Request pipeline will rerun.&lt;/p&gt;
+&lt;p&gt;If you think the pipeline failed due to some temporary infrastructure reason then you can use ChatOps to re-trigger the pipeline via commenting on the Pull Request:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;/retest&lt;/code&gt; reruns only failed pipelines&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test all&lt;/code&gt; reruns all failed pipelines.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/test foo&lt;/code&gt; reruns the pipeline called &lt;code&gt;foo&lt;/code&gt; only&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Note that you need to be in the &lt;code&gt;OWNERS&lt;/code&gt; file as an &lt;a href=&#34;#why-did-a-pullrequest-have-no-pipeline-triggered&#34;&gt;approver for this to work&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;See the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/chatops/&#34;&gt;ChatOps commands&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-add-multiple-parallel-pipelines-to-a-project&#34;&gt;How do I add multiple parallel pipelines to a project?&lt;/h2&gt;
+&lt;p&gt;It can be useful to have multiple pipelines to perform different kinds of long running tests on Pull Requests. e.g. running the same test suite using different databases, microservice configurations or underlying infrastructure.&lt;/p&gt;
+&lt;p&gt;In Jenkins X you can create a custom &lt;code&gt;Scheduler&lt;/code&gt; resource in your &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/setup/boot/&#34;&gt;jx boot&lt;/a&gt; configuration (in &lt;code&gt;env/templates/myscheduler.yaml&lt;/code&gt;) which you can add multiple named contexts in the &lt;code&gt;presubmits&lt;/code&gt; section. Then for each context name make sure you have a file called &lt;code&gt;jenkins-x-${context}.yml&lt;/code&gt; in your project.&lt;/p&gt;
+&lt;p&gt;Then Jenkins X will invoke each context on demand via &lt;code&gt;/test mycontext&lt;/code&gt; or automatically if you enable &lt;code&gt;alwaysRun: true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can see how we define lots of &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/f377a72498282de9ee49b807b4d5ba74321a4fab/env/templates/jx-versions-scheduler.yaml#L18&#34;&gt;parallel testing contexts in the version stream here&lt;/a&gt; which all run in parallel and report their status on each pull request on the &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;See also &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/setup/#how-do-i-map-sourcerepository-to-a-custom-scheduler&#34;&gt;How do I map SourceRepository to a custom Scheduler?&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;what-does-lighthouse-do&#34;&gt;What does lighthouse do?&lt;/h2&gt;
+&lt;p&gt;Lighthouse handles webhooks and implements these &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/chatops/&#34;&gt;ChatOps commands&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;To see what each of the parts of lighthouse do please refer to the &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;lighthouse components overview&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-can-i-make-chatops-ha&#34;&gt;How can I make ChatOps HA?&lt;/h2&gt;
+&lt;p&gt;To make ChatOps highly available scale up the &lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;lighthouse webhook deployment&lt;/a&gt;  which listen for http requests to, say, 3 replicas.&lt;/p&gt;
+&lt;h2 id=&#34;how-to-handle-a-flakybroken-pipeline&#34;&gt;How to handle a flaky/broken pipeline&lt;/h2&gt;
+&lt;p&gt;If you have a pending Pull Request which is blocked on a flaky test or an incorrectly failing lint or code review; you can use ChatOps to override its status via the ChatOps command: &lt;code&gt;/override nameOfPipeline&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;why-did-a-pullrequest-have-no-pipeline-triggered&#34;&gt;Why did a PullRequest have no pipeline triggered?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; use an &lt;code&gt;OWNERS&lt;/code&gt; file stored in each git repository to define which developers are allowed to review and approve changes. You can even limit those roles to different folders.&lt;/p&gt;
+&lt;p&gt;If a non-reviewer submits a Pull Request it won&amp;rsquo;t trigger CI pipelines by default until a reviewer adds an &lt;code&gt;/ok-to-test&lt;/code&gt; comment on the Pull Request.&lt;/p&gt;
+&lt;p&gt;If you have public git repositories this also avoids the security issue of a non-approver submitting a Pull Request to change the pipeline to email them your security credentials in the CI pipeline ;)&lt;/p&gt;
 
       </description>
     </item>
@@ -314,7 +401,17 @@ kubectl scale deploy someDeploymentName --replicas&lt;span style=&#34;color:#f92
 &lt;li&gt;do you have a firewall / VPN / HTTP proxy blocking things?&lt;/li&gt;
 &lt;li&gt;is your &lt;code&gt;/etc/resolv.conf&lt;/code&gt; causing issues? e.g. if you have multiple entries for your company VPN?&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;tekton-failed-calling-webhook-configwebhookpipelinetektondev&#34;&gt;Tekton failed calling webhook &amp;ldquo;config.webhook.pipeline.tekton.dev&amp;rdquo;&lt;/h2&gt;
+&lt;h2 id=&#34;failed-calling-webhook-validatenginxingresskubernetesio&#34;&gt;Failed calling webhook validate.nginx.ingress.kubernetes.io&lt;/h2&gt;
+&lt;p&gt;This is often caused if you remove the &lt;code&gt;nginx&lt;/code&gt; namespace after you installed nginx.&lt;/p&gt;
+&lt;p&gt;This is because admission webhooks are cluster scoped; not namespace scoped - so removing the nginx namespace does not remove these webhook resources - which then breaks any attempt to create &lt;code&gt;Ingress&lt;/code&gt; resources until you remove them.&lt;/p&gt;
+&lt;p&gt;You can view the current tekton based hooks via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get validatingwebhookconfigurations | grep nginx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can remove the nginx one via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl delete validatingwebhookconfigurations ingress-nginx-admission
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then try do a dummy git commit in your git repository which will &lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;trigger another boot job&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You can watch the boot job run via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin log -w
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;tekton-failed-calling-webhook-configwebhookpipelinetektondev&#34;&gt;Tekton failed calling webhook &amp;ldquo;config.webhook.pipeline.tekton.dev&amp;rdquo;&lt;/h2&gt;
 &lt;p&gt;When you first install tekton your cluster can get in a bit of a mess if the kubernetes admission/mutation webhooks are registered but tekton didn&amp;rsquo;t startup.&lt;/p&gt;
 &lt;p&gt;Another time folks hit this is if they delete the &lt;code&gt;tekton-pipelines&lt;/code&gt; namespace thinking that gets rid of tekton and then they find they can&amp;rsquo;t re-install tekton.&lt;/p&gt;
 &lt;p&gt;This is because admission/mutation webhooks are cluster scoped; not namespace scoped - so removing the tekton namespace does not remove these webhook resources - which then breaks any attempt to install tekton until you remove them.&lt;/p&gt;
