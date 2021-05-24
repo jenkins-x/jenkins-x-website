@@ -17,6 +17,7 @@ rm -rf jx-api
 if [ -z "$DISABLE_COMMIT" ]
 then
     echo "adding latest schema"
+    git add schemas
     git commit -a -m "chore: regenerated schema docs"
     git push
 else
