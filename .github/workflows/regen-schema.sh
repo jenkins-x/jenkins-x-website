@@ -11,7 +11,7 @@ fi
 
 git clone https://github.com/jenkins-x/jx-api
 
-cp jx-api/schema/core.jenkins-x.io/v4beta1/requirements.json schemas/requirements.json
+cp jx-api/schema/core.jenkins-x.io/v4beta1/requirements.json schemas/jx-requirements.json
 rm -rf jx-api
 
 if [ -z "$DISABLE_COMMIT" ]
