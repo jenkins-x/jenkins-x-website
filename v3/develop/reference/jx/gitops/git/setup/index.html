@@ -6206,17 +6206,36 @@ if (!doNotTrack) {
 	<h3 id="usage">Usage</h3>
 <pre><code>jx gitops git setup
 </code></pre><h3 id="synopsis">Synopsis</h3>
-<p>Sets up git to ensure the git user name and email is setup.</p>
-<p>This is typically used in a pipeline to ensure git can do commits.</p>
+<p>Sets up git to ensure the git user name and email is setup. This is typically used in a pipeline to ensure git can do commits.</p>
+<p>The jx gitops git setup command ensures that we can authenticate with configured Git server by configuring the local credentials file in the home directory. This command tries to ensure the following things:</p>
+<ul>
+<li>The user can be authenticated with Git provider (for example Github)</li>
+<li>An email is associated with each automated commit message</li>
+</ul>
+<p>These credentials are written to ${HOME}/git/credentials file, where the ${HOME} directory is determined as:</p>
+<ul>
+<li>value stored in XGD CONFIG HOME environment variable or</li>
+<li>value stored in HOME environment variable or</li>
+<li>value stored in USERPROFILE environment variable or</li>
+<li>as current directory ./</li>
+</ul>
+<p>The credentials are determined by reading out the jx-requirements.yaml from the cluster repository and jx-boot Secret resource provisioned together with jx-git-operator in your Kubernetes namespace.</p>
+<p>The Git username and email are preferentially determined from PipelineUser field from jx-requirements.yaml, but if they are not available there then default email address <a href="mailto:jenkins-x@googlegroups.com">jenkins-x@googlegroups.com</a> is used . If the username could not be determined from jx-requirements.yaml, then it is determined from:</p>
+<ul>
+<li>GIT _USERNAME environment variable or</li>
+<li>GITHUB _ACTOR environment variable</li>
+<li>In case that we are running in Kubernetes cluster from &ldquo;username&rdquo; field of the &ldquo;jx-boot&rdquo; Secret provisioned with &ldquo;jx-git-operator&rdquo;</li>
+</ul>
+<p>The password for Github user (or a token for the robot account, depending on which you configued) is determined in similar fashion. Namely the token is first determined from environment variable GITHUB TOKEN, but if that fails, then further determination is dependent on execution environment of the command. Namely if it is running within Github actions, then the GITHUB TOKEN environment variable is our last stop. Otherwise if the command is executed within Kubernetes cluster, then the secret is determined by reading the password field of the &ldquo;jx-boot&rdquo; Secret provisioned with the &ldquo;jx-git-operator&rdquo;.</p>
 <h3 id="examples">Examples</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx-gitops git setup
 
 </code></pre></div><h3 id="options">Options</h3>
 <pre><code>      --credentials-file string     The destination of the git credentials file to generate. If not specified uses $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
   -d, --dir string                  the directory to run the git setup command from
-  -e, --email string                the git user email to use if one is not setup
+  -e, --email string                the git user email to use if one is not setup. Default value is jenkins-x@googlegroups.com, if none other is provided
       --fake-in-cluster             for testing: lets you fake running this command inside a kubernetes cluster so that it can create the file: $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
-      --git-provider string         the git provider URL. If not specified its detected from the git operator Secret or defaults to https://github.com
+      --git-provider string         the git provider URL. If not specified its detected from the git operator jx-boot Secret or defaults to https://github.com
   -h, --help                        help for setup
   -n, --name string                 the git user name to use if one is not setup
       --namespace string            the namespace used to find the git operator secret for the git repository if running in cluster. Defaults to the current namespace
@@ -6926,7 +6945,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified April 20, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/412f8f16717ddf740d5e81a4145558ebcfec79fc">chore: regenerated plugin docs (412f8f1671)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 8, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/206c3f9843cc3c06e0fdaea56bf23187ab1ecd06">chore: regenerated plugin docs (206c3f9843)</a>
 </div>
 </div>
 

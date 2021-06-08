@@ -25,17 +25,18 @@
         &lt;h3 id=&#34;usage&#34;&gt;Usage&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;jx gitops git clone
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
-&lt;p&gt;Clones the cluster git repository using the URL, git user and token from the Secret&lt;/p&gt;
+&lt;p&gt;Clones the cluster git repository from the URL provided to the jx-git-operator watching the said repository, and authenticating as git user with token provided by jx-boot secret, also provided by jx-git-operator installation.&lt;/p&gt;
+&lt;p&gt;Effectively this command runs jx gitops git setup before proceeding to simply clone the repository into either the folder passed in via &amp;ndash;clone-dir or into the ./setup directory.&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx-gitops git clone
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;options&#34;&gt;Options&lt;/h3&gt;
-&lt;pre&gt;&lt;code&gt;      --clone-dir string            the directory to clone the repository to
+&lt;pre&gt;&lt;code&gt;      --clone-dir string            the directory to clone the repository to. Default value used is ./source relative to the directory in which the command is running
       --credentials-file string     The destination of the git credentials file to generate. If not specified uses $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
   -d, --dir string                  the directory to run the git setup command from
-  -e, --email string                the git user email to use if one is not setup
+  -e, --email string                the git user email to use if one is not setup. Default value is jenkins-x@googlegroups.com, if none other is provided
       --fake-in-cluster             for testing: lets you fake running this command inside a kubernetes cluster so that it can create the file: $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
-      --git-provider string         the git provider URL. If not specified its detected from the git operator Secret or defaults to https://github.com
+      --git-provider string         the git provider URL. If not specified its detected from the git operator jx-boot Secret or defaults to https://github.com
   -h, --help                        help for clone
   -n, --name string                 the git user name to use if one is not setup
       --namespace string            the namespace used to find the git operator secret for the git repository if running in cluster. Defaults to the current namespace
@@ -60,7 +61,11 @@
         &lt;h3 id=&#34;usage&#34;&gt;Usage&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;jx gitops git get
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
-&lt;p&gt;Gets a file from a git repository or environment git repository&lt;/p&gt;
+&lt;p&gt;Gets a file from the specified git repository or the git repository described in specified JX Environment resource.&lt;/p&gt;
+&lt;p&gt;Copies a file specified by &amp;ndash;file flag from a Git repository into local file system. The repository from which the file is read is either the one specified via command line flags or the one defined as the target repository of the Jenkins X Environment object, whose name too can be passed in via CLI flags.&lt;/p&gt;
+&lt;p&gt;In case that repository is read out from the environment, then if we are running in Kubernetes cluster the Environment object is searched for either in the namespace defined by the current kubeconfig context (if command is executed locally) or is searched for in the namespace of the Pod on which the command is being executed.&lt;/p&gt;
+&lt;p&gt;In case that command is not executed in Kubernetes and the repository has not been set via command line flags, then the repository from which file is read needs to be configured in environment variable: JX ENVIRONMENT GIT _URL.&lt;/p&gt;
+&lt;p&gt;The file is either copied to the path specified by the command line flag &amp;ndash;to or is written under the same path from which it was read into the current working directory.&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx-gitops git get --file jx-values.yaml --dev dev
 
@@ -96,7 +101,10 @@
         &lt;h3 id=&#34;usage&#34;&gt;Usage&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;jx gitops git merge
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
-&lt;p&gt;Merge a number of SHAs into the HEAD of the main branch&lt;/p&gt;
+&lt;p&gt;Merge a number of SHAs into the HEAD of the main branch.&lt;/p&gt;
+&lt;p&gt;This command merges a list of commits into a specified branch. If the branch does not exist among local branches, then it is first created.&lt;/p&gt;
+&lt;p&gt;If both &amp;ndash;pull-refs and &amp;ndash;sha flags are specified then only those commits specified by &amp;ndash;sha are merged into the base branch.&lt;/p&gt;
+&lt;p&gt;If &amp;ndash;include-comment or &amp;ndash;exclude-comment flags are specified, then &amp;ndash;pull-number flag needs to be set as well. If only one of &amp;ndash;include-comment or &amp;ndash;exclude-comment, then only that one is used to filter commits while other is ignored. If both are specified, then only those commits which satisfy &amp;ndash;include-comment and do not satisfy the &amp;ndash;exclude-comment regex are added. Only those commits which are reachable by from pull request and are not reachable by base branch are included to be merged into the base branch.&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx-gitops git merge
 
@@ -109,6 +117,7 @@
       --fake-in-cluster          for testing: lets you fake running this command inside a kubernetes cluster so that it can create the file: $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
   -h, --help                     help for merge
       --include-comment string   the regular expression to filter commit comment to include in the merge
+      --merge-arg stringArray    the extra arguments to pass to the &#39;git merge $sha&#39; command to perform the merge
   -n, --name string              the git user name to use if one is not setup
       --pull-number string       The Pull Request number to use when filtering commits to merge
       --pull-refs string         The PullRefs to parse
@@ -132,17 +141,36 @@
         &lt;h3 id=&#34;usage&#34;&gt;Usage&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;jx gitops git setup
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
-&lt;p&gt;Sets up git to ensure the git user name and email is setup.&lt;/p&gt;
-&lt;p&gt;This is typically used in a pipeline to ensure git can do commits.&lt;/p&gt;
+&lt;p&gt;Sets up git to ensure the git user name and email is setup. This is typically used in a pipeline to ensure git can do commits.&lt;/p&gt;
+&lt;p&gt;The jx gitops git setup command ensures that we can authenticate with configured Git server by configuring the local credentials file in the home directory. This command tries to ensure the following things:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The user can be authenticated with Git provider (for example Github)&lt;/li&gt;
+&lt;li&gt;An email is associated with each automated commit message&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;These credentials are written to ${HOME}/git/credentials file, where the ${HOME} directory is determined as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;value stored in XGD CONFIG HOME environment variable or&lt;/li&gt;
+&lt;li&gt;value stored in HOME environment variable or&lt;/li&gt;
+&lt;li&gt;value stored in USERPROFILE environment variable or&lt;/li&gt;
+&lt;li&gt;as current directory ./&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The credentials are determined by reading out the jx-requirements.yaml from the cluster repository and jx-boot Secret resource provisioned together with jx-git-operator in your Kubernetes namespace.&lt;/p&gt;
+&lt;p&gt;The Git username and email are preferentially determined from PipelineUser field from jx-requirements.yaml, but if they are not available there then default email address &lt;a href=&#34;mailto:jenkins-x@googlegroups.com&#34;&gt;jenkins-x@googlegroups.com&lt;/a&gt; is used . If the username could not be determined from jx-requirements.yaml, then it is determined from:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;GIT _USERNAME environment variable or&lt;/li&gt;
+&lt;li&gt;GITHUB _ACTOR environment variable&lt;/li&gt;
+&lt;li&gt;In case that we are running in Kubernetes cluster from &amp;ldquo;username&amp;rdquo; field of the &amp;ldquo;jx-boot&amp;rdquo; Secret provisioned with &amp;ldquo;jx-git-operator&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The password for Github user (or a token for the robot account, depending on which you configued) is determined in similar fashion. Namely the token is first determined from environment variable GITHUB TOKEN, but if that fails, then further determination is dependent on execution environment of the command. Namely if it is running within Github actions, then the GITHUB TOKEN environment variable is our last stop. Otherwise if the command is executed within Kubernetes cluster, then the secret is determined by reading the password field of the &amp;ldquo;jx-boot&amp;rdquo; Secret provisioned with the &amp;ldquo;jx-git-operator&amp;rdquo;.&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx-gitops git setup
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;options&#34;&gt;Options&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;      --credentials-file string     The destination of the git credentials file to generate. If not specified uses $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
   -d, --dir string                  the directory to run the git setup command from
-  -e, --email string                the git user email to use if one is not setup
+  -e, --email string                the git user email to use if one is not setup. Default value is jenkins-x@googlegroups.com, if none other is provided
       --fake-in-cluster             for testing: lets you fake running this command inside a kubernetes cluster so that it can create the file: $XDG_CONFIG_HOME/git/credentials or $HOME/git/credentials
-      --git-provider string         the git provider URL. If not specified its detected from the git operator Secret or defaults to https://github.com
+      --git-provider string         the git provider URL. If not specified its detected from the git operator jx-boot Secret or defaults to https://github.com
   -h, --help                        help for setup
   -n, --name string                 the git user name to use if one is not setup
       --namespace string            the namespace used to find the git operator secret for the git repository if running in cluster. Defaults to the current namespace
