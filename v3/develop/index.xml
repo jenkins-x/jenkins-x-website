@@ -191,7 +191,9 @@ helmfiles/
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Create a Pull Request. You should see the effective kubernetes resources show up as a commit on your Pull Request&lt;/p&gt;
 &lt;h2 id=&#34;customising-charts&#34;&gt;Customising charts&lt;/h2&gt;
 &lt;p&gt;You can add a custom &lt;code&gt;values.yaml&lt;/code&gt; file to any chart and reference it in the &lt;code&gt;values:&lt;/code&gt; section of the &lt;code&gt;helmfile.yaml&lt;/code&gt; file.&lt;/p&gt;
-&lt;p&gt;e.g. to customise a chart such as &lt;code&gt;nginx-ingress&lt;/code&gt; you can create a file at &lt;code&gt;charts/nginx-ingress/values.yaml&lt;/code&gt;. You can then reference the file in the &lt;code&gt;helmfile.yaml&lt;/code&gt; file:&lt;/p&gt;
+&lt;p&gt;e.g. to customise a chart such as &lt;code&gt;nginx-ingress&lt;/code&gt; first find the &lt;code&gt;helmfile.yaml&lt;/code&gt; file that is installing this chart.&lt;/p&gt;
+&lt;p&gt;We tend to use a separate &lt;code&gt;helmfile.yaml&lt;/code&gt; file for each namespace so for &lt;code&gt;nginx&lt;/code&gt; we have   &lt;code&gt;helmfiles/nginx/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;So create a file &lt;code&gt;helmfiles/nginx/values.yaml&lt;/code&gt;  and then modify the &lt;code&gt;helmfiles/nginx/helmfile.yaml&lt;/code&gt; to reference it (see the last line):&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
 ...
 - &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;stable/nginx-ingress&lt;/span&gt;
@@ -200,9 +202,8 @@ helmfiles/
   &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nginx&lt;/span&gt;
   &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
   - &lt;span style=&#34;color:#ae81ff&#34;&gt;versionStream/charts/stable/nginx-ingress/values.yaml.gotmpl&lt;/span&gt;
-  - &lt;span style=&#34;color:#ae81ff&#34;&gt;charts/nginx-ingress/values.yaml&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the above example we added &lt;code&gt;charts/nginx-ingress/values.yaml&lt;/code&gt; after the version stream configuration thats automatically added for you.&lt;/p&gt;
-&lt;p&gt;You can also use a file called &lt;code&gt;values.yaml.gotmpl&lt;/code&gt; if you wish to use go templating of the values file. For example this lets you reference properties from the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file via expressions like &lt;code&gt;{{ .Values.jxRequirements.ingress.domain }}&lt;/code&gt;.&lt;/p&gt;
+  - &lt;span style=&#34;color:#ae81ff&#34;&gt;values.yaml&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also use a file called &lt;code&gt;values.yaml.gotmpl&lt;/code&gt; if you wish to use go templating of the values file. For example this lets you reference properties from the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file via expressions like &lt;code&gt;{{ .Values.jxRequirements.ingress.domain }}&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;To see an example of this in action check out the &lt;a href=&#34;https://github.com/jenkins-x/jxr-versions/blob/master/charts/jenkins-x/tekton/values.yaml.gotmpl&#34;&gt;charts/jenkins-x/tekton/values.yaml.gotmpl&lt;/a&gt; file in the &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Note that many apps are already configured to make use of the &lt;code&gt;jx-requirements.yml&lt;/code&gt; settings via the &lt;a href=&#34;https://jenkins-x.io/about/concepts/version-stream/&#34;&gt;version stream&lt;/a&gt; - but you are free to add your own custom configuration.&lt;/p&gt;
 &lt;h3 id=&#34;using-requirements-in-charts&#34;&gt;Using requirements in charts&lt;/h3&gt;

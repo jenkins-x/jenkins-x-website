@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/faq/config/charts/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-06-18T15:04:26&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-06-22T11:28:32&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Charts and resources">
 <meta itemprop="description" content="Questions on configuring applications, charts and kubernetes resources">
-<meta itemprop="dateModified" content="2021-06-18T15:04:26&#43;01:00" />
-<meta itemprop="wordCount" content="702">
+<meta itemprop="dateModified" content="2021-06-22T11:28:32&#43;01:00" />
+<meta itemprop="wordCount" content="863">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Charts and resources"/>
 <meta name="twitter:description" content="Questions on configuring applications, charts and kubernetes resources"/>
@@ -6258,6 +6258,7 @@ if (!doNotTrack) {
     <li><a href="#how-do-i-use-a-chart-from-a-secure-repository">How do I use a chart from a secure repository</a></li>
     <li><a href="#how-do-i-add-a-kubernetes-resource">How do I add a kubernetes resource?</a></li>
     <li><a href="#how-do-i-deploy-an-app-with-no-chart">How do I deploy an app with no chart?</a></li>
+    <li><a href="#how-do-i-add-a-database">How do I add a database?</a></li>
     <li><a href="#how-do-i-annotate-a-namespace">How do I annotate a namespace?</a></li>
   </ul>
 </nav>
@@ -6419,6 +6420,10 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 <p>The above may seem like a bit of work compared to <code>kubectl apply</code> but it does mean at any time you can upgrade the app by re-running the command:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl -L https://acme.com/foo.yaml &gt; charts/myname/templates/resources.yaml
 </code></pre></div><p>You can also easily uninstall the application or modify the YAML in git at any time.</p>
+<h2 id="how-do-i-add-a-database">How do I add a database?</h2>
+<p>If you are building a new microservice that needs a database there&rsquo;s a few ways to do it.</p>
+<p>If your microservice has its own database that is not used by any other microservices you can create a <em>nested chart</em> add it to the <code>Chart.yaml</code> <code>dependencies</code> section as <a href="https://helm.sh/docs/helm/helm_dependency/">described here</a>. Though that can be confusing as you now need to configure the dependent chart by wrapping its configuration in a YAML key (e.g. the release name you picked or maybe the chart name) which can be confusing - particularly if someone wants to <a href="/v3/develop/faq/config/charts/#how-do-i-customise-an-app-in-an-environment">configure your database differently in a separate environment</a></p>
+<p>So we recommend you avoid nested charts and just add your dependent charts to your <code>preview/helmfile.yaml</code> for <a href="/v3/develop/environments/preview/">Preview Environments</a> and <a href="/v3/develop/apps/#adding-charts">add it to the staging and production environments</a> so they can all be <a href="/v3/develop/faq/config/charts/#how-do-i-customise-an-app-in-an-environment">configured in the same way</a> via <a href="https://github.com/roboll/helmfile#configuration">helmfile configuration</a> usually via adding a <a href="/v3/develop/apps/#customising-charts">custom values.yaml file and adding it into the releases section</a></p>
 <h2 id="how-do-i-annotate-a-namespace">How do I annotate a namespace?</h2>
 <p>For permanent environments like <code>Dev</code>, <code>Staging</code> or <code>Production</code> you can add the annotated <code>Namespace</code> <a href="/v3/develop/apps/#adding-resources">resource into a chart</a></p>
 <p>For <a href="/v3/develop/environments/preview/">Preview Environments</a> you can add the <code>kubectl annotate ns foo</code> step into a helmfile hook in the <code>preview/helmfile.yaml</code></p>
@@ -6485,7 +6490,7 @@ echo <span style="color:#e6db74">&#34;apiVersion: v1
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 18, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/2f5c31eadfe497752f23eb90dfd977db11301fd0">fix: add FAQ on annotating namespaces (2f5c31eadf)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified June 22, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/5a481870b5143f1cc931615ae176ead88b3b3482">fix: add FAQ on adding a db (5a481870b5)</a>
 </div>
 </div>
 
