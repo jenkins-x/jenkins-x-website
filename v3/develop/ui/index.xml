@@ -121,6 +121,62 @@ kubectl get secret jx-basic-auth-user-password -o jsonpath&lt;span style=&#34;co
     </item>
     
     <item>
+      <title>V3: Lighthouse WebUI</title>
+      <link>https://jenkins-x.io/v3/develop/ui/lighthouse/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/ui/lighthouse/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;Lighthouse&lt;/a&gt; is the Jenkins X component responsible for all interactions between your Git hosting provider (GitHub, Gitlab, &amp;hellip;) and your Kubernetes cluster. Amongst other things, it:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;receive and process webhook events&lt;/li&gt;
+&lt;li&gt;trigger pipelines&lt;/li&gt;
+&lt;li&gt;handle automatic merging of Pull Requests&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Lighthouse comes with an optional Web UI: &lt;a href=&#34;https://github.com/jenkins-x-plugins/lighthouse-webui-plugin&#34;&gt;lighthouse-webui-plugin&lt;/a&gt; - see &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/lighthouse-webui/&#34;&gt;the admin guide&lt;/a&gt; to install it.&lt;/p&gt;
+&lt;p&gt;This UI gives you a read-only view of:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the webhook events received and processed by Lighthouse: git push, PR events, comments, &amp;hellip;&lt;/li&gt;
+&lt;li&gt;the Lighthouse Jobs (pipelines) created, and their states - with a direct link to the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;pipeline visualizer&lt;/a&gt; to see the logs&lt;/li&gt;
+&lt;li&gt;the Lighthouse Merge Status and History: which PRs have been automatically merged by Lighthouse&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This UI will help you understand what Lighthouse is doing, and in case of issue (pipeline not triggered, PR not being automatically merged, &amp;hellip;) it will help you find the root cause.&lt;/p&gt;
+&lt;h3 id=&#34;accessing-the-lighthouse-web-ui&#34;&gt;Accessing the Lighthouse Web UI&lt;/h3&gt;
+&lt;p&gt;Unless you &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;customize the chart&lt;/a&gt; to change the &lt;code&gt;Ingress&lt;/code&gt; the default hostname will be &lt;code&gt;lighthouse.&amp;lt;YOUR_DOMAIN&amp;gt;&lt;/code&gt;. You can find the exact hostname by running the following command:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ns jx
+kubectl get ing lighthouse-webui-plugin -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.spec.rules[0].host}&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;logging-in-to-the-pipelines-visualizer&#34;&gt;Logging in to the Pipelines Visualizer&lt;/h3&gt;
+&lt;p&gt;Unless you &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;customize the chart&lt;/a&gt; to change the &lt;code&gt;Ingress&lt;/code&gt; the default will use &lt;em&gt;basic authentication&lt;/em&gt; to access the web UI to avoid your cluster internal state being visible on the internet.&lt;/p&gt;
+&lt;p&gt;The default username is &lt;code&gt;admin&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To find the generated random password to access the UI type:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx ns jx
+kubectl get secret jx-basic-auth-user-password -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.password}&amp;#34;&lt;/span&gt; | base64 --decode
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That should display the randomly generated password.&lt;/p&gt;
+&lt;p&gt;If you type the username and password into your browser it should open the web UI.&lt;/p&gt;
+&lt;h3 id=&#34;viewing-from-a-pull-request&#34;&gt;Viewing from a Pull Request&lt;/h3&gt;
+&lt;p&gt;If you create a Pull Request on a git repository you have &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34;&gt;created or imported&lt;/a&gt; in Jenkins X you should see a link on the Pull Request.&lt;/p&gt;
+&lt;p&gt;Here&amp;rsquo;s an example - see the &lt;strong&gt;Details&lt;/strong&gt; link on the right of the &lt;code&gt;Merge Status&lt;/code&gt; line:&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/lighthouse-webui-plugin/github-pr-status-link.png&#34; class=&#34;img-thumbnail&#34;&gt;
+&lt;p&gt;If you click the &lt;strong&gt;Details&lt;/strong&gt; link that should open the &lt;a href=&#34;https://github.com/jenkins-x-plugins/lighthouse-webui-plugin&#34;&gt;lighthouse-webui-plugin&lt;/a&gt; UI in the &amp;ldquo;Merge Status&amp;rdquo; page.&lt;/p&gt;
+&lt;h3 id=&#34;lighthouse-events&#34;&gt;Lighthouse Events&lt;/h3&gt;
+&lt;p&gt;By default, the Lighthouse Web UI will display all the webhook events:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/lighthouse-webui-plugin/events.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;lighthouse-jobs&#34;&gt;Lighthouse Jobs&lt;/h3&gt;
+&lt;p&gt;If you click on the &lt;strong&gt;Jobs&lt;/strong&gt; link (top right), you will see all the pipelines triggered by Lighthouse:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/lighthouse-webui-plugin/jobs.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;lighthouse-merge-status&#34;&gt;Lighthouse Merge Status&lt;/h3&gt;
+&lt;p&gt;If you click on the &lt;strong&gt;Merge Status&lt;/strong&gt; link, you will see all the Pull Requests currently in the Lighthouse &amp;ldquo;Merge Pools&amp;rdquo; - candidates for automatic merge:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/lighthouse-webui-plugin/merge-status.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;lighthouse-merge-history&#34;&gt;Lighthouse Merge History&lt;/h3&gt;
+&lt;p&gt;If you click on the &lt;strong&gt;Merge History&lt;/strong&gt; link, you will see all the Pull Requests which have been automatically merged by Lighthouse:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/lighthouse-webui-plugin/merge-history.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Slack</title>
       <link>https://jenkins-x.io/v3/develop/ui/slack/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
