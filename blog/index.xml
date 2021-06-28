@@ -14,6 +14,141 @@
     
     
     <item>
+      <title>Blog: Jenkins X 3 and Argo CD</title>
+      <link>https://jenkins-x.io/blog/2021/06/28/argo/</link>
+      <pubDate>Mon, 28 Jun 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/06/28/argo/</guid>
+      <description>
+        
+        
+        &lt;p&gt;There have been a number of requests from the Jenkins X community to use &lt;a href=&#34;https://argoproj.github.io/argo-cd/&#34;&gt;Argo CD&lt;/a&gt; for the last mile deployment phase of their continuous delivery pipelines.  This blog explains some of the advantages of using Jenkins X and Argo CD all together.&lt;/p&gt;
+&lt;p&gt;What&amp;rsquo;s included?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Jenkins X for Cloud Infrastructure using Terraform, core installation management with GitOps, external secret management, ingress controller, quickstarts, automated CI + CD pipelines, ChatOps&lt;/li&gt;
+&lt;li&gt;Tekton for pipeline orchestration&lt;/li&gt;
+&lt;li&gt;Argo CD for end users application deployments (not the main installation)
+Argo CD provides a declarative GitOps approach to deploying Kubernetes based applications.  There is a GUI which helps construct the deployment definition (in the form of an &lt;code&gt;Application&lt;/code&gt; custom resource) which offers a number of configuration options, as well and providing insight into your clusters applications.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/v3/argocd.png&#34;/&gt;
+&lt;hr&gt;
+&lt;p&gt;You might be wondering why you would want to use BOTH Jenkins X and Argo CD together.
+Jenkins X aims to embrace OSS, where possible providing a nice UX to integrate with other projects and help provide better solutions for building, developing and running software on Kubernetes.  Jenkins X indeed does have a git operator that applies Kubernetes YAML from a Git repository but there are some differences:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Jenkins X uses GitOps principles for the entire installation, i.e. the starting point is a Git repository which is used to provision a cluster and manage (automatic if users wish) upgrades whereas today Argo CD uses a manual &lt;code&gt;kubectl apply&lt;/code&gt; to manage the Argo installation itself.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;External Secrets integration for Vault, Google Secrets manager etc is something that Jenkins X provides out of the box.  When Kubernetes based applications require a secret we prefer the source is stored in a secrets manager and the value synchronised automatically into the cluster enabling easier secret rotation, avoiding local secrets on machines and an easier UX for working with secrets.  When adding an Application via Argo CD users can leverage the Jenkins X approach to working with secrets and rely on Argo to manage the deployments.  If users prefer to work with SOPS that is totally fine too and will work in the same way as they are used to.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If you do not wish to expose direct access for the Kubernetes cluster to developers then using a combination of Jenkins X UI for accessing logs and Argo CD for managing application deployments may be enough.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Using the Jenkins X approach to promoting via automated pull requests via pipelines to add new helm charts and update chart release version numbers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In a Jenkins X &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster/&#34;&gt;multi cluster&lt;/a&gt; setup you can choose to use jx-git-operator or Argo CD in the remote cluster to syncronise promoted applications into the staging or production clusters.  This way you get all the benefits of the integrated Jenkins X experience to manage the build infrastructure and provide the developer experience like preview environments and chatops etc.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This is done by creating a new Git repository that will contain a number of Argo CD &lt;code&gt;Application&lt;/code&gt; Kubernetes resources.  This also means we handle disaster recovery scenarios and are able to recover the Jenkins X installation which includes Argo CD plus any applications managed by Argo CD itself.&lt;/p&gt;
+&lt;p&gt;There may be a couple of models to try but here we are going to describe an approach we have validated when using Jenkins X to manage the core Kubernetes installation, using Tekton for Continuous Integration, Jenkins X for application promotion and Argo CD for deployments.&lt;/p&gt;
+&lt;h2 id=&#34;install-argo-cd-with-jenkins-x&#34;&gt;Install Argo CD with Jenkins X&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Prerequisite is a working Jenkins X 3 installation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol&gt;
+&lt;li&gt;Add a Argo CD helmefile to your Jenkins X cluster git repository:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mkdir -p helmfiles/argocd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Create a new file&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;./helmfiles/argocd/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argocd&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argocd/argo-cd&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argocd&lt;/span&gt;
+- &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;../../charts/argo-applications&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argo-applications&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Edit the root &lt;code&gt;./helmfile.yaml&lt;/code&gt; and add a new path reference to the helmfile above&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helmfiles/argocd/helmfile.yaml&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jenkins X will resolve default helm values from the Jenkins X version stream.&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;
+&lt;p&gt;Create a new git repository to contain the Argo CD &lt;code&gt;Application&lt;/code&gt; Kubernetes resources, this means we can use Jenkins X pipelines to promote users applications via GitOps.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Back in your clusters Git repository create a new folder:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;mkdir -p charts/argo-applications
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;create a file in the new folder and replace the &lt;code&gt;repoURL:&lt;/code&gt; with the Git URL from step 2 above.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;charts/argo-applications/applications.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argoproj.io/v1alpha1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Application&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argocd&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;finalizers&lt;/span&gt;:
+- &lt;span style=&#34;color:#ae81ff&#34;&gt;resources-finalizer.argocd.argoproj.io&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;destination&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argocd&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;server&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;https://kubernetes.default.svc&amp;#39;&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;source&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;path&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;.&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;repoURL&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;https://github.com/$REPLACE_WITH_GIT_OWNER/  $REPLACE_WITH_GIT_REPO&amp;#39;&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;targetRevision&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;HEAD&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;directory&lt;/span&gt;:
+      &lt;span style=&#34;color:#f92672&#34;&gt;recurse&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;project&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;default&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;syncPolicy&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;automated&lt;/span&gt;:
+      &lt;span style=&#34;color:#f92672&#34;&gt;prune&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;selfHeal&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;syncOptions&lt;/span&gt;:
+      - &lt;span style=&#34;color:#ae81ff&#34;&gt;Replace=true&lt;/span&gt;
+      - &lt;span style=&#34;color:#ae81ff&#34;&gt;CreateNamespace=true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;commit your changes and push&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add helmfiles/argocd/helmfile.yaml
+git add charts/argo/applications.yaml
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;feat: enable Argo CD&amp;#39;&lt;/span&gt;
+git push
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you are on a fork then PR your changes&lt;/p&gt;
+&lt;ol start=&#34;5&#34;&gt;
+&lt;li&gt;Follow Jenkins X admin logs to ensure Argo CD is installed&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin logs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;6&#34;&gt;
+&lt;li&gt;Get the Argo CD UI password using something like &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34;&gt;ksd&lt;/a&gt; or &lt;code&gt;base64 -D&lt;/code&gt; to decode the value:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get secret argocd-initial-admin-secret -n argocd -oyaml | ksd
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;7&#34;&gt;
+&lt;li&gt;Get the Argo CD UI hostname and login using the &lt;code&gt;admin&lt;/code&gt; username + passowrd from step 6 above (you may need to accept insecure TLS browser prompt if not using production TLS)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ing argocd-server -n argocd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ol start=&#34;8&#34;&gt;
+&lt;li&gt;Create a new quickstart or update an existing Jenkins X applications &lt;code&gt;./lighthouse/jenkins-x/release.yaml&lt;/code&gt; pipeline, replaceing the Tekton &lt;code&gt;promote-jx-promote&lt;/code&gt; step to use argo instead:&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;argo-promote&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;ghcr.io/jenkins-x/jx-updatebot:0.0.79&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;script&lt;/span&gt;: |&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    #!/usr/bin/env sh
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    source .jx/variables.sh
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    jx updatebot argo promote --target-git-url https://github.com/$REPLACE_WITH_GIT_OWNER/$REPLACE_WITH_GIT_REPO&lt;/span&gt;    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now merge a change to your application or manually trigger a release pipeline &lt;code&gt;jx pipeline start&lt;/code&gt; to get a new release and promote using Argo CD.
+Once the release pipeline finished for your application you should see a new &lt;code&gt;application.yaml&lt;/code&gt; resource in your uber application Git repository we created in step 2 above.
+Once this change is merged to the main branch Argo detects the new chart / version and applies it to the cluster.  You will be able to track the status and health of the deployment via the GUI that you logged in with step 7 above.&lt;/p&gt;
+&lt;h1 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h1&gt;
+&lt;p&gt;I really did like the experience of Argo CD, there&amp;rsquo;s some overlaps with Jenkins X across the wider projects however I think there&amp;rsquo;s enough of a differentiation for both to complement each other.  What I loved was that both projects as well as others like &lt;a href=&#34;https://www.weave.works/oss/flux/&#34;&gt;flux&lt;/a&gt; promote the use of GitOps.  Anyways, congratulations to the Argo project and I hope users from both communities find this blog useful and / or interesting.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Continuous microservices with databases in Jenkins X</title>
       <link>https://jenkins-x.io/blog/2021/06/25/jx-cd-databases-2021/</link>
       <pubDate>Fri, 25 Jun 2021 00:00:00 +0000</pubDate>
@@ -2934,67 +3069,6 @@ Feel free to reach me if you are facing any issues regarding starting with open-
   })();
 &lt;/script&gt;&lt;blockquote&gt;
 &lt;/blockquote&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Outreachy</title>
-      <link>https://jenkins-x.io/blog/2019/10/01/outreachy2019/</link>
-      <pubDate>Tue, 01 Oct 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/10/01/outreachy2019/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/community/events/outreachy.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;Jenkins X is happy to announce our participation in the Outreachy program running from December 2019 to March 2020.&lt;/p&gt;
-&lt;p&gt;Outreachy helps people from groups underrepresented in free and open source software get involved by providing &amp;ldquo;a supportive community for beginning to contribute any time throughout the year and offer focused internship opportunities twice a year with a number of free software organizations.” The internships are for three-months, during which mentees work on specific projects.&lt;/p&gt;
-&lt;p&gt;Organisations that participate in Outreachy include Apache, CNCF Tracing, Mozilla, GNOME, the Linux Kernel, GNU Guix, Wikimedia, Debian, Git, Tekton, Jenkins, and Jenkins X. These organisations outline specific projects for the interns to work on and provide remote mentors.&lt;/p&gt;
-&lt;p&gt;Please see &lt;a href=&#34;https://www.outreachy.org/&#34;&gt;Outreachy&amp;rsquo;s site&lt;/a&gt; for more information about the program, such as its purpose, eligibility requirements, and how to apply.&lt;/p&gt;
-&lt;h3 id=&#34;about-jenkins-x&#34;&gt;About Jenkins X&lt;/h3&gt;
-&lt;p&gt;Jenkins X is an open source, opinionated way to do continuous integration and continuous delivery (CI/CD) on Kubernetes. As such, it provides a modern, best practices approach to CI/CD for cloud native applications.&lt;/p&gt;
-&lt;p&gt;Jenkins X aids developers in provisioning Kubernetes clusters, automates CI/CD, provides different virtual environments for development, staging, and production using Kubernetes namespaces, and provides preview environments for pull requests.&lt;/p&gt;
-&lt;h3 id=&#34;jenkins-x-projects-for-outreachy&#34;&gt;Jenkins X projects for Outreachy&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.outreachy.org/apply/project-selection/#jenkins-x&#34;&gt;Jenkins X has two projects for Outreachy applicants&lt;/a&gt; to engage with:&lt;/p&gt;
-
-
-&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
-
-&lt;p&gt;&lt;strong&gt;Create a Cloud Storage backed Helm repository for Jenkins X, replacing ChartMuseum&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Mentor: &lt;a href=&#34;https://twitter.com/fere0010&#34;&gt;Hardy Ferentschik&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;As part of the Jenkins X workflow, Helm charts are created which need to be deployed and made available. This project would replace &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; with a cloud storage bucket to host and serve Helm charts.&lt;/p&gt;
-
-&lt;/div&gt;
-
-
-
-&lt;div class=&#34;alert alert-primary&#34; role=&#34;alert&#34;&gt;
-
-&lt;p&gt;&lt;strong&gt;Improve the Jenkins X Apps Framework&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Mentor: David Conde&lt;/p&gt;
-&lt;p&gt;The Jenkins X Apps Framework is a mechanism used to extend the functionality of Jenkins X. The goal of this project is to improve the &lt;a href=&#34;https://jenkins-x.io/docs/contributing/addons/&#34;&gt;Apps Framework User Guide&lt;/a&gt; and to create a Jenkins X app.&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;h3 id=&#34;ask-us-questions&#34;&gt;Ask us questions&lt;/h3&gt;
-&lt;p&gt;We welcome applicants to join our slack channels and our office hours. We&amp;rsquo;d be happy to answer your questions and guide you with your pull requests!&lt;/p&gt;
-&lt;p&gt;Talk to us on our slack channels, which are part of the Kubernetes slack. Join  Kubernetes slack &lt;a href=&#34;http://slack.k8s.io/&#34;&gt;here&lt;/a&gt;, and find us on our channels:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;#jenkins-x-dev for developers of Jenkins X&lt;/li&gt;
-&lt;li&gt;#jenkins-x-user for users of Jenkins X&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We also have online office hours, during which we talk about new developments in Jenkins X and you are welcome to ask us questions, every other Thursday at 4pm UK (BST) / 11am US Eastern / 8am US Pacific.&lt;/p&gt;
-&lt;p&gt;Next office hours are on &lt;strong&gt;3 October&lt;/strong&gt;. Join us here: &lt;a href=&#34;https://zoom.us/j/397862697&#34;&gt;https://zoom.us/j/397862697&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;We&amp;rsquo;d love your help to make Jenkins X even more awesome and welcome your participation!&lt;/em&gt;&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/awesome-gophers-by-Ashley-McNamara/gopher_unicorn.png&#34; class=&#34;img-thumbnail&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;image by Ashley McNamara, &lt;a href=&#34;https://github.com/ashleymcnamara/gophers/blob/master/gopher_unicorn.png&#34;&gt;creative commons license&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Please note: the contribution period of the application process to Outreachy starts today, 1 October. Please remember that Outreachy&amp;rsquo;s deadline is Nov. 5, 2019 at 4pm UTC to record your contributions and create a final application. Read about Outreachy&amp;rsquo;s application process &lt;a href=&#34;https://www.outreachy.org/docs/applicant/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Interested in applying? Want to read articles from those who have participated in Outreachy? See &lt;a href=&#34;https://medium.com/@alishapapun/outreachy-is-it-that-hard-to-crack-24394f71a30d&#34;&gt;here&lt;/a&gt; and &lt;a href=&#34;https://medium.com/jaegertracing/outreachy-building-diversity-in-open-source-2cb89b396e1a&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
