@@ -126,11 +126,14 @@ git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;chore: enable O
 git push
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will trigger the boot pipeline which you can follow with&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;jx admin logs
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Once the logs start applying the generated Kubernetes resources you can CTRL+C to stop following the logs and populate the secrets in you secret store such as Vault, or Google Secrets Manager for example:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -i
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;filter for &lt;code&gt;oauth&lt;/code&gt; and select &lt;code&gt;client id&lt;/code&gt; and &lt;code&gt;client secret&lt;/code&gt; options using the space bar&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;By default, you need to provide three secrets for oauth2-proxy: &lt;code&gt;client id&lt;/code&gt;, &lt;code&gt;client secret&lt;/code&gt; and &lt;code&gt;secret-cookie&lt;/code&gt;. For &lt;code&gt;secret-cookie&lt;/code&gt;, you can generate and copy a random one. Once the logs start applying the generated Kubernetes resources you can CTRL+C to stop following the logs, generate a random &lt;code&gt;secret-cookie&lt;/code&gt; and populate the secrets in you secret store such as Vault, or Google Secrets Manager for example:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# this generates a random secret-cookie, then you select and copy the output&lt;/span&gt;
+python -c &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;import os,base64; print(base64.b64encode(os.urandom(16)).decode(&amp;#34;ascii&amp;#34;))&amp;#39;&lt;/span&gt;
+&lt;span style=&#34;color:#75715e&#34;&gt;# populate secrets&lt;/span&gt;
+jx secret edit -i
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;filter for &lt;code&gt;oauth2-proxy&lt;/code&gt; and select &lt;code&gt;client id&lt;/code&gt;, &lt;code&gt;client secret&lt;/code&gt; and &lt;code&gt;secret-cookie&lt;/code&gt; options using the space bar&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/oauth_secret_edit.png&#34; alt=&#34;jx secret edit -i&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now enter the client id and secret you got from the Prerequisites step above.&lt;/p&gt;
+&lt;p&gt;Now enter the client id and secret you got from the Prerequisites step above,as well as the generated random &lt;code&gt;secret-cookie&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Once entered you can wait to see the oauth2-proxy pod become Available using&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;kubectl get deploy/oauth2-proxy -w
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;When &lt;code&gt;Ready&lt;/code&gt; you can access the pipeline visualizer using the hostname from&lt;/p&gt;
