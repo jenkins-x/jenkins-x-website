@@ -599,7 +599,33 @@ jx gitops help
   - &lt;span style=&#34;color:#f92672&#34;&gt;gitRef&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0ad0e49dca4d3a1e952c6f7c548e77b2136c5035&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;gitUrl&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com/myorg/jx3-pipeline-catalog&lt;/span&gt;
     &lt;span style=&#34;color:#f92672&#34;&gt;label&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;My Pipeline Catalog&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;quickstarts&#34;&gt;QuickStarts&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;updatebot-for-custom-pipeline-catalogs&#34;&gt;Updatebot for custom pipeline catalogs&lt;/h4&gt;
+&lt;p&gt;You can use &lt;em&gt;updatebot&lt;/em&gt; to keep your custom pipeline catalog up to date. Add this config to your cluster repo in &lt;em&gt;.jx/updatebot.yaml&lt;/em&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;updatebot.jenkins-x.io/v1alpha1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;UpdateConfig&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;rules&lt;/span&gt;:
+    - &lt;span style=&#34;color:#f92672&#34;&gt;urls&lt;/span&gt;:
+        - &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com/my-org/jx3-pipeline-catalog&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;changes&lt;/span&gt;:
+        - &lt;span style=&#34;color:#f92672&#34;&gt;regex&lt;/span&gt;:
+            &lt;span style=&#34;color:#f92672&#34;&gt;pattern&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-x/jx:(.*)&amp;#34;&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;files&lt;/span&gt;:
+              - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;**/*.yaml&amp;#34;&lt;/span&gt;
+        - &lt;span style=&#34;color:#f92672&#34;&gt;regex&lt;/span&gt;:
+            &lt;span style=&#34;color:#f92672&#34;&gt;pattern&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-x/jx-boot:(.*)&amp;#34;&lt;/span&gt;
+            &lt;span style=&#34;color:#f92672&#34;&gt;files&lt;/span&gt;:
+              - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;**/*.yaml&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To update your pipeline catalog with every cluster upgrade, add these steps to your &lt;em&gt;.lighthouse/jenkins-x/release.yaml&lt;/em&gt;  before the &lt;em&gt;admin-log&lt;/em&gt; step:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;perl:slim&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;next-version&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;script&lt;/span&gt;: |&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    #!/usr/bin/env sh
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    perl -ne&amp;#39;/version: (.*)/ &amp;amp;&amp;amp; print $1&amp;#39; versionStream/packages/jx.yml &amp;gt; VERSION&lt;/span&gt;    
+- &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;uses:jenkins-x/jx3-pipeline-catalog/tasks/updatebot/release.yaml@versionStream&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;promote-release&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will open a PR on the pipeline catalog repo if updates are available. If Jenkins X manages the pipeline catalog repo, the PRs will be automatically merged.&lt;/p&gt;
+&lt;h2 id=&#34;quickstarts&#34;&gt;QuickStarts&lt;/h2&gt;
 &lt;p&gt;Quickstarts are sample projects which are used &lt;code&gt;jx project quickstart&lt;/code&gt; when you &lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34;&gt;create new projects&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;The default quickstart projects are in the &lt;a href=&#34;https://github.com/jenkins-x-quickstarts/&#34;&gt;jenkins-x-quickstarts&lt;/a&gt; github organisation.&lt;/p&gt;
 &lt;p&gt;The quickstarts are defined in your &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/quickstarts.yaml&#34;&gt;extensions/quickstarts.yaml&lt;/a&gt; file and defaults to including all of the quickstarts in the &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/versionStream/quickstarts.yaml&#34;&gt;versionStream/quickstarts.yml&lt;/a&gt; file.&lt;/p&gt;
