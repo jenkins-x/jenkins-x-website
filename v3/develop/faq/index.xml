@@ -259,7 +259,15 @@ git config --global credential.helper store
 &lt;p&gt;For details see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#additional-preview-steps&#34;&gt;how to add additional preview steps&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;how-do-i-add-other-services-into-a-preview&#34;&gt;How do I add other services into a Preview?&lt;/h2&gt;
 &lt;p&gt;see &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#adding-more-resources&#34;&gt;how to add resources to your previews&lt;/a&gt;&lt;/p&gt;
-
+&lt;h2 id=&#34;how-do-i-inject-the-preview-url-into-other-services&#34;&gt;How do I inject the Preview URL into other services?&lt;/h2&gt;
+&lt;p&gt;The preview namespace and URL are &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#environment-variables&#34;&gt;available as environment variables&lt;/a&gt; after the preview has been created.&lt;/p&gt;
+&lt;p&gt;However if you want to pass in the preview URL to &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/preview/#adding-more-resources&#34;&gt;other charts included in your preview&lt;/a&gt; via the &lt;code&gt;preview/helmfile.yaml&lt;/code&gt; file you can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;use the service URL rather than ingress which is much simpler and does not depend on the namespace or domain. e.g. just use &lt;code&gt;http://my-app-name&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;add a &lt;code&gt;values.yaml.gotmpl&lt;/code&gt; file for the chart to &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;configure its values&lt;/a&gt; you wish to inject the URL into and pass in whatever yaml is required to configure the preview URL using the following expression. The example below uses &lt;code&gt;someValue&lt;/code&gt; as the key to specify the URL but use whatever yaml keys your chart expects:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;someValue&lt;/span&gt;:  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{{ requiredEnv &amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;APP_NAME&amp;#34; }}-pr{{ requiredEnv &amp;#34;PULL_NUMBER&amp;#34; }}.{{ .Values.jxRequirements.ingress.domain }}&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -312,7 +320,25 @@ git config --global credential.helper store
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/about/overview/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; use an &lt;code&gt;OWNERS&lt;/code&gt; file stored in each git repository to define which developers are allowed to review and approve changes. You can even limit those roles to different folders.&lt;/p&gt;
 &lt;p&gt;If a non-reviewer submits a Pull Request it won&amp;rsquo;t trigger CI pipelines by default until a reviewer adds an &lt;code&gt;/ok-to-test&lt;/code&gt; comment on the Pull Request.&lt;/p&gt;
 &lt;p&gt;If you have public git repositories this also avoids the security issue of a non-approver submitting a Pull Request to change the pipeline to email them your security credentials in the CI pipeline ;)&lt;/p&gt;
-
+&lt;h2 id=&#34;how-do-i-configure-multiple-approvers&#34;&gt;How do I configure multiple approvers&lt;/h2&gt;
+&lt;p&gt;You may want to use multiple people to approve pull requests. e.g. to approve promotion Pull Requests on your Production cluster git repository&lt;/p&gt;
+&lt;p&gt;If so you could let github perform the approval and auto-merge for you.&lt;/p&gt;
+&lt;p&gt;You can then use the &lt;code&gt;review_approved_required&lt;/code&gt; property in the &lt;code&gt;Scheduler&lt;/code&gt; to disable keeper from trying to automatically merge pull requests.&lt;/p&gt;
+&lt;p&gt;The version stream comes with a scheduler configured for this called &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/blob/master/schedulers/environment-review-required.yaml&#34;&gt;environment-review-required.yaml&lt;/a&gt; so just modify your &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file to specify &lt;code&gt;scheduler: environment-review-required&lt;/code&gt; for the repository in question like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gitops.jenkins-x.io/v1alpha1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SourceConfig&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;creationTimestamp&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;null&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;groups&lt;/span&gt;:
+  - &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;providerKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
+    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-env-repo&lt;/span&gt;
+      &lt;span style=&#34;color:#f92672&#34;&gt;scheduler&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;environment-review-required&lt;/span&gt;
+    &lt;span style=&#34;color:#f92672&#34;&gt;scheduler&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;in-repo&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     

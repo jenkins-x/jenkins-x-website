@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/faq/chatops/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-05-18T15:54:13&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-07-26T08:25:10&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="ChatOps">
 <meta itemprop="description" content="Using ChatOps with Jenkins X">
-<meta itemprop="dateModified" content="2021-05-18T15:54:13&#43;01:00" />
-<meta itemprop="wordCount" content="669">
+<meta itemprop="dateModified" content="2021-07-26T08:25:10&#43;01:00" />
+<meta itemprop="wordCount" content="784">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ChatOps"/>
 <meta name="twitter:description" content="Using ChatOps with Jenkins X"/>
@@ -6431,6 +6431,7 @@ if (!doNotTrack) {
     <li><a href="#how-can-i-make-chatops-ha">How can I make ChatOps HA?</a></li>
     <li><a href="#how-to-handle-a-flakybroken-pipeline">How to handle a flaky/broken pipeline</a></li>
     <li><a href="#why-did-a-pullrequest-have-no-pipeline-triggered">Why did a PullRequest have no pipeline triggered?</a></li>
+    <li><a href="#how-do-i-configure-multiple-approvers">How do I configure multiple approvers</a></li>
   </ul>
 </nav>
 
@@ -6538,7 +6539,25 @@ if (!doNotTrack) {
 <p><a href="/v3/about/overview/#lighthouse">Lighthouse</a> use an <code>OWNERS</code> file stored in each git repository to define which developers are allowed to review and approve changes. You can even limit those roles to different folders.</p>
 <p>If a non-reviewer submits a Pull Request it won&rsquo;t trigger CI pipelines by default until a reviewer adds an <code>/ok-to-test</code> comment on the Pull Request.</p>
 <p>If you have public git repositories this also avoids the security issue of a non-approver submitting a Pull Request to change the pipeline to email them your security credentials in the CI pipeline ;)</p>
-
+<h2 id="how-do-i-configure-multiple-approvers">How do I configure multiple approvers</h2>
+<p>You may want to use multiple people to approve pull requests. e.g. to approve promotion Pull Requests on your Production cluster git repository</p>
+<p>If so you could let github perform the approval and auto-merge for you.</p>
+<p>You can then use the <code>review_approved_required</code> property in the <code>Scheduler</code> to disable keeper from trying to automatically merge pull requests.</p>
+<p>The version stream comes with a scheduler configured for this called <a href="https://github.com/jenkins-x/jx3-versions/blob/master/schedulers/environment-review-required.yaml">environment-review-required.yaml</a> so just modify your <code>.jx/gitops/source-config.yaml</code> file to specify <code>scheduler: environment-review-required</code> for the repository in question like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">gitops.jenkins-x.io/v1alpha1</span>
+<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">SourceConfig</span>
+<span style="color:#f92672">metadata</span>:
+  <span style="color:#f92672">creationTimestamp</span>: <span style="color:#66d9ef">null</span>
+<span style="color:#f92672">spec</span>:
+  <span style="color:#f92672">groups</span>:
+  - <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myorg</span>
+    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">https://github.com</span>
+    <span style="color:#f92672">providerKind</span>: <span style="color:#ae81ff">github</span>
+    <span style="color:#f92672">repositories</span>:
+    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">some-env-repo</span>
+      <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">environment-review-required</span>
+    <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">in-repo</span>
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -6601,7 +6620,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified May 18, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/9c65c744b45bf899974a3f0c9e07ab3fe9e131a6">docs: migrate more FAQ entries from v2 (9c65c744b4)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified July 26, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/9ca50f756102cada931f8fe2218df54937a8799a">fix: add a couple more FAQs (9ca50f7561)</a>
 </div>
 </div>
 

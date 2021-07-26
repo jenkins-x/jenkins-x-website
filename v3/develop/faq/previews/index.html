@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/faq/previews/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-05-18T15:54:13&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-07-26T08:25:10&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Previews">
 <meta itemprop="description" content="Questions about using Preview Environments">
-<meta itemprop="dateModified" content="2021-05-18T15:54:13&#43;01:00" />
-<meta itemprop="wordCount" content="125">
+<meta itemprop="dateModified" content="2021-07-26T08:25:10&#43;01:00" />
+<meta itemprop="wordCount" content="262">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Previews"/>
 <meta name="twitter:description" content="Questions about using Preview Environments"/>
@@ -6425,6 +6425,7 @@ if (!doNotTrack) {
     <li><a href="#when-do-preview-environments-get-removed">When do Preview Environments get removed?</a></li>
     <li><a href="#how-do-i-access-the-preview-namespace-or-url">How do I access the preview namespace or URL?</a></li>
     <li><a href="#how-do-i-add-other-services-into-a-preview">How do I add other services into a Preview?</a></li>
+    <li><a href="#how-do-i-inject-the-preview-url-into-other-services">How do I inject the Preview URL into other services?</a></li>
   </ul>
 </nav>
 
@@ -6504,7 +6505,15 @@ if (!doNotTrack) {
 <p>For details see <a href="/v3/develop/environments/preview/#additional-preview-steps">how to add additional preview steps</a></p>
 <h2 id="how-do-i-add-other-services-into-a-preview">How do I add other services into a Preview?</h2>
 <p>see <a href="/v3/develop/environments/preview/#adding-more-resources">how to add resources to your previews</a></p>
-
+<h2 id="how-do-i-inject-the-preview-url-into-other-services">How do I inject the Preview URL into other services?</h2>
+<p>The preview namespace and URL are <a href="/v3/develop/environments/preview/#environment-variables">available as environment variables</a> after the preview has been created.</p>
+<p>However if you want to pass in the preview URL to <a href="/v3/develop/environments/preview/#adding-more-resources">other charts included in your preview</a> via the <code>preview/helmfile.yaml</code> file you can:</p>
+<ul>
+<li>use the service URL rather than ingress which is much simpler and does not depend on the namespace or domain. e.g. just use <code>http://my-app-name</code></li>
+<li>add a <code>values.yaml.gotmpl</code> file for the chart to <a href="/v3/develop/apps/#customising-charts">configure its values</a> you wish to inject the URL into and pass in whatever yaml is required to configure the preview URL using the following expression. The example below uses <code>someValue</code> as the key to specify the URL but use whatever yaml keys your chart expects:</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">someValue</span>:  <span style="color:#e6db74">&#34;{{ requiredEnv &#34;</span><span style="color:#ae81ff">APP_NAME&#34; }}-pr{{ requiredEnv &#34;PULL_NUMBER&#34; }}.{{ .Values.jxRequirements.ingress.domain }}&#34;</span>
+</code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -6567,7 +6576,7 @@ if (!doNotTrack) {
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified May 18, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/9c65c744b45bf899974a3f0c9e07ab3fe9e131a6">docs: migrate more FAQ entries from v2 (9c65c744b4)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified July 26, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/9ca50f756102cada931f8fe2218df54937a8799a">fix: add a couple more FAQs (9ca50f7561)</a>
 </div>
 </div>
 
