@@ -330,7 +330,39 @@ kubectl get cm plugins -n jx -oyaml
 &lt;p&gt;Once you have made your changes you can verify the changes have taken place.&lt;/p&gt;
 &lt;p&gt;e.g. if you have &lt;a href=&#34;https://github.com/mfuentesg/ksd&#34;&gt;ksd&lt;/a&gt; installed on your &lt;code&gt;$PATH&lt;/code&gt;:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get secret -oyaml lighthouse-oauth-token | ksd
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-change-the-secret-poll-period-in-kubernetes-external-secrets&#34;&gt;How do I change the secret poll period in kubernetes external secrets?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-configure-secrets-differently-in-staging-versus-production&#34;&gt;How do I configure secrets differently in Staging versus Production?&lt;/h2&gt;
+&lt;p&gt;The simplest solution is to use &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/&#34;&gt;multiple clusters&lt;/a&gt; then you can have a separate secrets manager (cloud secret store or vault instance) per cluster.&lt;/p&gt;
+&lt;p&gt;Otherwise here are a few options:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;add an &lt;code&gt;ExternalSecret&lt;/code&gt; into your helm charts instead of a kubernetes &lt;code&gt;Secret&lt;/code&gt; and configure it based on the namespace (or other settings in your chart) to choose different secret store locations to populate the &lt;code&gt;Secret&lt;/code&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;e.g. if you are sharing a Vault between staging and production then you can use different paths in vault; or if you are using a cloud secret store you can use different projects / accounts / secret locations etc.&lt;/li&gt;
+&lt;li&gt;to help migrate from Secret -&amp;gt; ExternalSecret you could start off with the generated ExternalSecret yaml file in the &lt;code&gt;config-root/namespaces/$namespace/$chart/$name-secret.yaml&lt;/code&gt; file and copy it into your apps &lt;code&gt;charts/$appName/templates&lt;/code&gt; directory then parameterise it in the usual helm way with &lt;code&gt;{{ .Values.something }}&lt;/code&gt; expressions where you need to configure things differently per namespace/environment.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;for Vault you can specify an annotation on your &lt;code&gt;Secret&lt;/code&gt; to use a custom prefix in the vault paths for different namespaces or environments:&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;e.g. in your &lt;code&gt;Secret&lt;/code&gt; in &lt;code&gt;charts/$appName/templates/something-secret.yaml&lt;/code&gt; you can use something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;v1&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Secret&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something&lt;/span&gt;
+  &lt;span style=&#34;color:#f92672&#34;&gt;annotations&lt;/span&gt;:
+    &lt;span style=&#34;color:#f92672&#34;&gt;secret.jenkins-x.io/prefix&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{{ .Values.secretPrefix }}&amp;#34;&lt;/span&gt; 
+&lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Opaque&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;data&lt;/span&gt;:  
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then add to your &lt;code&gt;charts/$appName/values.yaml&lt;/code&gt;  file something like:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# default secret prefix location in vault&lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;secretPrefix&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging &lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then in the production environment you can create a values.yaml file like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretPrefix&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and passing this values.yaml file into the &lt;code&gt;helmfiles/jx-production/helmfile.yaml&lt;/code&gt; file for your charts &lt;code&gt;release:&lt;/code&gt; entry &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;to customize the chart&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;This will then use different paths in vault for staging: &lt;code&gt;secret/data/staging/$appName/something/$key&lt;/code&gt; to production: &lt;code&gt;secret/data/production/$appName/something/$key&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-change-the-secret-poll-period-in-kubernetes-external-secrets&#34;&gt;How do I change the secret poll period in kubernetes external secrets?&lt;/h2&gt;
 &lt;p&gt;Your cloud provider could charge per read of a secret and so a frequent poll of your secrets could cost $$$. You may want to tone down the poll period.&lt;/p&gt;
 &lt;p&gt;You can do this via the &lt;code&gt;POLLER_INTERVAL_MILLISECONDS&lt;/code&gt; setting in the &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets#configuration&#34;&gt;kubernetes external secrets configuration&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;For more details &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;see how to configure charts&lt;/a&gt;&lt;/p&gt;
