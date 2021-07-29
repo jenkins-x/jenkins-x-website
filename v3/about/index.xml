@@ -509,6 +509,24 @@ jx dash
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;You can see an example of this in the &lt;a href=&#34;https://jenkins-x.io/blog/2020/09/16/jx-v3-alpha/&#34;&gt;demo of Jenkins X V3&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;secrets&#34;&gt;Secrets&lt;/h3&gt;
+&lt;p&gt;We want to &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/general/#why-does-jenkins-x-use-helmfile-template&#34;&gt;check all of the kubernetes resources into git&lt;/a&gt; so they are all nicely versioned through time so its easy to diagnose when things start to misbehave.&lt;/p&gt;
+&lt;p&gt;So we do this:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Any &lt;strong&gt;Secret&lt;/strong&gt; resource generated in a helm chart is is converted to an &lt;strong&gt;ExternalSecret&lt;/strong&gt; so that it can be checked into git
+&lt;ul&gt;
+&lt;li&gt;we use &lt;a href=&#34;https://github.com/jenkins-x/jx-secret#mappings&#34;&gt;secret mapping&lt;/a&gt; to generate &lt;strong&gt;ExternalSecret&lt;/strong&gt; resources which define where the &lt;code&gt;Secret&lt;/code&gt; will be populated from (e.g. vault or your cloud provider secret store)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;secrets can be populated by either:
+&lt;ul&gt;
+&lt;li&gt;directly in the secret store (e.g. via vault or the cloud secret store directly). If you are using vault you can &lt;a href=&#34;https://jenkins-x.io/v3/guides/secrets/vault/#using-vault&#34;&gt;follow these instructions&lt;/a&gt; to access the vault UI&lt;/li&gt;
+&lt;li&gt;via &lt;a href=&#34;https://jenkins-x.io/v3/guides/secrets/#edit-secrets&#34;&gt;jx secret edit&lt;/a&gt; command&lt;/li&gt;
+&lt;li&gt;via the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/secret/populate&#34;&gt;jx secret populate&lt;/a&gt; command inside the boot job which uses the &lt;code&gt;versionStream/charts/*/secret-schema.yaml&lt;/code&gt; files to populate with generators and default values from the &lt;a href=&#34;https://github.com/jenkins-x/jx-secret#schema&#34;&gt;secret schema files&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;What this basically means is that helm charts with secrets just work and you can then modify secrets or rotate secrets via the secret store. Also if you lose or move a cluster, GitOps will restore your cluster again using the contents of your git repository and whatever is in your secret store.&lt;/p&gt;
 &lt;h4 id=&#34;troubleshooting&#34;&gt;Troubleshooting&lt;/h4&gt;
 &lt;p&gt;If you are not able to create quickstarts or import projects its most probably webhooks not being setup correctly.&lt;/p&gt;
 &lt;p&gt;Check out the &lt;a href=&#34;https://jenkins-x.io/v3/admin/troubleshooting/webhooks/&#34;&gt;webhooks troubleshooting guide&lt;/a&gt;&lt;/p&gt;
