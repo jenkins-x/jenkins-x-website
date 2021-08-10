@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/develop/environments/preview/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2021-06-22T10:13:42&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-08-10T10:58:45&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Previews">
 <meta itemprop="description" content="Preview Environments">
-<meta itemprop="dateModified" content="2021-06-22T10:13:42&#43;01:00" />
-<meta itemprop="wordCount" content="1209">
+<meta itemprop="dateModified" content="2021-08-10T10:58:45&#43;01:00" />
+<meta itemprop="wordCount" content="1367">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Previews"/>
 <meta name="twitter:description" content="Preview Environments"/>
@@ -547,19 +547,25 @@ if (!doNotTrack) {
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuioctant" href="/v3/develop/ui/octant/">Console</a>
-      
-      
-      
-      
-      
       <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuidashboard" href="/v3/develop/ui/dashboard/">Dashboard</a>
       
       
       
       
       
-      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuilighthouse" href="/v3/develop/ui/lighthouse/">Lighthouse WebUI</a>
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuilighthouse" href="/v3/develop/ui/lighthouse/">Lighthouse Dashboard</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuilens" href="/v3/develop/ui/lens/">Lens</a>
+      
+      
+      
+      
+      
+      <a class="td-sidebar-link td-sidebar-link__page " id="m-v3developuioctant" href="/v3/develop/ui/octant/">Octant</a>
       
       
       
@@ -6522,6 +6528,8 @@ if (!doNotTrack) {
     </li>
     <li><a href="#how-it-works">How it works</a></li>
     <li><a href="#when-previews-fail">When previews fail</a></li>
+    <li><a href="#configure-the-preview-url">Configure the preview URL</a></li>
+    <li><a href="#adding-more-charts">Adding more charts</a></li>
     <li><a href="#adding-more-resources">Adding more resources</a></li>
     <li><a href="#additional-preview-steps">Additional preview steps</a>
       <ul>
@@ -6664,8 +6672,17 @@ the main branch and initiate a release candidate build with the new feature:</p>
 <p>To improve feedback on why some previews can fail we have added additional output in the <a href="/v3/develop/reference/jx/preview/create">jx preview create</a> command to tail the kubernetes events in the preview namespace. This basically runs <code>kubectl exec get event -n $PREVIEW_NAMESPACE -w</code> and adds the output to the pipeline output (prefixed with <code>$PREVIEW_NAMESPACE:</code></p>
 <p>This means the reason for why a preview fails should appear as a kubernetes event in the pipeline log.</p>
 <p>e.g. if you make a mistake configuraing the helm chart on your preview you should see the error in the pipeline log. To fix the error just modify the code and git commit and push the fix and you should see the new results in the pipeline log.</p>
-<h2 id="adding-more-resources">Adding more resources</h2>
-<p>Its common when creating, for example, a web front end to need a backend or database to work from to verify that the microservice works.</p>
+<h2 id="configure-the-preview-url">Configure the preview URL</h2>
+<p>Depending on your helm chart or dependent charts you may wish to customise the kubernetes <code>Service</code> or <code>Ingress</code> name used to find the URL to use in the Preview Pull Request command and in the <a href="/v3/develop/ui/">UI integrations</a> to visualise the current Previews.</p>
+<p>You can specify the <code>Service</code> or <code>Ingress</code> name via the <strong>JX_PREVIEW_SERVICE</strong> environment variable name.</p>
+<p>e.g. add the following line to your <strong>.jx/variables.sh</strong> file, creating the file if it doesn&rsquo;t exist:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export JX_PREVIEW_SERVICE<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;my-custom-service-or-ingress&#34;</span>
+</code></pre></div><p>If you need to add a path to the current preview service URL host name you can set <strong>JX_PREVIEW_PATH</strong></p>
+<p>e.g. add the following line to your <strong>.jx/variables.sh</strong> file, creating the file if it doesn&rsquo;t exist:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export JX_PREVIEW_PATH<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/customers/acme&#34;</span>
+</code></pre></div><p>Then that path will be appended to the preview URL&rsquo;s host name.</p>
+<h2 id="adding-more-charts">Adding more charts</h2>
+<p>It&rsquo;s common when creating, for example, a web front end to need a backend or database to work from to verify that the microservice works.</p>
 <p>For each application the preview environment is defined by <a href="https://github.com/roboll/helmfile">helmfile</a> at <strong>preview/helmfile.yaml</strong>.</p>
 <p>You can modify the <strong>preview/helmfile.yaml</strong> file to add any helm chart dependencies you require.</p>
 <p>You can find possible charts to install by searching helm. e.g. to find a <code>postgresql</code> chart try:</p>
@@ -6682,7 +6699,9 @@ the main branch and initiate a release candidate build with the new feature:</p>
   <span style="color:#f92672">version</span>: <span style="color:#ae81ff">2.6.2</span>
 
 ...
-</code></pre></div><h2 id="additional-preview-steps">Additional preview steps</h2>
+</code></pre></div><h2 id="adding-more-resources">Adding more resources</h2>
+<p>If you need to add some kubernetes resources you can add those using the local chart source code model as described in <a href="/v3/develop/apps/#adding-resources">how to add new kubernetes resources</a></p>
+<h2 id="additional-preview-steps">Additional preview steps</h2>
 <p>It&rsquo;s common to want to test out previews using system tests or integration tests. Or you may wish to run some kind of <a href="https://www.cypress.io/">cypress</a> or <a href="https://www.selenium.dev/">selenium tests</a></p>
 <p>You can do this by <a href="/v3/develop/pipelines/editing/">adding additional steps</a> in the <strong>.lighthouse/jenkins-x/pullrequest.yaml</strong> file.</p>
 <p>To interact with the preview environment you will need to know its namespace and URL. So the additional step should source the <code>.jx/variables.sh</code> file to setup the environment variables (which are defined below).</p>
@@ -6768,7 +6787,7 @@ the main branch and initiate a release candidate build with the new feature:</p>
 		<br />
 	
 	
-	<div class="text-muted mt-5 pt-3 border-top">Last modified June 22, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/d6d2c87a8ce69467f3d8fc1c1ebd137817a77265">chore: polish docs on previews (d6d2c87a8c)</a>
+	<div class="text-muted mt-5 pt-3 border-top">Last modified August 10, 2021: <a  href="https://github.com/jenkins-x/jx-docs/commit/6ef7b743f3ad7aadea08ab2f88e995d323aa801c">fix: add docs on custom preview URL (6ef7b743f3)</a>
 </div>
 </div>
 
