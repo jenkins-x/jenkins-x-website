@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 28 Jun 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Aug 2021 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,84 @@
         
       
     
+    
+    <item>
+      <title>Blog: How to use GitOps and Kubernetes External Secrets for better audit and security</title>
+      <link>https://jenkins-x.io/blog/2021/08/17/gitops-secrets/</link>
+      <pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/08/17/gitops-secrets/</guid>
+      <description>
+        
+        
+        &lt;p&gt;So &lt;strong&gt;GitOps&lt;/strong&gt; is a cool approach to managing kubernetes resources in a cluster, by checking in the source code for:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the kubernetes YAMLs&lt;/li&gt;
+&lt;li&gt;details of the helm charts you want to install along with any configuration&lt;/li&gt;
+&lt;li&gt;kustomize scripts.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Then everything is versioned and audited; you know who changed what, when and why. If a change breaks things, just revert via git like any other source code change.&lt;/p&gt;
+&lt;p&gt;You can then add pipelines to &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-kube-test#readme&#34;&gt;verify&lt;/a&gt; changes in the Pull Requests result in valid kubernetes YAML etc.&lt;/p&gt;
+&lt;p&gt;Then if you merge changes to git then an operator detect the change and do the &lt;code&gt;kubectl apply&lt;/code&gt; (or &lt;code&gt;helm install&lt;/code&gt; or whatever).&lt;/p&gt;
+&lt;p&gt;There are a number of tools out there for doing this. e.g. &lt;a href=&#34;https://cloud.google.com/anthos/config-management&#34;&gt;Anthos Config Management&lt;/a&gt;, &lt;a href=&#34;https://argoproj.github.io/argo-cd/&#34;&gt;argo cd&lt;/a&gt;, &lt;a href=&#34;https://rancher.com/docs/rancher/v2.x/en/deploy-across-clusters/fleet/&#34;&gt;fleet&lt;/a&gt;, &lt;a href=&#34;https://fluxcd.io/&#34;&gt;flux cd&lt;/a&gt; and &lt;a href=&#34;https://github.com/vmware-tanzu/carvel-kapp-controller&#34;&gt;kapp controller&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;So why did Jenkins X not use these tools and instead created its own &lt;a href=&#34;https://github.com/jenkins-x/jx-git-operator&#34;&gt;git operator&lt;/a&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;standardising-gitops-layouts&#34;&gt;Standardising GitOps layouts&lt;/h2&gt;
+&lt;p&gt;Over time it would be great to have more standardisation of the Git layout given the different tool.&lt;/p&gt;
+&lt;p&gt;Our current recommended layout that works with many GitOps tools is &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops/blob/main/docs/git_layout.md&#34;&gt;described here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;why-jenkins-x-uses-helmfile-template&#34;&gt;Why Jenkins X uses helmfile template&lt;/h2&gt;
+&lt;p&gt;A number of solutions in the GitOps space define which helm charts to install in git with configuration files; or specify which kustomize templates to apply etc.&lt;/p&gt;
+&lt;p&gt;However Jenkins X defaults to using &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; to manage installing, upgrading and configuring multiple helm charts. Then we use &lt;strong&gt;&lt;code&gt;helmfile template&lt;/code&gt;&lt;/strong&gt; to render the helm charts as kubernetes resources.&lt;/p&gt;
+&lt;p&gt;We do this for a very good reason; so that we can easily &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/general/#why-does-jenkins-x-use-helmfile-template&#34;&gt;version all kubernetes resources in git including those that come from a helm chart&lt;/a&gt; - which means you can easily view the entire history of changes of any kubernetes resources - whether they come from inside a helm chart, some configuration values of a chart or kustomize scripts etc.&lt;/p&gt;
+&lt;p&gt;This avoids you having to mentally understand how helm charts will change over time with the helm chart version and/or helm configuration; or the effect of kustommize scripts. You can just view the history of any kubernetes resource.&lt;/p&gt;
+&lt;p&gt;We use conventions to ensure that each kubernetes resource has a canonical file name in git to make this whole process much simpler.&lt;/p&gt;
+&lt;p&gt;e.g. this is the git history of the &lt;a href=&#34;https://github.com/jenkins-x/jx3-eagle/commits/master/config-root/namespaces/cert-manager/cert-manager/cert-manager-cainjector-deploy.yaml&#34;&gt;cert manager deployment resource in our production cluster&lt;/a&gt; so you can see what changed when over time.&lt;/p&gt;
+&lt;p&gt;The exception to this rule is kubernetes &lt;code&gt;Secrets&lt;/code&gt; which are stored instead as &lt;code&gt;ExternalSecrets&lt;/code&gt; but which have their own history (e.g. in case you change the location of where the secrets are stored or modify the metadata, annotations or labels etc).&lt;/p&gt;
+&lt;h2 id=&#34;why-we-use-kubernetes-external-secrets&#34;&gt;Why we use Kubernetes External Secrets&lt;/h2&gt;
+&lt;p&gt;Jenkins X 3.x uses &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; to manage populating secrets from your underlying secret store such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Alibaba Cloud KMS Secret Manager&lt;/li&gt;
+&lt;li&gt;Amazon Secret Manager&lt;/li&gt;
+&lt;li&gt;Azure Key Vault&lt;/li&gt;
+&lt;li&gt;Hashicorp Vault&lt;/li&gt;
+&lt;li&gt;GCP Secret Manager&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;mermaid&#34;&gt;
+    
+graph TB
+    subgraph A[Kubernetes Cluster]
+        sqB[External Secrets Controller]
+        subgraph C[secrets-infra ns]
+            sqCV[Cloud Secret Manager]
+        end
+        subgraph D[Kube api server]
+        end
+        D -- Get ExternalSecrets --&gt; sqB
+        sqB --&gt; D
+        sqB -- Fetch secrets properties --&gt; sqCV
+        sqCV --&gt; sqB
+        subgraph E[app ns]
+            sqEP[pods]
+            sqES[secrets]
+        end
+        sqB -- Upsert Secrets --&gt; sqES
+    end
+
+&lt;/div&gt;
+&lt;p&gt;You can then keep all your secrets inside your cloud native secret store which also allows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;easy to automatically rotate any secret  at any time independently of git&lt;/li&gt;
+&lt;li&gt;use fine grained RBAC on each secret&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;how-to-use-this-approach-to-gitops-and-secrets-if-not-using-jenkins-x&#34;&gt;How to use this approach to GitOps and Secrets if not using Jenkins X&lt;/h2&gt;
+&lt;p&gt;If you use &lt;a href=&#34;https://jenkins-x.io/v3/admin/&#34;&gt;Jenkins X&lt;/a&gt; then you get all of the above benefits. But what if you want to use some other kind of GitOps operator toolchain?&lt;/p&gt;
+&lt;p&gt;One option is to use the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-secret-postrenderer#jx-secret-postrenderer&#34;&gt;jx-secret-postrenderer&lt;/a&gt; yourself if you use helm or &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; to then render the helm charts as raw YAML you can check into your git repository and implementing the conversion from &lt;code&gt;Secret&lt;/code&gt; to &lt;code&gt;ExternalSecret&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Another option is to reuse the Jenkins X &lt;code&gt;Makefile&lt;/code&gt; and pipeline to setup the &lt;code&gt;config-root&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops/blob/main/docs/git_layout.md&#34;&gt;git layout&lt;/a&gt; after converting Secrets to ExternalSecretes and pre-populating any missing secret store values.&lt;/p&gt;
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;If you are looking at adopting GitOps then we highly recommend you &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/general/#why-does-jenkins-x-use-helmfile-template&#34;&gt;check into git all of your kubernetes resources including those that come from a helm charts or kustomize scripts&lt;/a&gt; (apart from &lt;code&gt;Secrets&lt;/code&gt;!) as it massively simplifies understanding how kubernetes resources change over time using just pure git.&lt;/p&gt;
+&lt;p&gt;If you are using GitOps you may want to look into using &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; to simplify integrating secrets for cloud native secret stores into your kubernetes cluster to provide finer grained RBAC and easier secret rotion.&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Jenkins X 3 and Argo CD</title>
@@ -3000,76 +3078,6 @@ Feel free to reach me if you are facing any issues regarding starting with open-
 &lt;p&gt;You will not want to miss this session if you are considering using a Kubernetes native CI/CD that abstracts you from the complexities of Kubernetes.&lt;/p&gt;
 &lt;p&gt;On December 4, 2019, &lt;a href=&#34;https://twitter.com/abayer&#34;&gt;Andrew Bayer&lt;/a&gt; and I, &lt;a href=&#34;https://twitter.com/SharePointOscar&#34;&gt;@sharePointOscar&lt;/a&gt; will be speaking more on this topic at DevOps World | Jenkins World Lisbon. Join us if you&amp;rsquo;d like to hear more on this topic.  Use &lt;strong&gt;JWFOSS&lt;/strong&gt; for 30% discount on &lt;a href=&#34;https://web.cvent.com/event/94fdc1a9-a1d1-46d6-9085-b995bf895d0b/regProcessStep1?RefId=web&#34;&gt;registration&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Andrew and I look forward to helping you get to know Jenkins X!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: CFP: CI/CD Devroom at FOSDEM 2020</title>
-      <link>https://jenkins-x.io/blog/2019/10/09/fosdem2020/</link>
-      <pubDate>Wed, 09 Oct 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/10/09/fosdem2020/</guid>
-      <description>
-        
-        
-        &lt;p&gt;&lt;a href=&#34;https://fosdem.org/2020/&#34;&gt;FOSDEM&lt;/a&gt; is a free event for software developers to meet, share ideas, and collaborate.&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/community/events/2020-fosdem.png&#34; class=&#34;img-thumbnail&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;For the first time, there will be a Continuous Integration and Continuous Deployment (CI/CD) devroom at FOSDEM! The CI/CD devroom will take place on &lt;strong&gt;2nd of February 2020 in Brussels, Belgium&lt;/strong&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;fosdem&#34;&gt;FOSDEM&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://fosdem.org/2020/about/&#34;&gt;FOSDEM&lt;/a&gt; (Free and Open source Software Developers’ European Meeting) is a non-commercial, volunteer-organized European event centered on free and open source software development.&lt;/p&gt;
-&lt;p&gt;It is aimed at developers and anyone interested in the free and open source software movement. FOSDEM will take place on 1st and 2nd of February in Brussels, Belgium. See the &lt;a href=&#34;https://fosdem.org/2020/&#34;&gt;event site for more details&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;about-the-cicd-devroom&#34;&gt;About the CI/CD Devroom&lt;/h2&gt;
-&lt;p&gt;The CI/CD devroom focuses on Free and Open Source CI/CD tools and software at large, and is not specific to Jenkins X. We think it is very important for creators and users of CI/CD tools to share ideas, best practices, and stories from the trenches.&lt;/p&gt;
-&lt;p&gt;Real examples are always inspiring and full of insights, even when things don&amp;rsquo;t go perfectly. We&amp;rsquo;d love to hear about interesting use-cases for CI/CD tools and pipelines. Also, talks on changing tools, either from proprietary to open source or between FOSS solutions, and the reasons why, can illuminate the differences between CI/CD tools and what users really want and need.&lt;/p&gt;
-&lt;h2 id=&#34;call-for-participation&#34;&gt;Call for Participation&lt;/h2&gt;
-&lt;p&gt;Talks can be on anything related to open source CI/CD tools and software!&lt;/p&gt;
-&lt;p&gt;Please submit your proposals through FOSDEM&amp;rsquo;s pentabarf system at &lt;a href=&#34;https://penta.fosdem.org/submission/FOSDEM20&#34;&gt;https://penta.fosdem.org/submission/FOSDEM20&lt;/a&gt;. If you already have an account, please use the same as they show speakers&#39; participation across the editions.  Take your time to fill up the fields, especially the descriptions, as that will be shown on FOSDEM website and booklets. Talks can be either 20 or 50 minutes, including time for questions and discussion.&lt;/p&gt;
-&lt;p&gt;Remember to select the &amp;ldquo;Continuous Integration and Continuous Deployment devroom&amp;rdquo; track.&lt;/p&gt;
-&lt;p&gt;Note that the talks will be recorded and made available under a Creative Commons license on the FOSDEM website.&lt;/p&gt;
-&lt;h2 id=&#34;important-dates&#34;&gt;Important Dates&lt;/h2&gt;
-&lt;p&gt;The deadline for submission of proposals is &lt;strong&gt;30th November, 2019&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The final schedule for the CI/CD devroom at FOSDEM 2020 will be announced on 15th of December, 2019.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;If you have any issues or questions, contact &lt;a href=&#34;mailto:ci-cd-devroom-manager@fosdem.org&#34;&gt;ci-cd-devroom-manager@fosdem.org&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;We&amp;rsquo;re excited to hear all the talks and discussions in the CI/CD devroom and look forward to seeing you there!&lt;/p&gt;
-&lt;div class=&#34;event-wrapper&#34; itemscope itemtype=&#34;http://schema.org/Event&#34;&gt;
-  &lt;link href=&#34;#&#34; itemprop=&#34;image&#34; content=&#34;https://jenkins-x.io/images/community/events/2020-fosdem.png&#34; /&gt;
-  &lt;meta itemprop=&#34;description&#34; content=&#34;For the first time, there will be a Continuous Integration and Continuous 
-  Deployment (CI/CD) devroom at FOSDEM! The CI/CD devroom will take place on 2nd of February 2020 in Brussels, Belgium.&#34; /&gt;
-  &lt;meta class=&#34;event-date&#34; itemprop=&#34;startDate&#34; content=&#34;2020-02-02&#34; /&gt;
-  &lt;meta class=&#34;event-date&#34; itemprop=&#34;endDate&#34; content=&#34;2020-02-02&#34; /&gt;
-  &lt;meta class=&#34;event-title&#34; itemprop=&#34;name&#34; content=&#34;CI/CD Devroom at FOSDEM 2020&#34; /&gt;
-  &lt;div class=&#34;event-venue&#34; itemprop=&#34;location&#34; itemscope itemtype=&#34;http://schema.org/Place&#34;&gt;
-      &lt;meta itemprop=&#34;name&#34; content=&#34;Université libre de Bruxelles&#34; /&gt;
-      &lt;div class=&#34;address&#34; itemprop=&#34;address&#34; itemscope itemtype=&#34;http://schema.org/PostalAddress&#34;&gt;
-          &lt;meta itemprop=&#34;streetAddress&#34; content=&#34;Avenue Franklin D. Roosevelt 50&#34; /&gt;
-          &lt;meta itemprop=&#34;postalCode&#34; content=&#34;1050&#34; /&gt;
-          &lt;meta itemprop=&#34;addressLocality&#34; content=&#34;Brussels&#34; /&gt;
-          &lt;meta itemprop=&#34;addressCountry&#34; content=&#34;BE&#34; /&gt;
-          &lt;meta itemprop=&#34;latitude&#34; content=50.812375 /&gt;
-          &lt;meta itemprop=&#34;longitude&#34; content=4.380734 /&gt;
-          &lt;meta itemprop=&#34;isAccessibleForFree&#34; content=true /&gt;
-          &lt;meta itemprop=&#34;audience&#34; content=&#34;IT professionals&#34; /&gt;
-      &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div itemprop=&#34;offers&#34; itemscope itemtype=&#34;http://schema.org/Offer&#34;&gt;
-    &lt;link href=&#34;#&#34; itemprop=&#34;url&#34; content=&#34;https://fosdem.org/2020/&#34; /&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
-&lt;div id=&#39;discourse-comments&#39;&gt;&lt;/div&gt;
-&lt;script type=&#34;text/javascript&#34;&gt;
-  DiscourseEmbed = { discourseUrl: &#39;https://jenkinsx.discourse.group/&#39;,
-                     discourseEmbedUrl: &#39;https://jenkins-x.io/blog/2020/01/09/jxfosdem2020/&#39; };
-
-  (function() {
-    var d = document.createElement(&#39;script&#39;); d.type = &#39;text/javascript&#39;; d.async = true;
-    d.src = DiscourseEmbed.discourseUrl + &#39;javascripts/embed.js&#39;;
-    (document.getElementsByTagName(&#39;head&#39;)[0] || document.getElementsByTagName(&#39;body&#39;)[0]).appendChild(d);
-  })();
-&lt;/script&gt;&lt;blockquote&gt;
-&lt;/blockquote&gt;
 
       </description>
     </item>
