@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Tue, 17 Aug 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 18 Aug 2021 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,90 @@
         
       
     
+    
+    <item>
+      <title>Blog: How to debug your Tekton pipelines</title>
+      <link>https://jenkins-x.io/blog/2021/08/18/debug-tekton/</link>
+      <pubDate>Wed, 18 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/08/18/debug-tekton/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Tekton recently introduced a &lt;a href=&#34;https://github.com/tektoncd/pipeline/blob/main/docs/debug.md#debug&#34;&gt;debug feature&lt;/a&gt; when you create &lt;code&gt;TaskRun&lt;/code&gt; resources so that steps can be paused at a breakpoint until told to move forwards so that you can diagnose why pipeline steps fail.&lt;/p&gt;
+&lt;p&gt;The latest Tekton release only supports breakpoints on &lt;code&gt;TaskRun&lt;/code&gt; resources but there is a &lt;a href=&#34;https://github.com/tektoncd/pipeline/pull/4145&#34;&gt;Pull Request #4145&lt;/a&gt; to add support also to debugging &lt;code&gt;PipelineRun&lt;/code&gt; resources as well. If you are reading this please add your thumbs up emoji feedback to the &lt;a href=&#34;https://github.com/tektoncd/pipeline/pull/4145&#34;&gt;PR #4145&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;ve switched Jenkins X to use a preview image of Tekton with &lt;a href=&#34;https://github.com/tektoncd/pipeline/pull/4145&#34;&gt;PR #4145&lt;/a&gt; included so that Jenkins X developers can easily debug their pipelines (which typically are &lt;code&gt;PipelineRun&lt;/code&gt; resources).&lt;/p&gt;
+&lt;h2 id=&#34;how-to-debug-tekton-pipelines&#34;&gt;How to debug Tekton Pipelines&lt;/h2&gt;
+&lt;p&gt;Here is a demo which shows how to debug pipelines:&lt;/p&gt;
+&lt;iframe width=&#34;850&#34; height=&#34;500&#34; src=&#34;https://www.youtube.com/embed/QqTaclB6-oI&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
+&lt;p&gt;Make sure &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cluster/&#34;&gt;your cluster is upgraded to the latest version stream&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you intend to use the &lt;code&gt;jx&lt;/code&gt; in the below examples make sure you &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cli/&#34;&gt;upgrade the CLI too&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;enable-a-breakpoint&#34;&gt;Enable a breakpoint&lt;/h3&gt;
+&lt;p&gt;To enable a breakpoint you can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; as shown in the above video by:
+&lt;ul&gt;
+&lt;li&gt;right click on a &lt;code&gt;Pipeline&lt;/code&gt; action menu&lt;/li&gt;
+&lt;li&gt;select &lt;code&gt;Breakpoint -&amp;gt; Add&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;you can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/debug/&#34;&gt;jx pipeline debug&lt;/a&gt; command then select the pipeline to add/remove a breakpoint.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;viewing-breakpoints&#34;&gt;Viewing breakpoints&lt;/h3&gt;
+&lt;p&gt;You can view breakpoints in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; in the &lt;code&gt;Breakpoints&lt;/code&gt; tab or via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get lighthousebreakpoints
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# you can use the short name:&lt;/span&gt;
+kubectl get lhbp
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;using-a-breakpoint&#34;&gt;Using a breakpoint&lt;/h3&gt;
+&lt;p&gt;Once you have set a breakpoint defined for a particular Pipeline you need to trigger the pipeline. e.g. perform a git commit on the git branch to trigger a new pipeline to execute.&lt;/p&gt;
+&lt;p&gt;The pipeline will execute as normal; you&amp;rsquo;ll be able to view it execute via:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/grid/&#34;&gt;jx pipeline grid&lt;/a&gt; to watch pipelines run and select the one you wish to view the log&lt;/li&gt;
+&lt;li&gt;run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/log/&#34;&gt;jx pipeline log&lt;/a&gt; to watch the log of a specific pipeline&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;opening-a-shell&#34;&gt;Opening a shell&lt;/h3&gt;
+&lt;p&gt;Once your breakpoint is reached the pipeline pod will pause, waiting to continue.&lt;/p&gt;
+&lt;p&gt;At this point you can then open a shell inside the container.&lt;/p&gt;
+&lt;p&gt;The easiest way to do this is via the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt;, click on the Pipeline action menu then &lt;code&gt;Shell&lt;/code&gt; -&amp;gt; &lt;code&gt;latest step&lt;/code&gt; and a shell will open.&lt;/p&gt;
+&lt;p&gt;Otherwise you can use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c $name-of-container $name-of-pod &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;sh | bash | ash&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;continuing-after-the-breakpoint&#34;&gt;Continuing after the breakpoint&lt;/h3&gt;
+&lt;p&gt;If you wish to continue the execution of a pipeline there are &lt;a href=&#34;https://github.com/tektoncd/pipeline/blob/main/docs/debug.md#debug-scripts&#34;&gt;multiple scripts you can run inside the shell&lt;/a&gt; you can run inside the shell in the pipeline to tell the pipeline to continue:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Script&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;/tekton/debug/scripts/debug-continue&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Mark the step as completed with success by writing to &lt;code&gt;/tekton/tools&lt;/code&gt; so that the pipeline continues executing&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;/tekton/debug/scripts/debug-fail-continue&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Mark the step as completed with failure by writing to &lt;code&gt;/tekton/tools&lt;/code&gt; which can lead to the pipeline terminating&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;removing-breakpoints&#34;&gt;Removing breakpoints&lt;/h3&gt;
+&lt;p&gt;There are a few ways to delete breakpoints.&lt;/p&gt;
+&lt;p&gt;You can run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/debug/&#34;&gt;jx pipeline debug&lt;/a&gt; and toggle off any existing breakpoints.&lt;/p&gt;
+&lt;p&gt;You can use the &lt;code&gt;Breakpoints&lt;/code&gt; tab in &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; then click the breakpoints action menu then &lt;code&gt;Remove&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Or find the one you want via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get lhbp
+kubectl delete lhbp whatever-the-name-is
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;So there you have it; nice and easy debugging of pipelines so you can diagnose why pipelines fail and try incrementally fix things up from inside the pipeline pods! Pretty cool eh!&lt;/p&gt;
+&lt;p&gt;Let us know via &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;slack&lt;/a&gt; or the &lt;a href=&#34;https://github.com/jenkins-x/jx/issues&#34;&gt;issue tracker&lt;/a&gt; if you can think of any ways we can make this even easier to use! Also check out the &lt;a href=&#34;https://github.com/tektoncd/community/blob/main/teps/0042-taskrun-breakpoint-on-failure.md&#34;&gt;Tekton enhancement proposal 42&lt;/a&gt; that covers this capability in the underlying tekton controller and pods.&lt;/p&gt;
+&lt;p&gt;Finally please add your thumbs up emoji to the &lt;a href=&#34;https://github.com/tektoncd/pipeline/pull/4145&#34;&gt;tekton PR #4145&lt;/a&gt; :)&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: How to use GitOps and Kubernetes External Secrets for better audit and security</title>
@@ -87,7 +171,7 @@ graph TB
 &lt;p&gt;Another option is to reuse the Jenkins X &lt;code&gt;Makefile&lt;/code&gt; and pipeline to setup the &lt;code&gt;config-root&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops/blob/main/docs/git_layout.md&#34;&gt;git layout&lt;/a&gt; after converting Secrets to ExternalSecretes and pre-populating any missing secret store values.&lt;/p&gt;
 &lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
 &lt;p&gt;If you are looking at adopting GitOps then we highly recommend you &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/general/#why-does-jenkins-x-use-helmfile-template&#34;&gt;check into git all of your kubernetes resources including those that come from a helm charts or kustomize scripts&lt;/a&gt; (apart from &lt;code&gt;Secrets&lt;/code&gt;!) as it massively simplifies understanding how kubernetes resources change over time using just pure git.&lt;/p&gt;
-&lt;p&gt;If you are using GitOps you may want to look into using &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; to simplify integrating secrets for cloud native secret stores into your kubernetes cluster to provide finer grained RBAC and easier secret rotion.&lt;/p&gt;
+&lt;p&gt;If you are using GitOps you may want to look into using &lt;a href=&#34;https://github.com/external-secrets/kubernetes-external-secrets&#34;&gt;Kubernetes External Secrets&lt;/a&gt; to simplify integrating secrets for cloud native secret stores into your kubernetes cluster to provide finer grained RBAC and easier secret rotation.&lt;/p&gt;
 
       </description>
     </item>
@@ -3056,28 +3140,6 @@ Feel free to reach me if you are facing any issues regarding starting with open-
 &lt;img src=&#34;https://jenkins-x.io/images/contributor_summit_sf.jpg&#34;/&gt;
 &lt;/figure&gt;
 &lt;p&gt;A &lt;a href=&#34;https://www.cloudbees.com/devops-world/lisbon&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary to attend the Contributor Summit, but if you don&amp;rsquo;t want to miss out on &lt;a href=&#34;https://www.cloudbees.com/devops-world/lisbon&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; you can get your conference pass using &lt;strong&gt;JWFOSS&lt;/strong&gt; for a 30% discount.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Introduction to Jenkins X @ Jenkins World | DevOps World Lisbon</title>
-      <link>https://jenkins-x.io/blog/2019/10/16/intro-to-jenkins-x-by-oscar-andrew/</link>
-      <pubDate>Wed, 16 Oct 2019 12:20:42 -0700</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/10/16/intro-to-jenkins-x-by-oscar-andrew/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/jw-libson-oscar-andrew-talk.png&#34; width=&#34;80%&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;In today’s technology landscape, people find it difficult to get up to speed with technologies for many reasons.  One reason that comes to mind is time.  Another may be that  some folks are just not able to read a tutorial or blog post and be successful at ramping up with a specific technology.&lt;/p&gt;
-&lt;p&gt;So these individuals need either a bootcamp or to sit and watch live demos and have someone explain concepts.  It is for these reasons that Oscar and Andrew &lt;a href=&#34;https://sched.co/VFHj&#34;&gt;will be introducing Jenkins X&lt;/a&gt; to people that might have heard of it, but have not yet had a chance to play with it.&lt;/p&gt;
-&lt;p&gt;Folks will be introduced to Jenkins X with simplicity in mind.  The speakers will walk through all the concepts of the platform. To make things fun, and easier to follow - the speakers plan to carry out the session in the form of a skit in which one speaker is an IT person from a fictitious company, and the other is the Jenkins X Expert.&lt;/p&gt;
-&lt;p&gt;You will not want to miss this session if you are considering using a Kubernetes native CI/CD that abstracts you from the complexities of Kubernetes.&lt;/p&gt;
-&lt;p&gt;On December 4, 2019, &lt;a href=&#34;https://twitter.com/abayer&#34;&gt;Andrew Bayer&lt;/a&gt; and I, &lt;a href=&#34;https://twitter.com/SharePointOscar&#34;&gt;@sharePointOscar&lt;/a&gt; will be speaking more on this topic at DevOps World | Jenkins World Lisbon. Join us if you&amp;rsquo;d like to hear more on this topic.  Use &lt;strong&gt;JWFOSS&lt;/strong&gt; for 30% discount on &lt;a href=&#34;https://web.cvent.com/event/94fdc1a9-a1d1-46d6-9085-b995bf895d0b/regProcessStep1?RefId=web&#34;&gt;registration&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Andrew and I look forward to helping you get to know Jenkins X!&lt;/p&gt;
 
       </description>
     </item>

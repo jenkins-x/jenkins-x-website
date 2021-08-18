@@ -296,6 +296,82 @@ jx pipeline effective
     </item>
     
     <item>
+      <title>V3: Debugging</title>
+      <link>https://jenkins-x.io/v3/develop/pipelines/debugging/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/develop/pipelines/debugging/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Here is a demo which shows how to debug pipelines:&lt;/p&gt;
+&lt;iframe width=&#34;850&#34; height=&#34;500&#34; src=&#34;https://www.youtube.com/embed/QqTaclB6-oI&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
+&lt;p&gt;Make sure &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cluster/&#34;&gt;your cluster is upgraded to the latest version stream&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you intend to use the &lt;code&gt;jx&lt;/code&gt; in the below examples make sure you &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cli/&#34;&gt;upgrade the CLI too&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;enable-a-breakpoint&#34;&gt;Enable a breakpoint&lt;/h3&gt;
+&lt;p&gt;To enable a breakpoint you can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; as shown in the above video by:
+&lt;ul&gt;
+&lt;li&gt;right click on a &lt;code&gt;Pipeline&lt;/code&gt; action menu&lt;/li&gt;
+&lt;li&gt;select &lt;code&gt;Breakpoint -&amp;gt; Add&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;you can use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/debug/&#34;&gt;jx pipeline debug&lt;/a&gt; command then select the pipeline to add/remove a breakpoint.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;viewing-breakpoints&#34;&gt;Viewing breakpoints&lt;/h3&gt;
+&lt;p&gt;You can view breakpoints in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; in the &lt;code&gt;Breakpoints&lt;/code&gt; tab or via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get lighthousebreakpoints
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# you can use the short name:&lt;/span&gt;
+kubectl get lhbp
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;using-a-breakpoint&#34;&gt;Using a breakpoint&lt;/h3&gt;
+&lt;p&gt;Once you have set a breakpoint defined for a particular Pipeline you need to trigger the pipeline. e.g. perform a git commit on the git branch to trigger a new pipeline to execute.&lt;/p&gt;
+&lt;p&gt;The pipeline will execute as normal; you&amp;rsquo;ll be able to view it execute via:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/grid/&#34;&gt;jx pipeline grid&lt;/a&gt; to watch pipelines run and select the one you wish to view the log&lt;/li&gt;
+&lt;li&gt;run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/log/&#34;&gt;jx pipeline log&lt;/a&gt; to watch the log of a specific pipeline&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;opening-a-shell&#34;&gt;Opening a shell&lt;/h3&gt;
+&lt;p&gt;Once your breakpoint is reached the pipeline pod will pause, waiting to continue.&lt;/p&gt;
+&lt;p&gt;At this point you can then open a shell inside the container.&lt;/p&gt;
+&lt;p&gt;The easiest way to do this is via the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt;, click on the Pipeline action menu then &lt;code&gt;Shell&lt;/code&gt; -&amp;gt; &lt;code&gt;latest step&lt;/code&gt; and a shell will open.&lt;/p&gt;
+&lt;p&gt;Otherwise you can use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl exec -it -c $name-of-container $name-of-pod &lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;sh | bash | ash&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;continuing-after-the-breakpoint&#34;&gt;Continuing after the breakpoint&lt;/h3&gt;
+&lt;p&gt;If you wish to continue the execution of a pipeline there are &lt;a href=&#34;https://github.com/tektoncd/pipeline/blob/main/docs/debug.md#debug-scripts&#34;&gt;multiple scripts you can run inside the shell&lt;/a&gt; you can run inside the shell in the pipeline to tell the pipeline to continue:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Script&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;/tekton/debug/scripts/debug-continue&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Mark the step as completed with success by writing to &lt;code&gt;/tekton/tools&lt;/code&gt; so that the pipeline continues executing&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;/tekton/debug/scripts/debug-fail-continue&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Mark the step as completed with failure by writing to &lt;code&gt;/tekton/tools&lt;/code&gt; which can lead to the pipeline terminating&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;removing-breakpoints&#34;&gt;Removing breakpoints&lt;/h3&gt;
+&lt;p&gt;There are a few ways to delete breakpoints.&lt;/p&gt;
+&lt;p&gt;You can run &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/debug/&#34;&gt;jx pipeline debug&lt;/a&gt; and toggle off any existing breakpoints.&lt;/p&gt;
+&lt;p&gt;You can use the &lt;code&gt;Breakpoints&lt;/code&gt; tab in &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/lens/&#34;&gt;Lens UI&lt;/a&gt; then click the breakpoints action menu then &lt;code&gt;Remove&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Or find the one you want via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get lhbp
+kubectl delete lhbp whatever-the-name-is
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Upgrading</title>
       <link>https://jenkins-x.io/v3/develop/pipelines/upgrading/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
