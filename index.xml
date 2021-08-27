@@ -13,6 +13,80 @@
     
     
     <item>
+      <title>Blog: Moving Jenkins X v2 artifacts</title>
+      <link>https://jenkins-x.io/blog/2021/08/26/moving-v2-artifacts/</link>
+      <pubDate>Thu, 26 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2021/08/26/moving-v2-artifacts/</guid>
+      <description>
+        
+        
+        &lt;h1 id=&#34;__action-required__&#34;&gt;&lt;strong&gt;ACTION REQUIRED&lt;/strong&gt;&lt;/h1&gt;
+&lt;p&gt;TL;DR - Jenkins X specific helm repositories and container registries hosted on GCP have been moved to GitHub.  This will mainly affect jx v2 users but there is expected to be a small impact on v3 users too.  Below describes the steps we believe are needed to keep Jenkins X installations working as normal but there will be some action needed.&lt;/p&gt;
+&lt;h2 id=&#34;why-the-disruption&#34;&gt;Why the disruption?&lt;/h2&gt;
+&lt;p&gt;When Jenkins X first started we made heavy use of GCP&amp;rsquo;s services for hosting the cloud infrastructure needed by users to install and run Jenkins X.  This was great as we could use the same IAM to push and maintain content from our own hosted build infrastructure and ensure we were validating the same experience of using cloud provider hosted services wherever possible.  As Jenkins X grew in popularity the cloud costs began to increase with the &lt;a href=&#34;https://cloud.google.com/container-registry/pricing&#34;&gt;pricing model from GCP&lt;/a&gt;, specifically the networking costs of cross continent egress.&lt;/p&gt;
+&lt;p&gt;Given this, for jx3 we decided to see if switching to &lt;a href=&#34;https://github.com/orgs/jenkins-x/packages&#34;&gt;GitHub packages for container images&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x-charts.github.io/repo/&#34;&gt;GitHub pages&lt;/a&gt; for helm repositories would be better, the result was it is better.  In fact we have made it super easy for users to switch to using GitHub pages for releasing &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/config/registries/#how-do-i-switch-to-github-pages-for-charts&#34;&gt;helm charts&lt;/a&gt; and using GitHub packages.&lt;/p&gt;
+&lt;p&gt;Now that we have validated GitHub is more cost effective for hosting public images and helm charts for the Jenkins X project, we want to switch to using GitHub for all v2 plus v3 users, then shutdown the GCP services which are causing unnecessary cost.&lt;/p&gt;
+&lt;p&gt;It is expected that v3 users will need a small change and v2 slightly more.  Details for both will be described below but it is worth noting that there hasn&amp;rsquo;t been a v2 release in 9 months and v3 was &lt;a href=&#34;https://jenkins-x.io/blog/2021/04/15/jx-v3-ga/&#34;&gt;GA in April&lt;/a&gt; earlier this year, so we aren&amp;rsquo;t expecting too many folks on v2.  We are aiming to limit any disruption and help provide easy steps to handle the move.&lt;/p&gt;
+&lt;p&gt;We apologise for any extra work caused however, this is required to preserve the long running hosting of Jenkins X artifacts both past and present.  If you experience issues that are not covered by the steps below please reach out to the &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;community slack channel&lt;/a&gt; and we can help address and update this blog with details.&lt;/p&gt;
+&lt;h2 id=&#34;what-is-changing&#34;&gt;What is changing?&lt;/h2&gt;
+&lt;p&gt;We will be shutting down a number of GCP projects that contain old helm charts plus container images and moving them to be hosted by GitHub packages and pages.&lt;/p&gt;
+&lt;h4 id=&#34;helm&#34;&gt;Helm&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;http://chartmuseum.jenkins-x.io&lt;/code&gt; and &lt;code&gt;https://storage.googleapis.com/chartmuseum.jenkins-x.io&lt;/code&gt; has been moved to &lt;code&gt;https://jenkins-x-charts.github.io/v2&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;https://storage.googleapis.com/jenkinsxio/charts&lt;/code&gt; has moved to &lt;code&gt;https://jenkins-x-charts.github.io/repo&lt;/code&gt;&lt;/p&gt;
+&lt;h4 id=&#34;images&#34;&gt;Images&lt;/h4&gt;
+&lt;p&gt;The most recently versioned images from &lt;a href=&#34;https://console.cloud.google.com/gcr/images/jenkinsxio/GLOBAL&#34;&gt;gcr.io/jenkinsxio&lt;/a&gt; have been moved to &lt;a href=&#34;https://github.com/orgs/jenkins-x/packages&#34;&gt;ghcr.io/jenkins-x&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&#34;labs&#34;&gt;Labs&lt;/h4&gt;
+&lt;p&gt;There are some old labs images and helm charts which should not be in use as they are either deprecated or replaced with GA versions in the v3 &lt;a href=&#34;https://jenkins-x-charts.github.io/repo/&#34;&gt;helm repo&lt;/a&gt; or &lt;a href=&#34;https://github.com/orgs/jenkins-x/packages&#34;&gt;container registry&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;v2-users&#34;&gt;v2 users&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;The Jenkins X own v2 build infrastructure was retired at the start of the year as no more releases were planned and to reduce costs.  With that we are unable to perform a new release that automatically switches references to images from &lt;code&gt;gcr.io/jenkinsxio&lt;/code&gt; to &lt;code&gt;ghcr.io/jenkins-x&lt;/code&gt;.  If you are still using v2 then please update your references to this container registry.  An alternative &lt;strong&gt;which has not yet been verified&lt;/strong&gt; is to use a &lt;a href=&#34;https://github.com/phenixblue/imageswap-webhook&#34;&gt;image swap Kubernetes mutaing admission controller&lt;/a&gt; which takes configuration to switch the registry on the fly.  &lt;a href=&#34;https://github.com/phenixblue/imageswap-webhook&#34;&gt;We have asked on slack&lt;/a&gt; for help validating the approach so if you do try it please share feedback and config used to help others in the channel, we can then update docs.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In your boot git repository, run a search for references of &lt;code&gt;http://chartmuseum.jenkins-x.io&lt;/code&gt; and &lt;code&gt;https://storage.googleapis.com/chartmuseum.jenkins-x.io&lt;/code&gt; replace with &lt;code&gt;https://jenkins-x-charts.github.io/v2&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Have we missed anything?  Please contribute to this blog or feedback on the slack channel.&lt;/p&gt;
+&lt;h3 id=&#34;v3-users&#34;&gt;v3 users&lt;/h3&gt;
+&lt;p&gt;There is not expected to be significant disruption to v3 users but if there is anything needed beyond the steps below then we are asking users to reach out asap and we can update this blog.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Run &lt;code&gt;jx upgrade gitops&lt;/code&gt; to ensure you upgrade to the latest version stream with the old helm repository removed. If you are tracking the LTS version stream please delay until Wednesday 1st September to run this.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In your cluster git repository, run a search for references of &lt;code&gt;https://storage.googleapis.com/jenkinsxio/charts&lt;/code&gt; replace with &lt;code&gt;https://jenkins-x-charts.github.io/repo&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In your cluster git repository, run a search for references of &lt;code&gt;http://chartmuseum.jenkins-x.io&lt;/code&gt; and &lt;code&gt;https://storage.googleapis.com/chartmuseum.jenkins-x.io&lt;/code&gt; replace with &lt;code&gt;https://jenkins-x-charts.github.io/v2&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Switch &lt;code&gt;jx-verify&lt;/code&gt; helm chart repository for any application you have which is built by Jenkins X 3.  This is under your applications git repository &lt;code&gt;./charts/preview/helmfile.yaml&lt;/code&gt; change &lt;code&gt;https://storage.googleapis.com/jenkinsxio/charts&lt;/code&gt; to &lt;code&gt;https://jenkins-x-charts.github.io/repo&lt;/code&gt; .  &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/commit/ed01d636b94b2ea51b878d9b5331bc4c88f6e8b1&#34;&gt;Here&lt;/a&gt; is an example that changes the main pipeline catalog packs which are used when first creating or importing applications.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Have we missed anything?  Please contribute to this blog or feedback on the slack channel.&lt;/p&gt;
+&lt;h2 id=&#34;when-will-all-this-take-place&#34;&gt;When will all this take place?&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;This blog is the initial notice which we will socialise, please help to raise awareness.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Friday 27th August - the labs project will be scheduled to shutdown, short notice because we believe no services should be used, if they are it is an easy switch to upgrade to GA versions.  Labs efforts are never intended to be production grade and are used at risk.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Monday 6th September - make the GCP container registry and helm repository bucket private, during which time any image versions that have not been transferred to GitHub can be requested via the community slack channel.  All helm versions have been moved to &lt;a href=&#34;https://jenkins-x-charts.github.io/v2&#34;&gt;https://jenkins-x-charts.github.io/v2&lt;/a&gt; as described above.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Monday 13th September - schedule for shutdown the two GCP projects hosting the container registry and helm repository.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;why-are-only-the-most-recent-versions-v2-images-copied-to-github-packages-and-not-all-versions&#34;&gt;Why are only the most recent versions v2 images copied to GitHub packages and not all versions?&lt;/h2&gt;
+&lt;p&gt;There are 14 Terabytes of data that make up the jenkinsxio container registry on GCP, it would be costly and wasteful to transfer all this to GitHub so we picked the last known version of each image that was released last year.  If there are specific images that you wish to use either pull / push them yourself to a container registry of your own or reach out and on a case by case effort, we can look to move them to GitHub while the read permissions are made private and before the project is shut down.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: How to debug your Tekton pipelines</title>
       <link>https://jenkins-x.io/blog/2021/08/18/debug-tekton/</link>
       <pubDate>Wed, 18 Aug 2021 00:00:00 +0000</pubDate>
@@ -3101,43 +3175,6 @@ Feel free to reach me if you are facing any issues regarding starting with open-
 &lt;/ul&gt;
 &lt;p&gt;Hope to see you there!&lt;/p&gt;
 &lt;p&gt;Remember to &lt;a href=&#34;https://www.meetup.com/jenkinsmeetup/events/266201129&#34;&gt;register&lt;/a&gt; if you can attend.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Join Us at the Jenkins X Contributor Summit Lisbon on 3 December</title>
-      <link>https://jenkins-x.io/blog/2019/10/18/jenkins-x-contributor-summit-lisbon/</link>
-      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2019/10/18/jenkins-x-contributor-summit-lisbon/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/community/events/jxcontribsummitlisbon.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.eventbrite.com/e/jenkins-x-contributor-summit-2019-lisbon-portugal-tickets-77484886381&#34;&gt;Register here&lt;/a&gt; to participate in the Jenkins X Contributor Summit in Lisbon, Portugal!&lt;/p&gt;
-&lt;p&gt;Attendance at the Jenkins X Contributor Summit is free, and a &lt;a href=&#34;https://www.cloudbees.com/devops-world/lisbon&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary, but please &lt;a href=&#34;https://www.eventbrite.com/e/jenkins-x-contributor-summit-2019-lisbon-portugal-tickets-77484886381&#34;&gt;RSVP&lt;/a&gt; if you are going to attend.&lt;/p&gt;
-&lt;p&gt;The Jenkins X Contributor Summit is an opportunity for current and future Jenkins X contributors to come together to discuss the project, learn and collaborate. There will be discussions on the latest exciting developments in Jenkins X and time to contribute to the project. We welcome new contributors: this is a great chance to learn more about the project, find out how to contribute and meet the core contributors!&lt;/p&gt;
-&lt;p&gt;The contributor summit is part of a joint contributor summit alongside &lt;a href=&#34;https://jenkins.io/&#34;&gt;Jenkins&lt;/a&gt;. In the morning, there will be presentations by the core contributors of both projects. These will highlight the mission, goals and future direction of each project, as well as how community members can contribute. In the afternoon, there will be breakout Birds-of-a-Feather sessions for deeper discussion and collaboration with Jenkins X contributors. Bring your laptop, ideas and questions, and be ready for some hacking.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Agenda:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;9:00 am - Kickoff &amp;amp; Welcome with coffee/pastries&lt;/li&gt;
-&lt;li&gt;10:00 am - Project Updates&lt;/li&gt;
-&lt;li&gt;12:00 pm - Lunch&lt;/li&gt;
-&lt;li&gt;1:00 pm - Birds-of-a-Feather/Unconference&lt;/li&gt;
-&lt;li&gt;3:00 pm - Break&lt;/li&gt;
-&lt;li&gt;3:30 pm - Birds-of-a-Feather/Unconference&lt;/li&gt;
-&lt;li&gt;4:30 - Ignite Talks&lt;/li&gt;
-&lt;li&gt;5:00 pm - Wrap-up&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;All levels of contributors are welcome! During the Birds-of-a-Feather sessions you are welcome to join in any session that interests you. At the end of the day, if you would like to share what you have learned or worked on, there will be Ignite lightning talks.&lt;/p&gt;
-&lt;p&gt;We&amp;rsquo;ve had &lt;a href=&#34;https://jenkins.io/blog/2018/10/18/contributor-summit-summary/&#34;&gt;a fantastic time at past contributor summits&lt;/a&gt;, focused on Jenkins, and look forward to seeing you at this year&amp;rsquo;s Jenkins X Contributor Summit.&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/contributor_summit_sf.jpg&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;A &lt;a href=&#34;https://www.cloudbees.com/devops-world/lisbon&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; conference pass is not necessary to attend the Contributor Summit, but if you don&amp;rsquo;t want to miss out on &lt;a href=&#34;https://www.cloudbees.com/devops-world/lisbon&#34;&gt;DevOps World | Jenkins World&lt;/a&gt; you can get your conference pass using &lt;strong&gt;JWFOSS&lt;/strong&gt; for a 30% discount.&lt;/p&gt;
 
       </description>
     </item>
