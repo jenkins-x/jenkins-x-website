@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/blog/2021/08/26/moving-v2-artifacts/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2021-08-26T00:00:00&#43;00:00" />
-<meta property="article:modified_time" content="2021-08-26T16:00:31&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-09-03T16:20:52&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Moving Jenkins X v2 artifacts">
 <meta itemprop="description" content="Moving v2 artifacts"><meta itemprop="datePublished" content="2021-08-26T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2021-08-26T16:00:31&#43;01:00" />
-<meta itemprop="wordCount" content="1049">
+<meta itemprop="dateModified" content="2021-09-03T16:20:52&#43;01:00" />
+<meta itemprop="wordCount" content="1124">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Moving Jenkins X v2 artifacts"/>
 <meta name="twitter:description" content="Moving v2 artifacts"/>
@@ -774,12 +774,8 @@ if (!doNotTrack) {
     <li><a href="#what-is-changing">What is changing?</a>
       <ul>
         <li></li>
-        <li><a href="#v2-users">v2 users</a></li>
-        <li><a href="#v3-users">v3 users</a></li>
       </ul>
     </li>
-    <li><a href="#when-will-all-this-take-place">When will all this take place?</a></li>
-    <li><a href="#why-are-only-the-most-recent-versions-v2-images-copied-to-github-packages-and-not-all-versions">Why are only the most recent versions v2 images copied to GitHub packages and not all versions?</a></li>
   </ul>
 </nav>
 
@@ -809,57 +805,72 @@ if (!doNotTrack) {
 <h2 id="what-is-changing">What is changing?</h2>
 <p>We will be shutting down a number of GCP projects that contain old helm charts plus container images and moving them to be hosted by GitHub packages and pages.</p>
 <h4 id="helm">Helm</h4>
-<p><code>http://chartmuseum.jenkins-x.io</code> and <code>https://storage.googleapis.com/chartmuseum.jenkins-x.io</code> has been moved to <code>https://jenkins-x-charts.github.io/v2</code></p>
-<p><code>https://storage.googleapis.com/jenkinsxio/charts</code> has moved to <code>https://jenkins-x-charts.github.io/repo</code></p>
-<h4 id="images">Images</h4>
-<p>The most recently versioned images from <a href="https://console.cloud.google.com/gcr/images/jenkinsxio/GLOBAL">gcr.io/jenkinsxio</a> have been moved to <a href="https://github.com/orgs/jenkins-x/packages">ghcr.io/jenkins-x</a></p>
-<h4 id="labs">Labs</h4>
-<p>There are some old labs images and helm charts which should not be in use as they are either deprecated or replaced with GA versions in the v3 <a href="https://jenkins-x-charts.github.io/repo/">helm repo</a> or <a href="https://github.com/orgs/jenkins-x/packages">container registry</a>.</p>
-<h3 id="v2-users">v2 users</h3>
-<ol>
-<li>
-<p>The Jenkins X own v2 build infrastructure was retired at the start of the year as no more releases were planned and to reduce costs.  With that we are unable to perform a new release that automatically switches references to images from <code>gcr.io/jenkinsxio</code> to <code>ghcr.io/jenkins-x</code>.  If you are still using v2 then please update your references to this container registry.  An alternative <strong>which has not yet been verified</strong> is to use a <a href="https://github.com/phenixblue/imageswap-webhook">image swap Kubernetes mutaing admission controller</a> which takes configuration to switch the registry on the fly.  <a href="https://github.com/phenixblue/imageswap-webhook">We have asked on slack</a> for help validating the approach so if you do try it please share feedback and config used to help others in the channel, we can then update docs.</p>
-</li>
-<li>
-<p>In your boot git repository, run a search for references of <code>http://chartmuseum.jenkins-x.io</code> and <code>https://storage.googleapis.com/chartmuseum.jenkins-x.io</code> replace with <code>https://jenkins-x-charts.github.io/v2</code></p>
-</li>
-</ol>
-<p>Have we missed anything?  Please contribute to this blog or feedback on the slack channel.</p>
-<h3 id="v3-users">v3 users</h3>
-<p>There is not expected to be significant disruption to v3 users but if there is anything needed beyond the steps below then we are asking users to reach out asap and we can update this blog.</p>
-<ol>
-<li>
-<p>Run <code>jx upgrade gitops</code> to ensure you upgrade to the latest version stream with the old helm repository removed. If you are tracking the LTS version stream please delay until Wednesday 1st September to run this.</p>
-</li>
-<li>
-<p>In your cluster git repository, run a search for references of <code>https://storage.googleapis.com/jenkinsxio/charts</code> replace with <code>https://jenkins-x-charts.github.io/repo</code></p>
-</li>
-<li>
-<p>In your cluster git repository, run a search for references of <code>http://chartmuseum.jenkins-x.io</code> and <code>https://storage.googleapis.com/chartmuseum.jenkins-x.io</code> replace with <code>https://jenkins-x-charts.github.io/v2</code></p>
-</li>
-<li>
-<p>Switch <code>jx-verify</code> helm chart repository for any application you have which is built by Jenkins X 3.  This is under your applications git repository <code>./charts/preview/helmfile.yaml</code> change <code>https://storage.googleapis.com/jenkinsxio/charts</code> to <code>https://jenkins-x-charts.github.io/repo</code> .  <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/commit/ed01d636b94b2ea51b878d9b5331bc4c88f6e8b1">Here</a> is an example that changes the main pipeline catalog packs which are used when first creating or importing applications.</p>
-</li>
-</ol>
-<p>Have we missed anything?  Please contribute to this blog or feedback on the slack channel.</p>
-<h2 id="when-will-all-this-take-place">When will all this take place?</h2>
-<ol>
-<li>
-<p>This blog is the initial notice which we will socialise, please help to raise awareness.</p>
-</li>
-<li>
-<p>Friday 27th August - the labs project will be scheduled to shutdown, short notice because we believe no services should be used, if they are it is an easy switch to upgrade to GA versions.  Labs efforts are never intended to be production grade and are used at risk.</p>
-</li>
-<li>
-<p>Monday 6th September - make the GCP container registry and helm repository bucket private, during which time any image versions that have not been transferred to GitHub can be requested via the community slack channel.  All helm versions have been moved to <a href="https://jenkins-x-charts.github.io/v2">https://jenkins-x-charts.github.io/v2</a> as described above.</p>
-</li>
-<li>
-<p>Monday 13th September - schedule for shutdown the two GCP projects hosting the container registry and helm repository.</p>
-</li>
-</ol>
-<h2 id="why-are-only-the-most-recent-versions-v2-images-copied-to-github-packages-and-not-all-versions">Why are only the most recent versions v2 images copied to GitHub packages and not all versions?</h2>
-<p>There are 14 Terabytes of data that make up the jenkinsxio container registry on GCP, it would be costly and wasteful to transfer all this to GitHub so we picked the last known version of each image that was released last year.  If there are specific images that you wish to use either pull / push them yourself to a container registry of your own or reach out and on a case by case effort, we can look to move them to GitHub while the read permissions are made private and before the project is shut down.</p>
+<pre><code>https://chartmuseum.build.cd.jenkins-x.io
+http://chartmuseum.jenkins-x.io
+https://storage.googleapis.com/chartmuseum.jenkins-x.io
+</code></pre><p>have been moved to</p>
+<pre><code>https://jenkins-x-charts.github.io/v2
+</code></pre><p>AND</p>
+<pre><code>https://storage.googleapis.com/jenkinsxio/charts
+</code></pre><p>has been moved to
+``
+<a href="https://jenkins-x-charts.github.io/repo">https://jenkins-x-charts.github.io/repo</a></p>
+<pre><code>
+#### Images
+ 
+The most recently versioned images from [gcr.io/jenkinsxio](https://console.cloud.google.com/gcr/images/jenkinsxio/GLOBAL) have been moved to [ghcr.io/jenkins-x](https://github.com/orgs/jenkins-x/packages)
+ 
+#### Labs
+ 
+There are some old labs images and helm charts which should not be in use as they are either deprecated or replaced with GA versions in the v3 [helm repo](https://jenkins-x-charts.github.io/repo/) or [container registry](https://github.com/orgs/jenkins-x/packages).
+ 
+### v2 users
+ 
+1. The Jenkins X own v2 build infrastructure was retired at the start of the year as no more releases were planned and to reduce costs.  With that we are unable to perform a new release that automatically switches references to images from `gcr.io/jenkinsxio` to `ghcr.io/jenkins-x`.  If you are still using v2 then please update your references to this container registry.  An alternative __which has not yet been verified__ is to use a [image swap Kubernetes mutaing admission controller](https://github.com/phenixblue/imageswap-webhook) which takes configuration to switch the registry on the fly.  [We have asked on slack](https://github.com/phenixblue/imageswap-webhook) for help validating the approach so if you do try it please share feedback and config used to help others in the channel, we can then update docs.
+ 
+2. In your boot git repository, run a search for references of `http://chartmuseum.jenkins-x.io` and `https://storage.googleapis.com/chartmuseum.jenkins-x.io` replace with `https://jenkins-x-charts.github.io/v2`
 
+3. Environment controller (can be skipped if not using)
+   i) change the environment controller image to be `ghcr.io/jenkins-x/builder-maven:0.1.803`
+   ii) change the image used in the pipline, needs to be changed in the jenkins-x.yaml of the enviromnet repo:
+</code></pre><p>agent:
+container: ghcr.io/jenkins-x/builder-go:2.1.155-779</p>
+<pre><code>iii) add this environment variable in the deployment of the environment-controller
+</code></pre><pre><code>- name: BUILDER_JX_IMAGE
+  value: ghcr.io/jenkins-x/builder-jx:2.1.155-779
+</code></pre>
+<pre><code>
+Have we missed anything?  Please contribute to this blog or feedback on the slack channel.
+
+### v3 users
+
+There is not expected to be significant disruption to v3 users but if there is anything needed beyond the steps below then we are asking users to reach out asap and we can update this blog.
+
+
+1. Run `jx upgrade gitops` to ensure you upgrade to the latest version stream with the old helm repository removed. If you are tracking the LTS version stream please delay until Wednesday 1st September to run this.
+
+2. In your cluster git repository, run a search for references of `https://storage.googleapis.com/jenkinsxio/charts` replace with `https://jenkins-x-charts.github.io/repo`
+
+3. In your cluster git repository, run a search for references of `http://chartmuseum.jenkins-x.io` and `https://storage.googleapis.com/chartmuseum.jenkins-x.io` replace with `https://jenkins-x-charts.github.io/v2`
+
+4. Switch `jx-verify` helm chart repository for any application you have which is built by Jenkins X 3.  This is under your applications git repository `./charts/preview/helmfile.yaml` change `https://storage.googleapis.com/jenkinsxio/charts` to `https://jenkins-x-charts.github.io/repo` .  [Here](https://github.com/jenkins-x/jx3-pipeline-catalog/commit/ed01d636b94b2ea51b878d9b5331bc4c88f6e8b1) is an example that changes the main pipeline catalog packs which are used when first creating or importing applications.
+
+Have we missed anything?  Please contribute to this blog or feedback on the slack channel.
+
+## When will all this take place?
+
+1. This blog is the initial notice which we will socialise, please help to raise awareness.
+
+2. Friday 27th August - the labs project will be scheduled to shutdown, short notice because we believe no services should be used, if they are it is an easy switch to upgrade to GA versions.  Labs efforts are never intended to be production grade and are used at risk.
+
+3. Monday 6th September - make the GCP container registry and helm repository bucket private, during which time any image versions that have not been transferred to GitHub can be requested via the community slack channel.  All helm versions have been moved to https://jenkins-x-charts.github.io/v2 as described above.
+
+4. Monday 13th September - schedule for shutdown the two GCP projects hosting the container registry and helm repository.
+
+## Why are only the most recent versions v2 images copied to GitHub packages and not all versions?
+
+There are 14 Terabytes of data that make up the jenkinsxio container registry on GCP, it would be costly and wasteful to transfer all this to GitHub so we picked the last known version of each image that was released last year.  If there are specific images that you wish to use either pull / push them yourself to a container registry of your own or reach out and on a case by case effort, we can look to move them to GitHub while the read permissions are made private and before the project is shut down.
+</code></pre>
 	
 
 	<ul class="list-unstyled d-flex justify-content-between align-items-center mb-0 pt-5">
