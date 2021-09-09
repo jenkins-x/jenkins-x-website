@@ -310,6 +310,9 @@ https://storage.googleapis.com/chartmuseum.jenkins-x.io
 &lt;li&gt;
 &lt;p&gt;Switch &lt;code&gt;jx-verify&lt;/code&gt; helm chart repository for any application you have which is built by Jenkins X 3.  This is under your applications git repository &lt;code&gt;./charts/preview/helmfile.yaml&lt;/code&gt; change &lt;code&gt;https://storage.googleapis.com/jenkinsxio/charts&lt;/code&gt; to &lt;code&gt;https://jenkins-x-charts.github.io/repo&lt;/code&gt; .  &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/commit/ed01d636b94b2ea51b878d9b5331bc4c88f6e8b1&#34;&gt;Here&lt;/a&gt; is an example that changes the main pipeline catalog packs which are used when first creating or importing applications.&lt;/p&gt;
 &lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Switch any &lt;code&gt;gcr.io/jenkinsxio&lt;/code&gt; images to &lt;code&gt;ghcr.io/jenkins-x&lt;/code&gt; in your application git repo &lt;code&gt;.lighthouse/*.yaml&lt;/code&gt; files if you have references there&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Have we missed anything?  Please contribute to this blog or feedback on the slack channel.&lt;/p&gt;
 &lt;h2 id=&#34;when-will-all-this-take-place&#34;&gt;When will all this take place?&lt;/h2&gt;
@@ -358,7 +361,49 @@ e.g.&lt;/li&gt;
 &lt;li&gt;host updated charts on a private chartmuseum&lt;/li&gt;
 &lt;li&gt;switch boot git repo to use custom charts&lt;/li&gt;
 &lt;/ul&gt;
-
+&lt;h2 id=&#34;im-getting-a-missing-arg---provider-values-dir-and-helm-repository-httpsjenkins-x-chartsgithubiov2-does-not-have-an-associated-prefix-in-in-the-chartsrepositoriesyml-error&#34;&gt;I&amp;rsquo;m getting a missing arg &lt;code&gt;--provider-values-dir&lt;/code&gt; and helm repository &lt;a href=&#34;https://jenkins-x-charts.github.io/v2&#34;&gt;https://jenkins-x-charts.github.io/v2&lt;/a&gt; does not have an associated prefix in in the &amp;lsquo;charts/repositories.yml&amp;rsquo; error&lt;/h2&gt;
+&lt;p&gt;A few users have been hitting this error, it is related to the jx version used.  This thread with the help of Francesco Capozzo contains both image tags and versions to use instead:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://kubernetes.slack.com/archives/C9MBGQJRH/p1631112970450800&#34;&gt;https://kubernetes.slack.com/archives/C9MBGQJRH/p1631112970450800&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Images:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ghcr.io/jenkins-x/builder-jx:2.1.142-761-patch2
+ghcr.io/jenkins-x/builder-maven:2.1.142-761-patch2
+ghcr.io/jenkins-x/builder-go:2.1.142-761-patch2
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Chart versions to use rather than relying on the version stream:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;dependencies:
+* name: jxboot-resources
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.43
+* alias: tekton
+  name: tekton
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.63
+* alias: prow
+  condition: prow.enabled
+  name: prow
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.1773
+* alias: lighthouse
+  condition: lighthouse.enabled
+  name: lighthouse
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.843
+* alias: lighthouse-jx
+  condition: lighthouse.enabled
+  name: lighthouse-jx
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.121
+* alias: bucketrepo
+  condition: bucketrepo.enabled
+  name: bucketrepo
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.1.42
+* name: jenkins-x-platform
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 2.0.2411
+* name: jx-pipelines-visualizer
+  repository: https://jenkins-x-charts.github.io/repo
+  version: 1.7.3
+&lt;/code&gt;&lt;/pre&gt;
       </description>
     </item>
     

@@ -25,12 +25,12 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/blog/2021/08/26/moving-v2-artifacts/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2021-08-26T00:00:00&#43;00:00" />
-<meta property="article:modified_time" content="2021-09-08T17:03:51&#43;02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2021-09-09T09:31:01&#43;01:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Moving Jenkins X v2 artifacts">
 <meta itemprop="description" content="Moving v2 artifacts"><meta itemprop="datePublished" content="2021-08-26T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2021-09-08T17:03:51&#43;02:00" />
-<meta itemprop="wordCount" content="1521">
+<meta itemprop="dateModified" content="2021-09-09T09:31:01&#43;01:00" />
+<meta itemprop="wordCount" content="1684">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Moving Jenkins X v2 artifacts"/>
 <meta name="twitter:description" content="Moving v2 artifacts"/>
@@ -781,6 +781,7 @@ if (!doNotTrack) {
     <li><a href="#when-will-all-this-take-place">When will all this take place?</a></li>
     <li><a href="#why-are-only-the-most-recent-versions-v2-images-copied-to-github-packages-and-not-all-versions">Why are only the most recent versions v2 images copied to GitHub packages and not all versions?</a></li>
     <li><a href="#im-on-v2-and-use-a-builder-image-which-is-not-available-on-github-container-registry-how-do-i-build-my-own-version-to-work-with-the-new-helm-and-image-repositories">I&rsquo;m on v2 and use a builder image which is not available on GitHub container registry, how do I build my own version to work with the new helm and image repositories?</a></li>
+    <li><a href="#im-getting-a-missing-arg---provider-values-dir-and-helm-repository-httpsjenkins-x-chartsgithubiov2-does-not-have-an-associated-prefix-in-in-the-chartsrepositoriesyml-error">I&rsquo;m getting a missing arg <code>--provider-values-dir</code> and helm repository <a href="https://jenkins-x-charts.github.io/v2">https://jenkins-x-charts.github.io/v2</a> does not have an associated prefix in in the &lsquo;charts/repositories.yml&rsquo; error</a></li>
   </ul>
 </nav>
 
@@ -1086,6 +1087,9 @@ https://storage.googleapis.com/chartmuseum.jenkins-x.io
 <li>
 <p>Switch <code>jx-verify</code> helm chart repository for any application you have which is built by Jenkins X 3.  This is under your applications git repository <code>./charts/preview/helmfile.yaml</code> change <code>https://storage.googleapis.com/jenkinsxio/charts</code> to <code>https://jenkins-x-charts.github.io/repo</code> .  <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/commit/ed01d636b94b2ea51b878d9b5331bc4c88f6e8b1">Here</a> is an example that changes the main pipeline catalog packs which are used when first creating or importing applications.</p>
 </li>
+<li>
+<p>Switch any <code>gcr.io/jenkinsxio</code> images to <code>ghcr.io/jenkins-x</code> in your application git repo <code>.lighthouse/*.yaml</code> files if you have references there</p>
+</li>
 </ol>
 <p>Have we missed anything?  Please contribute to this blog or feedback on the slack channel.</p>
 <h2 id="when-will-all-this-take-place">When will all this take place?</h2>
@@ -1134,7 +1138,49 @@ e.g.</li>
 <li>host updated charts on a private chartmuseum</li>
 <li>switch boot git repo to use custom charts</li>
 </ul>
-
+<h2 id="im-getting-a-missing-arg---provider-values-dir-and-helm-repository-httpsjenkins-x-chartsgithubiov2-does-not-have-an-associated-prefix-in-in-the-chartsrepositoriesyml-error">I&rsquo;m getting a missing arg <code>--provider-values-dir</code> and helm repository <a href="https://jenkins-x-charts.github.io/v2">https://jenkins-x-charts.github.io/v2</a> does not have an associated prefix in in the &lsquo;charts/repositories.yml&rsquo; error</h2>
+<p>A few users have been hitting this error, it is related to the jx version used.  This thread with the help of Francesco Capozzo contains both image tags and versions to use instead:</p>
+<p><a href="https://kubernetes.slack.com/archives/C9MBGQJRH/p1631112970450800">https://kubernetes.slack.com/archives/C9MBGQJRH/p1631112970450800</a></p>
+<p>Images:</p>
+<pre><code>ghcr.io/jenkins-x/builder-jx:2.1.142-761-patch2
+ghcr.io/jenkins-x/builder-maven:2.1.142-761-patch2
+ghcr.io/jenkins-x/builder-go:2.1.142-761-patch2
+</code></pre><p>Chart versions to use rather than relying on the version stream:</p>
+<pre><code>dependencies:
+* name: jxboot-resources
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.43
+* alias: tekton
+  name: tekton
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.63
+* alias: prow
+  condition: prow.enabled
+  name: prow
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.1773
+* alias: lighthouse
+  condition: lighthouse.enabled
+  name: lighthouse
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.843
+* alias: lighthouse-jx
+  condition: lighthouse.enabled
+  name: lighthouse-jx
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.0.121
+* alias: bucketrepo
+  condition: bucketrepo.enabled
+  name: bucketrepo
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 0.1.42
+* name: jenkins-x-platform
+  repository: https://jenkins-x-charts.github.io/v2
+  version: 2.0.2411
+* name: jx-pipelines-visualizer
+  repository: https://jenkins-x-charts.github.io/repo
+  version: 1.7.3
+</code></pre>
 	
 
 	<ul class="list-unstyled d-flex justify-content-between align-items-center mb-0 pt-5">
