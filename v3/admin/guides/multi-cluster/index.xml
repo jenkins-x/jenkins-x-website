@@ -143,6 +143,11 @@ jx project import
         
         
         &lt;p&gt;This is an example on how to build a multi-cluster environment having two separate cluster repos (i.e. &amp;lsquo;dev&amp;rsquo; and &amp;lsquo;prod&amp;rsquo;). The steps will include building a GKE/GSM/DSN environment from scratch for both environments, and deploying projects to staging and the remote production. It will use DNS (&lt;code&gt;jx3rocks.com&lt;/code&gt;), TLS, Let&amp;rsquo;s Encrypt certificates. This example is intended for an audience already familiar with Jenkins X operability and focuses on an example of actual commands used to build a multi-cluster environment. Additional information regarding using Google as the provider for this example can be found under &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/tls_dns/#prerequisites&#34;&gt;Google Cloud Platform Prequisites&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;⚠️ Note to &lt;em&gt;OSX&lt;/em&gt; users
+You may need to substitute &lt;code&gt;sed -i&lt;/code&gt; commands with &lt;code&gt;sed -i.bak&lt;/code&gt;, taking note to delete the generated .bak file.
+Some &lt;code&gt;sed -i&lt;/code&gt; commands that are additive might not work but can easily be completed with a text editor.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;generate-the-infra-and-cluster-repos-for-dev-and-prod&#34;&gt;Generate the Infra and Cluster Repos for Dev and Prod&lt;/h3&gt;
 &lt;p&gt;Using a command-line based approach, the example employs a process modeled after the doc &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/google&#34;&gt;Setup Jenkins X on Google Cloud with GKE&lt;/a&gt;, and will use Google Secret Manger. It requires the installation of &lt;a href=&#34;https://git-scm.com/downloads&#34;&gt;Git&lt;/a&gt; and &lt;a href=&#34;https://hub.github.com/&#34;&gt;Hub&lt;/a&gt; command line tools.&lt;/p&gt;
 &lt;p&gt;The following are the values used for the creation of the Infra and Cluster repos for both the Dev and Prod environments:&lt;/p&gt;
@@ -160,7 +165,7 @@ cd  jx3-terraform-gke.prd
 git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.prd.git
 hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.prd
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-git push -u origin master
+git push -u origin main
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Building &lt;code&gt;PROD CLUSTER&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-gke-gsm.prd&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
 git clone https://github.com/jx3-gitops-repositories/jx3-gke-gsm.git jx3-gke-gsm.prd
@@ -168,7 +173,7 @@ cd jx3-gke-gsm.prd
 git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd.git
 hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-git push -u origin master
+git push -u origin main
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Building &lt;code&gt;DEV INFRA&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-terraform-gke.dev&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
 git clone https://github.com/jx3-gitops-repositories/jx3-terraform-gke.git jx3-terraform-gke.dev
@@ -176,7 +181,7 @@ cd  jx3-terraform-gke.dev
 git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.dev.git
 hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-terraform-gke.dev
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-git push -u origin master
+git push -u origin main
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Buidling &lt;code&gt;DEV CLUSTER&lt;/code&gt; repo: &lt;code&gt;https://github.com/${JX3ORG}/jx3-gke-gsm.prd&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;cd &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3HOME&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
 git clone https://github.com/jx3-gitops-repositories/jx3-gke-gsm.git jx3-gke-gsm.prd
@@ -184,14 +189,14 @@ cd jx3-gke-gsm.prd
 git remote set-url origin https://github.com/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd.git
 hub create -p &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;JX3ORG&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/jx3-gke-gsm.prd
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-git push -u origin master
+git push -u origin main
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;initialize-the-prod-cluster-repo&#34;&gt;Initialize the Prod cluster repo&lt;/h3&gt;
 &lt;p&gt;Prepare the remote prod cluster repo by using the out of the box (OOTB) config (i.e.  dev, jx-staging, and jx-production environemnts). Also remove the default &amp;lsquo;-jx&amp;rsquo; URL value and insert jx-production &amp;lsquo;-prd&amp;rsquo; URL value (optional).  Prior to building the prod infra repo, prepare the production cluster repo for use by removing unecessary components. The components to modify/remove in the designated remote prod environment are:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Remove default &amp;lsquo;-jx.&amp;rsquo; URL format (optional)&lt;/li&gt;
 &lt;li&gt;Remove Non-used JX charts&lt;/li&gt;
 &lt;li&gt;Remove Tekton pipelines&lt;/li&gt;
-&lt;li&gt;Add jx3/local-external-secrets chart (optional)&lt;/li&gt;
+&lt;li&gt;Add jxgh/local-external-secrets chart (optional)&lt;/li&gt;
 &lt;li&gt;Insert imagePullSecret in jx-global-variables.yaml (optional)&lt;/li&gt;
 &lt;li&gt;Disable webhooks&lt;/li&gt;
 &lt;/ul&gt;
@@ -203,15 +208,14 @@ sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;s/-jx././g&amp;#39;&lt
 sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/tekton-pipelines/d&amp;#39;&lt;/span&gt; helmfile.yaml
 
 &lt;span style=&#34;color:#75715e&#34;&gt;# JX Chart removals&lt;/span&gt;
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jx3\/jx-pipelines-visualizer/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jxgh\/jx-pipelines-visualizer/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
 sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jxgh\/jx-preview/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jenkins-x\/lighthouse/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jenkins-x\/bucketrepo/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jx3\/jx-build-controller/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jxgh\/lighthouse/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/- chart: jxgh\/jx-build-controller/,/  - jx-values.yaml/d&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
 
-&lt;span style=&#34;color:#75715e&#34;&gt;# JX Chart additions (jx3/local-external-secrets chart)&lt;/span&gt;
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i - chart: jx3/local-external-secrets&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
-sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i   version: 0.0.6&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
+&lt;span style=&#34;color:#75715e&#34;&gt;# JX Chart additions (jxgh/local-external-secrets chart)&lt;/span&gt;
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i - chart: jxgh/local-external-secrets&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
+sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i   version: 0.0.14&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
 sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i   name: local-external-secrets&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
 sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i   values:&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
 sed -i &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/templates:/ i   - jx-values.yaml&amp;#39;&lt;/span&gt; helmfiles/jx/helmfile.yaml
@@ -237,27 +241,27 @@ git push
 &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i in &lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;find helmfiles -name helmfile.yaml&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt; echo; echo $i; grep -- ^-&lt;span style=&#34;color:#ae81ff&#34;&gt;\ &lt;/span&gt;chart $i ; &lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;remote-prod-chart-list&#34;&gt;Remote Prod Chart List&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;helmfiles/kuberhealthy/helmfile.yaml
-- chart: jx3/kh-tls-check
+- chart: jxgh/kh-tls-check
 
 helmfiles/jx-staging/helmfile.yaml
-- chart: jx3/jx-verify
+- chart: jxgh/jx-verify
 
 helmfiles/secret-infra/helmfile.yaml
 - chart: external-secrets/kubernetes-external-secrets
-- chart: jx3/pusher-wave
+- chart: jxgh/pusher-wave
 
 helmfiles/jx/helmfile.yaml
 - chart: bitnami/external-dns
-- chart: jx3/acme
-- chart: jx3/jxboot-helmfile-resources
-- chart: jx3/jenkins-x-crds
+- chart: jxgh/acme
+- chart: jxgh/jxboot-helmfile-resources
+- chart: jxgh/jenkins-x-crds
 - chart: jenkins-x/nexus
 - chart: stable/chartmuseum
-- chart: jx3/jx-kh-check
-- chart: jx3/local-external-secrets
+- chart: jxgh/jx-kh-check
+- chart: jxgh/local-external-secrets
 
 helmfiles/jx-production/helmfile.yaml
-- chart: jx3/jx-verify
+- chart: jxgh/jx-verify
 
 helmfiles/cert-manager/helmfile.yaml
 - chart: jetstack/cert-manager
@@ -321,30 +325,30 @@ git push
 &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i in &lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;find helmfiles -name helmfile.yaml&lt;span style=&#34;color:#e6db74&#34;&gt;`&lt;/span&gt;; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt; echo; echo $i; grep -- ^-&lt;span style=&#34;color:#ae81ff&#34;&gt;\ &lt;/span&gt;chart $i ; &lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;dev-chart-list-initial&#34;&gt;Dev Chart List (Initial)&lt;/h3&gt;
 &lt;pre&gt;&lt;code&gt;helmfiles/kuberhealthy/helmfile.yaml
-- chart: jx3/kh-tls-check
+- chart: jxgh/kh-tls-check
 
 helmfiles/jx-staging/helmfile.yaml
-- chart: jx3/jx-verify
+- chart: jxgh/jx-verify
 
 helmfiles/secret-infra/helmfile.yaml
 - chart: external-secrets/kubernetes-external-secrets
-- chart: jx3/pusher-wave
+- chart: jxgh/pusher-wave
 
 helmfiles/jx/helmfile.yaml
 - chart: bitnami/external-dns
-- chart: jx3/acme
-- chart: jx3/jxboot-helmfile-resources
-- chart: jx3/jenkins-x-crds
-- chart: jx3/jx-pipelines-visualizer
+- chart: jxgh/acme
+- chart: jxgh/jxboot-helmfile-resources
+- chart: jxgh/jenkins-x-crds
+- chart: jxgh/jx-pipelines-visualizer
 - chart: jxgh/jx-preview
 - chart: jenkins-x/lighthouse
 - chart: jenkins-x/nexus
 - chart: stable/chartmuseum
-- chart: jx3/jx-build-controller
-- chart: jx3/jx-kh-check
+- chart: jxgh/jx-build-controller
+- chart: jxgh/jx-kh-check
 
 helmfiles/jx-production/helmfile.yaml
-- chart: jx3/jx-verify
+- chart: jxgh/jx-verify
 
 helmfiles/cert-manager/helmfile.yaml
 - chart: jetstack/cert-manager
