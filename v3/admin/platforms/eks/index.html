@@ -1452,29 +1452,74 @@ The list of versions can be found <a href="https://github.com/jenkins-x/terrafor
 <li>Do not specify the last digit of the kubernetes version, so if you want to provision an EKS cluster with kubernetes <code>1.21.5</code>, just specify <code>1.21</code>. See <a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks/issues/26#issuecomment-936055015">this issue</a> for more details.</li>
 </ul>
 <hr>
-<h3 id="eks--terraform">EKS + Terraform</h3>
+<h3 id="eks--terraform--vault--github">EKS + Terraform + Vault + Github</h3>
 <p>This is our current recommended quickstart for EKS:</p>
+<p>Note: remember to create the Git repositories below in your Git Organization rather than your personal Git account else this will lead to issues with ChatOps and automated registering of webhooks.</p>
 <ul>
 <li>
-<p><a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks/generate" target="github" class="btn bg-primary text-light">Create Git Repository</a> based on the <a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks">jx3-gitops-repositories/jx3-terraform-eks</a></p>
+<p><a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks/generate" target="github" class="btn bg-primary text-light">Create Git Repository for <b>Infrastructure</b></a> based on the <a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks">jx3-gitops-repositories/jx3-terraform-eks</a></p>
 <ul>
 <li>if the above button does not work then please <a href="https://github.com/login">Login to GitHub</a> first and then retry the button</li>
 </ul>
 </li>
 <li>
-<p><code>git clone</code> the new repository via <strong>HTTPS</strong> and <code>cd</code> into the git clone directory</p>
+<p><a href="https://github.com/jx3-gitops-repositories/jx3-eks-vault/generate"  target="github-cluster" class="btn bg-primary text-light">Create Git Repository for Jenkins X <b>Cluster</b></a> based on the <a href="https://github.com/jx3-gitops-repositories/jx3-eks-vault">jx3-gitops-repositories/jx3-eks-vault</a></p>
 </li>
 <li>
-<p><a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks/blob/master/README.md"
-target="github" class="btn bg-primary text-light" 
-title="use your new git repository to create your cloud infrastructure and install Jenkins X">
-Create your infrastructure
-</a></p>
+<p>Install <a href="https://learn.hashicorp.com/tutorials/terraform/install-cli#install-terraform">terraform CLI</a></p>
+</li>
+<li>
+<p>Install <a href="https://github.com/jenkins-x/jx-cli/releases">jx CLI </a></p>
+</li>
+<li>
+<p>For AWS SSO ensure you have installed AWSCLI version 2 - <a href="https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html">see here</a>. You must then configure it to use Named Profiles - <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">see here</a></p>
+</li>
+<li>
+<p><a href="https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,admin:repo_hook,write:packages,read:packages,write:discussion,workflow" target="github-token" class="btn bg-primary text-light">Create Git Token for the Bot user </a></p>
+</li>
+<li>
+<p>Override the variable defaults in the Infrastructure repository. (E.g, edit variables.tf, set TF_VAR_ environment variables, or pass the values on the terraform command line.)</p>
+<ul>
+<li>cluster_version: Kubernetes version for the EKS cluster. (should be 1.20 at the moment)</li>
+<li>region: AWS region code for the AWS region to create the cluster in.</li>
+<li>jx_git_url: URL of the Cluster repository.</li>
+<li>jx_bot_username: The username of the git bot user</li>
+</ul>
+</li>
+<li>
+<p>commit and push any changes to your Infrastructure git repository:</p>
+<pre><code>git commit -a -m &quot;fix: configure cluster repository and project&quot;
+git push
+</code></pre>
+</li>
+<li>
+<p>Define an environment variable to pass the bot token into Terraform:</p>
+<pre><code>export TF_VAR_jx_bot_token=my-bot-token
+</code></pre>
+</li>
+<li>
+<p>Now, initialise, plan and apply Terraform:</p>
+<pre><code>terraform init
+terraform plan
+terraform apply
+</code></pre>
+</li>
+<li>
+<p>Tail the Jenkins X installation logs</p>
+<p>$(terraform output follow_install_logs)</p>
+</li>
+<li>
+<p>Once finished you can now move into the Jenkins X Developer namespace</p>
+<p>jx ns jx</p>
+</li>
+<li>
+<p>and create or import your applications</p>
 </li>
 <li>
 <p><a href="/v3/develop/create-project/" class="btn bg-primary text-light">Create or import projects</a></p>
 </li>
 </ul>
+<p>For more details on how to install Jenkins X on AWS EKS see <a href="https://github.com/jx3-gitops-repositories/jx3-terraform-eks#prerequisites">Github repository for Jenkins X Terraform module for EKS</a></p>
 
         <div class="section-index">
     
@@ -1551,7 +1596,7 @@ Create your infrastructure
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified October 13, 2021: <a href="https://github.com/jenkins-x/jx-docs/commit/690bc9fc8b328f156b7cac4678c39a81aa546c48">fix: add a note on kubernetes version for eks (690bc9fc8b)</a>
+  Last modified October 18, 2021: <a href="https://github.com/jenkins-x/jx-docs/commit/b784fb6b734c75affd988464271c512e24de7894">docs:  added details on AWS EKS cluster&#43; infrastructure install procedure (b784fb6b73)</a>
 </div>
 
 </div>
