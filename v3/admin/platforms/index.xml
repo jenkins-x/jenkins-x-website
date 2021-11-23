@@ -207,6 +207,126 @@ Create your infrastructure
     </item>
     
     <item>
+      <title>V3: K3s</title>
+      <link>https://jenkins-x.io/v3/admin/platforms/k3s/</link>
+      <pubDate>Mon, 22 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/platforms/k3s/</guid>
+      <description>
+        
+        
+        &lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Ensure you are logged into GitHub else you will get a 404 error when clicking the links below&lt;/p&gt;
+&lt;p&gt;This guide will walk you though how to setup Jenkins X on your laptop using &lt;a href=&#34;https://k3s.io/&#34;&gt;k3s&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;prerequisites&#34;&gt;Prerequisites&lt;/h3&gt;
+&lt;h4 id=&#34;k3s&#34;&gt;K3s&lt;/h4&gt;
+&lt;p&gt;Make sure you have created a cluster using k3s.&lt;/p&gt;
+&lt;p&gt;If you dont have an existing k3s cluster, you can install one by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;curl -sfL https://get.k3s.io | sh -
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
+&lt;span style=&#34;color:#75715e&#34;&gt;# Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file&lt;/span&gt;
+KUBECONFIG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;~/.kube/config:~/.kube/k3s-config
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To verify that k3s has been installed successfully, and configured run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get nodes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This value of the node will be used later during installation and configuring of Jenkins X.&lt;/p&gt;
+&lt;p&gt;Check &lt;a href=&#34;https://rancher.com/docs/k3s/latest/en/installation/&#34;&gt;k3s install guide&lt;/a&gt; for more installation options.&lt;/p&gt;
+&lt;h4 id=&#34;vault&#34;&gt;Vault&lt;/h4&gt;
+&lt;p&gt;Make sure you have vault running in a docker container with kubernetes auth enabled.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run --cap-add&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;IPC_LOCK -p 8200:8200 -e &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;VAULT_DEV_ROOT_TOKEN_ID=myroot&amp;#39;&lt;/span&gt; -e &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200&amp;#39;&lt;/span&gt; --net host vault:latest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In another terminal run:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;export VAULT_ADDR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;http://0.0.0.0:8200&amp;#39;&lt;/span&gt;
+vault auth enable kubernetes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;github&#34;&gt;Github&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a git bot user (different from your own personal user) e.g. &lt;a href=&#34;https://github.com/join&#34;&gt;https://github.com/join&lt;/a&gt; and generate a a personal access token, this will be used by Jenkins X to interact with git repositories. e.g. &lt;a href=&#34;https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook&#34;&gt;https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;This bot user needs to have write permission to write to any git repository used by Jenkins X. This can be done by adding the bot user to the git organisation level or individual repositories as a collaborator Add the new bot user to your Git Organisation, for now give it Owner permissions, we will reduce this to member permissions soon.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;jenkins-x-v3-installation&#34;&gt;Jenkins X v3 installation&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Generate a cluster git repository from the &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-k3s-vault&#34;&gt;jx3-k3s-vault&lt;/a&gt; template, by clicking &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-k3s-vault/generate&#34;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Edit the value of the vault url in the &lt;code&gt;jx-requirements.yaml&lt;/code&gt; file.
+Replace with &lt;code&gt;&amp;quot;http://&amp;lt;replace with k3s node name&amp;gt;:8200&amp;quot;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Commit and push your changes:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add .
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: set vault url&amp;#34;&lt;/span&gt;
+git push origin main
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Set the GIT_USERNAME (bot username) and GIT_TOKEN (bot personal access token) env variable and run:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx admin operator --username $GIT_USERNAME --token $GIT_TOKEN --url &amp;lt;url of the cluster git repo&amp;gt; --set &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jxBootJobEnvVarSecrets.EXTERNAL_VAULT=\&amp;#34;true\&amp;#34;&amp;#34;&lt;/span&gt; --set &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jxBootJobEnvVarSecrets.VAULT_ADDR=http://&amp;lt;replace with k3s node name&amp;gt;:8200&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;Note:
+The first job will fail as it cannot authenticate against vault. Once the secret-infra namespace has been created, we can configure the kubernetes backend&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;vault-configuration&#34;&gt;Vault configuration&lt;/h3&gt;
+&lt;p&gt;Remember to run the following commands in a terminal where you have set the value of &lt;code&gt;VAULT_ADDR&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a vault config&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;VAULT_HELM_SECRET_NAME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secrets --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;json | jq -r &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;.items[].metadata | select(.name|startswith(&amp;#34;kubernetes-external-secrets-token-&amp;#34;)).name&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+TOKEN_REVIEW_JWT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;go-template={{ .data.token }}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+KUBE_CA_CERT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.certificate-authority-data}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+KUBE_HOST&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.server}&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+vault write auth/kubernetes/config &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        token_reviewer_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$TOKEN_REVIEW_JWT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        kubernetes_host&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$KUBE_HOST&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        kubernetes_ca_cert&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$KUBE_CA_CERT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        disable_iss_validation&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Create a vault role:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;vault write /auth/kubernetes/role/jx-vault bound_service_account_names&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;*&amp;#39;&lt;/span&gt; bound_service_account_namespaces&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;secret-infra token_policies&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;jx-policy token_no_default_policy&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true disable_iss_validation&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;true
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Create a policy attached to vault role:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;vault policy write jx-policy - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt;EOF
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;path &amp;#34;secret/*&amp;#34; {
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  capabilities = [&amp;#34;sudo&amp;#34;, &amp;#34;create&amp;#34;, &amp;#34;read&amp;#34;, &amp;#34;update&amp;#34;, &amp;#34;delete&amp;#34;, &amp;#34;list&amp;#34;]
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;set-up-ingress-and-webhook&#34;&gt;Set up ingress and webhook&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Get the external IP of the traefik service (loadbalancer)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get svc -A | grep LoadBalancer
+kube-system   traefik          LoadBalancer   &amp;lt;cluster-ip&amp;gt;    &amp;lt;external-ip&amp;gt;    80:31123/TCP,443:31783/TCP   40m
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Edit the jx-requirements.yaml file by editing the ingress domain:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops requirements edit --domain &amp;lt;external-ip&amp;gt;.nip.io
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Next, download and install &lt;a href=&#34;https://ngrok.com/&#34;&gt;ngrok&lt;/a&gt;. Run this in a new terminal window/tab:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ngrok http &lt;span style=&#34;color:#ae81ff&#34;&gt;8080&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Once this tunnel is open, paste the ngrok url in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.&lt;/li&gt;
+&lt;li&gt;commit and push the changes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add .
+git commit -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: new ngrok ip&amp;#34;&lt;/span&gt;
+git push origin main
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;once Jenkins X is installed run the following command to enable webhooks via ngrok&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl port-forward svc/hook 8080:80
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;Once the bootjob has succeeded, you should see:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;HTTP Requests
+-------------
+
+POST /hook                     &lt;span style=&#34;color:#ae81ff&#34;&gt;200&lt;/span&gt; OK
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;next-steps&#34;&gt;Next steps&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/create-project/&#34; class=&#34;btn bg-primary text-light&#34;&gt;Create or import projects&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Minikube</title>
       <link>https://jenkins-x.io/v3/admin/platforms/minikube/</link>
       <pubDate>Wed, 01 Feb 2017 00:00:00 +0000</pubDate>
@@ -276,7 +396,6 @@ jx gitops requirements edit --domain $DOMAIN
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
   &lt;span style=&#34;color:#f92672&#34;&gt;customHosts&lt;/span&gt;:
     &lt;span style=&#34;color:#f92672&#34;&gt;hook&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;abcdef1234.ngrok.io&amp;#34;&lt;/span&gt;
-...
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;git add, commit and push your changes:&lt;/li&gt;
 &lt;/ul&gt;
@@ -338,7 +457,7 @@ git push origin main
 kubectl get node
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To view the namespaces and nodes respectively.&lt;/p&gt;
 &lt;h4 id=&#34;ingress&#34;&gt;Ingress&lt;/h4&gt;
-&lt;p&gt;To use Jenkins X we need ingress to work. This means being able to create a kubernetes &lt;code&gt;Ingress&lt;/code&gt;  resource with a domain name which can be resolved outside of kubernetes to network into kubernetes services.&lt;/p&gt;
+&lt;p&gt;To use Jenkins X we need ingress to work. This means being able to create a kubernetes &lt;code&gt;Ingress&lt;/code&gt; resource with a domain name which can be resolved outside of kubernetes to network into kubernetes services.&lt;/p&gt;
 &lt;p&gt;Jenkins X installs &lt;code&gt;nginx&lt;/code&gt; which has a &lt;code&gt;LoadBalancer&lt;/code&gt; kubernetes &lt;code&gt;Service&lt;/code&gt; to implement ingress. But the underlying kubernetes platform needs to implement the load balancing network and infrastructure. This comes out of the box on all public clouds.&lt;/p&gt;
 &lt;p&gt;With an on-premises kubernetes cluster you need to install something like &lt;a href=&#34;https://metallb.universe.tf/&#34;&gt;MetalLB&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;If you are on bare metal you could try &lt;a href=&#34;https://007ba7.us/howto/metallb/&#34;&gt;these instructions&lt;/a&gt;&lt;/p&gt;
@@ -362,10 +481,9 @@ kubectl get node
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-...
+---
 &lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
   &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mydomain.com&lt;/span&gt;
-...
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;verify your cluster does not already have an &lt;a href=&#34;https://www.nginx.com/&#34;&gt;nginx&lt;/a&gt; installation. If it does then please remove the &lt;code&gt;nginx&lt;/code&gt; line from your &lt;code&gt;helmfile.yaml&lt;/code&gt; file and remove the &lt;code&gt;helmfiles/nginx&lt;/code&gt; files. If you are using a custom nginx installation then you will need to figure out your domain by hand and won&amp;rsquo;t be able to let Jenkins X detect the load balancer IP from its included nginx installation.&lt;/p&gt;
@@ -381,7 +499,7 @@ git push origin main
 &lt;li&gt;ensure you are connected to your cluster so you can run the following &lt;a href=&#34;https://kubernetes.io/docs/tasks/tools/install-kubectl/&#34;&gt;kubectl&lt;/a&gt; commands&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get ns
-kubectl get node      
+kubectl get node
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/v3/guides/operator/&#34; 
