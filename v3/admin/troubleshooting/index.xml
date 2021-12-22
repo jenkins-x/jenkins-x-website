@@ -14,6 +14,63 @@
     
     
     <item>
+      <title>V3: Install</title>
+      <link>https://jenkins-x.io/v3/admin/troubleshooting/install/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/troubleshooting/install/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;check-you-are-using-a-cluster-git-url&#34;&gt;Check you are using a cluster Git URL&lt;/h2&gt;
+&lt;p&gt;If using Terraform make sure the &lt;code&gt;values.auto.tfvars&lt;/code&gt; file contains a &lt;code&gt;jx_git_url = &lt;/code&gt; value that points to a &lt;strong&gt;cluster&lt;/strong&gt; git repo that contains a helmfile.yaml and a folder ./helmfiles. A common mistake is users set the &lt;code&gt;jx_git_url&lt;/code&gt; to the infrastruture repo instead.&lt;/p&gt;
+&lt;p&gt;After a successful bootjob, these are few things to look for:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Secrets have been generated in the secret backend.&lt;/li&gt;
+&lt;li&gt;A webhook has been created in the cluster git repo.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;issues-with-secret-generation&#34;&gt;Issues with secret generation&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;In some cases, the webhook generation will fail with a message :&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx gitops webhook update --warn-on-fail
+Error: failed to find hmac token from secret:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is normally because the secret generation failed during the boot job.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Look at the outputs from &lt;code&gt;jx secret verify&lt;/code&gt; and &lt;code&gt;kubectl get es -A&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If you see errors (&lt;code&gt;404 missing&lt;/code&gt;), it most likely means that the secret generation step in the boot log did not work.&lt;/li&gt;
+&lt;li&gt;One way to re-generate secrets is by makine a direct push to the base branch of the cluster git repo.&lt;/li&gt;
+&lt;li&gt;A direct push to the master (not by creating a pull request) branch will run &lt;code&gt;regen-phase-1&lt;/code&gt;, &lt;code&gt;regen-phase-2&lt;/code&gt; and &lt;code&gt;regen-phase-3&lt;/code&gt;.
+Check the admin logs to verify these steps were executed without failing.
+&lt;code&gt;regen-phase-3&lt;/code&gt; is where the secret generation happens.
+This step runs &lt;code&gt;jx secret populate&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Errors can happen with different secret backends
+&lt;ul&gt;
+&lt;li&gt;External vault:
+&lt;ul&gt;
+&lt;li&gt;Ensure you have followed the instruction &lt;a href=&#34;https://github.com/jenkins-x/terraform-aws-eks-jx#secrets-management&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;After terraform apply, a secret &lt;code&gt;jx-boot-job-env-vars&lt;/code&gt; in the &lt;code&gt;jx-git-operator&lt;/code&gt; namespace should be created with two variables defined - EXTERNAL_VAULT (set to &lt;code&gt;true&lt;/code&gt;) and VAULT_ADDR (set to your external vault ip with port).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Wrong cluster git repo
+&lt;ul&gt;
+&lt;li&gt;If you are using backends other than vault, use the right cluster git repository for that secret backend.
+For example, use &lt;code&gt;jx3-eks-asm&lt;/code&gt; template repository to generate the cluster git repository if you want to store secrets in AWS secrets manager.&lt;/li&gt;
+&lt;li&gt;Check &lt;a href=&#34;https://github.com/jx3-gitops-repositories&#34;&gt;this github organization&lt;/a&gt; for all the different public template repositories you can use with Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;issues-with-webhook&#34;&gt;Issues with webhook&lt;/h2&gt;
+&lt;p&gt;To find if webhooks were created by Jenkins X, navigate to the settings page of your repository, and click on webhooks.
+Check the &lt;a href=&#34;https://jenkins-x.io/v3/admin/troubleshooting/webhooks/&#34;&gt;webhook troubleshooting guide&lt;/a&gt; if they exist, and do not work.&lt;/p&gt;
+&lt;p&gt;The recent delivery tab should have good debugging information on why webhooks failed to deliver payload.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Bot Token</title>
       <link>https://jenkins-x.io/v3/admin/troubleshooting/bot-token/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -27,22 +84,6 @@
 &lt;p&gt;&lt;em&gt;tip&lt;/em&gt; you can accept an organisation and repo GitHub invitation using&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;jx admin invitation
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Make sure the bot token has the correct permissions to perform the action you require&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>V3: Install</title>
-      <link>https://jenkins-x.io/v3/admin/troubleshooting/install/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/v3/admin/troubleshooting/install/</guid>
-      <description>
-        
-        
-        &lt;h1 id=&#34;commons-problems-with-installations&#34;&gt;Commons problems with Installations&lt;/h1&gt;
-&lt;h2 id=&#34;check-you-are-using-a-cluster-git-url&#34;&gt;Check you are using a cluster Git URL&lt;/h2&gt;
-&lt;p&gt;If using Terraform make sure the &lt;code&gt;values.auto.tfvars&lt;/code&gt; file contains a &lt;code&gt;jx_git_url = &lt;/code&gt; value that points to a &lt;strong&gt;cluster&lt;/strong&gt; git repo that contains a helmfile.yaml and a folder ./helmfiles.  A common mistake is users set the &lt;code&gt;jx_git_url&lt;/code&gt; to the infrastruture repo instead.&lt;/p&gt;
 
       </description>
     </item>
@@ -115,7 +156,7 @@ kubectl get ing
 &lt;p&gt;If everything looks to be working inside your cluster then open the git repository of your dev cluster&amp;hellip;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get environments
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then click the &lt;code&gt;GIT URL&lt;/code&gt; link for your repository.&lt;/p&gt;
-&lt;p&gt;Now look at the &lt;strong&gt;Webbooks&lt;/strong&gt; page to see if your git provider could send webhooks to your hook endpoint. On GitHub thats &lt;strong&gt;Settings&lt;/strong&gt; -&amp;gt;  &lt;strong&gt;Webhooks&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Now look at the &lt;strong&gt;Webbooks&lt;/strong&gt; page to see if your git provider could send webhooks to your hook endpoint. On GitHub thats &lt;strong&gt;Settings&lt;/strong&gt; -&amp;gt; &lt;strong&gt;Webhooks&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;It could be your git provider can&amp;rsquo;t see public ingress endpoint? If thats the case you may need to look at setting up a tunnel via something like &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/on-premises/#enable-webhooks&#34;&gt;ngrok to enable on-premises webhooks&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;aws-specific-issues&#34;&gt;AWS specific issues&lt;/h3&gt;
 &lt;p&gt;If you are using AWS you can check out the &lt;a href=&#34;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html&#34;&gt;AWS docs on using ELB&lt;/a&gt;&lt;/p&gt;
