@@ -23,7 +23,7 @@
         
         
         &lt;h2 id=&#34;check-you-are-using-a-cluster-git-url&#34;&gt;Check you are using a cluster Git URL&lt;/h2&gt;
-&lt;p&gt;If using Terraform make sure the &lt;code&gt;values.auto.tfvars&lt;/code&gt; file contains a &lt;code&gt;jx_git_url = &lt;/code&gt; value that points to a &lt;strong&gt;cluster&lt;/strong&gt; git repo that contains a helmfile.yaml and a folder ./helmfiles. A common mistake is users set the &lt;code&gt;jx_git_url&lt;/code&gt; to the infrastruture repo instead.&lt;/p&gt;
+&lt;p&gt;If using Terraform make sure the &lt;code&gt;values.auto.tfvars&lt;/code&gt; file contains a &lt;code&gt;jx_git_url = &lt;/code&gt; value that points to a &lt;strong&gt;cluster&lt;/strong&gt; git repo that contains a helmfile.yaml and a folder ./helmfiles. A common mistake is users set the &lt;code&gt;jx_git_url&lt;/code&gt; to the infrastructure repo instead.&lt;/p&gt;
 &lt;p&gt;After a successful bootjob, these are few things to look for:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Secrets have been generated in the secret backend.&lt;/li&gt;
@@ -39,7 +39,7 @@ Error: failed to find hmac token from secret:
 &lt;ul&gt;
 &lt;li&gt;Look at the outputs from &lt;code&gt;jx secret verify&lt;/code&gt; and &lt;code&gt;kubectl get es -A&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;If you see errors (&lt;code&gt;404 missing&lt;/code&gt;), it most likely means that the secret generation step in the boot log did not work.&lt;/li&gt;
-&lt;li&gt;One way to re-generate secrets is by makine a direct push to the base branch of the cluster git repo.&lt;/li&gt;
+&lt;li&gt;One way to re-generate secrets is by making a direct push to the base branch of the cluster git repo.&lt;/li&gt;
 &lt;li&gt;A direct push to the master (not by creating a pull request) branch will run &lt;code&gt;regen-phase-1&lt;/code&gt;, &lt;code&gt;regen-phase-2&lt;/code&gt; and &lt;code&gt;regen-phase-3&lt;/code&gt;.
 Check the admin logs to verify these steps were executed without failing.
 &lt;code&gt;regen-phase-3&lt;/code&gt; is where the secret generation happens.
@@ -160,6 +160,131 @@ kubectl get ing
 &lt;p&gt;It could be your git provider can&amp;rsquo;t see public ingress endpoint? If thats the case you may need to look at setting up a tunnel via something like &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/on-premises/#enable-webhooks&#34;&gt;ngrok to enable on-premises webhooks&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;aws-specific-issues&#34;&gt;AWS specific issues&lt;/h3&gt;
 &lt;p&gt;If you are using AWS you can check out the &lt;a href=&#34;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html&#34;&gt;AWS docs on using ELB&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>V3: Quickstart/Import</title>
+      <link>https://jenkins-x.io/v3/admin/troubleshooting/quickstart-import/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/troubleshooting/quickstart-import/</guid>
+      <description>
+        
+        
+        &lt;p&gt;After a successful installation of Jenkins X, the first thing to do is to either create a quickstart or import an existing repository into Jenkins X.
+They are both very similar, so the steps mentioned here can be applied for both.&lt;/p&gt;
+&lt;p&gt;Import/Quickstart involves the following steps:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cloning of the dev/cluster git repository&lt;/li&gt;
+&lt;li&gt;Selecting and copying catalog folder into imported repository&lt;/li&gt;
+&lt;li&gt;Pull Request in the cluster git repository&lt;/li&gt;
+&lt;li&gt;Webhook creation in the imported repository&lt;/li&gt;
+&lt;li&gt;Addition of the repository name to the &lt;code&gt;config&lt;/code&gt; configmap&lt;/li&gt;
+&lt;li&gt;Source repository creation in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;issues-with-cloning-dev-repository&#34;&gt;Issues with cloning dev repository&lt;/h3&gt;
+&lt;p&gt;If you encounter an issue of this form:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;error: failed to clone dev env git repository: failed to clone dev environment git repository
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;it means that jx cli cannot find the correct git credentials.
+Run it with log level debug (&lt;code&gt;JX_LOG_LEVEL=debug&lt;/code&gt;), and it might shed some light into the issues.
+jx looks at a few places for the credentials:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;--git-token&lt;/code&gt; and &lt;code&gt;--git-username&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;~/.git-credentials&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/using/#how-do-i-stop-jx-asking-for-git-credentials&#34;&gt;~/git/credentials&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Passing the args for every import is cumbersome and error prone, hence it&amp;rsquo;s better to create the git credentials file.&lt;/p&gt;
+&lt;p&gt;The git credential file expects the username and token in the form:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;https://&amp;lt;username&amp;gt;:&amp;lt;token&amp;gt;@&amp;lt;scm-provider&amp;gt;.&amp;lt;tld&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Verify that this token can be used to clone the dev repository.&lt;/p&gt;
+&lt;h3 id=&#34;issues-with-selecting-and-cloning-catalog-folder&#34;&gt;Issues with selecting and cloning catalog folder&lt;/h3&gt;
+&lt;p&gt;During the import process, jx will ask which catalog folder to use, it will try to guess based on the language files it finds in the imported folder.
+Once you have selected a catalog, jx will copy the catalog pack from the packs folder of &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs&#34;&gt;jx3-pipeline-catalog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For example for go, you should expect the following files/folders:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;.lighthouse folder&lt;/li&gt;
+&lt;li&gt;charts folder&lt;/li&gt;
+&lt;li&gt;preview folder&lt;/li&gt;
+&lt;li&gt;Dockerfile&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Check &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs/go&#34;&gt;this&lt;/a&gt; for the latest files or folders which are copied.&lt;/p&gt;
+&lt;p&gt;Apart from these files, it also creates OWNERS and OWNERS_ALIASES files which are used by lighthouse to determine which users can approve Pull Requests.&lt;/p&gt;
+&lt;p&gt;Verify that these folders/files are created.&lt;/p&gt;
+&lt;p&gt;There is a permission issue with some jx versions, check this &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/8028&#34;&gt;github issue&lt;/a&gt; on how to mitigate the problem.&lt;/p&gt;
+&lt;h3 id=&#34;issue-with-pull-request-creation&#34;&gt;Issue with pull request creation&lt;/h3&gt;
+&lt;p&gt;jx project import command will open a pull request in the cluster git repository.
+This PR will first have one commit which should modify the file &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt;, which should be of the form:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;apiVersion: gitops.jenkins-x.io/v1alpha1
+kind: SourceConfig
+metadata:
+  creationTimestamp: null
+spec:
+  groups:
+  - owner: &amp;lt;owner&amp;gt;
+    provider: https://github.com
+    providerKind: github
+    repositories:
+    - name: &amp;lt;repo-name&amp;gt;
+    scheduler: in-repo
+  slack:
+    channel: &#39;#jenkins-x-pipelines&#39;
+    kind: failureOrNextSuccess
+    pipeline: release
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;In case &lt;code&gt;scheduler: in-repo&lt;/code&gt; is missing in the changed file, it&amp;rsquo;s most probably because &lt;code&gt;.lighthouse/jenkins-x/trigger&lt;/code&gt; file was not created.
+Either import was run with &lt;code&gt;--no-pack&lt;/code&gt; or the catalog folder was not copied properly.&lt;/p&gt;
+&lt;p&gt;Few minutes after the PR is opened with one commit, a second commit is created with more changes.
+The files that are changed include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse-config/config-cm.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse-config/plugins-cm.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse/lighthouse-foghorn-deploy.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse/lighthouse-keeper-deploy.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse/lighthouse-poller-deploy.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse/lighthouse-tekton-controller-deploy.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/lighthouse/lighthouse-webhooks-deploy.yaml&lt;/li&gt;
+&lt;li&gt;config-root/namespaces/jx/source-repositories/owner-repo.yaml&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If the second commit is not created, it means the verify job failed (use the &lt;code&gt;dashboard&lt;/code&gt; or &lt;code&gt;octant ui&lt;/code&gt;).
+Check the logs of the job which should give you some hints.&lt;/p&gt;
+&lt;p&gt;If you check the &lt;code&gt;.lighthouse/jenkins-x/pullrequest.yaml&lt;/code&gt; file, you will see that the PR runs the command make-pr, which actually runs &lt;code&gt;jx gitops apply --pull-request&lt;/code&gt; which invokes the &lt;code&gt;pr-regen&lt;/code&gt; target in the &lt;code&gt;versionStream/src/Makefile.mk&lt;/code&gt; of the cluster git repository.&lt;/p&gt;
+&lt;p&gt;The command will wait upto 20 minutes for the pull request to be merged, do not merge it on your own, as it may mean the verify job did not complete successfully.
+Possible causes for the pull request to be not auto merged could be that the bot user does not have the right permissions to merge PRs for the cluster git repository.
+if you have seen that both the commits have completed successfully, and the jx import command has timed out waiting for it to auto merge, it is safe to merge it manually.&lt;/p&gt;
+&lt;p&gt;if the pull request got automerged (or merged by hand because it timed out waiting), then the release pipeline will be run.&lt;/p&gt;
+&lt;h3 id=&#34;issues-with-final-set-up-webhook-creation-and-trigger&#34;&gt;Issues with Final set up (webhook creation and trigger)&lt;/h3&gt;
+&lt;p&gt;Release pipeline executes the &lt;code&gt;.lighthouse/jenkins-x/release.yaml&lt;/code&gt; file.
+Once the job has succeeded (you can watch the progress in the UI or just run &lt;code&gt;jx admin log&lt;/code&gt;), you should see&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a webhook in the imported repository&lt;/li&gt;
+&lt;li&gt;an entry for the imported repository in the &lt;code&gt;config&lt;/code&gt; configmap in the &lt;code&gt;jx&lt;/code&gt; namespace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To check if the webhook has been created, navigate to &lt;code&gt;settings -&amp;gt; webhook&lt;/code&gt;.
+To check if the imported repository was added to the &lt;code&gt;config&lt;/code&gt; configmap, run&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;kubectl get configmap config -n jx -oyaml
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You should see something like this:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;in_repo_config:
+      enabled:
+        owner/repo: true
+        owner/cluster-git-repo: true
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Finally, you should be able to see the source repository resource created for the imported repository:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;kubectl get sr -n jx
+NAME                   URL                                         DESCRIPTION
+dev                    https://github.com/owner/cluster-git.git   the git repository for the Dev environment
+owner-repo             https://github.com/owner/repo
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If either the&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;webhook is missing, which shows error of this form:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;It looks like the boot job failed to setup the webhooks. It could be related to the git token permissions.
+failed to find sourceRepository  in namespace jx for repository owner-repository
+&lt;/code&gt;&lt;/pre&gt;&lt;ul&gt;
+&lt;li&gt;repo is missing in the &lt;code&gt;config&lt;/code&gt; config map, check the logs of the release pipeline, which shows errors of this form:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;error: failed to wait for repository to be setup in lighthouse: failed to find trigger in the lighthouse configuration in ConfigMap config in namespace jx for repository: owner/repo within 20m0s
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;check the logs from the release pipeline to see what is the issue.&lt;/p&gt;
+&lt;p&gt;If everything works, then your repository has been successfully imported into Jenkins X!&lt;/p&gt;
 
       </description>
     </item>
