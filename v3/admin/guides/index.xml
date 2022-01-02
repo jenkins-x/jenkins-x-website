@@ -241,6 +241,108 @@ prometheus-b47d8c58c-n974m              2/2     Running   &lt;span style=&#34;co
     </item>
     
     <item>
+      <title>V3: Spot Instances For Builds</title>
+      <link>https://jenkins-x.io/v3/admin/guides/spot-instances/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/v3/admin/guides/spot-instances/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Using spot instances for builds is a great way to detach your builds (increasing stablility on your deployed applications) and save money.&lt;/p&gt;
+&lt;p&gt;Jenkins X supports a &lt;a href=&#34;https://Tekton.dev/&#34;&gt;Tekton&lt;/a&gt; helm chart that lets configuring spot instances for builds really easy.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s discuss:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Why spot instances are a good fit for builds&lt;/li&gt;
+&lt;li&gt;How to setup spot instances with your terraform module&lt;/li&gt;
+&lt;li&gt;Making Tekton run all jobs with those taints/affinity by default&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;why-spot-instances-are-a-good-fit-for-builds&#34;&gt;Why spot instances are a good fit for builds&lt;/h2&gt;
+&lt;p&gt;Spot instances are the free resources your cloud provider are not using, this means you can use them for a reduced price at the cost of disruption to the service.&lt;/p&gt;
+&lt;p&gt;Spot instances are ideal for:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Dev/Test environments&lt;/li&gt;
+&lt;li&gt;CI/CD workloads&lt;/li&gt;
+&lt;li&gt;High performance computing&lt;/li&gt;
+&lt;li&gt;Batch processing jobs&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;It&amp;rsquo;s a great way for us to save money on builds while ensuring you can give them enough resources to run quickly. It&amp;rsquo;s also a scalable to zero and doesn&amp;rsquo;t matter if you have to wait for a machine to be allocated.&lt;/p&gt;
+&lt;h2 id=&#34;how-to-setup-spot-instances-with-your-terraform-module&#34;&gt;How to setup spot instances with your terraform module&lt;/h2&gt;
+&lt;p&gt;Work has been completed on &lt;a href=&#34;https://github.com/jenkins-x/terraform-aws-eks-jx/pull/76&#34;&gt;AWS&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x-terraform/terraform-jx-Azure/pull/23&#34;&gt;Azure&lt;/a&gt;, if someone would like to implement this on GCP (or another cloud provider), please join us in #jenkins-x-dev in slack.&lt;/p&gt;
+&lt;h3 id=&#34;azure&#34;&gt;Azure&lt;/h3&gt;
+&lt;p&gt;On Azure, there are a few parameters to configure to enable spot instances:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;# This sets whether to use spot or standard nodes for the builds, so we&#39;ll leave this as true
+use_spot=true
+
+# Sets the max price that you want to pay for your certain machine, if this is -1 that makes it so you&#39;ll pay the current max price for spot
+spot_max_price = -1
+
+# Sets the type of vm you would like, if this isn&#39;t specified, the build node pool won&#39;t be created
+build_node_size=&amp;quot;Standard_D4s_v3&amp;quot;
+
+# The minimum count of nodes, for spot, you have to use 0
+min_build_node_count = 0
+
+# The maximum amount of nodes you&#39;d like to have
+max_build_node_count = 5
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then run your:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;terraform plan&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;terraform apply&lt;/code&gt;&lt;/p&gt;
+&lt;h2 id=&#34;making-tekton-run-all-jobs-with-those-taintsaffinity-by-default&#34;&gt;Making Tekton run all jobs with those taints/affinity by default&lt;/h2&gt;
+&lt;p&gt;As all the builds are handled by Tekton, we can use their strategy for applying defaults to pipelineActivities, which is done through a configmap in the tekton-pipelines namespace.&lt;/p&gt;
+&lt;p&gt;We&amp;rsquo;ll want to add the toleration to the pod template, so that they&amp;rsquo;re able to be allocated to the new spot nodes that we&amp;rsquo;ve created.
+If we want to ensure the builds are done on the nodes that we&amp;rsquo;ve created, without an option to be allocated to the other machines, we&amp;rsquo;ll also want to add an affinity.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;I&amp;rsquo;m going to be showing this with the Azure examples, Azure by default adds a specific spot taint, so we&amp;rsquo;ll need to add that too.&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;applying-the-helmfile-changes-to-the-gitops-repository&#34;&gt;Applying the helmfile changes to the gitops repository&lt;/h3&gt;
+&lt;p&gt;The Tekton helm chart has a value override for config-defaults, we can apply this in the gitops repository helmfile by modifying:
+&lt;code&gt;helmfiles/Tekton-pipelines/helmfile.yaml&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Modify this entry:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;- chart: cdf/Tekton-pipeline
+  version: 0.27.2
+  name: Tekton-pipeline
+  values:
+  - ../../versionStream/charts/cdf/Tekton-pipeline/values.yaml.gotmpl
+  - jx-values.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;To be:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;- chart: cdf/Tekton-pipeline
+  version: 0.27.2
+  name: Tekton-pipeline
+  values:
+  - ../../versionStream/charts/cdf/Tekton-pipeline/values.yaml.gotmpl
+  - jx-values.yaml
+  - Tekton-pipeline.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;strong&gt;We now need to create the Tekton-pipeline.yaml file within the same directory as the helmfile we&amp;rsquo;ve just created:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;configDefaults:
+  default-pod-template: |
+    tolerations:
+    - key: &amp;quot;sku&amp;quot;
+      operator: &amp;quot;Equal&amp;quot;
+      value: &amp;quot;build&amp;quot;
+      effect: &amp;quot;NoSchedule&amp;quot;
+    - key: &amp;quot;kubernetes.Azure.com/scalesetpriority&amp;quot;
+      operator: &amp;quot;Equal&amp;quot;
+      value: &amp;quot;spot&amp;quot;
+      effect: &amp;quot;NoSchedule&amp;quot;
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: &amp;quot;agentpool&amp;quot;
+              operator: &amp;quot;In&amp;quot;
+              values: 
+              - &amp;quot;buildnode&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Here we can see that we&amp;rsquo;re adding 2 tolerations to make the pipeline activites allowed to be assigned to these nodes.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;sku: build
+kubernetes.Azure.com/scalesetpriority: spot
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;We&amp;rsquo;re also adding the affinity to specfically select the nodes with the label:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;agentpool: buildnode
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Then if we apply this to the gitops repository, spot instances will start running your builds and saving you money!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>V3: Jenkins</title>
       <link>https://jenkins-x.io/v3/admin/guides/jenkins/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
