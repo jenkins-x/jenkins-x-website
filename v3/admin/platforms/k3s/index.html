@@ -1484,7 +1484,7 @@ if (!doNotTrack) {
 <p>Make sure you have created a cluster using k3s.</p>
 <p>If you dont have an existing k3s cluster, you can install one by running:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># We don&#39;t support Kubernetes 1.22+ yet</span>
-curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL<span style="color:#f92672">=</span>v1.21 sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL<span style="color:#f92672">=</span>v1.21 sh -s - --write-kubeconfig-mode <span style="color:#ae81ff">644</span>
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
 <span style="color:#75715e"># Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file</span>
 KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
@@ -1501,7 +1501,8 @@ Refer to the <a href="https://www.vaultproject.io/docs/install">vault docs</a> o
 <p>Next enable kubernetes auth in vault.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
 vault auth enable kubernetes
-</code></pre></div><h4 id="github">Github</h4>
+</code></pre></div><p>Note: If you get the error <code>Error enabling kubernetes auth: Post &quot;https://127.0.0.1:8200/v1/sys/auth/kubernetes&quot;: http: server gave HTTP response to HTTPS client</code>, try the command <code>vault login myroot</code>.</p>
+<h4 id="github">Github</h4>
 <ul>
 <li>Create a git bot user (different from your own personal user) e.g. <a href="https://github.com/join">https://github.com/join</a> and generate a a personal access token, this will be used by Jenkins X to interact with git repositories. e.g. <a href="https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook">https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook</a></li>
 <li>This bot user needs to have write permission to write to any git repository used by Jenkins X. This can be done by adding the bot user to the git organisation level or individual repositories as a collaborator Add the new bot user to your Git Organisation, for now give it Owner permissions, we will reduce this to member permissions soon.</li>
@@ -1523,7 +1524,8 @@ git push origin main
 </code></pre></div><blockquote>
 <p>Note: The first job will fail as it cannot authenticate against vault.
 The errors will be of the form <code>error: failed to populate secrets: failed to create a secret manager for ExternalSecret</code>.
-Once the secret-infra namespace has been created, we can configure vault.</p>
+Once the secret-infra namespace has been created, we can configure vault.
+If you get an error connecting to the cluster, try running <code>kubectl config view --raw &gt;~/.kube/config</code> as well as checking the permissions/owner of <code>~/.kube/config</code></p>
 </blockquote>
 <h3 id="vault-configuration">Vault configuration</h3>
 <p>Install <a href="https://stedolan.github.io/jq/download/">jq</a> before running these commands.</p>
@@ -1684,7 +1686,7 @@ POST /hook                     <span style="color:#ae81ff">200</span> OK
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified December 31, 2021: <a href="https://github.com/jenkins-x/jx-docs/commit/3a6d69d8df77ed32b1cfbf7143815e8f8683dd80">Update _index.md (3a6d69d8df)</a>
+  Last modified January 19, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/a527ba1ab919a1335b1c050972c6607fbbc17eae">Update _index.md (a527ba1ab9)</a>
 </div>
 
 </div>
