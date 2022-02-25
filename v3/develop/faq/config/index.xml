@@ -295,10 +295,14 @@ kubectl get cm plugins -n jx -oyaml
 &lt;p&gt;Or you can use &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#edit-secrets&#34;&gt;jx secret edit&lt;/a&gt; command to do this for you.&lt;/p&gt;
 &lt;p&gt;The &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/#interactive-mode&#34;&gt;interactive mode&lt;/a&gt; is a nice way to find the secret and property you want to edit, then edit&amp;hellip;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx secret edit -i
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;how-do-i-edit-the-bot-token&#34;&gt;How do I edit the bot token?&lt;/h2&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you are using vault (deployed by jx) to store your secrets, remember to run:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;jx secret vault portforward
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;in a separate terminal before running the secret edit command.
+Look at external vault &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/vault/#local-jx-secret-with-external-vault&#34;&gt;documentation&lt;/a&gt; to see how to port forward before editing secrets.&lt;/p&gt;
+&lt;h2 id=&#34;how-do-i-edit-the-bot-token&#34;&gt;How do I edit the bot token?&lt;/h2&gt;
 &lt;p&gt;The git operator secret is normally updated whenever you re-install the git operator via Terraform or &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/operator/&#34;&gt;install the operator via the CLI&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;You can delete the git operator via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm delete jx-git-operator -n jx-git-operator 
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;helm delete jx-git-operator -n jx-git-operator
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;There are a number of other places you need to change the bot token.&lt;/p&gt;
 &lt;p&gt;First check out &lt;a href=&#34;https://jenkins-x.io/v3/develop/faq/config/secrets/#how-do-i-edit-a-secret&#34;&gt;how to edit secrets&lt;/a&gt; for background.&lt;/p&gt;
 &lt;p&gt;Secrets are &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/secrets/&#34;&gt;stored in external secret storage&lt;/a&gt; like Vault or your cloud providers secret store.&lt;/p&gt;
@@ -351,13 +355,12 @@ kubectl get cm plugins -n jx -oyaml
 &lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
   &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something&lt;/span&gt;
   &lt;span style=&#34;color:#f92672&#34;&gt;annotations&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;secret.jenkins-x.io/prefix&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{{ .Values.secretPrefix }}&amp;#34;&lt;/span&gt; 
+    &lt;span style=&#34;color:#f92672&#34;&gt;secret.jenkins-x.io/prefix&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{{ .Values.secretPrefix }}&amp;#34;&lt;/span&gt;
 &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Opaque&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;data&lt;/span&gt;:  
-...
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then add to your &lt;code&gt;charts/$appName/values.yaml&lt;/code&gt;  file something like:&lt;/p&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;data&lt;/span&gt;:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then add to your &lt;code&gt;charts/$appName/values.yaml&lt;/code&gt; file something like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# default secret prefix location in vault&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretPrefix&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging &lt;/span&gt;
+&lt;span style=&#34;color:#f92672&#34;&gt;secretPrefix&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then in the production environment you can create a values.yaml file like this:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretPrefix&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and passing this values.yaml file into the &lt;code&gt;helmfiles/jx-production/helmfile.yaml&lt;/code&gt; file for your charts &lt;code&gt;release:&lt;/code&gt; entry &lt;a href=&#34;https://jenkins-x.io/v3/develop/apps/#customising-charts&#34;&gt;to customize the chart&lt;/a&gt;&lt;/p&gt;
@@ -372,7 +375,7 @@ kubectl get cm plugins -n jx -oyaml
 &lt;ul&gt;
 &lt;li&gt;set the &lt;code&gt;gsm&lt;/code&gt; variable to true in terraform as &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/master/README.md#getting-started&#34;&gt;described in the getting started guide&lt;/a&gt; using your terraform/infrastructure git repository:&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gsm = true&amp;#34;&lt;/span&gt; &amp;gt;&amp;gt; values.auto.tfvars 
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gsm = true&amp;#34;&lt;/span&gt; &amp;gt;&amp;gt; values.auto.tfvars
 
 git add *
 git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: enable gsm&amp;#34;&lt;/span&gt;
@@ -382,7 +385,7 @@ terraform apply
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;in your dev cluster git repository (which has a &lt;code&gt;helmfile.yaml&lt;/code&gt; inside) modify the &lt;code&gt;jx-requirement.yml&lt;/code&gt; switch the &lt;code&gt;secretStorage&lt;/code&gt; line to:&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gsm&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gsm&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;download &lt;a href=&#34;https://github.com/GoogleContainerTools/kpt/releases&#34;&gt;kpt&lt;/a&gt; and add it to your $PATH&lt;/p&gt;
