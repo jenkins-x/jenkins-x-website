@@ -233,113 +233,113 @@ limits, and volume mounts.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h1 id=&#34;examples&#34;&gt;Examples&lt;/h1&gt;
 &lt;h2 id=&#34;full-pipeline-definition-in-jenkins-xyml&#34;&gt;Full pipeline definition in &lt;code&gt;jenkins-x.yml&lt;/code&gt;&lt;/h2&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;buildPack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
-
-&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;pipelines&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;release&lt;/span&gt;:
-    &lt;span style=&#34;color:#75715e&#34;&gt;# While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;:
-        &lt;span style=&#34;color:#75715e&#34;&gt;# Define a default container image we&amp;#39;ll use throughout the pipeline, unless an explicit agent is&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# specified on a stage or step.&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;agent&lt;/span&gt;:
-          &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;some/image@version&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# or &amp;#34;maven&amp;#34; - this means &amp;#34;use the maven pod template&amp;#34;&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# for more information on valueFrom.&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# Environment variables defined at the top level can be overridden in stages and individual&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# steps.&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;environment&lt;/span&gt;:
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_VAR&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;A value for the env var&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_OTHER_VAR&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Another var&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_API_KEY&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;valueFrom&lt;/span&gt;:
-              &lt;span style=&#34;color:#f92672&#34;&gt;secretKeyRef&lt;/span&gt;:
-                &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mysecret&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;apikey&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# Options contains other configuration for the pipeline.&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;options&lt;/span&gt;:
-          &lt;span style=&#34;color:#75715e&#34;&gt;# containerOptions allows specifying more advanced default configuration for the containers&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# used for all stages and steps in this scope, using the standard Kubernetes syntax for&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# containers.&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# Not all fields can be configured - e.g., name, command, arguments, image, and dir are all&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# defined via the syntax - but everything else can be.&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# Like with environment variables, containerOptions at the top level can be overridden and&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# added to by stages.&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;containerOptions&lt;/span&gt;:
-            &lt;span style=&#34;color:#75715e&#34;&gt;# Here we&amp;#39;re setting the resource requests and limits for all step containers within this&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# pipeline.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
-              &lt;span style=&#34;color:#f92672&#34;&gt;requests&lt;/span&gt;:
-                &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;64Mi&lt;/span&gt;
-              &lt;span style=&#34;color:#f92672&#34;&gt;limits&lt;/span&gt;:
-                &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.2&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;128Mi&lt;/span&gt;
-          &lt;span style=&#34;color:#75715e&#34;&gt;# timeout allows you to set the maximum duration for builds of this pipeline.&lt;/span&gt;
-          &lt;span style=&#34;color:#f92672&#34;&gt;timeout&lt;/span&gt;:
-            &lt;span style=&#34;color:#f92672&#34;&gt;time&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;unit&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;minutes&lt;/span&gt;
-        &lt;span style=&#34;color:#75715e&#34;&gt;# A pipeline must contain at least one stage, and each stage must have a unique name.&lt;/span&gt;
-        &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage With Steps And Options Etc&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# agent, options, and environment are valid on stages as well. For the parents of nested&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# sequential or parallel stages, their children inherit the parent&amp;#39;s agent, options,&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# and environment.&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# options on a stage currently only can contain containerOptions.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;options&lt;/span&gt;:
-              &lt;span style=&#34;color:#f92672&#34;&gt;containerOptions&lt;/span&gt;:
-                &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
-                  &lt;span style=&#34;color:#f92672&#34;&gt;limits&lt;/span&gt;:
-                    &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.4&lt;/span&gt;
-                    &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;256Mi&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# A stage must contain at least one of &amp;#34;steps&amp;#34;, &amp;#34;stages&amp;#34;, or &amp;#34;parallel&amp;#34;&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# Steps must contain at least one command to be executed or a loop.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-              - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mvn&lt;/span&gt;
-                &lt;span style=&#34;color:#75715e&#34;&gt;# args are a YAML array, so can be specified either on multiple lines or in a []&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
-                  - &lt;span style=&#34;color:#ae81ff&#34;&gt;clean&lt;/span&gt;
-                  - &lt;span style=&#34;color:#ae81ff&#34;&gt;install&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;dir&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;foo &lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# Optional, allows running this step in a subdirectory of the workspace, or&lt;/span&gt;
-                          &lt;span style=&#34;color:#75715e&#34;&gt;# a different absolute directory.&lt;/span&gt;
-                &lt;span style=&#34;color:#75715e&#34;&gt;# Steps can have their own images specified, overriding the stage and top-level images.&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;agent&lt;/span&gt;:
-                  &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-other-image&lt;/span&gt;
-              &lt;span style=&#34;color:#75715e&#34;&gt;# A loop allows you to specify a list of potential values for an environment variable and a&lt;/span&gt;
-              &lt;span style=&#34;color:#75715e&#34;&gt;# set of one or more steps. Those steps will be run, sequentially, for each of the&lt;/span&gt;
-              &lt;span style=&#34;color:#75715e&#34;&gt;# potential values. Loops can also be nested for more complex combinations.&lt;/span&gt;
-              - &lt;span style=&#34;color:#f92672&#34;&gt;loop&lt;/span&gt;:
-                  &lt;span style=&#34;color:#f92672&#34;&gt;variable&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;LANGUAGE&lt;/span&gt;
-                  &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
-                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;maven&lt;/span&gt;
-                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;gradle&lt;/span&gt;
-                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;nodejs&lt;/span&gt;
-                  &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-                    - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo&lt;/span&gt;
-                      &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
-                        - &lt;span style=&#34;color:#ae81ff&#34;&gt;hello&lt;/span&gt;
-                        - &lt;span style=&#34;color:#ae81ff&#34;&gt;${LANGUAGE}&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage with nested sequential stages&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# Any configuration of agent, options, or environment will apply to all child stages.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;environment&lt;/span&gt;:
-              - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SPECIFIC_TO_SEQUENTIAL_PARENT&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# A list of nested stages to run sequentially. This is meant to allow for avoiding&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# copy-pasting configuration across a set of stages that need to have the same configuration&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# but where that configuration shouldn&amp;#39;t be in place for *all* stages in the pipeline.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
-              &lt;span style=&#34;color:#75715e&#34;&gt;# ...insert stages here. =)&lt;/span&gt;
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage with nested parallel stages&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# Works very similarly to sequential stages, except that the stages are executed in parallel,&lt;/span&gt;
-            &lt;span style=&#34;color:#75715e&#34;&gt;# rather than sequentially.&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;parallel&lt;/span&gt;:
-              &lt;span style=&#34;color:#75715e&#34;&gt;# ...insert stages here. =)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;buildPack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;pipelines&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;release&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Define a default container image we&amp;#39;ll use throughout the pipeline, unless an explicit agent is&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# specified on a stage or step.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;agent&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;some/image@version&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# or &amp;#34;maven&amp;#34; - this means &amp;#34;use the maven pod template&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# for more information on valueFrom.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Environment variables defined at the top level can be overridden in stages and individual&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# steps.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;environment&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_VAR&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;A value for the env var&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_OTHER_VAR&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Another var&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SOME_API_KEY&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;valueFrom&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#f92672&#34;&gt;secretKeyRef&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mysecret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;apikey&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# Options contains other configuration for the pipeline.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;options&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# containerOptions allows specifying more advanced default configuration for the containers&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# used for all stages and steps in this scope, using the standard Kubernetes syntax for&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# containers.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# Not all fields can be configured - e.g., name, command, arguments, image, and dir are all&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# defined via the syntax - but everything else can be.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# Like with environment variables, containerOptions at the top level can be overridden and&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# added to by stages.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;containerOptions&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# Here we&amp;#39;re setting the resource requests and limits for all step containers within this&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# pipeline.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#f92672&#34;&gt;requests&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;64Mi&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#f92672&#34;&gt;limits&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;128Mi&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#75715e&#34;&gt;# timeout allows you to set the maximum duration for builds of this pipeline.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;timeout&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;time&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;unit&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;minutes&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# A pipeline must contain at least one stage, and each stage must have a unique name.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage With Steps And Options Etc&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# agent, options, and environment are valid on stages as well. For the parents of nested&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# sequential or parallel stages, their children inherit the parent&amp;#39;s agent, options,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# and environment.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# options on a stage currently only can contain containerOptions.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;options&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#f92672&#34;&gt;containerOptions&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  &lt;span style=&#34;color:#f92672&#34;&gt;limits&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;256Mi&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# A stage must contain at least one of &amp;#34;steps&amp;#34;, &amp;#34;stages&amp;#34;, or &amp;#34;parallel&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# Steps must contain at least one command to be executed or a loop.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mvn&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#75715e&#34;&gt;# args are a YAML array, so can be specified either on multiple lines or in a []&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - &lt;span style=&#34;color:#ae81ff&#34;&gt;clean&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - &lt;span style=&#34;color:#ae81ff&#34;&gt;install&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;dir&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;foo &lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# Optional, allows running this step in a subdirectory of the workspace, or&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                          &lt;span style=&#34;color:#75715e&#34;&gt;# a different absolute directory.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#75715e&#34;&gt;# Steps can have their own images specified, overriding the stage and top-level images.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;agent&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-other-image&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#75715e&#34;&gt;# A loop allows you to specify a list of potential values for an environment variable and a&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#75715e&#34;&gt;# set of one or more steps. Those steps will be run, sequentially, for each of the&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#75715e&#34;&gt;# potential values. Loops can also be nested for more complex combinations.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              - &lt;span style=&#34;color:#f92672&#34;&gt;loop&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  &lt;span style=&#34;color:#f92672&#34;&gt;variable&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;LANGUAGE&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;maven&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;gradle&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    - &lt;span style=&#34;color:#ae81ff&#34;&gt;nodejs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    - &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;echo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                      &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                        - &lt;span style=&#34;color:#ae81ff&#34;&gt;hello&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                        - &lt;span style=&#34;color:#ae81ff&#34;&gt;${LANGUAGE}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage with nested sequential stages&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# Any configuration of agent, options, or environment will apply to all child stages.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;environment&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SPECIFIC_TO_SEQUENTIAL_PARENT&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# A list of nested stages to run sequentially. This is meant to allow for avoiding&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# copy-pasting configuration across a set of stages that need to have the same configuration&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# but where that configuration shouldn&amp;#39;t be in place for *all* stages in the pipeline.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#75715e&#34;&gt;# ...insert stages here. =)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Stage with nested parallel stages&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# Works very similarly to sequential stages, except that the stages are executed in parallel,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#75715e&#34;&gt;# rather than sequentially.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;parallel&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              &lt;span style=&#34;color:#75715e&#34;&gt;# ...insert stages here. =)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -10611,8 +10611,8 @@ on git commit &lt;code&gt;11f2023&lt;/code&gt;.
 &lt;h2 id=&#34;creating-a-devpod&#34;&gt;Creating a DevPod&lt;/h2&gt;
 &lt;p&gt;To create your own &lt;code&gt;DevPod&lt;/code&gt; use the command &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_devpod/&#34;&gt;jx create devpod&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For example if you want to create a &lt;code&gt;maven&lt;/code&gt; based DevPod use:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create devpod -l maven
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then create a new &lt;code&gt;DevPod&lt;/code&gt; based on the maven based &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and open your terminal inside that pod. You are now free to use the various tools like &lt;code&gt;git, docker, maven, skaffold, jx&lt;/code&gt; which will all be using the same exact configuration as the CI/CD pipelines will.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create devpod -l maven
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will then create a new &lt;code&gt;DevPod&lt;/code&gt; based on the maven based &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod template&lt;/a&gt; and open your terminal inside that pod. You are now free to use the various tools like &lt;code&gt;git, docker, maven, skaffold, jx&lt;/code&gt; which will all be using the same exact configuration as the CI/CD pipelines will.&lt;/p&gt;
 &lt;h2 id=&#34;using-web-based-vs-code&#34;&gt;Using web based VS Code&lt;/h2&gt;
 &lt;p&gt;If you don&amp;rsquo;t use &lt;code&gt;--sync&lt;/code&gt; then the DevPod will embed the &lt;a href=&#34;https://github.com/cdr/code-server&#34;&gt;web based version of VS Code&lt;/a&gt; in your DevPod so that you can open the IDE in a browser and work on the source code inside your DevPod!&lt;/p&gt;
 &lt;p&gt;The source code is mounted into the workspace of the DevPod in the folder &lt;code&gt;/workspace&lt;/code&gt;.&lt;/p&gt;
@@ -10644,21 +10644,21 @@ on git commit &lt;code&gt;11f2023&lt;/code&gt;.
 &lt;p&gt;&lt;em&gt;if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you&lt;/em&gt;&lt;/p&gt;
 &lt;h2 id=&#34;opening-a-devpod-shell&#34;&gt;Opening a DevPod shell&lt;/h2&gt;
 &lt;p&gt;If you have other terminals that want to connect into an existing &lt;code&gt;DevPod&lt;/code&gt; use &lt;a href=&#34;https://jenkins-x.io/commands/jx_rsh/&#34;&gt;jx rsh -d&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx rsh -d
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you have more than one &lt;code&gt;DevPod&lt;/code&gt; active you will be prompted for the list of available &lt;code&gt;DevPod&lt;/code&gt;s to pick from. Otherwise your shell will open in the &lt;code&gt;DevPod&lt;/code&gt; directly.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx rsh -d
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you have more than one &lt;code&gt;DevPod&lt;/code&gt; active you will be prompted for the list of available &lt;code&gt;DevPod&lt;/code&gt;s to pick from. Otherwise your shell will open in the &lt;code&gt;DevPod&lt;/code&gt; directly.&lt;/p&gt;
 &lt;p&gt;If you use &lt;code&gt;jx create devpod --reuse&lt;/code&gt; it will lazily create a devpod if one doesn&amp;rsquo;t exist for the project  directory you are in.&lt;/p&gt;
 &lt;h3 id=&#34;viewing-my-devpods&#34;&gt;Viewing my DevPods&lt;/h3&gt;
 &lt;p&gt;Use the &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_devpod/&#34;&gt;jx get devpod&lt;/a&gt; command:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get devpod
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;deleting-a-devpod&#34;&gt;Deleting a DevPod&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get devpod
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;deleting-a-devpod&#34;&gt;Deleting a DevPod&lt;/h3&gt;
 &lt;p&gt;Use the &lt;a href=&#34;https://jenkins-x.io/commands/jx_delete_devpod/&#34;&gt;jx delete devpod&lt;/a&gt; command:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx delete devpod
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then pick the devpod to delete and confirm. Or pass in the name of the devpod you want to delete as an argument.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx delete devpod
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then pick the devpod to delete and confirm. Or pass in the name of the devpod you want to delete as an argument.&lt;/p&gt;
 &lt;h2 id=&#34;synchronizing-source-code&#34;&gt;Synchronizing source code&lt;/h2&gt;
 &lt;p&gt;If you are using a desktop IDE you can synchronise your local source code into your DevPod via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_sync/&#34;&gt;jx sync&lt;/a&gt; command.&lt;/p&gt;
 &lt;p&gt;This will allow you to edit source code in your preferred IDE like &lt;a href=&#34;https://code.visualstudio.com/&#34;&gt;VS Code&lt;/a&gt; or &lt;a href=&#34;https://www.jetbrains.com/idea/&#34;&gt;IDEA&lt;/a&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx sync
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You just run this once on your system (if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx sync
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You just run this once on your system (if you are using the Visual Studio code extension to do this, you don&amp;rsquo;t need to worry about this, it will be done automatically for you)&lt;/p&gt;
 &lt;p&gt;This command will download and install the excellent &lt;a href=&#34;https://github.com/vapor-ware/ksync&#34;&gt;ksync&lt;/a&gt; tool if its not already installed, run &lt;code&gt;ksync init&lt;/code&gt; to add it to your cluster and then run &lt;code&gt;ksync watch&lt;/code&gt; and then use &lt;code&gt;ksync create&lt;/code&gt; to create a synchronisation spec.&lt;/p&gt;
 &lt;p&gt;Then by default the code with be bidirectionally synchronized between the current directory and the &lt;code&gt;/code&lt;/code&gt; folder in the &lt;code&gt;DevPod&lt;/code&gt;.
 You can now edit the code in your IDE and run build/test commands inside the &lt;code&gt;DevPod&lt;/code&gt;!&lt;/p&gt;
@@ -10667,14 +10667,14 @@ You can now edit the code in your IDE and run build/test commands inside the &lt
 &lt;h2 id=&#34;incremental-building&#34;&gt;Incremental building&lt;/h2&gt;
 &lt;p&gt;One of the benefits of integrating with &lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34;&gt;skaffold&lt;/a&gt; for building docker images is that we can perform incremental rebuilds of docker images and redeploys of the associated helm charts.&lt;/p&gt;
 &lt;p&gt;So inside of your DevPod you can perform a regular build if your app is Java based. e.g. via maven:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;mvn install
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then to trigger incremental rebuilding and deploying of the local code in the DevPod you can use:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;./watch.sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will use the &lt;code&gt;dev&lt;/code&gt; profile to generate a new docker image using the generated &lt;em&gt;digest&lt;/em&gt; then use it in the helm chart to deploy.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;mvn install
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then to trigger incremental rebuilding and deploying of the local code in the DevPod you can use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;./watch.sh
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will use the &lt;code&gt;dev&lt;/code&gt; profile to generate a new docker image using the generated &lt;em&gt;digest&lt;/em&gt; then use it in the helm chart to deploy.&lt;/p&gt;
 &lt;p&gt;When you created your DevPod it was associated with an &lt;em&gt;Edit Environment&lt;/em&gt; for your &lt;em&gt;username&lt;/em&gt; so that any apps deployed in a DevPod will appear in your &lt;em&gt;Edit Environment&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;So once the &lt;code&gt;skaffold dev -p dev&lt;/code&gt; (what &lt;code&gt;watch.sh&lt;/code&gt; does) command has built the docker image and installed the helm chart, your app will show up via  &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_applications/&#34;&gt;jx get applications&lt;/a&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx get applications
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now if you edit code and trigger a docker rebuild, which for most languages is just changing the source code; though for Java apps its whenever you rebuild the jar - the image is regenerated and the helm chart updated!&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get applications
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now if you edit code and trigger a docker rebuild, which for most languages is just changing the source code; though for Java apps its whenever you rebuild the jar - the image is regenerated and the helm chart updated!&lt;/p&gt;
 
       </description>
     </item>
@@ -10711,35 +10711,35 @@ You can now edit the code in your IDE and run build/test commands inside the &lt
 &lt;h3 id=&#34;creating-your-dev-cluster&#34;&gt;Creating your Dev cluster&lt;/h3&gt;
 &lt;p&gt;If you are creating a new installation then when you use &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_cluster/&#34;&gt;jx create cluster&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx install&lt;/a&gt; then please specify &lt;code&gt;--remote-environments&lt;/code&gt; to indicate that &lt;code&gt;Staging/Production&lt;/code&gt; environments will be remote from the development cluster.&lt;/p&gt;
 &lt;p&gt;e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create cluster gke --remote-environments --tekton
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When creating your Environments via &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_environment/&#34;&gt;jx create environment&lt;/a&gt; you can also specify the environment is remote via the &lt;code&gt;--remote&lt;/code&gt; or answering &lt;code&gt;Y&lt;/code&gt; to the question when prompted.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create cluster gke --remote-environments --tekton
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When creating your Environments via &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_environment/&#34;&gt;jx create environment&lt;/a&gt; you can also specify the environment is remote via the &lt;code&gt;--remote&lt;/code&gt; or answering &lt;code&gt;Y&lt;/code&gt; to the question when prompted.&lt;/p&gt;
 &lt;p&gt;What this means is that if an environment is remote to the development cluster then we don&amp;rsquo;t register the release pipeline
 of the environment in the Dev cluster; we leave that to the Environment Controller to perform running inside the remote cluster.&lt;/p&gt;
 &lt;h3 id=&#34;configure-an-existing-dev-cluster&#34;&gt;Configure an existing Dev cluster&lt;/h3&gt;
 &lt;p&gt;If you already have a Dev cluster that was setup with &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt; namespaces inside your Dev cluster then please do the following:&lt;/p&gt;
 &lt;p&gt;Edit the environments to mark them as remote via &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_environment/&#34;&gt;jx edit environment&lt;/a&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit env staging --remote
-jx edit env production --remote
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You need to manually disable the release pipeline in the Dev cluster.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit env staging --remote
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit env production --remote
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You need to manually disable the release pipeline in the Dev cluster.&lt;/p&gt;
 &lt;p&gt;e.g. by removing the &lt;code&gt;postsubmit&lt;/code&gt; setting in your Prow configuration if you are using &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;serverless Jenkins X Pipelines and tekton&lt;/a&gt; - or comment out the &lt;code&gt;jx step helm apply&lt;/code&gt; command in your &lt;code&gt;Jenkinsfile&lt;/code&gt; if using static jenkins server&lt;/p&gt;
 &lt;h3 id=&#34;installing-environment-controller&#34;&gt;Installing Environment Controller&lt;/h3&gt;
 &lt;p&gt;First you need to connect to your remote kubernetes cluster for &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt; using your managed kubernetes provider&amp;rsquo;s tooling.&lt;/p&gt;
 &lt;p&gt;You also need to have RBAC karma to be able to &lt;a href=&#34;https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping&#34;&gt;escalate roles&lt;/a&gt; for &lt;code&gt;Role&lt;/code&gt; and/or &lt;code&gt;ClusterRole&lt;/code&gt; permissions.&lt;/p&gt;
 &lt;p&gt;Then to install the Environment Controller use &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_addon_environment/&#34;&gt;jx create addon envctl&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;You need to specify the environments git repository and docker registry host and on GCP the project ID:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The installer needs a user + API token for the git repository which it will prompt you for the known values from your &lt;code&gt;~/.jx/gitAuth.yaml&lt;/code&gt; file so if you already installed Jenkins X it should be able to default those values for you.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The installer needs a user + API token for the git repository which it will prompt you for the known values from your &lt;code&gt;~/.jx/gitAuth.yaml&lt;/code&gt; file so if you already installed Jenkins X it should be able to default those values for you.&lt;/p&gt;
 &lt;p&gt;If you prefer you can install the helm chart &lt;code&gt;jenkins-x/environment-controller&lt;/code&gt; directly with helm by specifying the &lt;a href=&#34;https://github.com/jenkins-x-charts/environment-controller/blob/master/environment-controller/values.yaml#L3-L19&#34;&gt;required values from the values.yaml file&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Fetch issues during installation&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;You might run into the issue, that you cannot deploy the envirnment controller, since helm is unable to download the chart file. This might be due to the fact, that older helm versions have issues with a missing trailing slash on the repo url. See &lt;a href=&#34;https://github.com/helm/helm/issues/4954&#34;&gt;helm/issues/4954&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;helm fetch -d /tmp/helm-template-workdir-742964675/jxet/chartFiles --untar environment-controller --repo https://storage.googleapis.com/chartmuseum.jenkins-x.io --version
-Error: Failed to fetch https://storage.googleapis.com/charts/environment-controller-0.0.617.tgz : &lt;span style=&#34;color:#ae81ff&#34;&gt;403&lt;/span&gt; Forbidden
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In that case, upgrading your helm version might help.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;helm fetch -d /tmp/helm-template-workdir-742964675/jxet/chartFiles --untar environment-controller --repo https://storage.googleapis.com/chartmuseum.jenkins-x.io --version
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Error: Failed to fetch https://storage.googleapis.com/charts/environment-controller-0.0.617.tgz : &lt;span style=&#34;color:#ae81ff&#34;&gt;403&lt;/span&gt; Forbidden
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In that case, upgrading your helm version might help.&lt;/p&gt;
 &lt;h3 id=&#34;installing-ingress-controller&#34;&gt;Installing Ingress Controller&lt;/h3&gt;
 &lt;p&gt;If you don&amp;rsquo;t already have any kind of Ingress Controller in your remote &lt;code&gt;Staging&lt;/code&gt; / &lt;code&gt;Production&lt;/code&gt; cluster then it is recommend - particularly if you want to try out our &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;quickstarts&lt;/a&gt; which depend on Ingress to be able to be used from a web browser.&lt;/p&gt;
 &lt;p&gt;To install the default ingress controller into a remote cluster (which doesn&amp;rsquo;t have Jenkins X installed) you can use the command &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_addon_ingress/&#34;&gt;jx create addon ingctl&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon ingctl
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct &lt;code&gt;domain&lt;/code&gt; value on the generated &lt;code&gt;Ingress&lt;/code&gt; resources.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon ingctl
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct &lt;code&gt;domain&lt;/code&gt; value on the generated &lt;code&gt;Ingress&lt;/code&gt; resources.&lt;/p&gt;
 &lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
 &lt;p&gt;On startup the Environment Controller registers itself into the github repository as a webhook endpoint using its LoadBalancer service IP address. If you are using a custom ingress/DNS endpoint you can override this via the &lt;code&gt;webhookUrl&lt;/code&gt; chart value or &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_addon_environment/&#34;&gt;&amp;ndash;webhook-url CLI option&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Whenever there is a push to the &lt;code&gt;master&lt;/code&gt; branch (PRs and feature branches are handled by your Development cluster) the Environment Controller triggers a new &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline&lt;/a&gt; for the Promotion. All other push events on other branches are ignored (as they are processed by the Development cluster).&lt;/p&gt;
@@ -10752,11 +10752,11 @@ Error: Failed to fetch https://storage.googleapis.com/charts/environment-control
 &lt;ul&gt;
 &lt;li&gt;currently you have to manually add the &lt;code&gt;CHART_REPOSITORY&lt;/code&gt; environment variable into the &lt;code&gt;jenkins-x.yml&lt;/code&gt; file in your environment git repository. e.g. a &lt;code&gt;jenkins-x.yml&lt;/code&gt; file like this will do the trick - using the real URL to your chartmuseum (use &lt;code&gt;jx open&lt;/code&gt; in your development cluster:&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;env&lt;/span&gt;:
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;CHART_REPOSITORY&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jx.1.2.3.4.nip.io&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can do the above via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_variable/&#34;&gt;jx create var -n CHART_REPOSITORY&lt;/a&gt; command if you are inside a clone of the staging/production git repository - then git commit + merge the change.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;env&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;CHART_REPOSITORY&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jx.1.2.3.4.nip.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can do the above via the &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_variable/&#34;&gt;jx create var -n CHART_REPOSITORY&lt;/a&gt; command if you are inside a clone of the staging/production git repository - then git commit + merge the change.&lt;/p&gt;
 
       </description>
     </item>

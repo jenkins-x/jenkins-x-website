@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <link rel="alternate" type="application/rss&#43;xml" href="https://jenkins-x.io/v3/admin/guides/progressive-delivery/index.xml">
 <meta name="robots" content="index, follow">
 
@@ -1447,17 +1447,17 @@ if (!doNotTrack) {
   <div class="lead">How to use progressive delivery with helm 3 and helmfile</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<p>Progressive delivery allows you to gradually rollout new versions of your application to an environment using <em>canaries</em> and gradually giving traffic to the new version until you are happy to fully rollover to the new version.</p>
@@ -1470,57 +1470,57 @@ if (!doNotTrack) {
 <p>Please follow the usual <a href="/v3/admin/platform/">getting started guide for boot and helm 3</a></p>
 <h3 id="add-the-istio-and-flagger-apps">Add the istio and flagger apps</h3>
 <p>Please make sure your <code>helmfile.yaml</code> has the necessary apps for using <a href="https://flagger.app/">flagger</a> and <a href="https://istio.io/">istio</a>. Your <code>helmfile.yaml</code> in your development environment git repository should look something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">releases</span>:
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">jx-labs/istio</span>
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">flagger/flagger</span>
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">flagger/grafana</span>
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">jx-labs/flagger-metrics</span>
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">stable/kuberhealthy</span>
-...
-</code></pre></div><p>So that you remove <code>stable/nginx-ingress</code> from your <code>helmfile.yaml</code> file and ensure the above apps are added at the top of the file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">releases</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">jx-labs/istio</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">flagger/flagger</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">flagger/grafana</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">jx-labs/flagger-metrics</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">stable/kuberhealthy</span>
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>So that you remove <code>stable/nginx-ingress</code> from your <code>helmfile.yaml</code> file and ensure the above apps are added at the top of the file.</p>
 <p>Also for now I&rsquo;m afraid you will have to remove the <code>jenkins-x/jxui</code> chart as its currently not working yet with istio ingress - but we can hopefully get that working soon.</p>
 <h3 id="enable-istio-based-ingress">Enable istio based ingress</h3>
 <p>To avoid having 2 <code>LoadBalancer</code> services for both <code>istio</code> and <code>nginx</code> (which costs more money) its easier to switch to pure istio for both internal and external load balancing. This also results in a smaller footprint.</p>
 <p>To do that ensure that <code>kind: istio</code> is added to the <code>jx-requirements.yml</code> file in the top level <code>ingress:</code> section like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">ingress</span>:
-  <span style="color:#f92672">domain</span>: <span style="color:#e6db74">&#34;&#34;</span>
-  <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">istio</span>
-...
-</code></pre></div><p>Now your development git repository should be setup and be ready. Now:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">ingress</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">domain</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">istio</span>
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>Now your development git repository should be setup and be ready. Now:</p>
 <ul>
 <li>make sure you have setup <a href="/v3/guides/secrets/">any secrets you need to boot</a></li>
 </ul>
 <p>When it is all complete you should see istio, flagger, grafana pods running in the <code>istio-system</code> namespace something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl get pod -n istio-system
-NAME                                    READY   STATUS    RESTARTS   AGE
-flagger-66dc49cd-g6ptp                  1/1     Running   <span style="color:#ae81ff">0</span>          32h
-grafana-7d7d7476f6-ff6bm                1/1     Running   <span style="color:#ae81ff">0</span>          32h
-istio-ingressgateway-598796f4d9-sq8b7   1/1     Running   <span style="color:#ae81ff">0</span>          32h
-istiod-7d9c7bdd6-vjp9j                  1/1     Running   <span style="color:#ae81ff">0</span>          32h
-kuberhealthy-f54f7f7df-b5gbf            1/1     Running   <span style="color:#ae81ff">2</span>          32h
-kuberhealthy-f54f7f7df-j6qwt            1/1     Running   <span style="color:#ae81ff">0</span>          32h
-prometheus-b47d8c58c-n974m              2/2     Running   <span style="color:#ae81ff">0</span>          32h
-</code></pre></div><p>From 1.5 onwards istio is pretty small; just 2 pods. Note that those <code>kuberhealthy</code> pods are optional and just help with reporting.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ kubectl get pod -n istio-system
+</span></span><span style="display:flex;"><span>NAME                                    READY   STATUS    RESTARTS   AGE
+</span></span><span style="display:flex;"><span>flagger-66dc49cd-g6ptp                  1/1     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span><span style="display:flex;"><span>grafana-7d7d7476f6-ff6bm                1/1     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span><span style="display:flex;"><span>istio-ingressgateway-598796f4d9-sq8b7   1/1     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span><span style="display:flex;"><span>istiod-7d9c7bdd6-vjp9j                  1/1     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span><span style="display:flex;"><span>kuberhealthy-f54f7f7df-b5gbf            1/1     Running   <span style="color:#ae81ff">2</span>          32h
+</span></span><span style="display:flex;"><span>kuberhealthy-f54f7f7df-j6qwt            1/1     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span><span style="display:flex;"><span>prometheus-b47d8c58c-n974m              2/2     Running   <span style="color:#ae81ff">0</span>          32h
+</span></span></code></pre></div><p>From 1.5 onwards istio is pretty small; just 2 pods. Note that those <code>kuberhealthy</code> pods are optional and just help with reporting.</p>
 <h3 id="enable-istio-in-stagingproduction">Enable istio in staging/production</h3>
 <p>If you wish to use a Canary with <a href="https://flagger.app/">flagger</a> and <a href="https://istio.io/">istio</a> in your staging or production namespace you need to make sure you have labelled the namespace correctly to enable istio injection.</p>
 <p>To enable istio in staging:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl label namespace jx-staging istio-injection<span style="color:#f92672">=</span>enabled
-</code></pre></div><p>To enable istio in production:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl label namespace jx-production istio-injection<span style="color:#f92672">=</span>enabled
-</code></pre></div><h3 id="defaulting-to-use-canary">Defaulting to use Canary</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl label namespace jx-staging istio-injection<span style="color:#f92672">=</span>enabled
+</span></span></code></pre></div><p>To enable istio in production:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl label namespace jx-production istio-injection<span style="color:#f92672">=</span>enabled
+</span></span></code></pre></div><h3 id="defaulting-to-use-canary">Defaulting to use Canary</h3>
 <p>Run the following command to default to using canary deployments and horizontal pod autoscaling whenever you <a href="/docs/getting-started/first-project/create-quickstart/">create a new quickstart</a> or <a href="/docs/resources/guides/using-jx/creating/import/">import a project</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx edit deploy --team --canary --hpa
-</code></pre></div><p>This will enable all new quickstarts and imported projects to use canary rollouts and use horizontal pod autoscaling in all environments.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx edit deploy --team --canary --hpa
+</span></span></code></pre></div><p>This will enable all new quickstarts and imported projects to use canary rollouts and use horizontal pod autoscaling in all environments.</p>
 <p>You can switch the defaults back again at any time or configure any app to change its defaults by running <code>jx edit deploy</code> inside a git clone of an application.</p>
 <h3 id="enablingdisabling-canaryhpa-in-an-environment">Enabling/Disabling Canary/HPA in an Environment</h3>
 <p>If you want to enable/disable canary or horizontal pod autoscaling for a specific app in an environment then you can <a href="/v3/develop/apps/#customising-charts">follow the app customisation approach</a>.</p>
 <p>Assuming your app is called <code>myapp</code> then in the git repository for the environment (e.g. <code>Staging</code>) you can add/edit a file called <code>apps/mychart/values.yaml</code> to look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">canary</span>:
-  <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
-
-<span style="color:#f92672">hpa</span>:
-  <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
-</code></pre></div><p>you can enable/disable those 2 flags for canary releases and horizontal pod autoscaler at any point in any environment.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">canary</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">hpa</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><p>you can enable/disable those 2 flags for canary releases and horizontal pod autoscaler at any point in any environment.</p>
 <h2 id="using-progressive-delivery">Using Progressive Delivery</h2>
 <p>Once you have followed the above steps create a <a href="/docs/getting-started/first-project/create-quickstart/">quickstart application</a> in the usual way.</p>
 <p>As you merge changes to the master branch of your application Jenkins X will create a new release and <a href="/docs/resources/faq/using/#how-does-promotion-actually-work">promote it to the staging environment</a>.</p>
@@ -1707,7 +1707,7 @@ prometheus-b47d8c58c-n974m              2/2     Running   <span style="color:#ae
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

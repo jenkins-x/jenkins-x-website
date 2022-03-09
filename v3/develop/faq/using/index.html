@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -1450,57 +1450,57 @@ if (!doNotTrack) {
 	<div class="lead">Questions on using Jenkins X</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<h2 id="how-do-i-list-the-apps-that-have-been-deployed">How do I list the apps that have been deployed?</h2>
 <p>There is a handy HTML report in your cluster dev git repository at <strong>docs/README.md</strong> which lists all the charts deployed in every namespace with their version.</p>
 <p>You can see the helm charts that are installed along with their version, namespaces and any configuration values by looking at the <code>releases</code> section of your <code>helmfile.yaml</code> and <code>helmfile/*/helmfile.yaml</code> files in your cluster git repository.</p>
 <p>You can browse all the kubernetes resources in each namespace using the canonical layout in the <code>config-root</code> folder. e.g. all charts are versioned in git as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">config-root/
-  namespaces/
-   jx/
-     lighthouse/
-       lighthouse-webhooks-deploy.yaml    
-</code></pre></div><p>You can see the above kubernetes resource, a <code>Deployment</code> with name <code>lighthouse-webhooks</code> in the namespace <code>jx</code> which comes from the <code>lighthouse</code> chart.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>config-root/
+</span></span><span style="display:flex;"><span>  namespaces/
+</span></span><span style="display:flex;"><span>   jx/
+</span></span><span style="display:flex;"><span>     lighthouse/
+</span></span><span style="display:flex;"><span>       lighthouse-webhooks-deploy.yaml    
+</span></span></code></pre></div><p>You can see the above kubernetes resource, a <code>Deployment</code> with name <code>lighthouse-webhooks</code> in the namespace <code>jx</code> which comes from the <code>lighthouse</code> chart.</p>
 <p>There could be some additional charts installed via Terraform for the <a href="/v3/guides/operator/">git operator</a> and <a href="/v3/guides/health/">health subsystem</a> which can be viewed via:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">helm list --all-namespaces
-</code></pre></div><h2 id="how-do-i-delete-an-application">How do I delete an application?</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>helm list --all-namespaces
+</span></span></code></pre></div><h2 id="how-do-i-delete-an-application">How do I delete an application?</h2>
 <p>There is a <a href="/v3/develop/reference/jx/application/delete/">jx application delete</a> command to remove a repository from the source configuration and for removing any deployed instances of the application.</p>
 <p>e.g.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx application delete --repo myapp
-</code></pre></div><p>Or you can remove an application or helm chart from an environment by removing the entry in the <code>releases:</code> list in the <code>helmfiles/$namespace/helmfile.yaml</code> file in your dev git repository and peforming a git commit and pushing the change (usually via a Pull Request).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx application delete --repo myapp
+</span></span></code></pre></div><p>Or you can remove an application or helm chart from an environment by removing the entry in the <code>releases:</code> list in the <code>helmfiles/$namespace/helmfile.yaml</code> file in your dev git repository and peforming a git commit and pushing the change (usually via a Pull Request).</p>
 <p>Once the pull request is merged, the <a href="/v3/about/how-it-works/#boot-job">boot job will trigger</a> which will remove the application from kubernetes.</p>
 <h3 id="stopping-new-releases">Stopping new releases</h3>
 <p>If the application you are removing was released via Jenkins X then the next time there is a change committed to your applications git repsitory a new release will be triggered which will be promoted again.</p>
 <p>So to stop new releases you need to remove the application from the <code>.jx/gitops/source-config.yaml</code> repository.</p>
 <p>You should also ensure that the <code>SourceRepository</code> has been deleted. Unfortunately when using <code>kubectl apply</code> this doesn&rsquo;t usually get removed (though it does with <code>kapp</code>) so you may want to do:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># view all the SourceRepository resources:</span>
-kubectl get sr
-
-<span style="color:#75715e"># find the one that you want to remove then:</span>
-kubectl delete sr $theNameToDelete
-</code></pre></div><p>This will stop Jenkins X creating webhooks and firing pipelines when you make changes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># view all the SourceRepository resources:</span>
+</span></span><span style="display:flex;"><span>kubectl get sr
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># find the one that you want to remove then:</span>
+</span></span><span style="display:flex;"><span>kubectl delete sr $theNameToDelete
+</span></span></code></pre></div><p>This will stop Jenkins X creating webhooks and firing pipelines when you make changes.</p>
 <p>You may also want to remove the webhook from the repository to be safe.</p>
 <h2 id="how-do-i-stop-jx-asking-for-git-credentials">How do I stop jx asking for git credentials</h2>
 <p>When you run commands like <a href="/v3/develop/reference/jx/project/">jx project</a> to create/import repositories or <a href="/v3/develop/reference/jx/application/">jx application</a> to list applications need to be able to access git repositories using tokens.</p>
 <p>You can define the git credentials so that you can do <code>git clone</code> of your private git repositories via&hellip;</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p ~/git 
-echo <span style="color:#e6db74">&#34;https://</span>$USERNAME<span style="color:#e6db74">:</span>$TOKEN<span style="color:#e6db74">@github.com&#34;</span> &gt;&gt; ~/git/credentials
-
-<span style="color:#75715e"># enable git credential store</span>
-git config --global credential.helper store
-</code></pre></div><h2 id="how-do-i-use-dev-pods">How do I use dev pods?</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir -p ~/git 
+</span></span><span style="display:flex;"><span>echo <span style="color:#e6db74">&#34;https://</span>$USERNAME<span style="color:#e6db74">:</span>$TOKEN<span style="color:#e6db74">@github.com&#34;</span> &gt;&gt; ~/git/credentials
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># enable git credential store</span>
+</span></span><span style="display:flex;"><span>git config --global credential.helper store
+</span></span></code></pre></div><h2 id="how-do-i-use-dev-pods">How do I use dev pods?</h2>
 <p>See the <a href="/v3/develop/pipelines/inner-loop/">inner loop documentation</a></p>
 <h2 id="how-do-i-use-testcontainers">How do I use Testcontainers?</h2>
 <p>If you want to use a container, such as a database, inside your pipeline so that you can run tests against your database inside your pipeline then use a <a href="https://tekton.dev/vault/pipelines-v0.16.3/tasks/#specifying-sidecars">sidecar container in Tekton</a>.</p>
@@ -1669,7 +1669,7 @@ git config --global credential.helper store
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

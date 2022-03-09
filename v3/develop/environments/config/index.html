@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -1444,113 +1444,113 @@ if (!doNotTrack) {
 	<div class="lead">Configuration of Environments and Promotion</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>In your development cluster git repository the <a href="https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#requirements">jx-requirements.yml</a> file is used to define which are the default environments are used for promotion on your repositories.</p>
 <p>The <a href="https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/jx-requirements.yml#L18">default configuration</a> for environments looks something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Requirements</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#ae81ff">...</span>
-  <span style="color:#f92672">environments</span>:
-  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">dev</span>
-  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">staging</span>
-  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">production</span>
-</code></pre></div><p>which defaults to meaning that <code>Staging</code> and <code>Production</code> are namespaces (<code>jx-staging</code> and <code>jx-production</code>) in the local cluster. <code>Staging</code> will use <code>Auto</code> promotion and <code>Production</code> will use <code>Manual</code> (more on that later).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Requirements</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">...</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environments</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">dev</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">staging</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">production</span>
+</span></span></code></pre></div><p>which defaults to meaning that <code>Staging</code> and <code>Production</code> are namespaces (<code>jx-staging</code> and <code>jx-production</code>) in the local cluster. <code>Staging</code> will use <code>Auto</code> promotion and <code>Production</code> will use <code>Manual</code> (more on that later).</p>
 <h2 id="multi-cluster">Multi cluster</h2>
 <p>When you setup a <a href="/v3/admin/guides/multi-cluster/">Remote Cluster</a> for <code>Staging</code> or <code>Production</code>  you can remove the above entries for those environments.</p>
 <p>Then when you import the remote cluster repository into the development environment (to setup the CI/CD on pull requests and enable promotion) the generated Pull Request will modify your <code>jx-requirements.yml</code> to add remote entries for the remote cluster.</p>
 <p>e.g. after importing the remote <code>production</code> environment via <a href="/v3/develop/reference/jx/project/import">jx project import</a> and the pull request merging it should look like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Requirements</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#ae81ff">...</span>
-  <span style="color:#f92672">environments</span>:
-    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">dev</span>
-      <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">my-dev-environment</span>
-    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">staging</span>
-    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">production</span>
-      <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
-      <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">my-prod-repo</span>
-      <span style="color:#f92672">remoteCluster</span>: <span style="color:#66d9ef">true</span>
-</code></pre></div><h2 id="custom-environments-per-repository">Custom environments per repository</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Requirements</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">...</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environments</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">dev</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">my-dev-environment</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">staging</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">production</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">my-prod-repo</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">remoteCluster</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><h2 id="custom-environments-per-repository">Custom environments per repository</h2>
 <p>If you wish to use different sets of environments for different microservices you can override the environments that are used for promotion by adding a <code>.jx/settings.yaml</code> with <a href="https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#settings">this format</a> which overrides settings found the development environments <a href="https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#requirements">jx-requirements.yml</a> file.</p>
 <p>e.g. add something like this to your <code>.jx/settings.yaml</code> in a repository to override which environment repositories are promoted to:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Settings</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#75715e"># lets replace the promote environments</span>
-  <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">promoteEnvironments</span>:
-  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
-    <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
-    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
-  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
-    <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
-    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
-</code></pre></div><h2 id="custom-environments-per-group-of-repositories">Custom environments per group of repositories</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">core.jenkins-x.io/v4beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Settings</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># lets replace the promote environments</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">promoteEnvironments</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">myowner</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
+</span></span></code></pre></div><h2 id="custom-environments-per-group-of-repositories">Custom environments per group of repositories</h2>
 <p>If you have different teams sharing the same Jenkins X installation you may wish to organise the repositories into <em>groups</em> (e.g. a group of repositories per team).</p>
 <p>The simplest way to do this is to use a separate git organisation (owner) per team and then you already get separate configurations per group/owner in the <code>.jx/gitops/source-config.yaml</code> file in your development cluster git repository.</p>
 <p>The added benefit of using separate git organisations is that already the <a href="/v3/develop/ui/dashboard/">dashboard</a> supports filtering all pipelines by owner; so each team will get effectively their own separate UI for viewing pipelines. You can easily bookmark the dashboards view for a single owner / repository.</p>
 <p>e.g. here&rsquo;s an example `.jx/gitops/source-config.yaml in the development cluster git repository:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">gitops.jenkins-x.io/v1alpha1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">SourceConfig</span>
-<span style="color:#f92672">metadata</span>:
-  <span style="color:#f92672">creationTimestamp</span>: <span style="color:#66d9ef">null</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#f92672">groups</span>:
-  - <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
-    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">https://github.com</span>
-    <span style="color:#f92672">providerKind</span>: <span style="color:#ae81ff">github</span>
-    <span style="color:#f92672">repositories</span>:
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cheese-frontend</span>
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cheese-backend</span>
-    <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">in-repo</span>
-    <span style="color:#f92672">settings</span>:
-      <span style="color:#f92672">destination</span>:
-        <span style="color:#f92672">chartRepository</span>: <span style="color:#ae81ff">https://github.com/team1/charts.git</span>
-        <span style="color:#f92672">chartKind</span>: <span style="color:#ae81ff">pages</span>
-      <span style="color:#75715e"># lets replace the promote environments</span>
-      <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
-      <span style="color:#f92672">promoteEnvironments</span>:
-      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
-        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
-        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
-      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
-        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
-        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
-  - <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
-    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">https://github.com</span>
-    <span style="color:#f92672">providerKind</span>: <span style="color:#ae81ff">github</span>
-    <span style="color:#f92672">repositories</span>:
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">another</span>
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">somerepo</span>
-    <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">in-repo</span>
-    <span style="color:#f92672">settings</span>:
-      <span style="color:#f92672">destination</span>:
-        <span style="color:#f92672">chartRepository</span>: <span style="color:#ae81ff">https://github.com/team2/charts.git</span>
-        <span style="color:#f92672">chartKind</span>: <span style="color:#ae81ff">pages</span>
-      <span style="color:#75715e"># lets replace the promote environments</span>
-      <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
-      <span style="color:#f92672">promoteEnvironments</span>:
-      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
-        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
-        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
-      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
-        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
-        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
-</code></pre></div><p>If using different git organisations isn&rsquo;t practical you can at least get some of the benefits by just creating multiple groups in the <code>.jx/gitops/source-config.yaml</code> and associating different <code>settings:</code> to each group.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">gitops.jenkins-x.io/v1alpha1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">SourceConfig</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">creationTimestamp</span>: <span style="color:#66d9ef">null</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">groups</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">https://github.com</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">providerKind</span>: <span style="color:#ae81ff">github</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repositories</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cheese-frontend</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cheese-backend</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">in-repo</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">settings</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">destination</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">chartRepository</span>: <span style="color:#ae81ff">https://github.com/team1/charts.git</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">chartKind</span>: <span style="color:#ae81ff">pages</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># lets replace the promote environments</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">promoteEnvironments</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team1</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">https://github.com</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">providerKind</span>: <span style="color:#ae81ff">github</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repositories</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">another</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">somerepo</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">scheduler</span>: <span style="color:#ae81ff">in-repo</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">settings</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">destination</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">chartRepository</span>: <span style="color:#ae81ff">https://github.com/team2/charts.git</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">chartKind</span>: <span style="color:#ae81ff">pages</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># lets replace the promote environments</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">ignoreDevEnvironments</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">promoteEnvironments</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-staging</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-repo-name</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">key</span>: <span style="color:#ae81ff">my-prod</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">owner</span>: <span style="color:#ae81ff">team2</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">some-other-repo-name    </span>
+</span></span></code></pre></div><p>If using different git organisations isn&rsquo;t practical you can at least get some of the benefits by just creating multiple groups in the <code>.jx/gitops/source-config.yaml</code> and associating different <code>settings:</code> to each group.</p>
 <p>Note that any settings in a local repository <code>.jx/settings.yaml</code> file will be used; putting shared settings in the development git repository is used if there is no <code>.jx/settings.yaml</code> file.</p>
 
 	
@@ -1715,7 +1715,7 @@ if (!doNotTrack) {
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

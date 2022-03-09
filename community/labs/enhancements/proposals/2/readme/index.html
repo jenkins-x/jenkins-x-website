@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -648,17 +648,17 @@ if (!doNotTrack) {
 	<div class="lead">Boot Apps with Helm 3 and Helmfile</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>Issue: <a href="https://github.com/jenkins-x/jx/issues/6442">https://github.com/jenkins-x/jx/issues/6442</a></p>
@@ -671,10 +671,10 @@ if (!doNotTrack) {
 <p>The boot config repo has become quite complex and hard to manage upgrades to and share common config between different flavours of base boot config repos.  It’s also hard to experiment by adding new helm charts / features / applications that require changes to the boot install pipeline.</p>
 <p>We want a simpler more modular system that lets us, say, swap out nginx-controller and use gloo/knative/istio for ingress without a deep knowledge of the jenkins-x.yml pipeline for boot.</p>
 <p>What we’d really like is for folks to type commands like…</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx delete app nginx-controller
-jx add app istio
-jx delete app knative
-</code></pre></div><p>And for it to just work and generically add those to the right namespace.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx delete app nginx-controller
+</span></span><span style="display:flex;"><span>jx add app istio
+</span></span><span style="display:flex;"><span>jx delete app knative
+</span></span></code></pre></div><p>And for it to just work and generically add those to the right namespace.</p>
 <h2 id="background">Background</h2>
 <p>The current apps model lets you add/remove charts fine - but there are a number of limitations:</p>
 <h3 id="only-works-in-1-namespace">Only works in 1 namespace</h3>
@@ -718,47 +718,47 @@ jx delete app knative
 <h2 id="proposal">Proposal</h2>
 <p>We propose we combine the extensibility of Jenkins X using Apps with <code>jx boot</code> via a simple declarative YAML file declaring the charts to be installed.</p>
 <p>e.g. a file <code>apps.yaml</code>  something like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">defaultNamespace</span>: <span style="color:#ae81ff">jx</span>
-
-<span style="color:#f92672">releases</span>:
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">velero</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">velero</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://kubernetes-charts.storage.googleapis.com</span>
-  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">system  </span>
-  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">velero</span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">nginx-ingress</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">nginx-ingress</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://kubernetes-charts.storage.googleapis.com</span>
-  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">system  </span>
-  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kube-system</span>
-- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">external-dns</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://charts.bitnami.com/bitnami</span>
-  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">post-ingress  </span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">cert-manager</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://charts.jetstack.io</span>
-  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">cert-manager  </span>
-  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">post-ingress  </span>
-- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jxboot-resources</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">tekton</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">tekton</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">prow</span>
-  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">prow.enabled</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">prow</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">lighthouse</span>
-  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">lighthouse.enabled</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">lighthouse</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">bucketrepo</span>
-  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">bucketrepo.enabled</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">bucketrepo</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jenkins-x-platform</span>
-  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
-</code></pre></div><p>Using a yaml file in a boot config repo we list the apps that should be installed.  This means we can instead have a bare minimum base boot config repo and list the apps we want installed and different points of the installation process.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">defaultNamespace</span>: <span style="color:#ae81ff">jx</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">releases</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">velero</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">velero</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://kubernetes-charts.storage.googleapis.com</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">system  </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">velero</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">nginx-ingress</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">nginx-ingress</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://kubernetes-charts.storage.googleapis.com</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">system  </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kube-system</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">external-dns</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://charts.bitnami.com/bitnami</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">post-ingress  </span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">cert-manager</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">https://charts.jetstack.io</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">cert-manager  </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">phase</span>: <span style="color:#ae81ff">post-ingress  </span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jxboot-resources</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">tekton</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">tekton</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">prow</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">prow.enabled</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">prow</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">lighthouse</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">lighthouse.enabled</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">lighthouse</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">alias</span>: <span style="color:#ae81ff">bucketrepo</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">condition</span>: <span style="color:#ae81ff">bucketrepo.enabled</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">bucketrepo</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jenkins-x-platform</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">repository</span>: <span style="color:#ae81ff">http://chartmuseum.jenkins-x.io</span>
+</span></span></code></pre></div><p>Using a yaml file in a boot config repo we list the apps that should be installed.  This means we can instead have a bare minimum base boot config repo and list the apps we want installed and different points of the installation process.</p>
 <p>The above YAML looks quite like the <code>env/requirements.yaml</code> file only:</p>
 <ul>
 <li>it allows the <code>namespace</code> to be specified if its different from the <code>defaultNamespace</code></li>
@@ -789,21 +789,21 @@ jx delete app knative
 </ul>
 <p>so we already have 3 natural places to invoke a helmfile-like thing to install charts in different phases. So maybe thats 3 places where we invoke helmfile with a selector as @vbehar mentions if thats something helmfile can do? or we use 3 separate helmfiles maybe?</p>
 <p>e.g. the pipeline with boot apps could be something like this&hellip;</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx step helmfile --selector phase<span style="color:#f92672">=</span>pre-ingress
-
-<span style="color:#75715e"># populate ingress stuff (e.g. default domain from nip.io if not using custom domain)</span>
-jx step create install values
-
-<span style="color:#75715e"># add any charts that need a domain injected</span>
-jx step helmfile --selector phase<span style="color:#f92672">=</span>post-ingress
-
-
-<span style="color:#75715e"># populate any missing charts in vault</span>
-jx step create values --name parameters
-
-<span style="color:#75715e"># lets include generated secrets after they have been populated in vault</span>
-jx step helmfile --selector <span style="color:#e6db74">&#34;!phase&#34;</span> --secrets
-</code></pre></div><p>Then we could have a list of apps which we group as to where they get added based on what they are &amp; whether they need integration with secrets / TLS / domain / certs etc?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx step helmfile --selector phase<span style="color:#f92672">=</span>pre-ingress
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># populate ingress stuff (e.g. default domain from nip.io if not using custom domain)</span>
+</span></span><span style="display:flex;"><span>jx step create install values
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># add any charts that need a domain injected</span>
+</span></span><span style="display:flex;"><span>jx step helmfile --selector phase<span style="color:#f92672">=</span>post-ingress
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># populate any missing charts in vault</span>
+</span></span><span style="display:flex;"><span>jx step create values --name parameters
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># lets include generated secrets after they have been populated in vault</span>
+</span></span><span style="display:flex;"><span>jx step helmfile --selector <span style="color:#e6db74">&#34;!phase&#34;</span> --secrets
+</span></span></code></pre></div><p>Then we could have a list of apps which we group as to where they get added based on what they are &amp; whether they need integration with secrets / TLS / domain / certs etc?</p>
 <p>We can then modify the existing <code>jx add app / jx delete app</code> to detect the <code>apps.yaml</code> file and create the necessary code change in a Pull Request.</p>
 <p>Maybe over time we move more towards this kind of helmfile-like approach for all environments too (<code>Dev</code> / <code>Staging</code> and <code>Production</code>)?</p>
 <h3 id="proposed-schedule">Proposed Schedule</h3>
@@ -977,7 +977,7 @@ jx step helmfile --selector <span style="color:#e6db74">&#34;!phase&#34;</span> 
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

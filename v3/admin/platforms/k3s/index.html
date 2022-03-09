@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <link rel="alternate" type="application/rss&#43;xml" href="https://jenkins-x.io/v3/admin/platforms/k3s/index.xml">
 <meta name="robots" content="index, follow">
 
@@ -1446,17 +1446,17 @@ if (!doNotTrack) {
   <div class="lead">Setup Jenkins X on a K3s cluster running locally</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<hr>
@@ -1467,25 +1467,25 @@ if (!doNotTrack) {
 <h4 id="k3s">K3s</h4>
 <p>Make sure you have created a cluster using k3s.</p>
 <p>If you dont have an existing k3s cluster, you can install one by running:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># We don&#39;t support Kubernetes 1.22+ yet</span>
-curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL<span style="color:#f92672">=</span>v1.21 sh -s - --write-kubeconfig-mode <span style="color:#ae81ff">644</span>
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
-<span style="color:#75715e"># Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file</span>
-KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
-</code></pre></div><p>To verify that k3s has been installed successfully, and configured run:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get nodes
-</code></pre></div><p>This value of the node will be used later during installation and configuring of Jenkins X.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># We don&#39;t support Kubernetes 1.22+ yet</span>
+</span></span><span style="display:flex;"><span>curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL<span style="color:#f92672">=</span>v1.21 sh -s - --write-kubeconfig-mode <span style="color:#ae81ff">644</span>
+</span></span><span style="display:flex;"><span>sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file</span>
+</span></span><span style="display:flex;"><span>KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
+</span></span></code></pre></div><p>To verify that k3s has been installed successfully, and configured run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get nodes
+</span></span></code></pre></div><p>This value of the node will be used later during installation and configuring of Jenkins X.</p>
 <p>Check <a href="https://rancher.com/docs/k3s/latest/en/installation/">k3s install guide</a> for more installation options.</p>
 <h4 id="vault">Vault</h4>
 <p>Install vault cli.
 Refer to the <a href="https://www.vaultproject.io/docs/install">vault docs</a> on how to install vault for your platform.</p>
 <p>Make sure you have vault running in a docker container with kubernetes auth enabled.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">docker run --name jx-k3s-vault -d --cap-add<span style="color:#f92672">=</span>IPC_LOCK -e <span style="color:#e6db74">&#39;VAULT_DEV_ROOT_TOKEN_ID=myroot&#39;</span> -e <span style="color:#e6db74">&#39;VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200&#39;</span> --net host vault:latest
-</code></pre></div><p>To verify if vault started properly use <code>docker logs jx-k3s-vault</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>docker run --name jx-k3s-vault -d --cap-add<span style="color:#f92672">=</span>IPC_LOCK -e <span style="color:#e6db74">&#39;VAULT_DEV_ROOT_TOKEN_ID=myroot&#39;</span> -e <span style="color:#e6db74">&#39;VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200&#39;</span> --net host vault:latest
+</span></span></code></pre></div><p>To verify if vault started properly use <code>docker logs jx-k3s-vault</code>.</p>
 <p>Next enable kubernetes auth in vault.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
-vault auth enable kubernetes
-</code></pre></div><p>Note: If you get the error <code>Error enabling kubernetes auth: Post &quot;https://127.0.0.1:8200/v1/sys/auth/kubernetes&quot;: http: server gave HTTP response to HTTPS client</code>, try the command <code>vault login myroot</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
+</span></span><span style="display:flex;"><span>vault auth enable kubernetes
+</span></span></code></pre></div><p>Note: If you get the error <code>Error enabling kubernetes auth: Post &quot;https://127.0.0.1:8200/v1/sys/auth/kubernetes&quot;: http: server gave HTTP response to HTTPS client</code>, try the command <code>vault login myroot</code>.</p>
 <h4 id="github">Github</h4>
 <ul>
 <li>Create a git bot user (different from your own personal user) e.g. <a href="https://github.com/join">https://github.com/join</a> and generate a a personal access token, this will be used by Jenkins X to interact with git repositories. e.g. <a href="https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook">https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook</a></li>
@@ -1498,14 +1498,14 @@ vault auth enable kubernetes
 Replace with <code>&quot;http://&lt;replace with k3s node name&gt;:8200&quot;</code></li>
 <li>Commit and push your changes:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add .
-git commit -m <span style="color:#e6db74">&#34;fix: set vault url&#34;</span>
-git push origin main
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add .
+</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;fix: set vault url&#34;</span>
+</span></span><span style="display:flex;"><span>git push origin main
+</span></span></code></pre></div><ul>
 <li>Set the GIT_USERNAME (bot username) and GIT_TOKEN (bot personal access token) env variable and run:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin operator --username $GIT_USERNAME --token $GIT_TOKEN --url &lt;url of the cluster git repo&gt; --set <span style="color:#e6db74">&#34;jxBootJobEnvVarSecrets.EXTERNAL_VAULT=\&#34;true\&#34;&#34;</span> --set <span style="color:#e6db74">&#34;jxBootJobEnvVarSecrets.VAULT_ADDR=http://&lt;replace with k3s node name&gt;:8200&#34;</span>
-</code></pre></div><blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx admin operator --username $GIT_USERNAME --token $GIT_TOKEN --url &lt;url of the cluster git repo&gt; --set <span style="color:#e6db74">&#34;jxBootJobEnvVarSecrets.EXTERNAL_VAULT=\&#34;true\&#34;&#34;</span> --set <span style="color:#e6db74">&#34;jxBootJobEnvVarSecrets.VAULT_ADDR=http://&lt;replace with k3s node name&gt;:8200&#34;</span>
+</span></span></code></pre></div><blockquote>
 <p>Note: The first job will fail as it cannot authenticate against vault.
 The errors will be of the form <code>error: failed to populate secrets: failed to create a secret manager for ExternalSecret</code>.
 Once the secret-infra namespace has been created, we can configure vault.
@@ -1517,39 +1517,39 @@ If you get an error connecting to the cluster, try running <code>kubectl config 
 <ul>
 <li>Create a vault config</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
-VAULT_HELM_SECRET_NAME<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secrets --output<span style="color:#f92672">=</span>json | jq -r <span style="color:#e6db74">&#39;.items[].metadata | select(.name|startswith(&#34;kubernetes-external-secrets-token-&#34;)).name&#39;</span><span style="color:#66d9ef">)</span>
-TOKEN_REVIEW_JWT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;go-template={{ .data.token }}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
-KUBE_CA_CERT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.certificate-authority-data}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
-KUBE_HOST<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.server}&#39;</span><span style="color:#66d9ef">)</span>
-vault write auth/kubernetes/config <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>        token_reviewer_jwt<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$TOKEN_REVIEW_JWT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>        kubernetes_host<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$KUBE_HOST<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>        kubernetes_ca_cert<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$KUBE_CA_CERT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>        disable_iss_validation<span style="color:#f92672">=</span>true
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
+</span></span><span style="display:flex;"><span>VAULT_HELM_SECRET_NAME<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secrets --output<span style="color:#f92672">=</span>json | jq -r <span style="color:#e6db74">&#39;.items[].metadata | select(.name|startswith(&#34;kubernetes-external-secrets-token-&#34;)).name&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>TOKEN_REVIEW_JWT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;go-template={{ .data.token }}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>KUBE_CA_CERT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.certificate-authority-data}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>KUBE_HOST<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.server}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>vault write auth/kubernetes/config <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        token_reviewer_jwt<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$TOKEN_REVIEW_JWT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        kubernetes_host<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$KUBE_HOST<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        kubernetes_ca_cert<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$KUBE_CA_CERT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        disable_iss_validation<span style="color:#f92672">=</span>true
+</span></span></code></pre></div><ul>
 <li>Create a vault role:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">vault write /auth/kubernetes/role/jx-vault bound_service_account_names<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;*&#39;</span> bound_service_account_namespaces<span style="color:#f92672">=</span>secret-infra token_policies<span style="color:#f92672">=</span>jx-policy token_no_default_policy<span style="color:#f92672">=</span>true disable_iss_validation<span style="color:#f92672">=</span>true
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>vault write /auth/kubernetes/role/jx-vault bound_service_account_names<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;*&#39;</span> bound_service_account_namespaces<span style="color:#f92672">=</span>secret-infra token_policies<span style="color:#f92672">=</span>jx-policy token_no_default_policy<span style="color:#f92672">=</span>true disable_iss_validation<span style="color:#f92672">=</span>true
+</span></span></code></pre></div><ul>
 <li>Create a policy attached to vault role:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">vault policy write jx-policy - <span style="color:#e6db74">&lt;&lt;EOF
-</span><span style="color:#e6db74">path &#34;secret/*&#34; {
-</span><span style="color:#e6db74">  capabilities = [&#34;sudo&#34;, &#34;create&#34;, &#34;read&#34;, &#34;update&#34;, &#34;delete&#34;, &#34;list&#34;]
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">EOF</span>
-</code></pre></div><p>Once vault is configured, pull the changes commited to the cluster git repository by the bootjob, and push a dummy job</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git pull
-<span style="color:#75715e"># Make a dummy change (change Readme file for example)</span>
-git add .
-git commit -m <span style="color:#e6db74">&#34;chore: dummy commit 1&#34;</span>
-git push origin main
-</code></pre></div><p>tail the logs of <code>jx-git-operator</code> pod in the <code>jx-git-operator</code> namespace.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>vault policy write jx-policy - <span style="color:#e6db74">&lt;&lt;EOF
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">path &#34;secret/*&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  capabilities = [&#34;sudo&#34;, &#34;create&#34;, &#34;read&#34;, &#34;update&#34;, &#34;delete&#34;, &#34;list&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div><p>Once vault is configured, pull the changes commited to the cluster git repository by the bootjob, and push a dummy job</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git pull
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Make a dummy change (change Readme file for example)</span>
+</span></span><span style="display:flex;"><span>git add .
+</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;chore: dummy commit 1&#34;</span>
+</span></span><span style="display:flex;"><span>git push origin main
+</span></span></code></pre></div><p>tail the logs of <code>jx-git-operator</code> pod in the <code>jx-git-operator</code> namespace.</p>
 <pre tabindex="0"><code>not creating a Job in namespace jx-git-operator for repo jx-boot sha XXXXXX yet as there is an active job jx-boot-XXXXXXX
 </code></pre><p>Kill that job.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl delete job jx-boot-97dbb72f-4e4e-4b0e-8eb2-8908997b19f7 -n jx-git-operator
-</code></pre></div><p>Once it&rsquo;s killed a new boot job will be triggered.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl delete job jx-boot-97dbb72f-4e4e-4b0e-8eb2-8908997b19f7 -n jx-git-operator
+</span></span></code></pre></div><p>Once it&rsquo;s killed a new boot job will be triggered.
 This job will create the secrets in vault which will be used by external secrets to create kubernetes secrets.</p>
 <ul>
 <li>To verify the job succeeded, run <code>jx admin log</code></li>
@@ -1559,38 +1559,38 @@ This job will create the secrets in vault which will be used by external secrets
 <ul>
 <li>Get the external IP of the traefik service (loadbalancer)</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get svc -A | grep LoadBalancer
-kube-system   traefik          LoadBalancer   &lt;cluster-ip&gt;    &lt;external-ip&gt;    80:31123/TCP,443:31783/TCP   40m
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get svc -A | grep LoadBalancer
+</span></span><span style="display:flex;"><span>kube-system   traefik          LoadBalancer   &lt;cluster-ip&gt;    &lt;external-ip&gt;    80:31123/TCP,443:31783/TCP   40m
+</span></span></code></pre></div><ul>
 <li>Edit the jx-requirements.yaml file by editing the ingress domain:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># There may be some changes committed by the jx boot job</span>
-git pull
-jx gitops requirements edit --domain &lt;external-ip&gt;.nip.io
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># There may be some changes committed by the jx boot job</span>
+</span></span><span style="display:flex;"><span>git pull
+</span></span><span style="display:flex;"><span>jx gitops requirements edit --domain &lt;external-ip&gt;.nip.io
+</span></span></code></pre></div><ul>
 <li>Next, download and install <a href="https://ngrok.com/">ngrok</a>. Run this in a new terminal window/tab:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ngrok http <span style="color:#ae81ff">8080</span>
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok http <span style="color:#ae81ff">8080</span>
+</span></span></code></pre></div><ul>
 <li>Once this tunnel is open, paste the ngrok url (without http and https) in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.</li>
 <li>commit and push the changes.</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add .
-git commit -m <span style="color:#e6db74">&#34;chore: new ngrok ip&#34;</span>
-git push origin main
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add .
+</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;chore: new ngrok ip&#34;</span>
+</span></span><span style="display:flex;"><span>git push origin main
+</span></span></code></pre></div><ul>
 <li>In another terminal run the following command to enable webhooks via ngrok</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx ns jx
-kubectl port-forward svc/hook 8080:80
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx ns jx
+</span></span><span style="display:flex;"><span>kubectl port-forward svc/hook 8080:80
+</span></span></code></pre></div><ul>
 <li>Once the bootjob has succeeded, you should see:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">HTTP Requests
--------------
-
-POST /hook                     <span style="color:#ae81ff">200</span> OK
-</code></pre></div><h3 id="next-steps">Next steps</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>HTTP Requests
+</span></span><span style="display:flex;"><span>-------------
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>POST /hook                     <span style="color:#ae81ff">200</span> OK
+</span></span></code></pre></div><h3 id="next-steps">Next steps</h3>
 <ul>
 <li><a href="/v3/develop/create-project/" class="btn bg-primary text-light">Create or import projects</a></li>
 </ul>
@@ -1768,7 +1768,7 @@ POST /hook                     <span style="color:#ae81ff">200</span> OK
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

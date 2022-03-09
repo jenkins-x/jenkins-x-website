@@ -68,10 +68,10 @@
 &lt;p&gt;The boot config repo has become quite complex and hard to manage upgrades to and share common config between different flavours of base boot config repos.  It’s also hard to experiment by adding new helm charts / features / applications that require changes to the boot install pipeline.&lt;/p&gt;
 &lt;p&gt;We want a simpler more modular system that lets us, say, swap out nginx-controller and use gloo/knative/istio for ingress without a deep knowledge of the jenkins-x.yml pipeline for boot.&lt;/p&gt;
 &lt;p&gt;What we’d really like is for folks to type commands like…&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx delete app nginx-controller
-jx add app istio
-jx delete app knative
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And for it to just work and generically add those to the right namespace.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx delete app nginx-controller
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx add app istio
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx delete app knative
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And for it to just work and generically add those to the right namespace.&lt;/p&gt;
 &lt;h2 id=&#34;background&#34;&gt;Background&lt;/h2&gt;
 &lt;p&gt;The current apps model lets you add/remove charts fine - but there are a number of limitations:&lt;/p&gt;
 &lt;h3 id=&#34;only-works-in-1-namespace&#34;&gt;Only works in 1 namespace&lt;/h3&gt;
@@ -115,47 +115,47 @@ jx delete app knative
 &lt;h2 id=&#34;proposal&#34;&gt;Proposal&lt;/h2&gt;
 &lt;p&gt;We propose we combine the extensibility of Jenkins X using Apps with &lt;code&gt;jx boot&lt;/code&gt; via a simple declarative YAML file declaring the charts to be installed.&lt;/p&gt;
 &lt;p&gt;e.g. a file &lt;code&gt;apps.yaml&lt;/code&gt;  something like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;defaultNamespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
-
-&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://kubernetes-charts.storage.googleapis.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system  &lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nginx-ingress&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nginx-ingress&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://kubernetes-charts.storage.googleapis.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system  &lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kube-system&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;external-dns&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.bitnami.com/bitnami&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;post-ingress  &lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.jetstack.io&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager  &lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;post-ingress  &lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jxboot-resources&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;tekton&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;tekton&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow.enabled&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse.enabled&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo.enabled&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkins-x-platform&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using a yaml file in a boot config repo we list the apps that should be installed.  This means we can instead have a bare minimum base boot config repo and list the apps we want installed and different points of the installation process.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;defaultNamespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://kubernetes-charts.storage.googleapis.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system  &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;velero&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nginx-ingress&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nginx-ingress&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://kubernetes-charts.storage.googleapis.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system  &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kube-system&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;external-dns&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.bitnami.com/bitnami&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;post-ingress  &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.jetstack.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager  &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;phase&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;post-ingress  &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jxboot-resources&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;tekton&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;tekton&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow.enabled&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse.enabled&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;alias&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;condition&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo.enabled&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkins-x-platform&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://chartmuseum.jenkins-x.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Using a yaml file in a boot config repo we list the apps that should be installed.  This means we can instead have a bare minimum base boot config repo and list the apps we want installed and different points of the installation process.&lt;/p&gt;
 &lt;p&gt;The above YAML looks quite like the &lt;code&gt;env/requirements.yaml&lt;/code&gt; file only:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;it allows the &lt;code&gt;namespace&lt;/code&gt; to be specified if its different from the &lt;code&gt;defaultNamespace&lt;/code&gt;&lt;/li&gt;
@@ -186,21 +186,21 @@ jx delete app knative
 &lt;/ul&gt;
 &lt;p&gt;so we already have 3 natural places to invoke a helmfile-like thing to install charts in different phases. So maybe thats 3 places where we invoke helmfile with a selector as @vbehar mentions if thats something helmfile can do? or we use 3 separate helmfiles maybe?&lt;/p&gt;
 &lt;p&gt;e.g. the pipeline with boot apps could be something like this&amp;hellip;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx step helmfile --selector phase&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;pre-ingress
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# populate ingress stuff (e.g. default domain from nip.io if not using custom domain)&lt;/span&gt;
-jx step create install values
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# add any charts that need a domain injected&lt;/span&gt;
-jx step helmfile --selector phase&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;post-ingress
-
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# populate any missing charts in vault&lt;/span&gt;
-jx step create values --name parameters
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# lets include generated secrets after they have been populated in vault&lt;/span&gt;
-jx step helmfile --selector &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;!phase&amp;#34;&lt;/span&gt; --secrets
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then we could have a list of apps which we group as to where they get added based on what they are &amp;amp; whether they need integration with secrets / TLS / domain / certs etc?&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step helmfile --selector phase&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;pre-ingress
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# populate ingress stuff (e.g. default domain from nip.io if not using custom domain)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step create install values
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# add any charts that need a domain injected&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step helmfile --selector phase&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;post-ingress
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# populate any missing charts in vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step create values --name parameters
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# lets include generated secrets after they have been populated in vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step helmfile --selector &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;!phase&amp;#34;&lt;/span&gt; --secrets
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then we could have a list of apps which we group as to where they get added based on what they are &amp;amp; whether they need integration with secrets / TLS / domain / certs etc?&lt;/p&gt;
 &lt;p&gt;We can then modify the existing &lt;code&gt;jx add app / jx delete app&lt;/code&gt; to detect the &lt;code&gt;apps.yaml&lt;/code&gt; file and create the necessary code change in a Pull Request.&lt;/p&gt;
 &lt;p&gt;Maybe over time we move more towards this kind of helmfile-like approach for all environments too (&lt;code&gt;Dev&lt;/code&gt; / &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt;)?&lt;/p&gt;
 &lt;h3 id=&#34;proposed-schedule&#34;&gt;Proposed Schedule&lt;/h3&gt;
@@ -250,18 +250,17 @@ This proposal outlines an approach to separate cloud resource creation from the 
 We provide documentation on what is required as well as Terraform scripts to create and manage the resources necessary.
 &lt;code&gt;terraform apply&lt;/code&gt; can be seen as a replacement for &lt;code&gt;jx create cluster&lt;/code&gt;.
 After implementing this proposal, the Getting Started workflow for the user will exemplary look like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ git clone https://github.com/jenkins-x/jx-cloud-provisioners
-$ cd jx-cloud-provisioners/eks/terraform 
-$ terraform init
-&lt;span style=&#34;color:#75715e&#34;&gt;# edit variables file to provide required details for the cloud provider&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# if not provided Terraform will prompt for the required variables &lt;/span&gt;
-$ terraform apply -var-file&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;terraform.tfvars
-&lt;span style=&#34;color:#75715e&#34;&gt;# this will also create a templated jx-requirements.yml to be used with &amp;#39;jx boot&amp;#39;&lt;/span&gt;
-
-$ cd ..
-$ jx boot -r jx-cloud-provisioners/eks/terraform/jx-requirements.yml
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As a prerequisite, the user needs to have &lt;code&gt;terraform&lt;/code&gt; as well as &lt;code&gt;jx&lt;/code&gt; installed.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ git clone https://github.com/jenkins-x/jx-cloud-provisioners
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ cd jx-cloud-provisioners/eks/terraform 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ terraform init
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# edit variables file to provide required details for the cloud provider&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# if not provided Terraform will prompt for the required variables &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ terraform apply -var-file&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;terraform.tfvars
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# this will also create a templated jx-requirements.yml to be used with &amp;#39;jx boot&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ cd ..
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ jx boot -r jx-cloud-provisioners/eks/terraform/jx-requirements.yml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As a prerequisite, the user needs to have &lt;code&gt;terraform&lt;/code&gt; as well as &lt;code&gt;jx&lt;/code&gt; installed.&lt;/p&gt;
 &lt;p&gt;After the implementation of this proposal, the user has to create cloud resources required by new Jenkins X features upfront, either manually or via the Terraform scripts.
 &lt;code&gt;jx boot&lt;/code&gt; or &lt;code&gt;jx upgrade boot&lt;/code&gt; will fail until the user has ensured that the required resources exist.&lt;/p&gt;
 &lt;p&gt;In the future, the Jenkins X install process (&lt;code&gt;jx boot&lt;/code&gt;) will always only verify whether a needed resource exists, never create it
@@ -469,62 +468,61 @@ This work might also be used for the &amp;ldquo;jx boot&amp;rdquo; part.&lt;/p&g
 &lt;p&gt;The &lt;code&gt;charts/preview&lt;/code&gt; directory won&amp;rsquo;t be a Helm chart anymore, but an Helmfile project.
 And instead of using raw Helm commands to deploy the preview, jx will use Helmfile commands.&lt;/p&gt;
 &lt;p&gt;The only required file in this folder is &lt;code&gt;the helmfile.yaml&lt;/code&gt; - which defines all the releases we want to install.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# https://github.com/roboll/helmfile&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# we can use Helm 3 if its present in the container image&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;helmBinary&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helm3&lt;/span&gt;
-
-&lt;span style=&#34;color:#f92672&#34;&gt;helmDefaults&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;wait&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;timeout&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;180&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# seconds&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# extra Helm repositories&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitnami&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.bitnami.com/bitnami&lt;/span&gt;
-  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something-else&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://charts.example.com&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# all the releases we want to install in a preview env&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
-
-  - &lt;span style=&#34;color:#75715e&#34;&gt;# the main application&amp;#39;s chart&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.preview.releaseName }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.preview.namespace }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;../{{ requiredEnv &amp;#34;APP_NAME&amp;#34; }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
-      - &lt;span style=&#34;color:#ae81ff&#34;&gt;values.yaml.gotmpl&lt;/span&gt;
-
-  - &lt;span style=&#34;color:#75715e&#34;&gt;# we can include other releases as well&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;postgresql&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: 
-    &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitnami/postgresql&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;8.9.2&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
-      - &lt;span style=&#34;color:#ae81ff&#34;&gt;postgresql.yaml&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Custom values can either be written directly in this file, or in other files - such as values.yaml.gotmpl - which are defined in the main &lt;code&gt;helmfile.yaml&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go-text-template&#34; data-lang=&#34;go-text-template&#34;&gt;# This file contains the custom values for our application&amp;#39;s chart
-# and support Go templates, parsed by https://github.com/roboll/helmfile
-
-image:
-  repository: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.preview.image.repository&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
-  tag: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.preview.image.tag&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
-
-ingress:
-  enabled: true
-  class: nginx
-  hosts:
-    - &amp;#39;&lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.values.preview.name&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;.&lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.expose.config.domain&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;&amp;#39;
-  tls:
-    enabled: true
-    secrets:
-      wildcard:
-        replicateFrom: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requiredEnv&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;WILDCARD_TLS_SECRET_LOCATION&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
-
-labels:
-  git-commit: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requiredEnv&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PULL_PULL_SHA&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command will have to be modified to execute the &lt;code&gt;helmfile apply&lt;/code&gt; command on this directory. This command will take care of:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# https://github.com/roboll/helmfile&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# we can use Helm 3 if its present in the container image&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;helmBinary&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;helm3&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;helmDefaults&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;wait&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;timeout&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;180&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# seconds&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# extra Helm repositories&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitnami&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://charts.bitnami.com/bitnami&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;something-else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;http://charts.example.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# all the releases we want to install in a preview env&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;releases&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#75715e&#34;&gt;# the main application&amp;#39;s chart&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.preview.releaseName }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.preview.namespace }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;../{{ requiredEnv &amp;#34;APP_NAME&amp;#34; }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      - &lt;span style=&#34;color:#ae81ff&#34;&gt;values.yaml.gotmpl&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#75715e&#34;&gt;# we can include other releases as well&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;postgresql&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitnami/postgresql&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;version&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;8.9.2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      - &lt;span style=&#34;color:#ae81ff&#34;&gt;postgresql.yaml&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Custom values can either be written directly in this file, or in other files - such as values.yaml.gotmpl - which are defined in the main &lt;code&gt;helmfile.yaml&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-go-text-template&#34; data-lang=&#34;go-text-template&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;# This file contains the custom values for our application&amp;#39;s chart
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;# and support Go templates, parsed by https://github.com/roboll/helmfile
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;image:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  repository: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.preview.image.repository&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tag: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.preview.image.tag&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ingress:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  enabled: true
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  class: nginx
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  hosts:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &amp;#39;&lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.values.preview.name&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;.&lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;.Values.expose.config.domain&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tls:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    enabled: true
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    secrets:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      wildcard:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        replicateFrom: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requiredEnv&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;WILDCARD_TLS_SECRET_LOCATION&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  git-commit: &lt;span style=&#34;color:#75715e&#34;&gt;{{&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;requiredEnv&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;PULL_PULL_SHA&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command will have to be modified to execute the &lt;code&gt;helmfile apply&lt;/code&gt; command on this directory. This command will take care of:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;adding required Helm repositories&lt;/li&gt;
 &lt;li&gt;calculates the &amp;ldquo;diff&amp;rdquo; of what needs to be done, and print it&lt;/li&gt;
@@ -550,29 +548,29 @@ It&amp;rsquo;s just a quick and dirty implementation that works for our use-case
 &lt;li&gt;the &lt;code&gt;helmfile&lt;/code&gt; command being used is &lt;code&gt;helmfile --file=helmfile.yaml --state-values-file=extraValues.yaml --state-values-set=tags.jx-ns-NAMESPACE=true,global.jxNsNAMESPACE=true,...,global.jxNs=NAMESPACE,... --namespace=NAMESPACE apply&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;We call it with the following flags: &lt;code&gt;jx preview --app &amp;quot;${APP_NAME}&amp;quot; --namespace &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --name &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --release &amp;quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;quot; --helmfile &amp;quot;helmfile.yaml&amp;quot; --verbose&lt;/code&gt; - see  the jenkins-x.yml below for the jx pipeline.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;buildPack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;pipelines&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;pullRequest&lt;/span&gt;:
-      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;:
-        &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
-          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;preview-env&lt;/span&gt;
-            &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
-              - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;deploy-preview-env&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx preview&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;app &amp;#34;${APP_NAME}&amp;#34;&lt;/span&gt;
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;namespace &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;name &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;release &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;helmfile &amp;#34;helmfile.yaml&amp;#34;&lt;/span&gt;
-                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;verbose&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;dir&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;charts/preview&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;our-custom-jx-image-with-helmfile&lt;/span&gt;
-                &lt;span style=&#34;color:#f92672&#34;&gt;env&lt;/span&gt;:
-                  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;WILDCARD_TLS_SECRET_LOCATION&lt;/span&gt;
-                    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx/tls-jx-example-com-p&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;--app&lt;/code&gt; flag is &amp;ldquo;mandatory&amp;rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&amp;rsquo;t exist anymore.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;buildPack&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;pipelineConfig&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;pipelines&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;pullRequest&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;pipeline&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;stages&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;preview-env&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;deploy-preview-env&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;command&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx preview&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;args&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;app &amp;#34;${APP_NAME}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;namespace &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;name &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;release &amp;#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;helmfile &amp;#34;helmfile.yaml&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - --&lt;span style=&#34;color:#ae81ff&#34;&gt;verbose&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;dir&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;charts/preview&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;our-custom-jx-image-with-helmfile&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#f92672&#34;&gt;env&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;WILDCARD_TLS_SECRET_LOCATION&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx/tls-jx-example-com-p&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;--app&lt;/code&gt; flag is &amp;ldquo;mandatory&amp;rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&amp;rsquo;t exist anymore.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;jx preview&lt;/code&gt; command is now run in a specific container image, which contains:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;jx&lt;/code&gt; built from the &lt;a href=&#34;https://github.com/vbehar/jx/tree/preview-helmfile&#34;&gt;preview-helmfile branch&lt;/a&gt;&lt;/li&gt;
@@ -582,309 +580,309 @@ It&amp;rsquo;s just a quick and dirty implementation that works for our use-case
 see the Dockerfile below for more details. This image has both &lt;code&gt;helm&lt;/code&gt; and &lt;code&gt;helm3&lt;/code&gt; binaries. We might have plugins compatibility issues.
 For now in this quick-and-dirty implementation we ignored this issue, because this image is only used to run &lt;code&gt;jx preview&lt;/code&gt; with helmfile and helm 3, so it never uses Helm 2.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# part of the Dockerfile used to build the container image used to run &amp;#34;jx preview&amp;#34; with helmfile&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install helm&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_VERSION 2.14.2&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_HOME &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/helm&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -f https://storage.googleapis.com/kubernetes-helm/helm-v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;-linux-amd64.tar.gz | tar xzv &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/helm /usr/bin/ &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/tiller /usr/bin/ &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; rm -rf linux-amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm init --client-only&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM3_VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;3.2.0&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm3 &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM3_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -f https://get.helm.sh/helm-v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM3_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;-linux-amd64.tar.gz | tar xzv &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/helm /usr/bin/helm3 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; rm -rf linux-amd64&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_PLUGINS&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/helm/plugins&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm3 plugins in &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_PLUGINS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; export XDG_DATA_HOME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/futuresimple/helm-secrets --version v2.0.2 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/databus23/helm-diff --version v3.1.1 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/hayorov/helm-gcs --version 0.3.1 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; unset XDG_DATA_HOME&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELMFILE_VERSION 0.111.0&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing helmfile &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELMFILE_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -LO https://github.com/roboll/helmfile/releases/download/v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELMFILE_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/helmfile_linux_amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod +x helmfile_linux_amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv helmfile_linux_amd64 /usr/bin/helmfile&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install kubectl&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; KUBECTL_VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;1.15&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing kubectl &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;KUBECTL_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -LO https://storage.googleapis.com/kubernetes-release/release/&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;curl -s https://storage.googleapis.com/kubernetes-release/release/stable-&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;KUBECTL_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;.txt&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;/bin/linux/amd64/kubectl &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod +x kubectl &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv kubectl /usr/bin/&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the output:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-docker&#34; data-lang=&#34;docker&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# part of the Dockerfile used to build the container image used to run &amp;#34;jx preview&amp;#34; with helmfile&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install helm&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_VERSION 2.14.2&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_HOME &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/helm&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -f https://storage.googleapis.com/kubernetes-helm/helm-v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;-linux-amd64.tar.gz | tar xzv &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/helm /usr/bin/ &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/tiller /usr/bin/ &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; rm -rf linux-amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm init --client-only&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM3_VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;3.2.0&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm3 &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM3_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -f https://get.helm.sh/helm-v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM3_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;-linux-amd64.tar.gz | tar xzv &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv linux-amd64/helm /usr/bin/helm3 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; rm -rf linux-amd64&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELM_PLUGINS&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/helm/plugins&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing Helm3 plugins in &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELM_PLUGINS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; export XDG_DATA_HOME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/futuresimple/helm-secrets --version v2.0.2 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/databus23/helm-diff --version v3.1.1 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; helm3 plugin install https://github.com/hayorov/helm-gcs --version 0.3.1 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; unset XDG_DATA_HOME&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; HELMFILE_VERSION 0.111.0&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing helmfile &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELMFILE_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -LO https://github.com/roboll/helmfile/releases/download/v&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;HELMFILE_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/helmfile_linux_amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod +x helmfile_linux_amd64 &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv helmfile_linux_amd64 /usr/bin/helmfile&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install kubectl&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;ENV&lt;/span&gt; KUBECTL_VERSION&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;1.15&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;RUN&lt;/span&gt; echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Installing kubectl &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;KUBECTL_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl -LO https://storage.googleapis.com/kubernetes-release/release/&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;curl -s https://storage.googleapis.com/kubernetes-release/release/stable-&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;KUBECTL_VERSION&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;.txt&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;/bin/linux/amd64/kubectl &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod +x kubectl &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv kubectl /usr/bin/&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can see the output:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;for the first run&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;Creating a preview
-expose:
-  Annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
-  config:
-    domain: jx.example.com
-    exposer: Ingress
-    http: &amp;#34;true&amp;#34;
-preview:
-  image:
-    repository: gcr.io/owner/myapp
-    tag: 0.0.0-SNAPSHOT-PR-129-16
-  name: preview-myapp-pr-129
-  namespace: preview-myapp-pr-129
-  releaseName: preview-myapp-pr-129
-Installing Preview Environment with Helmfile...
-Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
-Building dependency release=preview-myapp-pr-129, chart=../myapp
-Comparing release=preview-myapp-pr-129, chart=../myapp
-********************
-
-	Release was not present in Helm.  Diff will show entire contents as new.
-
-********************
-preview-myapp-pr-129, preview-myapp-pr-129-tls-wildcard, Secret (v1) has been added:
-+ # Source: myapp/templates/ingress.yaml
-+ apiVersion: v1
-+ kind: Secret
-+ metadata:
-+   annotations:
-+     replicator.v1.mittwald.de/replicate-from: jx/tls-jx-example-com-p
-+   labels:
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/managed-by: Helm
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/version: latest
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+     helm.sh/chart: myapp-4.3.0
-+   name: preview-myapp-pr-129-tls-wildcard
-+ data:
-+   tls.crt: &amp;#39;++++++++ # (0 bytes)&amp;#39;
-+   tls.key: &amp;#39;++++++++ # (0 bytes)&amp;#39;
-+ type: kubernetes.io/tls
-
-preview-myapp-pr-129, preview-myapp-pr-129, Service (v1) has been added:
--
-+ # Source: myapp/templates/service.yaml
-+ apiVersion: v1
-+ kind: Service
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+ spec:
-+   type: ClusterIP
-+   ports:
-+     - name: http
-+       port: 8080
-+       targetPort: http
-+   selector:
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has been added:
--
-+ # Source: myapp/templates/deployment.yaml
-+ apiVersion: apps/v1
-+ kind: Deployment
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+ spec:
-+   replicas: 1
-+   revisionHistoryLimit: 2
-+   selector:
-+     matchLabels:
-+       app.kubernetes.io/name: myapp
-+       app.kubernetes.io/instance: preview-myapp-pr-129
-+   template:
-+     metadata:
-+       labels:
-+         helm.sh/chart: myapp-4.3.0
-+         app.kubernetes.io/name: myapp
-+         app.kubernetes.io/instance: preview-myapp-pr-129
-+         app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-+         app.kubernetes.io/managed-by: Helm
-+         git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+     spec:
-+       containers:
-+         - name: myapp
-+           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&amp;#34;
-+           ports:
-+             - name: http
-+               containerPort: 8080
-+           livenessProbe:
-+             tcpSocket:
-+               port: http
-+           readinessProbe:
-+             httpGet:
-+               path: /
-+               port: http
-+           resources:
-+             limits:
-+               cpu: &amp;#34;0.1&amp;#34;
-+               memory: 32M
-+             requests:
-+               cpu: &amp;#34;0.1&amp;#34;
-+               memory: 32M
-+       enableServiceLinks: false
-+       terminationGracePeriodSeconds: 30
-preview-myapp-pr-129, preview-myapp-pr-129, Ingress (networking.k8s.io) has been added:
--
-+ # Source: myapp/templates/ingress.yaml
-+ apiVersion: networking.k8s.io/v1beta1
-+ kind: Ingress
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+   annotations:
-+     kubernetes.io/ingress.class: nginx
-+     kubernetes.io/ingress.allow-http: &amp;#34;false&amp;#34;
-+ spec:
-+   rules:
-+     - host: preview-myapp-pr-129.jx.example.com
-+       http:
-+         paths:
-+           - backend:
-+               serviceName: preview-myapp-pr-129
-+               servicePort: 8080
-+   tls:
-+     - secretName: preview-myapp-pr-129-tls-wildcard
-
-Upgrading release=preview-myapp-pr-129, chart=../myapp
-Release &amp;#34;preview-myapp-pr-129&amp;#34; does not exist. Installing it now.
-NAME: preview-myapp-pr-129
-LAST DEPLOYED: Fri Apr 24 05:11:49 2020
-NAMESPACE: preview-myapp-pr-129
-STATUS: deployed
-REVISION: 1
-
-Listing releases matching ^preview-myapp-pr-129$
-preview-myapp-pr-129	preview-myapp-pr-129	1       	2020-04-24 05:11:49.634624822 +0000 UTC	deployed	myapp-4.3.0	latest
-
-
-UPDATED RELEASES:
-NAME                          CHART             VERSION
-preview-myapp-pr-129   ../myapp     4.3.0
-
-Preview Environment successfully installed with Helmfile!
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Creating a preview
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;expose:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  Annotations:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    helm.sh/hook: post-install,post-upgrade
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    helm.sh/hook-delete-policy: hook-succeeded
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  config:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    domain: jx.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    exposer: Ingress
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    http: &amp;#34;true&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  image:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    repository: gcr.io/owner/myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    tag: 0.0.0-SNAPSHOT-PR-129-16
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  namespace: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  releaseName: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Installing Preview Environment with Helmfile...
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Building dependency release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Comparing release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;********************
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	Release was not present in Helm.  Diff will show entire contents as new.
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;********************
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129, preview-myapp-pr-129-tls-wildcard, Secret (v1) has been added:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ # Source: myapp/templates/ingress.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ apiVersion: v1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ kind: Secret
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   annotations:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     replicator.v1.mittwald.de/replicate-from: jx/tls-jx-example-com-p
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/version: latest
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   name: preview-myapp-pr-129-tls-wildcard
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ data:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   tls.crt: &amp;#39;++++++++ # (0 bytes)&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   tls.key: &amp;#39;++++++++ # (0 bytes)&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ type: kubernetes.io/tls
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129, preview-myapp-pr-129, Service (v1) has been added:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;-
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ # Source: myapp/templates/service.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ apiVersion: v1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ kind: Service
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   type: ClusterIP
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   ports:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     - name: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       port: 8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       targetPort: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   selector:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has been added:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;-
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ # Source: myapp/templates/deployment.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ apiVersion: apps/v1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ kind: Deployment
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   replicas: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   revisionHistoryLimit: 2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   selector:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     matchLabels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   template:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       containers:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         - name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           ports:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+             - name: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               containerPort: 8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           livenessProbe:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+             tcpSocket:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               port: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           readinessProbe:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+             httpGet:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               path: /
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               port: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           resources:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+             limits:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               cpu: &amp;#34;0.1&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               memory: 32M
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+             requests:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               cpu: &amp;#34;0.1&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               memory: 32M
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       enableServiceLinks: false
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       terminationGracePeriodSeconds: 30
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129, preview-myapp-pr-129, Ingress (networking.k8s.io) has been added:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;-
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ # Source: myapp/templates/ingress.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ apiVersion: networking.k8s.io/v1beta1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ kind: Ingress
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   annotations:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     kubernetes.io/ingress.class: nginx
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     kubernetes.io/ingress.allow-http: &amp;#34;false&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+ spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   rules:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     - host: preview-myapp-pr-129.jx.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+       http:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+         paths:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           - backend:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               serviceName: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+               servicePort: 8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+   tls:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+     - secretName: preview-myapp-pr-129-tls-wildcard
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Upgrading release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Release &amp;#34;preview-myapp-pr-129&amp;#34; does not exist. Installing it now.
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAME: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;LAST DEPLOYED: Fri Apr 24 05:11:49 2020
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAMESPACE: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;STATUS: deployed
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;REVISION: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Listing releases matching ^preview-myapp-pr-129$
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129	preview-myapp-pr-129	1       	2020-04-24 05:11:49.634624822 +0000 UTC	deployed	myapp-4.3.0	latest
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;UPDATED RELEASES:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAME                          CHART             VERSION
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129   ../myapp     4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Preview Environment successfully installed with Helmfile!
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;for the second run&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;Creating a preview
-expose:
-  Annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
-  config:
-    domain: jx.example.com
-    exposer: Ingress
-    http: &amp;#34;true&amp;#34;
-preview:
-  image:
-    repository: gcr.io/owner/myapp
-    tag: 0.0.0-SNAPSHOT-PR-129-18
-  name: preview-myapp-pr-129
-  namespace: preview-myapp-pr-129
-  releaseName: preview-myapp-pr-129
-Installing Preview Environment with Helmfile...
-Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
-Building dependency release=preview-myapp-pr-129, chart=../myapp
-Comparing release=preview-myapp-pr-129, chart=../myapp
-preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has changed:
-  # Source: myapp/templates/deployment.yaml
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: preview-myapp-pr-129
-    labels:
-      helm.sh/chart: myapp-4.3.0
-      app.kubernetes.io/name: myapp
-      app.kubernetes.io/instance: preview-myapp-pr-129
-      app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-      app.kubernetes.io/managed-by: Helm
-      git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-  spec:
-    replicas: 1
-    revisionHistoryLimit: 2
-    selector:
-      matchLabels:
-        app.kubernetes.io/name: myapp
-        app.kubernetes.io/instance: preview-myapp-pr-129
-    template:
-      metadata:
-        labels:
-          helm.sh/chart: myapp-4.3.0
-          app.kubernetes.io/name: myapp
-          app.kubernetes.io/instance: preview-myapp-pr-129
-          app.kubernetes.io/version: &amp;#34;latest&amp;#34;
-          app.kubernetes.io/managed-by: Helm
-          git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-      spec:
-        containers:
-          - name: myapp
--           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&amp;#34;
-+           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-18&amp;#34;
-            ports:
-              - name: http
-                containerPort: 8080
-            livenessProbe:
-              tcpSocket:
-                port: http
-            readinessProbe:
-              httpGet:
-                path: /
-                port: http
-            resources:
-              limits:
-                cpu: &amp;#34;0.1&amp;#34;
-                memory: 32M
-              requests:
-                cpu: &amp;#34;0.1&amp;#34;
-                memory: 32M
-        enableServiceLinks: false
-        terminationGracePeriodSeconds: 30
-
-Upgrading release=preview-myapp-pr-129, chart=../myapp
-Release &amp;#34;preview-myapp-pr-129&amp;#34; has been upgraded. Happy Helming!
-Listing releases matching ^preview-myapp-pr-129$
-NAME: preview-myapp-pr-129
-LAST DEPLOYED: Fri Apr 24 08:36:04 2020
-NAMESPACE: preview-myapp-pr-129
-STATUS: deployed
-REVISION: 2
-
-preview-myapp-pr-129	preview-myapp-pr-129	2       	2020-04-24 08:36:04.231316767 +0000 UTC	deployed	myapp-4.3.0	latest
-
-
-UPDATED RELEASES:
-NAME                          CHART             VERSION
-preview-myapp-pr-129   ../myapp     4.3.0
-
-Preview Environment successfully installed with Helmfile!
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;233-proposed-implementation&#34;&gt;2.3.3 Proposed implementation&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-plaintext&#34; data-lang=&#34;plaintext&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Creating a preview
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;expose:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  Annotations:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    helm.sh/hook: post-install,post-upgrade
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    helm.sh/hook-delete-policy: hook-succeeded
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  config:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    domain: jx.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    exposer: Ingress
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    http: &amp;#34;true&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  image:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    repository: gcr.io/owner/myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    tag: 0.0.0-SNAPSHOT-PR-129-18
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  namespace: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  releaseName: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Installing Preview Environment with Helmfile...
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Building dependency release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Comparing release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has changed:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  # Source: myapp/templates/deployment.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  apiVersion: apps/v1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  kind: Deployment
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    name: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    replicas: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    revisionHistoryLimit: 2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    selector:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      matchLabels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    template:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        labels:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          helm.sh/chart: myapp-4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          app.kubernetes.io/name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          app.kubernetes.io/instance: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          app.kubernetes.io/version: &amp;#34;latest&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          app.kubernetes.io/managed-by: Helm
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      spec:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        containers:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          - name: myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;-           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;+           image: &amp;#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-18&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            ports:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              - name: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                containerPort: 8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            livenessProbe:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              tcpSocket:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                port: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            readinessProbe:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              httpGet:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                path: /
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                port: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            resources:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              limits:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                cpu: &amp;#34;0.1&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                memory: 32M
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;              requests:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                cpu: &amp;#34;0.1&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                memory: 32M
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        enableServiceLinks: false
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        terminationGracePeriodSeconds: 30
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Upgrading release=preview-myapp-pr-129, chart=../myapp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Release &amp;#34;preview-myapp-pr-129&amp;#34; has been upgraded. Happy Helming!
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Listing releases matching ^preview-myapp-pr-129$
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAME: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;LAST DEPLOYED: Fri Apr 24 08:36:04 2020
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAMESPACE: preview-myapp-pr-129
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;STATUS: deployed
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;REVISION: 2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129	preview-myapp-pr-129	2       	2020-04-24 08:36:04.231316767 +0000 UTC	deployed	myapp-4.3.0	latest
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;UPDATED RELEASES:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAME                          CHART             VERSION
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;preview-myapp-pr-129   ../myapp     4.3.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;Preview Environment successfully installed with Helmfile!
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;233-proposed-implementation&#34;&gt;2.3.3 Proposed implementation&lt;/h4&gt;
 &lt;p&gt;The real implementation should:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;include a recent version of helmfile and helm 3 in the official jx container image, along with helmfile&amp;rsquo;s required plugins (diff)&lt;/li&gt;

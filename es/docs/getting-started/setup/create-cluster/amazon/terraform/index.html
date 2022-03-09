@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -732,175 +732,175 @@ if (!doNotTrack) {
 	<div class="lead">¿Cómo configurar un clúster EKS, requerimientos y Jenkins X con Terraform en AWS?</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>Esta es una guía corta para configurar EKS en AWS utilizando Terraform donde se incluyen los requisitos necesarios para instalar Jenkins X y Vault. Se asume que está configurado el acceso a AWS y que está familiarizado con AWS, kubectl y Terraform.</p>
 <p>El fragmento de código de Terraform agrupa los recursos necesarios para EKS en AWS. El resultado (output) de la ejecución será utilizado como parámetros en el comando <code>jx install</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tf" data-lang="tf"><span style="color:#66d9ef">variable</span> <span style="color:#e6db74">&#34;region&#34;</span> {
-}
-<span style="color:#66d9ef">
-</span><span style="color:#66d9ef">variable</span> <span style="color:#e6db74">&#34;subnets&#34;</span> {
-    <span style="color:#a6e22e">type</span> = &#34;list<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">vpc_id</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">key_name</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">SSH</span> <span style="color:#a6e22e">key</span> <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">worker</span> <span style="color:#a6e22e">nodes</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">bucket_domain</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">Suffix</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">S3</span> <span style="color:#a6e22e">bucket</span> <span style="color:#a6e22e">used</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">vault</span> <span style="color:#a6e22e">unseal</span> <span style="color:#a6e22e">operation</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">provider &#34;</span><span style="color:#a6e22e">aws</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    region  = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">module &#34;</span><span style="color:#a6e22e">eks</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    source       = &#34;</span><span style="color:#a6e22e">terraform</span><span style="color:#f92672">-</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span>module<span style="color:#a6e22e">s</span><span style="color:#f92672">/</span><span style="color:#a6e22e">eks</span><span style="color:#f92672">/</span><span style="color:#a6e22e">aws</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    cluster_name = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    subnets      = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">subnets</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    vpc_id       = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">vpc_id</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    worker_groups = [
-</span><span style="color:#e6db74">        {
-</span><span style="color:#e6db74">            autoscaling_enabled   = true
-</span><span style="color:#e6db74">            asg_min_size          = 3
-</span><span style="color:#e6db74">            asg_desired_capacity  = 3
-</span><span style="color:#e6db74">            instance_type         = &#34;</span><span style="color:#a6e22e">t3</span>.<span style="color:#a6e22e">large</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">            asg_max_size          = 20
-</span><span style="color:#e6db74">            key_name              = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">key_name</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        }
-</span><span style="color:#e6db74">    ]
-</span><span style="color:#e6db74">    version = &#34;</span><span style="color:#ae81ff">5</span>.<span style="color:#ae81ff">0</span>.<span style="color:#ae81ff">0</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Needed for cluster-autoscaler
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_role_policy_attachment</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">workers_AmazonEC2ContainerRegistryPowerUser</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">  policy_arn = &#34;</span><span style="color:#a6e22e">arn</span><span style="color:#f92672">:</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">:</span><span style="color:#a6e22e">iam</span><span style="color:#f92672">::</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">:</span><span style="color:#a6e22e">policy</span><span style="color:#f92672">/</span><span style="color:#a6e22e">AmazonEC2ContainerRegistryPowerUser</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">  role       = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{module.<span style="color:#a6e22e">eks</span>.<span style="color:#a6e22e">worker_iam_role_name</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Create S3 bucket for KMS
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_s3_bucket</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    bucket = &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}.<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">bucket_domain</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    acl    = &#34;</span><span style="color:#a6e22e">private</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">    versioning {
-</span><span style="color:#e6db74">        enabled = false
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Create KMS key
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_kms_key</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">bank_vault</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">KMS</span> <span style="color:#a6e22e">Key</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">bank</span> <span style="color:#a6e22e">vault</span> <span style="color:#a6e22e">unseal</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Create DynamoDB table
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_dynamodb_table</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data<span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    name           = &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    read_capacity  = 2
-</span><span style="color:#e6db74">    write_capacity = 2
-</span><span style="color:#e6db74">    hash_key       = &#34;</span><span style="color:#a6e22e">Path</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    range_key      = &#34;</span><span style="color:#a6e22e">Key</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    attribute {
-</span><span style="color:#e6db74">        name = &#34;</span><span style="color:#a6e22e">Path</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        type = &#34;</span><span style="color:#a6e22e">S</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">    attribute {
-</span><span style="color:#e6db74">        name = &#34;</span><span style="color:#a6e22e">Key</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        type = &#34;</span><span style="color:#a6e22e">S</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Create service account for vault. Should the policy
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_user</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">  name = &#34;</span><span style="color:#a6e22e">vault_</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">data &#34;</span><span style="color:#a6e22e">aws_iam_policy_document</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    statement {
-</span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">DynamoDB</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        actions = [
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeLimits</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeTimeToLive</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListTagsOfResource</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeReservedCapacityOfferings</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeReservedCapacity</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListTables</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">BatchGetItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">BatchWriteItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">CreateTable</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DeleteItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetRecords</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">PutItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Query</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">UpdateItem</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Scan</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeTable</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        ]
-</span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_dynamodb_table</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">    statement {
-</span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">S3</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        actions = [
-</span><span style="color:#e6db74">                &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">PutObject</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">                &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetObject</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        ]
-</span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#f92672">/*</span><span style="color:#e6db74">&#34;]
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">    statement {
-</span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">S3List</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        actions = [
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListBucket</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        ]
-</span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">    statement {
-</span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">KMS</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        actions = [
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Encrypt</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Decrypt</span><span style="color:#e6db74">&#34;,
-</span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeKey</span><span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">        ]
-</span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_kms_key</span>.<span style="color:#a6e22e">bank_vault</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_user_policy</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    name = &#34;</span><span style="color:#a6e22e">vault_</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">    user = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_user</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">name</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">    policy = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{data.<span style="color:#a6e22e">aws_iam_policy_document</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">json</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_access_key</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    user = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_user</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">name</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">
-</span><span style="color:#e6db74"># Output KMS key id, S3 bucket name and secret name in the form of jx install options
-</span><span style="color:#e6db74">output &#34;</span><span style="color:#a6e22e">jx_params</span><span style="color:#e6db74">&#34; {
-</span><span style="color:#e6db74">    value = &#34;</span><span style="color:#f92672">--</span><span style="color:#a6e22e">provider</span>=<span style="color:#a6e22e">eks</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">gitops</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">no</span><span style="color:#f92672">-</span><span style="color:#a6e22e">tiller</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">vault</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">table</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_dynamodb_table</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data.<span style="color:#a6e22e">name</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span><span style="color:#f92672">-</span><span style="color:#a6e22e">id</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_kms_key</span>.<span style="color:#a6e22e">bank_vault</span>.<span style="color:#a6e22e">key_id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}  <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">-</span><span style="color:#a6e22e">bucket</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">access</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span><span style="color:#f92672">-</span><span style="color:#a6e22e">id</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_access_key</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">secret</span><span style="color:#f92672">-</span><span style="color:#a6e22e">access</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_access_key</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">secret</span>}<span style="color:#e6db74">&#34;
-</span><span style="color:#e6db74">}
-</span></code></pre></div><p>Salvar como <code>eks.tf</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-tf" data-lang="tf"><span style="display:flex;"><span><span style="color:#66d9ef">variable</span> <span style="color:#e6db74">&#34;region&#34;</span> {
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">variable</span> <span style="color:#e6db74">&#34;subnets&#34;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">type</span> = &#34;list<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">vpc_id</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">key_name</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">SSH</span> <span style="color:#a6e22e">key</span> <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">worker</span> <span style="color:#a6e22e">nodes</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">variable &#34;</span><span style="color:#a6e22e">bucket_domain</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">Suffix</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">S3</span> <span style="color:#a6e22e">bucket</span> <span style="color:#a6e22e">used</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">vault</span> <span style="color:#a6e22e">unseal</span> <span style="color:#a6e22e">operation</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">provider &#34;</span><span style="color:#a6e22e">aws</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    region  = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">module &#34;</span><span style="color:#a6e22e">eks</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    source       = &#34;</span><span style="color:#a6e22e">terraform</span><span style="color:#f92672">-</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span>module<span style="color:#a6e22e">s</span><span style="color:#f92672">/</span><span style="color:#a6e22e">eks</span><span style="color:#f92672">/</span><span style="color:#a6e22e">aws</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    cluster_name = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    subnets      = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">subnets</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    vpc_id       = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">vpc_id</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    worker_groups = [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            autoscaling_enabled   = true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            asg_min_size          = 3
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            asg_desired_capacity  = 3
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            instance_type         = &#34;</span><span style="color:#a6e22e">t3</span>.<span style="color:#a6e22e">large</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            asg_max_size          = 20
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            key_name              = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">key_name</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    version = &#34;</span><span style="color:#ae81ff">5</span>.<span style="color:#ae81ff">0</span>.<span style="color:#ae81ff">0</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Needed for cluster-autoscaler
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_role_policy_attachment</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">workers_AmazonEC2ContainerRegistryPowerUser</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  policy_arn = &#34;</span><span style="color:#a6e22e">arn</span><span style="color:#f92672">:</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">:</span><span style="color:#a6e22e">iam</span><span style="color:#f92672">::</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">:</span><span style="color:#a6e22e">policy</span><span style="color:#f92672">/</span><span style="color:#a6e22e">AmazonEC2ContainerRegistryPowerUser</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  role       = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{module.<span style="color:#a6e22e">eks</span>.<span style="color:#a6e22e">worker_iam_role_name</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Create S3 bucket for KMS
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_s3_bucket</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    bucket = &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}.<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">bucket_domain</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    acl    = &#34;</span><span style="color:#a6e22e">private</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    versioning {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        enabled = false
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Create KMS key
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_kms_key</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">bank_vault</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    description = &#34;</span><span style="color:#a6e22e">KMS</span> <span style="color:#a6e22e">Key</span> <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">bank</span> <span style="color:#a6e22e">vault</span> <span style="color:#a6e22e">unseal</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Create DynamoDB table
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_dynamodb_table</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data<span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    name           = &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    read_capacity  = 2
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    write_capacity = 2
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    hash_key       = &#34;</span><span style="color:#a6e22e">Path</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    range_key      = &#34;</span><span style="color:#a6e22e">Key</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    attribute {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        name = &#34;</span><span style="color:#a6e22e">Path</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        type = &#34;</span><span style="color:#a6e22e">S</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    attribute {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        name = &#34;</span><span style="color:#a6e22e">Key</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        type = &#34;</span><span style="color:#a6e22e">S</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Create service account for vault. Should the policy
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_user</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  name = &#34;</span><span style="color:#a6e22e">vault_</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">data &#34;</span><span style="color:#a6e22e">aws_iam_policy_document</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    statement {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">DynamoDB</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        actions = [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeLimits</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeTimeToLive</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListTagsOfResource</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeReservedCapacityOfferings</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeReservedCapacity</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListTables</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">BatchGetItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">BatchWriteItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">CreateTable</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DeleteItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetRecords</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">PutItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Query</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">UpdateItem</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Scan</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeTable</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_dynamodb_table</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    statement {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">S3</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        actions = [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">PutObject</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">                &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">GetObject</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#f92672">/*</span><span style="color:#e6db74">&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    statement {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">S3List</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        actions = [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">:</span><span style="color:#a6e22e">ListBucket</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    statement {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        sid = &#34;</span><span style="color:#a6e22e">KMS</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        effect = &#34;</span><span style="color:#a6e22e">Allow</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        actions = [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Encrypt</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">Decrypt</span><span style="color:#e6db74">&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">:</span><span style="color:#a6e22e">DescribeKey</span><span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        resources = [&#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_kms_key</span>.<span style="color:#a6e22e">bank_vault</span>.<span style="color:#a6e22e">arn</span>}<span style="color:#e6db74">&#34;]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_user_policy</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    name = &#34;</span><span style="color:#a6e22e">vault_</span><span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    user = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_user</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">name</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    policy = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{data.<span style="color:#a6e22e">aws_iam_policy_document</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">json</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">resource &#34;</span><span style="color:#a6e22e">aws_iam_access_key</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#a6e22e">vault</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    user = &#34;</span><span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_user</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">name</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"># Output KMS key id, S3 bucket name and secret name in the form of jx install options
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">output &#34;</span><span style="color:#a6e22e">jx_params</span><span style="color:#e6db74">&#34; {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    value = &#34;</span><span style="color:#f92672">--</span><span style="color:#a6e22e">provider</span>=<span style="color:#a6e22e">eks</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">gitops</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">no</span><span style="color:#f92672">-</span><span style="color:#a6e22e">tiller</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">vault</span> <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">dynamodb</span><span style="color:#f92672">-</span><span style="color:#a6e22e">table</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_dynamodb_table</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span>data.<span style="color:#a6e22e">name</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">kms</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span><span style="color:#f92672">-</span><span style="color:#a6e22e">id</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_kms_key</span>.<span style="color:#a6e22e">bank_vault</span>.<span style="color:#a6e22e">key_id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">-</span><span style="color:#a6e22e">region</span>=<span style="color:#960050;background-color:#1e0010">$</span>{var.<span style="color:#a6e22e">region</span>}  <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">s3</span><span style="color:#f92672">-</span><span style="color:#a6e22e">bucket</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_s3_bucket</span>.<span style="color:#a6e22e">vault</span><span style="color:#f92672">-</span><span style="color:#a6e22e">unseal</span>.<span style="color:#a6e22e">id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">access</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span><span style="color:#f92672">-</span><span style="color:#a6e22e">id</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_access_key</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">id</span>} <span style="color:#f92672">--</span><span style="color:#a6e22e">aws</span><span style="color:#f92672">-</span><span style="color:#a6e22e">secret</span><span style="color:#f92672">-</span><span style="color:#a6e22e">access</span><span style="color:#f92672">-</span><span style="color:#a6e22e">key</span>=<span style="color:#960050;background-color:#1e0010">$</span>{<span style="color:#a6e22e">aws_iam_access_key</span>.<span style="color:#a6e22e">vault</span>.<span style="color:#a6e22e">secret</span>}<span style="color:#e6db74">&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span></code></pre></div><p>Salvar como <code>eks.tf</code></p>
 <p>El módulo terraform-aws-modules/eks/aws va a guardar el fichero kubeconfig como <code>config</code>. Este podrá ser copiado o mezclado con el suyo <code>~/.kube/config</code>. Con esta configuración <code>jx install</code> puede ser iniciado utilizando los parámetros de salida de Terraform.</p>
 
 	
@@ -1065,7 +1065,7 @@ if (!doNotTrack) {
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

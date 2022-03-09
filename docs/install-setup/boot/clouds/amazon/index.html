@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -964,25 +964,25 @@ if (!doNotTrack) {
 	<div class="lead">Using Boot on Amazon (AWS)</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>The information in this document assumes you have already created a Kubernetes cluster in AWS and you are now ready to <code>boot</code> your cluster with Jenkins X.</p>
 <h2 id="basic-configuration">Basic Configuration</h2>
 <p>Please set your provider to <code>eks</code> via this in your <code>jx-requirements.yml</code> to indicate you are using EKS:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">clusterConfig</span>:
-    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">eks</span>
-</code></pre></div><p>If you wish to setup your EKS cluster by hand and not use <a href="https://eksctl.io/">eksctl</a> then please specify <code>terraform: true</code> to indicate that you are setting up all of the AWS related cloud resources yourself and that you do not want <code>jx boot</code> attempting to set anything up.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">clusterConfig</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">provider</span>: <span style="color:#ae81ff">eks</span>
+</span></span></code></pre></div><p>If you wish to setup your EKS cluster by hand and not use <a href="https://eksctl.io/">eksctl</a> then please specify <code>terraform: true</code> to indicate that you are setting up all of the AWS related cloud resources yourself and that you do not want <code>jx boot</code> attempting to set anything up.</p>
 <p>We recommend using <a href="/architecture/jenkins-x-pipelines/">Jenkins X Pipelines</a> as this works out of the box with kaniko for creating container images without needing a docker daemon and works well with ECR.</p>
 <h2 id="authentication-mechanisms">Authentication Mechanisms</h2>
 <p>There are two standard authentication mechanisms that are recommended depending on use case: Enhanced permissions for the nodepool role, and IRSA.</p>
@@ -998,245 +998,245 @@ if (!doNotTrack) {
 <p>When executing <code>jx boot</code> (and ensuring that the <code>--terraform</code> flag is set to <code>false</code>), a series of IAM Policies are created through CloudFormation stacks:</p>
 <p><a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/jenkinsx-policies.yml">jenkinsx-policies.yml</a></p>
 <p>These policies are then exported as CloudFormation outputs following a defined format. For example:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">Export</span>:
-  <span style="color:#f92672">Name</span>: !<span style="color:#ae81ff">Join [ &#34;-&#34;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]</span>
-</code></pre></div><p>This policy performs a Join operation. A name is provided, in this case TektonBotPolicy; then a random suffix is appended to make the name unique.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">Export</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Name</span>: !<span style="color:#ae81ff">Join [ &#34;-&#34;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]</span>
+</span></span></code></pre></div><p>This policy performs a Join operation. A name is provided, in this case TektonBotPolicy; then a random suffix is appended to make the name unique.</p>
 <p>The provided name will be used in the irsa.tmpl.yaml file.</p>
 <p>The names of the outputs from jenkinsx-policies.yml are used in this file by processing it through Golang’s templating functionality, exporting the outputs of the CloudFormation stack under the .IAM.` prefix.</p>
 <p>This means that the outputs from jenkins-x-policies.yml can be obtained and queried in this file, which will then be processed and run against the cluster.</p>
 <p>For example, take this output from the CloudFormation stack:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">CFNTektonBotPolicy</span>:
-  <span style="color:#f92672">Value</span>:
-  <span style="color:#f92672">Ref</span>: <span style="color:#ae81ff">CFNJenkinsXPolicies</span>
-  <span style="color:#f92672">Description</span>: <span style="color:#ae81ff">The ARN of the created policy</span>
-  <span style="color:#f92672">Export</span>:
-    <span style="color:#f92672">Name</span>: !<span style="color:#ae81ff">Join [ &#34;-&#34;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]</span>
-</code></pre></div><p>And how we use its export name in the next file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">{{- <span style="color:#ae81ff">if .IAM.TektonBotPolicy }}</span>
-  - <span style="color:#f92672">metadata</span>:
-      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">tekton-bot</span>
-      <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">jx</span>
-      <span style="color:#f92672">labels</span>: {<span style="color:#f92672">aws-usage</span>: <span style="color:#e6db74">&#34;jenkins-x&#34;</span>}
-    <span style="color:#f92672">attachPolicyARNs</span>:
-    - {{<span style="color:#ae81ff">.IAM.TektonBotPolicy | quote}}</span>
-</code></pre></div><p>In this example we are taking the policy ARN created from the CloudFormation stack under a specific export name and using it in the IRSA template file. This will then create an IAM Role, attach the policy to it, then it will create a new ServiceAccount called tekton-bot with the necessary annotations to let it assume the created role.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">CFNTektonBotPolicy</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Value</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Ref</span>: <span style="color:#ae81ff">CFNJenkinsXPolicies</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Description</span>: <span style="color:#ae81ff">The ARN of the created policy</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Export</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">Name</span>: !<span style="color:#ae81ff">Join [ &#34;-&#34;, [ TektonBotPolicy, Ref: PoliciesSuffixParameter] ]</span>
+</span></span></code></pre></div><p>And how we use its export name in the next file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if .IAM.TektonBotPolicy }}</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">tekton-bot</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">jx</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span>: {<span style="color:#f92672">aws-usage</span>: <span style="color:#e6db74">&#34;jenkins-x&#34;</span>}
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">attachPolicyARNs</span>:
+</span></span><span style="display:flex;"><span>    - {{<span style="color:#ae81ff">.IAM.TektonBotPolicy | quote}}</span>
+</span></span></code></pre></div><p>In this example we are taking the policy ARN created from the CloudFormation stack under a specific export name and using it in the IRSA template file. This will then create an IAM Role, attach the policy to it, then it will create a new ServiceAccount called tekton-bot with the necessary annotations to let it assume the created role.</p>
 <p>If the ServiceAccount already exists, it will perform an upsert and just add the annotation.</p>
 <p>A pod that uses that ServiceAccount will automatically assume that role in IAM and be granted access to the cloud services defined in the policy that was attached to its role.</p>
 <p>If you need to add more permissions for other Service Accounts, just add them to <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/jenkinsx-policies.yml">jenkinsx-policies.yml</a> with an export name that can be referenced in <a href="https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/kubeProviders/eks/templates/irsa.tmpl.yaml">irsa.tmpl.yaml</a> and Jenkins X will create everything for you.</p>
 <p>You can also simply add already created policies to your ServiceAccounts like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">  - <span style="color:#f92672">metadata</span>:
-      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jenkins-x-controllerbuild</span>
-      <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">jx</span>
-      <span style="color:#f92672">labels</span>: {<span style="color:#f92672">aws-usage</span>: <span style="color:#e6db74">&#34;jenkins-x&#34;</span>}
-    <span style="color:#f92672">attachPolicyARNs</span>:
-    - <span style="color:#e6db74">&#34;arn:aws:iam::aws:policy/AmazonS3FullAccess&#34;</span>
-</code></pre></div><p>Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>  - <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">jenkins-x-controllerbuild</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">jx</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span>: {<span style="color:#f92672">aws-usage</span>: <span style="color:#e6db74">&#34;jenkins-x&#34;</span>}
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">attachPolicyARNs</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#e6db74">&#34;arn:aws:iam::aws:policy/AmazonS3FullAccess&#34;</span>
+</span></span></code></pre></div><p>Note: For now, this can only be done in the initial installation of Jenkins X and any adjustments need to be done manually by adding more permissions to the created IAM Policies.</p>
 <h2 id="iam-policies-for-cluster-creation-and-jenkins-x-boot">IAM Policies for Cluster Creation and Jenkins X Boot</h2>
 <p>Before getting into IRSA, we will define the minimum permissions needed to create an EKS cluster with <code>jx create cluster eks</code> and Jenkins X.</p>
 <h3 id="iam-policy-for-cluster-creation">IAM Policy for cluster creation</h3>
 <p>In order to create an EKS cluster, we make use of <a href="https://github.com/weaveworks/eksctl">eksctl</a>, which is the official tool to interact with EKS clusters.</p>
 <p>There is no official policy documented by eksctl to get a cluster running, but there’s a very useful GitHub issue where users have been curating a comprehensive policy that should work for all cases: <a href="https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2">https://gist.github.com/dgozalo/bc4b932d51f22ca5d8dad07d9a1fe0f2</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">{
-    <span style="color:#f92672">&#34;Version&#34;: </span><span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-    <span style="color:#f92672">&#34;Statement&#34;: </span>[
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;iam:CreateInstanceProfile&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DeleteInstanceProfile&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetInstanceProfile&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:RemoveRoleFromInstanceProfile&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DeleteRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:PutRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:ListInstanceProfiles&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:AddRoleToInstanceProfile&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:ListInstanceProfilesForRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:PassRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DeleteRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DeleteServiceLinkedRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateServiceLinkedRole&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span>[
-                <span style="color:#e6db74">&#34;arn:aws:iam::&lt;account_id&gt;:instance-profile/eksctl-*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::&lt;account_id&gt;:role/eksctl-*&#34;</span>
-            ]
-        },
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;cloudformation:*&#34;</span>,
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
-        },
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;eks:*&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
-        },
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;autoscaling:DescribeAutoScalingGroups&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:DescribeLaunchConfigurations&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:DescribeScalingActivities&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:CreateLaunchConfiguration&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:DeleteLaunchConfiguration&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:UpdateAutoScalingGroup&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:DeleteAutoScalingGroup&#34;</span>,
-                <span style="color:#e6db74">&#34;autoscaling:CreateAutoScalingGroup&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
-        },
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;ec2:DeleteInternetGateway&#34;</span>,
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;arn:aws:ec2:*:*:internet-gateway/*&#34;</span>
-        },
-        {
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;ec2:AuthorizeSecurityGroupIngress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteSubnet&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteTags&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateNatGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateVpc&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:AttachInternetGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeVpcAttribute&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteRouteTable&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:AssociateRouteTable&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeInternetGateways&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateRoute&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateInternetGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:RevokeSecurityGroupEgress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateSecurityGroup&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:ModifyVpcAttribute&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteInternetGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeRouteTables&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:ReleaseAddress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:AuthorizeSecurityGroupEgress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeTags&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateTags&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteRoute&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateRouteTable&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DetachInternetGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeNatGateways&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DisassociateRouteTable&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:AllocateAddress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeSecurityGroups&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:RevokeSecurityGroupIngress&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteSecurityGroup&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteNatGateway&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteVpc&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateSubnet&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeSubnets&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeAvailabilityZones&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeImages&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:describeAddresses&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeVpcs&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:CreateLaunchTemplate&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeLaunchTemplates&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:RunInstances&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DeleteLaunchTemplate&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeLaunchTemplateVersions&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeImageAttribute&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:DescribeKeyPairs&#34;</span>,
-                <span style="color:#e6db74">&#34;ec2:ImportKeyPair&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
-        }
-    ]
-}
-</code></pre></div><h3 id="iam-policy-for-jenkins-x-boot-creation">IAM Policy for Jenkins X Boot creation</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Version&#34;: </span><span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Statement&#34;: </span>[
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateInstanceProfile&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DeleteInstanceProfile&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetInstanceProfile&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:RemoveRoleFromInstanceProfile&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DeleteRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:PutRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:ListInstanceProfiles&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:AddRoleToInstanceProfile&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:ListInstanceProfilesForRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:PassRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DeleteRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DeleteServiceLinkedRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateServiceLinkedRole&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::&lt;account_id&gt;:instance-profile/eksctl-*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::&lt;account_id&gt;:role/eksctl-*&#34;</span>
+</span></span><span style="display:flex;"><span>            ]
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;cloudformation:*&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;eks:*&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:DescribeAutoScalingGroups&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:DescribeLaunchConfigurations&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:DescribeScalingActivities&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:CreateLaunchConfiguration&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:DeleteLaunchConfiguration&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:UpdateAutoScalingGroup&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:DeleteAutoScalingGroup&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;autoscaling:CreateAutoScalingGroup&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;ec2:DeleteInternetGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;arn:aws:ec2:*:*:internet-gateway/*&#34;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:AuthorizeSecurityGroupIngress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteSubnet&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteTags&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateNatGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateVpc&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:AttachInternetGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeVpcAttribute&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteRouteTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:AssociateRouteTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeInternetGateways&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateRoute&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateInternetGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:RevokeSecurityGroupEgress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateSecurityGroup&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:ModifyVpcAttribute&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteInternetGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeRouteTables&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:ReleaseAddress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:AuthorizeSecurityGroupEgress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeTags&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateTags&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteRoute&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateRouteTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DetachInternetGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeNatGateways&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DisassociateRouteTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:AllocateAddress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeSecurityGroups&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:RevokeSecurityGroupIngress&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteSecurityGroup&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteNatGateway&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteVpc&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateSubnet&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeSubnets&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeAvailabilityZones&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeImages&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:describeAddresses&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeVpcs&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:CreateLaunchTemplate&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeLaunchTemplates&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:RunInstances&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DeleteLaunchTemplate&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeLaunchTemplateVersions&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeImageAttribute&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:DescribeKeyPairs&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ec2:ImportKeyPair&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="iam-policy-for-jenkins-x-boot-creation">IAM Policy for Jenkins X Boot creation</h3>
 <p>A different policy is required for Jenkins X to be successful with the jx boot command.  Depending on the configuration present in jx-requirements.yml, we will attempt to interact with different cloud services like S3, DynamoDB or KMS.  This policy will allow the executing user the minimum permissions to be successful.</p>
 <p><a href="https://gist.github.com/dgozalo/df514542b63ef05282cac793b433d74b">https://gist.github.com/dgozalo/df514542b63ef05282cac793b433d74b</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">{
-    <span style="color:#f92672">&#34;Version&#34;: </span><span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
-    <span style="color:#f92672">&#34;Statement&#34;: </span>[
-        {
-            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor0&#34;</span>,
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;dynamodb:CreateTable&#34;</span>,
-                <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
-                <span style="color:#e6db74">&#34;cloudformation:ListStacks&#34;</span>,
-                <span style="color:#e6db74">&#34;cloudformation:DescribeStackEvents&#34;</span>,
-                <span style="color:#e6db74">&#34;dynamodb:DescribeTable&#34;</span>,
-                <span style="color:#e6db74">&#34;s3:CreateBucket&#34;</span>,
-                <span style="color:#e6db74">&#34;kms:CreateKey&#34;</span>,
-                <span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>,
-                <span style="color:#e6db74">&#34;s3:PutBucketVersioning&#34;</span>,
-                <span style="color:#e6db74">&#34;cloudformation:DescribeStacks&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
-        },
-        {
-            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor1&#34;</span>,
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;iam:GetRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetPolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;ecr:CreateRepository&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:AttachUserPolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DeleteRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateAccessKey&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateOpenIDConnectProvider&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreatePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;cloudformation:CreateStack&#34;</span>,
-                <span style="color:#e6db74">&#34;cloudformation:DeleteStack&#34;</span>,
-                <span style="color:#e6db74">&#34;ecr:DescribeRepositories&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetOpenIDConnectProvider&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span>[
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/CFN*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/*jenkins-x-vault*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:oidc-provider/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:role/*addon-iamserviceaccoun*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:user/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:ecr:*:*:repository/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/JenkinsXPolicies*/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/*addon-iamserviceaccount*/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/*jenkins-x-vault*/*&#34;</span>
-            ]
-        },
-        {
-            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor2&#34;</span>,
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span>[
-                <span style="color:#e6db74">&#34;iam:CreatePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetPolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:GetOpenIDConnectProvider&#34;</span>,
-                <span style="color:#e6db74">&#34;iam:CreateOpenIDConnectProvider&#34;</span>
-            ],
-            <span style="color:#f92672">&#34;Resource&#34;: </span>[
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:oidc-provider/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:role/*addon-iamserviceaccoun*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/CFN*&#34;</span>
-            ]
-        },
-        {
-            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor3&#34;</span>,
-            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
-            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;eks:*&#34;</span>,
-            <span style="color:#f92672">&#34;Resource&#34;: </span>[
-                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:fargateprofile/*/*/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:cluster/*&#34;</span>,
-                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:nodegroup/*/*/*&#34;</span>
-            ]
-        }
-    ]
-}
-</code></pre></div><p>The reason for these policies is further described for each cloud resource below.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Version&#34;: </span><span style="color:#e6db74">&#34;2012-10-17&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Statement&#34;: </span>[
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor0&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;dynamodb:CreateTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;s3:GetObject&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;cloudformation:ListStacks&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;cloudformation:DescribeStackEvents&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;dynamodb:DescribeTable&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;s3:CreateBucket&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;kms:CreateKey&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;s3:ListBucket&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;s3:PutBucketVersioning&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;cloudformation:DescribeStacks&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span><span style="color:#e6db74">&#34;*&#34;</span>
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor1&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetPolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ecr:CreateRepository&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:AttachUserPolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DeleteRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateAccessKey&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateOpenIDConnectProvider&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreatePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;cloudformation:CreateStack&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;cloudformation:DeleteStack&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;ecr:DescribeRepositories&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetOpenIDConnectProvider&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/CFN*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/*jenkins-x-vault*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:oidc-provider/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:role/*addon-iamserviceaccoun*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:user/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:ecr:*:*:repository/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/JenkinsXPolicies*/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/*addon-iamserviceaccount*/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:cloudformation:*:*:stack/*jenkins-x-vault*/*&#34;</span>
+</span></span><span style="display:flex;"><span>            ]
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor2&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreatePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:DetachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetPolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateRole&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:AttachRolePolicy&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:GetOpenIDConnectProvider&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;iam:CreateOpenIDConnectProvider&#34;</span>
+</span></span><span style="display:flex;"><span>            ],
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:oidc-provider/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:role/*addon-iamserviceaccoun*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:iam::*:policy/CFN*&#34;</span>
+</span></span><span style="display:flex;"><span>            ]
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Sid&#34;: </span><span style="color:#e6db74">&#34;VisualEditor3&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Effect&#34;: </span><span style="color:#e6db74">&#34;Allow&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Action&#34;: </span><span style="color:#e6db74">&#34;eks:*&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Resource&#34;: </span>[
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:fargateprofile/*/*/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:cluster/*&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;arn:aws:eks:*:*:nodegroup/*/*/*&#34;</span>
+</span></span><span style="display:flex;"><span>            ]
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The reason for these policies is further described for each cloud resource below.</p>
 <h4 id="iam">IAM</h4>
 <p>In order to make IAM Roles for Service Accounts work, Jenkins X will create IAM Policies and Roles and then attach these policies to these roles.  These Roles are then annotated into selected Service Accounts so pods using them can assume the role.  In order to make IRSA work, Jenkins X needs to create an Open ID Connect Provider with IAM in order to authenticate the annotated pods.  Also, in order to make Vault work, we (for now) need to attach a policy, created just for Vault, into a provided IAM User.</p>
 <h4 id="cloudformation">CloudFormation</h4>
@@ -1257,11 +1257,11 @@ if (!doNotTrack) {
 <p>When booting JX on an EKS cluster with Vault enabled, fields under vault.aws in the <code>jx-requirements.yml</code> file are required to enable Vault support.</p>
 <p>Vault does not currently support Identity Access Management (IAM) Roles for Service Accounts, so you will be prompted to provide a preconfigured IAM User.</p>
 <p>The <code>jx-requirements.yml</code> file contains the following settings for EKS Vault configuration:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">vault</span>:
-    <span style="color:#f92672">aws</span>:
-      <span style="color:#f92672">autoCreate</span>: <span style="color:#66d9ef">true</span>
-      <span style="color:#f92672">iamUserName</span>: <span style="color:#ae81ff">&lt;username&gt;</span>
-</code></pre></div><p>For Vault support on EKS clusters, you must provide an <strong>existing</strong> IAM username in the <code>iamUserName</code> setting to use its Access Keys to authenticate the Vault pod against AWS.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">vault</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">aws</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">autoCreate</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">iamUserName</span>: <span style="color:#ae81ff">&lt;username&gt;</span>
+</span></span></code></pre></div><p>For Vault support on EKS clusters, you must provide an <strong>existing</strong> IAM username in the <code>iamUserName</code> setting to use its Access Keys to authenticate the Vault pod against AWS.</p>
 <p>The IAM user does not need any permissions attached to it. During the installation process, Jenkins X creates a new IAM Policy and attaches it to this user. These will essentially be the permissions that the Vault pod will use.</p>
 <p><strong>Important</strong>: A new set of Access Keys are created during Vault creation. There is a limit of 2 key pairs per IAM user, so ensure that there is at least one key slot free on the IAM user that you are providing. Otherwise, the Vault configuration will fail. If you do not want Jenkins X to create these keys, you can provide a key pair that you already created through the environment variables: <strong>VAULT_AWS_ACCESS_KEY_ID</strong> and <strong>VAULT_AWS_SECRET_ACCESS_KEY</strong>.</p>
 <p>In the <strong>install-vault</strong> step, the jx boot process runs a CloudFormation stack in order to create every resource needed by Vault to work.</p>
@@ -1269,18 +1269,18 @@ if (!doNotTrack) {
 <h3 id="providing-an-existing-vault-instance">Providing an Existing Vault Instance</h3>
 <p>If you want to provide an existing Vault instance instead of letting Jenkins X create one, you need to set Vault.aws.autoCreate to false.</p>
 <p>You must provide the names of the existing resources in the <code>jx-requirements.yml</code> file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">vault</span>:
-  <span style="color:#f92672">aws</span>:
-    <span style="color:#f92672">autoCreate</span>: <span style="color:#66d9ef">false</span>
-    <span style="color:#f92672">iamUserName</span>: <span style="color:#ae81ff">acmeuser</span>
-    <span style="color:#f92672">dynamoDBTable</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">dynamoDBRegion</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">kmsKeyId</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">kmsRegion</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">s3Bucket</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">s3Region</span>: <span style="color:#e6db74">&#34;&#34;</span>
-    <span style="color:#f92672">s3Prefix</span>: <span style="color:#e6db74">&#34;&#34;</span>
-</code></pre></div><p>Note: A pair of Access Keys will be created even if you set <strong>autoCreate</strong> to <strong>false</strong>. To prevent this, you can set an existing pair through environment variables: <strong>VAULT_AWS_ACCESS_KEY_ID</strong> and <strong>VAULT_AWS_SECRET_ACCESS_KEY</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">vault</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">aws</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">autoCreate</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">iamUserName</span>: <span style="color:#ae81ff">acmeuser</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dynamoDBTable</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dynamoDBRegion</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kmsKeyId</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kmsRegion</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">s3Bucket</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">s3Region</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">s3Prefix</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span></code></pre></div><p>Note: A pair of Access Keys will be created even if you set <strong>autoCreate</strong> to <strong>false</strong>. To prevent this, you can set an existing pair through environment variables: <strong>VAULT_AWS_ACCESS_KEY_ID</strong> and <strong>VAULT_AWS_SECRET_ACCESS_KEY</strong>.</p>
 <h2 id="configuring-dns-and-tls-on-eks">Configuring DNS and TLS on EKS</h2>
 <p>If you require custom Domain Name Service (DNS) and/or Transport Layer Security (TLS) support, follow the steps in this section.</p>
 <h3 id="configuring-aws-route-53">Configuring AWS Route 53</h3>
@@ -1316,16 +1316,16 @@ if (!doNotTrack) {
 <ul>
 <li>
 <p>Open the <code>jx-requirements.yml</code> file in a text editor (such as TextEdit for macOS or gedit for Linux) and edit the ingress section at the root level.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">ingress</span>:
-  <span style="color:#f92672">domain</span>: <span style="color:#ae81ff">cluster1.acmecorp.example</span>
-  <span style="color:#f92672">ignoreLoadBalancer</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">externalDNS</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">namespaceSubDomain</span>: -<span style="color:#ae81ff">jx.</span>
-  <span style="color:#f92672">tls</span>:
-    <span style="color:#f92672">email</span>: <span style="color:#ae81ff">certifiable@acmecorp.example</span>
-    <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
-    <span style="color:#f92672">production</span>: <span style="color:#66d9ef">true</span>
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">ingress</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">domain</span>: <span style="color:#ae81ff">cluster1.acmecorp.example</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ignoreLoadBalancer</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">externalDNS</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespaceSubDomain</span>: -<span style="color:#ae81ff">jx.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">tls</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">email</span>: <span style="color:#ae81ff">certifiable@acmecorp.example</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">enabled</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">production</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div></li>
 </ul>
 </li>
 </ol>
@@ -1493,7 +1493,7 @@ if (!doNotTrack) {
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

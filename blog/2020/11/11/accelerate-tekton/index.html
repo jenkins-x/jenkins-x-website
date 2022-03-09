@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -592,9 +592,9 @@ if (!doNotTrack) {
 	</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -606,12 +606,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<p>One of the goals of <a href="https://jenkins-x.io/">Jenkins X</a> has always been to help <a href="/about/overview/accelerate/">accelerate</a> and automate Continuous Delivery so that developers can focus on delivering value to their customers; either by creating that new microservice or adding features to an existing project and not writing and managing pipelines.</p>
@@ -620,16 +620,16 @@ if (!doNotTrack) {
 <h2 id="version-2x">Version 2.x</h2>
 <p>In Jenkins X 2.x we went with a <code>jenkins-x.xml</code> approach to pipelines which let you inherit pipelines from reuable pipeline library and then use a composition DSL above <a href="https://tekton.dev/">Tekton</a> which lets you add/remove/replace steps.</p>
 <p>e.g. to use the <code>javascript</code> pipeline library but override a step you could use:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">javascript</span>
-<span style="color:#f92672">pipelineConfig</span>:
-  <span style="color:#f92672">pipelines</span>:
-    <span style="color:#f92672">overrides</span>:
-      - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
-        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">helm-release</span>
-        <span style="color:#f92672">step</span>: 
-          <span style="color:#f92672">image</span>: <span style="color:#ae81ff">busybox</span>
-          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo &#34;this command is replaced&#34;</span>
-</code></pre></div><p>This was a pretty good approach; it lets us reuse common pipelines in a shared git repository and let&rsquo;s reuse a composition DSL.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">javascript</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">pipelineConfig</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pipelines</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">overrides</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">helm-release</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">step</span>: 
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">image</span>: <span style="color:#ae81ff">busybox</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo &#34;this command is replaced&#34;</span>
+</span></span></code></pre></div><p>This was a pretty good approach; it lets us reuse common pipelines in a shared git repository and let&rsquo;s reuse a composition DSL.</p>
 <p>However we&rsquo;ve found that this approach as a few downsides:</p>
 <ul>
 <li>we have to create and maintain a DSL above Tekton which adds complexity and can be a leaky abstraction
@@ -701,15 +701,15 @@ if (!doNotTrack) {
 <p>For example: you may think it&rsquo;s a nice idea to have a reusable <code>Task</code> to git clone your source code then use it with your other <code>Task</code> to run your tests. It turns out that can be quite expensive infrastructure wise; as it means your cluster will end up making a Persistent Volume for each pipeline invocation so that the git clone pod can clone git and store the state on the PV so that your real Task pod can start and mount the same volume to see the contents of git. Its much easier to just share the git clone steps in each Task; so that there&rsquo;s no need for the PV; just git clone in each separate Task directly.</p>
 <p>So for cases where you want to reuse a collection of steps inside <code>Task</code> resources we added an annotation in <a href="https://github.com/jenkins-x/lighthouse">lighthouse</a> so that we can import steps from a URL to avoid the copy/paste.</p>
 <p>e.g. in our <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs">pipeline catalog</a> we use this approach to share the git clone Task steps such as <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/blob/master/packs/javascript/.lighthouse/jenkins-x/release.yaml#L4-L5">this example</a>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">tekton.dev/v1beta1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Task</span>
-<span style="color:#f92672">metadata</span>:
-  <span style="color:#f92672">annotations</span>:        
-    <span style="color:#75715e"># lets share the git clone tasks as the initial steps in this Task</span>
-    <span style="color:#f92672">lighthouse.jenkins-x.io/prependStepsURL</span>: <span style="color:#ae81ff">https://raw.githubusercontent.com/jenkins-x/jx3-pipeline-catalog/005e78cf69b643862344397a635736a51dd1bd89/tasks/git-clone/git-clone.yaml</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#ae81ff">...</span>
-</code></pre></div><p>Hopefully we can migrate to a standard tekton based approach <a href="https://github.com/tektoncd/pipeline/issues/3476">if this issue is resolved</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">tekton.dev/v1beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Task</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">annotations</span>:        
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># lets share the git clone tasks as the initial steps in this Task</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">lighthouse.jenkins-x.io/prependStepsURL</span>: <span style="color:#ae81ff">https://raw.githubusercontent.com/jenkins-x/jx3-pipeline-catalog/005e78cf69b643862344397a635736a51dd1bd89/tasks/git-clone/git-clone.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">...</span>
+</span></span></code></pre></div><p>Hopefully we can migrate to a standard tekton based approach <a href="https://github.com/tektoncd/pipeline/issues/3476">if this issue is resolved</a>.</p>
 <h3 id="custom-pipeline-catalogs">Custom Pipeline Catalogs</h3>
 <p><a href="https://github.com/tektoncd/catalog">Tekton Catalog</a> is an awesome way to reuse Tasks but it doesn&rsquo;t help when trying to reuse complete <code>PipelineRun</code> and <code>Pipeline</code> resources across projects and repositories while also being able to modify them as needed on a per team or repository basis.</p>
 <p><a href="/v3/">Jenkins X 3.x</a> comes with its own default <a href="https://github.com/jenkins-x/jx3-pipeline-catalog/tree/master/packs">pipeline catalog for different languages, tools and frameworks</a>. This catalog contains reusable steps, Tasks and Pipelines you can use on any project.</p>
@@ -827,7 +827,7 @@ if (!doNotTrack) {
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -931,9 +931,9 @@ if (!doNotTrack) {
 	<div class="lead">Use separate cluster, account or clouds</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -945,12 +945,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>A common requirement for a production setup is to isolate your Development, Staging and Production environments onto separate Kubernetes clusters and to isolate the clusters from each other in separate cloud accounts or VPNs etc.</p>
@@ -976,35 +976,35 @@ if (!doNotTrack) {
 <h3 id="creating-your-dev-cluster">Creating your Dev cluster</h3>
 <p>If you are creating a new installation then when you use <a href="/commands/jx_create_cluster/">jx create cluster</a> or <a href="/commands/deprecation/">jx install</a> then please specify <code>--remote-environments</code> to indicate that <code>Staging/Production</code> environments will be remote from the development cluster.</p>
 <p>e.g.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create cluster gke --remote-environments --tekton
-</code></pre></div><p>When creating your Environments via <a href="/commands/jx_create_environment/">jx create environment</a> you can also specify the environment is remote via the <code>--remote</code> or answering <code>Y</code> to the question when prompted.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx create cluster gke --remote-environments --tekton
+</span></span></code></pre></div><p>When creating your Environments via <a href="/commands/jx_create_environment/">jx create environment</a> you can also specify the environment is remote via the <code>--remote</code> or answering <code>Y</code> to the question when prompted.</p>
 <p>What this means is that if an environment is remote to the development cluster then we don&rsquo;t register the release pipeline
 of the environment in the Dev cluster; we leave that to the Environment Controller to perform running inside the remote cluster.</p>
 <h3 id="configure-an-existing-dev-cluster">Configure an existing Dev cluster</h3>
 <p>If you already have a Dev cluster that was setup with <code>Staging</code> and <code>Production</code> namespaces inside your Dev cluster then please do the following:</p>
 <p>Edit the environments to mark them as remote via <a href="/commands/jx_edit_environment/">jx edit environment</a>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx edit env staging --remote
-jx edit env production --remote
-</code></pre></div><p>You need to manually disable the release pipeline in the Dev cluster.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx edit env staging --remote
+</span></span><span style="display:flex;"><span>jx edit env production --remote
+</span></span></code></pre></div><p>You need to manually disable the release pipeline in the Dev cluster.</p>
 <p>e.g. by removing the <code>postsubmit</code> setting in your Prow configuration if you are using <a href="/about/concepts/jenkins-x-pipelines/">serverless Jenkins X Pipelines and tekton</a> - or comment out the <code>jx step helm apply</code> command in your <code>Jenkinsfile</code> if using static jenkins server</p>
 <h3 id="installing-environment-controller">Installing Environment Controller</h3>
 <p>First you need to connect to your remote kubernetes cluster for <code>Staging</code> or <code>Production</code> using your managed kubernetes provider&rsquo;s tooling.</p>
 <p>You also need to have RBAC karma to be able to <a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping">escalate roles</a> for <code>Role</code> and/or <code>ClusterRole</code> permissions.</p>
 <p>Then to install the Environment Controller use <a href="/commands/jx_create_addon_environment/">jx create addon envctl</a>.</p>
 <p>You need to specify the environments git repository and docker registry host and on GCP the project ID:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
-</code></pre></div><p>The installer needs a user + API token for the git repository which it will prompt you for the known values from your <code>~/.jx/gitAuth.yaml</code> file so if you already installed Jenkins X it should be able to default those values for you.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx create addon envctl -s https://github.com/myorg/env-production.git --project-id myproject --docker-registry gcr.io --cluster-rbac true --user mygituser --token mygittoken
+</span></span></code></pre></div><p>The installer needs a user + API token for the git repository which it will prompt you for the known values from your <code>~/.jx/gitAuth.yaml</code> file so if you already installed Jenkins X it should be able to default those values for you.</p>
 <p>If you prefer you can install the helm chart <code>jenkins-x/environment-controller</code> directly with helm by specifying the <a href="https://github.com/jenkins-x-charts/environment-controller/blob/master/environment-controller/values.yaml#L3-L19">required values from the values.yaml file</a></p>
 <p><strong>Fetch issues during installation</strong></p>
 <p>You might run into the issue, that you cannot deploy the envirnment controller, since helm is unable to download the chart file. This might be due to the fact, that older helm versions have issues with a missing trailing slash on the repo url. See <a href="https://github.com/helm/helm/issues/4954">helm/issues/4954</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">helm fetch -d /tmp/helm-template-workdir-742964675/jxet/chartFiles --untar environment-controller --repo https://storage.googleapis.com/chartmuseum.jenkins-x.io --version
-Error: Failed to fetch https://storage.googleapis.com/charts/environment-controller-0.0.617.tgz : <span style="color:#ae81ff">403</span> Forbidden
-</code></pre></div><p>In that case, upgrading your helm version might help.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>helm fetch -d /tmp/helm-template-workdir-742964675/jxet/chartFiles --untar environment-controller --repo https://storage.googleapis.com/chartmuseum.jenkins-x.io --version
+</span></span><span style="display:flex;"><span>Error: Failed to fetch https://storage.googleapis.com/charts/environment-controller-0.0.617.tgz : <span style="color:#ae81ff">403</span> Forbidden
+</span></span></code></pre></div><p>In that case, upgrading your helm version might help.</p>
 <h3 id="installing-ingress-controller">Installing Ingress Controller</h3>
 <p>If you don&rsquo;t already have any kind of Ingress Controller in your remote <code>Staging</code> / <code>Production</code> cluster then it is recommend - particularly if you want to try out our <a href="/docs/getting-started/first-project/create-quickstart/">quickstarts</a> which depend on Ingress to be able to be used from a web browser.</p>
 <p>To install the default ingress controller into a remote cluster (which doesn&rsquo;t have Jenkins X installed) you can use the command <a href="/commands/jx_create_addon_ingress/">jx create addon ingctl</a></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create addon ingctl
-</code></pre></div><p>This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct <code>domain</code> value on the generated <code>Ingress</code> resources.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx create addon ingctl
+</span></span></code></pre></div><p>This will setup the Ingress Controller; find its external domain and then setup a Pull Request on the environments git repository so that future promotions in the environment will use the correct <code>domain</code> value on the generated <code>Ingress</code> resources.</p>
 <h3 id="how-it-works">How it works</h3>
 <p>On startup the Environment Controller registers itself into the github repository as a webhook endpoint using its LoadBalancer service IP address. If you are using a custom ingress/DNS endpoint you can override this via the <code>webhookUrl</code> chart value or <a href="/commands/jx_create_addon_environment/">&ndash;webhook-url CLI option</a></p>
 <p>Whenever there is a push to the <code>master</code> branch (PRs and feature branches are handled by your Development cluster) the Environment Controller triggers a new <a href="/about/concepts/jenkins-x-pipelines/">Jenkins X Pipeline</a> for the Promotion. All other push events on other branches are ignored (as they are processed by the Development cluster).</p>
@@ -1017,11 +1017,11 @@ Error: Failed to fetch https://storage.googleapis.com/charts/environment-control
 <ul>
 <li>currently you have to manually add the <code>CHART_REPOSITORY</code> environment variable into the <code>jenkins-x.yml</code> file in your environment git repository. e.g. a <code>jenkins-x.yml</code> file like this will do the trick - using the real URL to your chartmuseum (use <code>jx open</code> in your development cluster:</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">pipelineConfig</span>:
-  <span style="color:#f92672">env</span>:
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">CHART_REPOSITORY</span>
-    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">http://chartmuseum.jx.1.2.3.4.nip.io</span>
-</code></pre></div><p>You can do the above via the <a href="/commands/jx_create_variable/">jx create var -n CHART_REPOSITORY</a> command if you are inside a clone of the staging/production git repository - then git commit + merge the change.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">pipelineConfig</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">CHART_REPOSITORY</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">http://chartmuseum.jx.1.2.3.4.nip.io</span>
+</span></span></code></pre></div><p>You can do the above via the <a href="/commands/jx_create_variable/">jx create var -n CHART_REPOSITORY</a> command if you are inside a clone of the staging/production git repository - then git commit + merge the change.</p>
 
 	
 		<style>
@@ -1185,7 +1185,7 @@ Error: Failed to fetch https://storage.googleapis.com/charts/environment-control
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

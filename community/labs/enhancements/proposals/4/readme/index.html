@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -645,17 +645,17 @@ if (!doNotTrack) {
 	<div class="lead">Preview with Helmfile</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<h1 id="jx-enhancement-4-preview-with-helmfile">JX Enhancement 4: Preview with Helmfile</h1>
@@ -708,62 +708,61 @@ This work might also be used for the &ldquo;jx boot&rdquo; part.</p>
 <p>The <code>charts/preview</code> directory won&rsquo;t be a Helm chart anymore, but an Helmfile project.
 And instead of using raw Helm commands to deploy the preview, jx will use Helmfile commands.</p>
 <p>The only required file in this folder is <code>the helmfile.yaml</code> - which defines all the releases we want to install.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#75715e"># https://github.com/roboll/helmfile</span>
-
-<span style="color:#75715e"># we can use Helm 3 if its present in the container image</span>
-<span style="color:#f92672">helmBinary</span>: <span style="color:#ae81ff">helm3</span>
-
-<span style="color:#f92672">helmDefaults</span>:
-  <span style="color:#f92672">wait</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">timeout</span>: <span style="color:#ae81ff">180</span> <span style="color:#75715e"># seconds</span>
-
-<span style="color:#75715e"># extra Helm repositories</span>
-<span style="color:#f92672">repositories</span>:
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">bitnami</span>
-    <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://charts.bitnami.com/bitnami</span>
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">something-else</span>
-    <span style="color:#f92672">url</span>: <span style="color:#ae81ff">http://charts.example.com</span>
-
-<span style="color:#75715e"># all the releases we want to install in a preview env</span>
-<span style="color:#f92672">releases</span>:
-
-  - <span style="color:#75715e"># the main application&#39;s chart</span>
-    <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">.Values.preview.releaseName }}</span>
-    <span style="color:#f92672">namespace</span>: {{ <span style="color:#ae81ff">.Values.preview.namespace }}</span>
-    <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">../{{ requiredEnv &#34;APP_NAME&#34; }}</span>
-    <span style="color:#f92672">values</span>:
-      - <span style="color:#ae81ff">values.yaml.gotmpl</span>
-
-  - <span style="color:#75715e"># we can include other releases as well</span>
-    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">postgresql</span>
-    <span style="color:#f92672">namespace</span>: 
-    <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">bitnami/postgresql</span>
-    <span style="color:#f92672">version</span>: <span style="color:#ae81ff">8.9.2</span>
-    <span style="color:#f92672">values</span>:
-      - <span style="color:#ae81ff">postgresql.yaml</span>
-</code></pre></div><p>Custom values can either be written directly in this file, or in other files - such as values.yaml.gotmpl - which are defined in the main <code>helmfile.yaml</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go-text-template" data-lang="go-text-template"># This file contains the custom values for our application&#39;s chart
-# and support Go templates, parsed by https://github.com/roboll/helmfile
-
-image:
-  repository: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.preview.image.repository</span> <span style="color:#75715e">}}</span>
-  tag: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.preview.image.tag</span> <span style="color:#75715e">}}</span>
-
-ingress:
-  enabled: true
-  class: nginx
-  hosts:
-    - &#39;<span style="color:#75715e">{{</span> <span style="color:#a6e22e">.values.preview.name</span> <span style="color:#75715e">}}</span>.<span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.expose.config.domain</span> <span style="color:#75715e">}}</span>&#39;
-  tls:
-    enabled: true
-    secrets:
-      wildcard:
-        replicateFrom: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">requiredEnv</span> <span style="color:#e6db74">&#34;WILDCARD_TLS_SECRET_LOCATION&#34;</span> <span style="color:#75715e">}}</span>
-
-labels:
-  git-commit: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">requiredEnv</span> <span style="color:#e6db74">&#34;PULL_PULL_SHA&#34;</span> <span style="color:#75715e">}}</span>
-
-</code></pre></div><p>The <code>jx preview</code> command will have to be modified to execute the <code>helmfile apply</code> command on this directory. This command will take care of:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># https://github.com/roboll/helmfile</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># we can use Helm 3 if its present in the container image</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">helmBinary</span>: <span style="color:#ae81ff">helm3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">helmDefaults</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">wait</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">timeout</span>: <span style="color:#ae81ff">180</span> <span style="color:#75715e"># seconds</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># extra Helm repositories</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">repositories</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">bitnami</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">url</span>: <span style="color:#ae81ff">https://charts.bitnami.com/bitnami</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">something-else</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">url</span>: <span style="color:#ae81ff">http://charts.example.com</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># all the releases we want to install in a preview env</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">releases</span>:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#75715e"># the main application&#39;s chart</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">.Values.preview.releaseName }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">namespace</span>: {{ <span style="color:#ae81ff">.Values.preview.namespace }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">../{{ requiredEnv &#34;APP_NAME&#34; }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">values</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">values.yaml.gotmpl</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#75715e"># we can include other releases as well</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">postgresql</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">namespace</span>: 
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">bitnami/postgresql</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">version</span>: <span style="color:#ae81ff">8.9.2</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">values</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">postgresql.yaml</span>
+</span></span></code></pre></div><p>Custom values can either be written directly in this file, or in other files - such as values.yaml.gotmpl - which are defined in the main <code>helmfile.yaml</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go-text-template" data-lang="go-text-template"><span style="display:flex;"><span># This file contains the custom values for our application&#39;s chart
+</span></span><span style="display:flex;"><span># and support Go templates, parsed by https://github.com/roboll/helmfile
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>image:
+</span></span><span style="display:flex;"><span>  repository: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.preview.image.repository</span> <span style="color:#75715e">}}</span>
+</span></span><span style="display:flex;"><span>  tag: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.preview.image.tag</span> <span style="color:#75715e">}}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ingress:
+</span></span><span style="display:flex;"><span>  enabled: true
+</span></span><span style="display:flex;"><span>  class: nginx
+</span></span><span style="display:flex;"><span>  hosts:
+</span></span><span style="display:flex;"><span>    - &#39;<span style="color:#75715e">{{</span> <span style="color:#a6e22e">.values.preview.name</span> <span style="color:#75715e">}}</span>.<span style="color:#75715e">{{</span> <span style="color:#a6e22e">.Values.expose.config.domain</span> <span style="color:#75715e">}}</span>&#39;
+</span></span><span style="display:flex;"><span>  tls:
+</span></span><span style="display:flex;"><span>    enabled: true
+</span></span><span style="display:flex;"><span>    secrets:
+</span></span><span style="display:flex;"><span>      wildcard:
+</span></span><span style="display:flex;"><span>        replicateFrom: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">requiredEnv</span> <span style="color:#e6db74">&#34;WILDCARD_TLS_SECRET_LOCATION&#34;</span> <span style="color:#75715e">}}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>labels:
+</span></span><span style="display:flex;"><span>  git-commit: <span style="color:#75715e">{{</span> <span style="color:#a6e22e">requiredEnv</span> <span style="color:#e6db74">&#34;PULL_PULL_SHA&#34;</span> <span style="color:#75715e">}}</span>
+</span></span></code></pre></div><p>The <code>jx preview</code> command will have to be modified to execute the <code>helmfile apply</code> command on this directory. This command will take care of:</p>
 <ul>
 <li>adding required Helm repositories</li>
 <li>calculates the &ldquo;diff&rdquo; of what needs to be done, and print it</li>
@@ -789,29 +788,29 @@ It&rsquo;s just a quick and dirty implementation that works for our use-case, so
 <li>the <code>helmfile</code> command being used is <code>helmfile --file=helmfile.yaml --state-values-file=extraValues.yaml --state-values-set=tags.jx-ns-NAMESPACE=true,global.jxNsNAMESPACE=true,...,global.jxNs=NAMESPACE,... --namespace=NAMESPACE apply</code></li>
 </ul>
 <p>We call it with the following flags: <code>jx preview --app &quot;${APP_NAME}&quot; --namespace &quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&quot; --name &quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&quot; --release &quot;preview-${APP_NAME}-pr-${PULL_NUMBER}&quot; --helmfile &quot;helmfile.yaml&quot; --verbose</code> - see  the jenkins-x.yml below for the jx pipeline.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">none</span>
-<span style="color:#f92672">pipelineConfig</span>:
-  <span style="color:#f92672">pipelines</span>:
-    <span style="color:#f92672">pullRequest</span>:
-      <span style="color:#f92672">pipeline</span>:
-        <span style="color:#f92672">stages</span>:
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">preview-env</span>
-            <span style="color:#f92672">steps</span>:
-              - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">deploy-preview-env</span>
-                <span style="color:#f92672">command</span>: <span style="color:#ae81ff">jx preview</span>
-                <span style="color:#f92672">args</span>:
-                  - --<span style="color:#ae81ff">app &#34;${APP_NAME}&#34;</span>
-                  - --<span style="color:#ae81ff">namespace &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
-                  - --<span style="color:#ae81ff">name &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
-                  - --<span style="color:#ae81ff">release &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
-                  - --<span style="color:#ae81ff">helmfile &#34;helmfile.yaml&#34;</span>
-                  - --<span style="color:#ae81ff">verbose</span>
-                <span style="color:#f92672">dir</span>: <span style="color:#ae81ff">charts/preview</span>
-                <span style="color:#f92672">image</span>: <span style="color:#ae81ff">our-custom-jx-image-with-helmfile</span>
-                <span style="color:#f92672">env</span>:
-                  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">WILDCARD_TLS_SECRET_LOCATION</span>
-                    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">jx/tls-jx-example-com-p</span>
-</code></pre></div><p>The <code>--app</code> flag is &ldquo;mandatory&rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&rsquo;t exist anymore.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">none</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">pipelineConfig</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pipelines</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pullRequest</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">stages</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">preview-env</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>              - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">deploy-preview-env</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">command</span>: <span style="color:#ae81ff">jx preview</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">args</span>:
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">app &#34;${APP_NAME}&#34;</span>
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">namespace &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">name &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">release &#34;preview-${APP_NAME}-pr-${PULL_NUMBER}&#34;</span>
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">helmfile &#34;helmfile.yaml&#34;</span>
+</span></span><span style="display:flex;"><span>                  - --<span style="color:#ae81ff">verbose</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">dir</span>: <span style="color:#ae81ff">charts/preview</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">image</span>: <span style="color:#ae81ff">our-custom-jx-image-with-helmfile</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>                  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">WILDCARD_TLS_SECRET_LOCATION</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">jx/tls-jx-example-com-p</span>
+</span></span></code></pre></div><p>The <code>--app</code> flag is &ldquo;mandatory&rdquo; when using helmfile, to avoid trying to find a default value from the preview chart, which doesn&rsquo;t exist anymore.</p>
 <p>The <code>jx preview</code> command is now run in a specific container image, which contains:</p>
 <ul>
 <li><code>jx</code> built from the <a href="https://github.com/vbehar/jx/tree/preview-helmfile">preview-helmfile branch</a></li>
@@ -821,309 +820,309 @@ It&rsquo;s just a quick and dirty implementation that works for our use-case, so
 see the Dockerfile below for more details. This image has both <code>helm</code> and <code>helm3</code> binaries. We might have plugins compatibility issues.
 For now in this quick-and-dirty implementation we ignored this issue, because this image is only used to run <code>jx preview</code> with helmfile and helm 3, so it never uses Helm 2.</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-docker" data-lang="docker"><span style="color:#75715e"># part of the Dockerfile used to build the container image used to run &#34;jx preview&#34; with helmfile</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># install helm</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_VERSION 2.14.2<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_HOME <span style="color:#e6db74">&#34;/helm&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm </span><span style="color:#e6db74">${</span>HELM_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -f https://storage.googleapis.com/kubernetes-helm/helm-v<span style="color:#e6db74">${</span>HELM_VERSION<span style="color:#e6db74">}</span>-linux-amd64.tar.gz | tar xzv <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/helm /usr/bin/ <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/tiller /usr/bin/ <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> rm -rf linux-amd64 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm init --client-only<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM3_VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;3.2.0&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm3 </span><span style="color:#e6db74">${</span>HELM3_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -f https://get.helm.sh/helm-v<span style="color:#e6db74">${</span>HELM3_VERSION<span style="color:#e6db74">}</span>-linux-amd64.tar.gz | tar xzv <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/helm /usr/bin/helm3 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> rm -rf linux-amd64<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_PLUGINS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/helm/plugins&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm3 plugins in </span><span style="color:#e6db74">${</span>HELM_PLUGINS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> export XDG_DATA_HOME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/futuresimple/helm-secrets --version v2.0.2 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/databus23/helm-diff --version v3.1.1 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/hayorov/helm-gcs --version 0.3.1 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> unset XDG_DATA_HOME<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELMFILE_VERSION 0.111.0<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing helmfile </span><span style="color:#e6db74">${</span>HELMFILE_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -LO https://github.com/roboll/helmfile/releases/download/v<span style="color:#e6db74">${</span>HELMFILE_VERSION<span style="color:#e6db74">}</span>/helmfile_linux_amd64 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> chmod +x helmfile_linux_amd64 <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv helmfile_linux_amd64 /usr/bin/helmfile<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># install kubectl</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> KUBECTL_VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;1.15&#34;</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing kubectl </span><span style="color:#e6db74">${</span>KUBECTL_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -LO https://storage.googleapis.com/kubernetes-release/release/<span style="color:#66d9ef">$(</span>curl -s https://storage.googleapis.com/kubernetes-release/release/stable-<span style="color:#e6db74">${</span>KUBECTL_VERSION<span style="color:#e6db74">}</span>.txt<span style="color:#66d9ef">)</span>/bin/linux/amd64/kubectl <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> chmod +x kubectl <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv kubectl /usr/bin/<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><p>You can see the output:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-docker" data-lang="docker"><span style="display:flex;"><span><span style="color:#75715e"># part of the Dockerfile used to build the container image used to run &#34;jx preview&#34; with helmfile</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># install helm</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_VERSION 2.14.2<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_HOME <span style="color:#e6db74">&#34;/helm&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm </span><span style="color:#e6db74">${</span>HELM_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -f https://storage.googleapis.com/kubernetes-helm/helm-v<span style="color:#e6db74">${</span>HELM_VERSION<span style="color:#e6db74">}</span>-linux-amd64.tar.gz | tar xzv <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/helm /usr/bin/ <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/tiller /usr/bin/ <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> rm -rf linux-amd64 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm init --client-only<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM3_VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;3.2.0&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm3 </span><span style="color:#e6db74">${</span>HELM3_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -f https://get.helm.sh/helm-v<span style="color:#e6db74">${</span>HELM3_VERSION<span style="color:#e6db74">}</span>-linux-amd64.tar.gz | tar xzv <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv linux-amd64/helm /usr/bin/helm3 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> rm -rf linux-amd64<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELM_PLUGINS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/helm/plugins&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing Helm3 plugins in </span><span style="color:#e6db74">${</span>HELM_PLUGINS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> export XDG_DATA_HOME<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/futuresimple/helm-secrets --version v2.0.2 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/databus23/helm-diff --version v3.1.1 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> helm3 plugin install https://github.com/hayorov/helm-gcs --version 0.3.1 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> unset XDG_DATA_HOME<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> HELMFILE_VERSION 0.111.0<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing helmfile </span><span style="color:#e6db74">${</span>HELMFILE_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -LO https://github.com/roboll/helmfile/releases/download/v<span style="color:#e6db74">${</span>HELMFILE_VERSION<span style="color:#e6db74">}</span>/helmfile_linux_amd64 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> chmod +x helmfile_linux_amd64 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv helmfile_linux_amd64 /usr/bin/helmfile<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># install kubectl</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> KUBECTL_VERSION<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;1.15&#34;</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> echo <span style="color:#e6db74">&#34;Installing kubectl </span><span style="color:#e6db74">${</span>KUBECTL_VERSION<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> curl -LO https://storage.googleapis.com/kubernetes-release/release/<span style="color:#66d9ef">$(</span>curl -s https://storage.googleapis.com/kubernetes-release/release/stable-<span style="color:#e6db74">${</span>KUBECTL_VERSION<span style="color:#e6db74">}</span>.txt<span style="color:#66d9ef">)</span>/bin/linux/amd64/kubectl <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> chmod +x kubectl <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span> <span style="color:#f92672">&amp;&amp;</span> mv kubectl /usr/bin/<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>You can see the output:</p>
 <ul>
 <li>for the first run</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">Creating a preview
-expose:
-  Annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
-  config:
-    domain: jx.example.com
-    exposer: Ingress
-    http: &#34;true&#34;
-preview:
-  image:
-    repository: gcr.io/owner/myapp
-    tag: 0.0.0-SNAPSHOT-PR-129-16
-  name: preview-myapp-pr-129
-  namespace: preview-myapp-pr-129
-  releaseName: preview-myapp-pr-129
-Installing Preview Environment with Helmfile...
-Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
-Building dependency release=preview-myapp-pr-129, chart=../myapp
-Comparing release=preview-myapp-pr-129, chart=../myapp
-********************
-
-	Release was not present in Helm.  Diff will show entire contents as new.
-
-********************
-preview-myapp-pr-129, preview-myapp-pr-129-tls-wildcard, Secret (v1) has been added:
-+ # Source: myapp/templates/ingress.yaml
-+ apiVersion: v1
-+ kind: Secret
-+ metadata:
-+   annotations:
-+     replicator.v1.mittwald.de/replicate-from: jx/tls-jx-example-com-p
-+   labels:
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/managed-by: Helm
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/version: latest
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+     helm.sh/chart: myapp-4.3.0
-+   name: preview-myapp-pr-129-tls-wildcard
-+ data:
-+   tls.crt: &#39;++++++++ # (0 bytes)&#39;
-+   tls.key: &#39;++++++++ # (0 bytes)&#39;
-+ type: kubernetes.io/tls
-
-preview-myapp-pr-129, preview-myapp-pr-129, Service (v1) has been added:
--
-+ # Source: myapp/templates/service.yaml
-+ apiVersion: v1
-+ kind: Service
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &#34;latest&#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+ spec:
-+   type: ClusterIP
-+   ports:
-+     - name: http
-+       port: 8080
-+       targetPort: http
-+   selector:
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has been added:
--
-+ # Source: myapp/templates/deployment.yaml
-+ apiVersion: apps/v1
-+ kind: Deployment
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &#34;latest&#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+ spec:
-+   replicas: 1
-+   revisionHistoryLimit: 2
-+   selector:
-+     matchLabels:
-+       app.kubernetes.io/name: myapp
-+       app.kubernetes.io/instance: preview-myapp-pr-129
-+   template:
-+     metadata:
-+       labels:
-+         helm.sh/chart: myapp-4.3.0
-+         app.kubernetes.io/name: myapp
-+         app.kubernetes.io/instance: preview-myapp-pr-129
-+         app.kubernetes.io/version: &#34;latest&#34;
-+         app.kubernetes.io/managed-by: Helm
-+         git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+     spec:
-+       containers:
-+         - name: myapp
-+           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&#34;
-+           ports:
-+             - name: http
-+               containerPort: 8080
-+           livenessProbe:
-+             tcpSocket:
-+               port: http
-+           readinessProbe:
-+             httpGet:
-+               path: /
-+               port: http
-+           resources:
-+             limits:
-+               cpu: &#34;0.1&#34;
-+               memory: 32M
-+             requests:
-+               cpu: &#34;0.1&#34;
-+               memory: 32M
-+       enableServiceLinks: false
-+       terminationGracePeriodSeconds: 30
-preview-myapp-pr-129, preview-myapp-pr-129, Ingress (networking.k8s.io) has been added:
--
-+ # Source: myapp/templates/ingress.yaml
-+ apiVersion: networking.k8s.io/v1beta1
-+ kind: Ingress
-+ metadata:
-+   name: preview-myapp-pr-129
-+   labels:
-+     helm.sh/chart: myapp-4.3.0
-+     app.kubernetes.io/name: myapp
-+     app.kubernetes.io/instance: preview-myapp-pr-129
-+     app.kubernetes.io/version: &#34;latest&#34;
-+     app.kubernetes.io/managed-by: Helm
-+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-+   annotations:
-+     kubernetes.io/ingress.class: nginx
-+     kubernetes.io/ingress.allow-http: &#34;false&#34;
-+ spec:
-+   rules:
-+     - host: preview-myapp-pr-129.jx.example.com
-+       http:
-+         paths:
-+           - backend:
-+               serviceName: preview-myapp-pr-129
-+               servicePort: 8080
-+   tls:
-+     - secretName: preview-myapp-pr-129-tls-wildcard
-
-Upgrading release=preview-myapp-pr-129, chart=../myapp
-Release &#34;preview-myapp-pr-129&#34; does not exist. Installing it now.
-NAME: preview-myapp-pr-129
-LAST DEPLOYED: Fri Apr 24 05:11:49 2020
-NAMESPACE: preview-myapp-pr-129
-STATUS: deployed
-REVISION: 1
-
-Listing releases matching ^preview-myapp-pr-129$
-preview-myapp-pr-129	preview-myapp-pr-129	1       	2020-04-24 05:11:49.634624822 +0000 UTC	deployed	myapp-4.3.0	latest
-
-
-UPDATED RELEASES:
-NAME                          CHART             VERSION
-preview-myapp-pr-129   ../myapp     4.3.0
-
-Preview Environment successfully installed with Helmfile!
-</code></pre></div><ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plaintext" data-lang="plaintext"><span style="display:flex;"><span>Creating a preview
+</span></span><span style="display:flex;"><span>expose:
+</span></span><span style="display:flex;"><span>  Annotations:
+</span></span><span style="display:flex;"><span>    helm.sh/hook: post-install,post-upgrade
+</span></span><span style="display:flex;"><span>    helm.sh/hook-delete-policy: hook-succeeded
+</span></span><span style="display:flex;"><span>  config:
+</span></span><span style="display:flex;"><span>    domain: jx.example.com
+</span></span><span style="display:flex;"><span>    exposer: Ingress
+</span></span><span style="display:flex;"><span>    http: &#34;true&#34;
+</span></span><span style="display:flex;"><span>preview:
+</span></span><span style="display:flex;"><span>  image:
+</span></span><span style="display:flex;"><span>    repository: gcr.io/owner/myapp
+</span></span><span style="display:flex;"><span>    tag: 0.0.0-SNAPSHOT-PR-129-16
+</span></span><span style="display:flex;"><span>  name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>  namespace: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>  releaseName: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>Installing Preview Environment with Helmfile...
+</span></span><span style="display:flex;"><span>Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
+</span></span><span style="display:flex;"><span>Building dependency release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>Comparing release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>********************
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Release was not present in Helm.  Diff will show entire contents as new.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>********************
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129, preview-myapp-pr-129-tls-wildcard, Secret (v1) has been added:
+</span></span><span style="display:flex;"><span>+ # Source: myapp/templates/ingress.yaml
+</span></span><span style="display:flex;"><span>+ apiVersion: v1
+</span></span><span style="display:flex;"><span>+ kind: Secret
+</span></span><span style="display:flex;"><span>+ metadata:
+</span></span><span style="display:flex;"><span>+   annotations:
+</span></span><span style="display:flex;"><span>+     replicator.v1.mittwald.de/replicate-from: jx/tls-jx-example-com-p
+</span></span><span style="display:flex;"><span>+   labels:
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/version: latest
+</span></span><span style="display:flex;"><span>+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>+     helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>+   name: preview-myapp-pr-129-tls-wildcard
+</span></span><span style="display:flex;"><span>+ data:
+</span></span><span style="display:flex;"><span>+   tls.crt: &#39;++++++++ # (0 bytes)&#39;
+</span></span><span style="display:flex;"><span>+   tls.key: &#39;++++++++ # (0 bytes)&#39;
+</span></span><span style="display:flex;"><span>+ type: kubernetes.io/tls
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129, preview-myapp-pr-129, Service (v1) has been added:
+</span></span><span style="display:flex;"><span>-
+</span></span><span style="display:flex;"><span>+ # Source: myapp/templates/service.yaml
+</span></span><span style="display:flex;"><span>+ apiVersion: v1
+</span></span><span style="display:flex;"><span>+ kind: Service
+</span></span><span style="display:flex;"><span>+ metadata:
+</span></span><span style="display:flex;"><span>+   name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+   labels:
+</span></span><span style="display:flex;"><span>+     helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>+ spec:
+</span></span><span style="display:flex;"><span>+   type: ClusterIP
+</span></span><span style="display:flex;"><span>+   ports:
+</span></span><span style="display:flex;"><span>+     - name: http
+</span></span><span style="display:flex;"><span>+       port: 8080
+</span></span><span style="display:flex;"><span>+       targetPort: http
+</span></span><span style="display:flex;"><span>+   selector:
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has been added:
+</span></span><span style="display:flex;"><span>-
+</span></span><span style="display:flex;"><span>+ # Source: myapp/templates/deployment.yaml
+</span></span><span style="display:flex;"><span>+ apiVersion: apps/v1
+</span></span><span style="display:flex;"><span>+ kind: Deployment
+</span></span><span style="display:flex;"><span>+ metadata:
+</span></span><span style="display:flex;"><span>+   name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+   labels:
+</span></span><span style="display:flex;"><span>+     helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>+ spec:
+</span></span><span style="display:flex;"><span>+   replicas: 1
+</span></span><span style="display:flex;"><span>+   revisionHistoryLimit: 2
+</span></span><span style="display:flex;"><span>+   selector:
+</span></span><span style="display:flex;"><span>+     matchLabels:
+</span></span><span style="display:flex;"><span>+       app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+       app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+   template:
+</span></span><span style="display:flex;"><span>+     metadata:
+</span></span><span style="display:flex;"><span>+       labels:
+</span></span><span style="display:flex;"><span>+         helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>+         app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+         app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+         app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>+         app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>+         git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>+     spec:
+</span></span><span style="display:flex;"><span>+       containers:
+</span></span><span style="display:flex;"><span>+         - name: myapp
+</span></span><span style="display:flex;"><span>+           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&#34;
+</span></span><span style="display:flex;"><span>+           ports:
+</span></span><span style="display:flex;"><span>+             - name: http
+</span></span><span style="display:flex;"><span>+               containerPort: 8080
+</span></span><span style="display:flex;"><span>+           livenessProbe:
+</span></span><span style="display:flex;"><span>+             tcpSocket:
+</span></span><span style="display:flex;"><span>+               port: http
+</span></span><span style="display:flex;"><span>+           readinessProbe:
+</span></span><span style="display:flex;"><span>+             httpGet:
+</span></span><span style="display:flex;"><span>+               path: /
+</span></span><span style="display:flex;"><span>+               port: http
+</span></span><span style="display:flex;"><span>+           resources:
+</span></span><span style="display:flex;"><span>+             limits:
+</span></span><span style="display:flex;"><span>+               cpu: &#34;0.1&#34;
+</span></span><span style="display:flex;"><span>+               memory: 32M
+</span></span><span style="display:flex;"><span>+             requests:
+</span></span><span style="display:flex;"><span>+               cpu: &#34;0.1&#34;
+</span></span><span style="display:flex;"><span>+               memory: 32M
+</span></span><span style="display:flex;"><span>+       enableServiceLinks: false
+</span></span><span style="display:flex;"><span>+       terminationGracePeriodSeconds: 30
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129, preview-myapp-pr-129, Ingress (networking.k8s.io) has been added:
+</span></span><span style="display:flex;"><span>-
+</span></span><span style="display:flex;"><span>+ # Source: myapp/templates/ingress.yaml
+</span></span><span style="display:flex;"><span>+ apiVersion: networking.k8s.io/v1beta1
+</span></span><span style="display:flex;"><span>+ kind: Ingress
+</span></span><span style="display:flex;"><span>+ metadata:
+</span></span><span style="display:flex;"><span>+   name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+   labels:
+</span></span><span style="display:flex;"><span>+     helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>+     app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>+     git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>+   annotations:
+</span></span><span style="display:flex;"><span>+     kubernetes.io/ingress.class: nginx
+</span></span><span style="display:flex;"><span>+     kubernetes.io/ingress.allow-http: &#34;false&#34;
+</span></span><span style="display:flex;"><span>+ spec:
+</span></span><span style="display:flex;"><span>+   rules:
+</span></span><span style="display:flex;"><span>+     - host: preview-myapp-pr-129.jx.example.com
+</span></span><span style="display:flex;"><span>+       http:
+</span></span><span style="display:flex;"><span>+         paths:
+</span></span><span style="display:flex;"><span>+           - backend:
+</span></span><span style="display:flex;"><span>+               serviceName: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>+               servicePort: 8080
+</span></span><span style="display:flex;"><span>+   tls:
+</span></span><span style="display:flex;"><span>+     - secretName: preview-myapp-pr-129-tls-wildcard
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Upgrading release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>Release &#34;preview-myapp-pr-129&#34; does not exist. Installing it now.
+</span></span><span style="display:flex;"><span>NAME: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>LAST DEPLOYED: Fri Apr 24 05:11:49 2020
+</span></span><span style="display:flex;"><span>NAMESPACE: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>STATUS: deployed
+</span></span><span style="display:flex;"><span>REVISION: 1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Listing releases matching ^preview-myapp-pr-129$
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129	preview-myapp-pr-129	1       	2020-04-24 05:11:49.634624822 +0000 UTC	deployed	myapp-4.3.0	latest
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>UPDATED RELEASES:
+</span></span><span style="display:flex;"><span>NAME                          CHART             VERSION
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129   ../myapp     4.3.0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Preview Environment successfully installed with Helmfile!
+</span></span></code></pre></div><ul>
 <li>for the second run</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">Creating a preview
-expose:
-  Annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
-  config:
-    domain: jx.example.com
-    exposer: Ingress
-    http: &#34;true&#34;
-preview:
-  image:
-    repository: gcr.io/owner/myapp
-    tag: 0.0.0-SNAPSHOT-PR-129-18
-  name: preview-myapp-pr-129
-  namespace: preview-myapp-pr-129
-  releaseName: preview-myapp-pr-129
-Installing Preview Environment with Helmfile...
-Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
-Building dependency release=preview-myapp-pr-129, chart=../myapp
-Comparing release=preview-myapp-pr-129, chart=../myapp
-preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has changed:
-  # Source: myapp/templates/deployment.yaml
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: preview-myapp-pr-129
-    labels:
-      helm.sh/chart: myapp-4.3.0
-      app.kubernetes.io/name: myapp
-      app.kubernetes.io/instance: preview-myapp-pr-129
-      app.kubernetes.io/version: &#34;latest&#34;
-      app.kubernetes.io/managed-by: Helm
-      git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-  spec:
-    replicas: 1
-    revisionHistoryLimit: 2
-    selector:
-      matchLabels:
-        app.kubernetes.io/name: myapp
-        app.kubernetes.io/instance: preview-myapp-pr-129
-    template:
-      metadata:
-        labels:
-          helm.sh/chart: myapp-4.3.0
-          app.kubernetes.io/name: myapp
-          app.kubernetes.io/instance: preview-myapp-pr-129
-          app.kubernetes.io/version: &#34;latest&#34;
-          app.kubernetes.io/managed-by: Helm
-          git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
-      spec:
-        containers:
-          - name: myapp
--           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&#34;
-+           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-18&#34;
-            ports:
-              - name: http
-                containerPort: 8080
-            livenessProbe:
-              tcpSocket:
-                port: http
-            readinessProbe:
-              httpGet:
-                path: /
-                port: http
-            resources:
-              limits:
-                cpu: &#34;0.1&#34;
-                memory: 32M
-              requests:
-                cpu: &#34;0.1&#34;
-                memory: 32M
-        enableServiceLinks: false
-        terminationGracePeriodSeconds: 30
-
-Upgrading release=preview-myapp-pr-129, chart=../myapp
-Release &#34;preview-myapp-pr-129&#34; has been upgraded. Happy Helming!
-Listing releases matching ^preview-myapp-pr-129$
-NAME: preview-myapp-pr-129
-LAST DEPLOYED: Fri Apr 24 08:36:04 2020
-NAMESPACE: preview-myapp-pr-129
-STATUS: deployed
-REVISION: 2
-
-preview-myapp-pr-129	preview-myapp-pr-129	2       	2020-04-24 08:36:04.231316767 +0000 UTC	deployed	myapp-4.3.0	latest
-
-
-UPDATED RELEASES:
-NAME                          CHART             VERSION
-preview-myapp-pr-129   ../myapp     4.3.0
-
-Preview Environment successfully installed with Helmfile!
-</code></pre></div><h4 id="233-proposed-implementation">2.3.3 Proposed implementation</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plaintext" data-lang="plaintext"><span style="display:flex;"><span>Creating a preview
+</span></span><span style="display:flex;"><span>expose:
+</span></span><span style="display:flex;"><span>  Annotations:
+</span></span><span style="display:flex;"><span>    helm.sh/hook: post-install,post-upgrade
+</span></span><span style="display:flex;"><span>    helm.sh/hook-delete-policy: hook-succeeded
+</span></span><span style="display:flex;"><span>  config:
+</span></span><span style="display:flex;"><span>    domain: jx.example.com
+</span></span><span style="display:flex;"><span>    exposer: Ingress
+</span></span><span style="display:flex;"><span>    http: &#34;true&#34;
+</span></span><span style="display:flex;"><span>preview:
+</span></span><span style="display:flex;"><span>  image:
+</span></span><span style="display:flex;"><span>    repository: gcr.io/owner/myapp
+</span></span><span style="display:flex;"><span>    tag: 0.0.0-SNAPSHOT-PR-129-18
+</span></span><span style="display:flex;"><span>  name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>  namespace: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>  releaseName: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>Installing Preview Environment with Helmfile...
+</span></span><span style="display:flex;"><span>Running: helmfile --file=helmfile.yaml --state-values-file=/workspace/source/charts/preview/extraValues.yaml --state-values-set=tags.jx-ns-preview-myapp-pr-129=true,global.jxNsPreviewMyappPr129=true,tags.jx-preview=true,tags.jx-env-preview-myapp-pr-129=true,global.jxPreview=true,global.jxEnvPreviewMyappPr129=true,global.jxNs=preview-myapp-pr-129,global.jxTypeEnv=preview,global.jxEnv=preview-myapp-pr-129,global.jxPreviewApp=myapp,global.jxPreviewPr=129 --namespace=preview-myapp-pr-129 apply
+</span></span><span style="display:flex;"><span>Building dependency release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>Comparing release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129, preview-myapp-pr-129, Deployment (apps) has changed:
+</span></span><span style="display:flex;"><span>  # Source: myapp/templates/deployment.yaml
+</span></span><span style="display:flex;"><span>  apiVersion: apps/v1
+</span></span><span style="display:flex;"><span>  kind: Deployment
+</span></span><span style="display:flex;"><span>  metadata:
+</span></span><span style="display:flex;"><span>    name: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>    labels:
+</span></span><span style="display:flex;"><span>      helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>      app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>      app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>      app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>      app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>      git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>  spec:
+</span></span><span style="display:flex;"><span>    replicas: 1
+</span></span><span style="display:flex;"><span>    revisionHistoryLimit: 2
+</span></span><span style="display:flex;"><span>    selector:
+</span></span><span style="display:flex;"><span>      matchLabels:
+</span></span><span style="display:flex;"><span>        app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>        app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>    template:
+</span></span><span style="display:flex;"><span>      metadata:
+</span></span><span style="display:flex;"><span>        labels:
+</span></span><span style="display:flex;"><span>          helm.sh/chart: myapp-4.3.0
+</span></span><span style="display:flex;"><span>          app.kubernetes.io/name: myapp
+</span></span><span style="display:flex;"><span>          app.kubernetes.io/instance: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>          app.kubernetes.io/version: &#34;latest&#34;
+</span></span><span style="display:flex;"><span>          app.kubernetes.io/managed-by: Helm
+</span></span><span style="display:flex;"><span>          git-commit: 94f909b03f2f4189ac433e1aba8cd1147b3aa467
+</span></span><span style="display:flex;"><span>      spec:
+</span></span><span style="display:flex;"><span>        containers:
+</span></span><span style="display:flex;"><span>          - name: myapp
+</span></span><span style="display:flex;"><span>-           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-16&#34;
+</span></span><span style="display:flex;"><span>+           image: &#34;gcr.io/owner/myapp:0.0.0-SNAPSHOT-PR-129-18&#34;
+</span></span><span style="display:flex;"><span>            ports:
+</span></span><span style="display:flex;"><span>              - name: http
+</span></span><span style="display:flex;"><span>                containerPort: 8080
+</span></span><span style="display:flex;"><span>            livenessProbe:
+</span></span><span style="display:flex;"><span>              tcpSocket:
+</span></span><span style="display:flex;"><span>                port: http
+</span></span><span style="display:flex;"><span>            readinessProbe:
+</span></span><span style="display:flex;"><span>              httpGet:
+</span></span><span style="display:flex;"><span>                path: /
+</span></span><span style="display:flex;"><span>                port: http
+</span></span><span style="display:flex;"><span>            resources:
+</span></span><span style="display:flex;"><span>              limits:
+</span></span><span style="display:flex;"><span>                cpu: &#34;0.1&#34;
+</span></span><span style="display:flex;"><span>                memory: 32M
+</span></span><span style="display:flex;"><span>              requests:
+</span></span><span style="display:flex;"><span>                cpu: &#34;0.1&#34;
+</span></span><span style="display:flex;"><span>                memory: 32M
+</span></span><span style="display:flex;"><span>        enableServiceLinks: false
+</span></span><span style="display:flex;"><span>        terminationGracePeriodSeconds: 30
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Upgrading release=preview-myapp-pr-129, chart=../myapp
+</span></span><span style="display:flex;"><span>Release &#34;preview-myapp-pr-129&#34; has been upgraded. Happy Helming!
+</span></span><span style="display:flex;"><span>Listing releases matching ^preview-myapp-pr-129$
+</span></span><span style="display:flex;"><span>NAME: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>LAST DEPLOYED: Fri Apr 24 08:36:04 2020
+</span></span><span style="display:flex;"><span>NAMESPACE: preview-myapp-pr-129
+</span></span><span style="display:flex;"><span>STATUS: deployed
+</span></span><span style="display:flex;"><span>REVISION: 2
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129	preview-myapp-pr-129	2       	2020-04-24 08:36:04.231316767 +0000 UTC	deployed	myapp-4.3.0	latest
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>UPDATED RELEASES:
+</span></span><span style="display:flex;"><span>NAME                          CHART             VERSION
+</span></span><span style="display:flex;"><span>preview-myapp-pr-129   ../myapp     4.3.0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Preview Environment successfully installed with Helmfile!
+</span></span></code></pre></div><h4 id="233-proposed-implementation">2.3.3 Proposed implementation</h4>
 <p>The real implementation should:</p>
 <ul>
 <li>include a recent version of helmfile and helm 3 in the official jx container image, along with helmfile&rsquo;s required plugins (diff)</li>
@@ -1313,7 +1312,7 @@ At this point new repositories will use Helmfile by default.</li>
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

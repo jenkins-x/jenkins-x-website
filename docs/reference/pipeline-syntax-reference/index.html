@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -939,17 +939,17 @@ if (!doNotTrack) {
 	<div class="lead">cloud native serverless pipelines</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<h1 id="syntax-for-jenkins-xyml-and-build-packs">Syntax for <code>jenkins-x.yml</code> and build packs</h1>
@@ -1149,113 +1149,113 @@ limits, and volume mounts.</li>
 </ul>
 <h1 id="examples">Examples</h1>
 <h2 id="full-pipeline-definition-in-jenkins-xyml">Full pipeline definition in <code>jenkins-x.yml</code></h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#75715e"># If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.</span>
-<span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">none</span>
-
-<span style="color:#f92672">pipelineConfig</span>:
-  <span style="color:#f92672">pipelines</span>:
-    <span style="color:#f92672">release</span>:
-    <span style="color:#75715e"># While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.</span>
-      <span style="color:#f92672">pipeline</span>:
-        <span style="color:#75715e"># Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is</span>
-        <span style="color:#75715e"># specified on a stage or step.</span>
-        <span style="color:#f92672">agent</span>:
-          <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#34;some/image@version&#34;</span> <span style="color:#75715e"># or &#34;maven&#34; - this means &#34;use the maven pod template&#34;</span>
-        <span style="color:#75715e"># Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.</span>
-        <span style="color:#75715e"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core</span>
-        <span style="color:#75715e"># for more information on valueFrom.</span>
-        <span style="color:#75715e"># Environment variables defined at the top level can be overridden in stages and individual</span>
-        <span style="color:#75715e"># steps.</span>
-        <span style="color:#f92672">environment</span>:
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_VAR</span>
-            <span style="color:#f92672">value</span>: <span style="color:#ae81ff">A value for the env var</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_OTHER_VAR</span>
-            <span style="color:#f92672">value</span>: <span style="color:#ae81ff">Another var</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_API_KEY</span>
-            <span style="color:#f92672">valueFrom</span>:
-              <span style="color:#f92672">secretKeyRef</span>:
-                <span style="color:#f92672">name</span>: <span style="color:#ae81ff">mysecret</span>
-                <span style="color:#f92672">key</span>: <span style="color:#ae81ff">apikey</span>
-        <span style="color:#75715e"># Options contains other configuration for the pipeline.</span>
-        <span style="color:#f92672">options</span>:
-          <span style="color:#75715e"># containerOptions allows specifying more advanced default configuration for the containers</span>
-          <span style="color:#75715e"># used for all stages and steps in this scope, using the standard Kubernetes syntax for</span>
-          <span style="color:#75715e"># containers.</span>
-          <span style="color:#75715e"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.</span>
-          <span style="color:#75715e"># Not all fields can be configured - e.g., name, command, arguments, image, and dir are all</span>
-          <span style="color:#75715e"># defined via the syntax - but everything else can be.</span>
-          <span style="color:#75715e"># Like with environment variables, containerOptions at the top level can be overridden and</span>
-          <span style="color:#75715e"># added to by stages.</span>
-          <span style="color:#f92672">containerOptions</span>:
-            <span style="color:#75715e"># Here we&#39;re setting the resource requests and limits for all step containers within this</span>
-            <span style="color:#75715e"># pipeline.</span>
-            <span style="color:#f92672">resources</span>:
-              <span style="color:#f92672">requests</span>:
-                <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.1</span>
-                <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">64Mi</span>
-              <span style="color:#f92672">limits</span>:
-                <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.2</span>
-                <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">128Mi</span>
-          <span style="color:#75715e"># timeout allows you to set the maximum duration for builds of this pipeline.</span>
-          <span style="color:#f92672">timeout</span>:
-            <span style="color:#f92672">time</span>: <span style="color:#ae81ff">15</span>
-            <span style="color:#f92672">unit</span>: <span style="color:#ae81ff">minutes</span>
-        <span style="color:#75715e"># A pipeline must contain at least one stage, and each stage must have a unique name.</span>
-        <span style="color:#f92672">stages</span>:
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage With Steps And Options Etc</span>
-            <span style="color:#75715e"># agent, options, and environment are valid on stages as well. For the parents of nested</span>
-            <span style="color:#75715e"># sequential or parallel stages, their children inherit the parent&#39;s agent, options,</span>
-            <span style="color:#75715e"># and environment.</span>
-            <span style="color:#75715e"># options on a stage currently only can contain containerOptions.</span>
-            <span style="color:#f92672">options</span>:
-              <span style="color:#f92672">containerOptions</span>:
-                <span style="color:#f92672">resources</span>:
-                  <span style="color:#f92672">limits</span>:
-                    <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.4</span>
-                    <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">256Mi</span>
-            <span style="color:#75715e"># A stage must contain at least one of &#34;steps&#34;, &#34;stages&#34;, or &#34;parallel&#34;</span>
-            <span style="color:#75715e"># Steps must contain at least one command to be executed or a loop.</span>
-            <span style="color:#f92672">steps</span>:
-              - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">mvn</span>
-                <span style="color:#75715e"># args are a YAML array, so can be specified either on multiple lines or in a []</span>
-                <span style="color:#f92672">args</span>:
-                  - <span style="color:#ae81ff">clean</span>
-                  - <span style="color:#ae81ff">install</span>
-                <span style="color:#f92672">dir</span>: <span style="color:#ae81ff">foo </span> <span style="color:#75715e"># Optional, allows running this step in a subdirectory of the workspace, or</span>
-                          <span style="color:#75715e"># a different absolute directory.</span>
-                <span style="color:#75715e"># Steps can have their own images specified, overriding the stage and top-level images.</span>
-                <span style="color:#f92672">agent</span>:
-                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">some-other-image</span>
-              <span style="color:#75715e"># A loop allows you to specify a list of potential values for an environment variable and a</span>
-              <span style="color:#75715e"># set of one or more steps. Those steps will be run, sequentially, for each of the</span>
-              <span style="color:#75715e"># potential values. Loops can also be nested for more complex combinations.</span>
-              - <span style="color:#f92672">loop</span>:
-                  <span style="color:#f92672">variable</span>: <span style="color:#ae81ff">LANGUAGE</span>
-                  <span style="color:#f92672">values</span>:
-                    - <span style="color:#ae81ff">maven</span>
-                    - <span style="color:#ae81ff">gradle</span>
-                    - <span style="color:#ae81ff">nodejs</span>
-                  <span style="color:#f92672">steps</span>:
-                    - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo</span>
-                      <span style="color:#f92672">args</span>:
-                        - <span style="color:#ae81ff">hello</span>
-                        - <span style="color:#ae81ff">${LANGUAGE}</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage with nested sequential stages</span>
-            <span style="color:#75715e"># Any configuration of agent, options, or environment will apply to all child stages.</span>
-            <span style="color:#f92672">environment</span>:
-              - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SPECIFIC_TO_SEQUENTIAL_PARENT</span>
-                <span style="color:#f92672">value</span>: <span style="color:#ae81ff">something</span>
-            <span style="color:#75715e"># A list of nested stages to run sequentially. This is meant to allow for avoiding</span>
-            <span style="color:#75715e"># copy-pasting configuration across a set of stages that need to have the same configuration</span>
-            <span style="color:#75715e"># but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.</span>
-            <span style="color:#f92672">stages</span>:
-              <span style="color:#75715e"># ...insert stages here. =)</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage with nested parallel stages</span>
-            <span style="color:#75715e"># Works very similarly to sequential stages, except that the stages are executed in parallel,</span>
-            <span style="color:#75715e"># rather than sequentially.</span>
-            <span style="color:#f92672">parallel</span>:
-              <span style="color:#75715e"># ...insert stages here. =)</span>
-</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># If a build pack is specified, the `pipeline` in `release`, `pullRequest`, and `feature` will be ignored.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">none</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">pipelineConfig</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pipelines</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">release</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># While the legacy build pack built-in stages can be used in jenkins-x.yaml, pipeline is preferred.</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Define a default container image we&#39;ll use throughout the pipeline, unless an explicit agent is</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># specified on a stage or step.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">agent</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#34;some/image@version&#34;</span> <span style="color:#75715e"># or &#34;maven&#34; - this means &#34;use the maven pod template&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Environment variables are either static key/value pairs or Kubernetes valueFrom EnvVarSources.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#envvarsource-v1-core</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># for more information on valueFrom.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Environment variables defined at the top level can be overridden in stages and individual</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># steps.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_VAR</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">value</span>: <span style="color:#ae81ff">A value for the env var</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_OTHER_VAR</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">value</span>: <span style="color:#ae81ff">Another var</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SOME_API_KEY</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">valueFrom</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">secretKeyRef</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">name</span>: <span style="color:#ae81ff">mysecret</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">key</span>: <span style="color:#ae81ff">apikey</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Options contains other configuration for the pipeline.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">options</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># containerOptions allows specifying more advanced default configuration for the containers</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># used for all stages and steps in this scope, using the standard Kubernetes syntax for</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># containers.</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#container-v1-core.</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># Not all fields can be configured - e.g., name, command, arguments, image, and dir are all</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># defined via the syntax - but everything else can be.</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># Like with environment variables, containerOptions at the top level can be overridden and</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># added to by stages.</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">containerOptions</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Here we&#39;re setting the resource requests and limits for all step containers within this</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># pipeline.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">requests</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.1</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">64Mi</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.2</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">128Mi</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#75715e"># timeout allows you to set the maximum duration for builds of this pipeline.</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">timeout</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">time</span>: <span style="color:#ae81ff">15</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">unit</span>: <span style="color:#ae81ff">minutes</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># A pipeline must contain at least one stage, and each stage must have a unique name.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">stages</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage With Steps And Options Etc</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># agent, options, and environment are valid on stages as well. For the parents of nested</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># sequential or parallel stages, their children inherit the parent&#39;s agent, options,</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># and environment.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># options on a stage currently only can contain containerOptions.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">options</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">containerOptions</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">limits</span>:
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">cpu</span>: <span style="color:#ae81ff">0.4</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">memory</span>: <span style="color:#ae81ff">256Mi</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># A stage must contain at least one of &#34;steps&#34;, &#34;stages&#34;, or &#34;parallel&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Steps must contain at least one command to be executed or a loop.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>              - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">mvn</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># args are a YAML array, so can be specified either on multiple lines or in a []</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">args</span>:
+</span></span><span style="display:flex;"><span>                  - <span style="color:#ae81ff">clean</span>
+</span></span><span style="display:flex;"><span>                  - <span style="color:#ae81ff">install</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">dir</span>: <span style="color:#ae81ff">foo </span> <span style="color:#75715e"># Optional, allows running this step in a subdirectory of the workspace, or</span>
+</span></span><span style="display:flex;"><span>                          <span style="color:#75715e"># a different absolute directory.</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Steps can have their own images specified, overriding the stage and top-level images.</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">agent</span>:
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">image</span>: <span style="color:#ae81ff">some-other-image</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e"># A loop allows you to specify a list of potential values for an environment variable and a</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e"># set of one or more steps. Those steps will be run, sequentially, for each of the</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e"># potential values. Loops can also be nested for more complex combinations.</span>
+</span></span><span style="display:flex;"><span>              - <span style="color:#f92672">loop</span>:
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">variable</span>: <span style="color:#ae81ff">LANGUAGE</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">values</span>:
+</span></span><span style="display:flex;"><span>                    - <span style="color:#ae81ff">maven</span>
+</span></span><span style="display:flex;"><span>                    - <span style="color:#ae81ff">gradle</span>
+</span></span><span style="display:flex;"><span>                    - <span style="color:#ae81ff">nodejs</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>                    - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo</span>
+</span></span><span style="display:flex;"><span>                      <span style="color:#f92672">args</span>:
+</span></span><span style="display:flex;"><span>                        - <span style="color:#ae81ff">hello</span>
+</span></span><span style="display:flex;"><span>                        - <span style="color:#ae81ff">${LANGUAGE}</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage with nested sequential stages</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Any configuration of agent, options, or environment will apply to all child stages.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">environment</span>:
+</span></span><span style="display:flex;"><span>              - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">SPECIFIC_TO_SEQUENTIAL_PARENT</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">value</span>: <span style="color:#ae81ff">something</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># A list of nested stages to run sequentially. This is meant to allow for avoiding</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># copy-pasting configuration across a set of stages that need to have the same configuration</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># but where that configuration shouldn&#39;t be in place for *all* stages in the pipeline.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">stages</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e"># ...insert stages here. =)</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Stage with nested parallel stages</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Works very similarly to sequential stages, except that the stages are executed in parallel,</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># rather than sequentially.</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">parallel</span>:
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e"># ...insert stages here. =)</span>
+</span></span></code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1418,7 +1418,7 @@ limits, and volume mounts.</li>
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

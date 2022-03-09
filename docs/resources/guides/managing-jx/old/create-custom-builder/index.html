@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -958,9 +958,9 @@ if (!doNotTrack) {
 	<div class="lead">How to create a custom Builder for Jenkins X using static master</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -972,12 +972,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>In Jenkins X, using the deprecated static master installation type, it is possible to create your custom Builders (aka <a href="https://github.com/jenkinsci/kubernetes-plugin">POD templates</a>) or overwrite existing ones.
@@ -986,105 +986,105 @@ This image contain a number of pre-installed tools which get constantly updated 
 <h2 id="create-a-custom-builder-from-scratch">Create a custom Builder from scratch</h2>
 <h3 id="builder-image">Builder image</h3>
 <p>First you need to create a docker image for your builder. For instance a starting <code>Dockerfile</code> can look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> jenkinsxio/builder-base:latest</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Install your tools and libraries</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> yum install -y gcc openssl-devel<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> [<span style="color:#e6db74">&#34;gcc&#34;</span>]<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><p>Now you can build the image and publish it to your registry:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">export BUILDER_IMAGE<span style="color:#f92672">=</span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
-docker build -t <span style="color:#e6db74">${</span>BUILDER_IMAGE<span style="color:#e6db74">}</span> .
-docker push <span style="color:#e6db74">${</span>BUILDER_IMAGE<span style="color:#e6db74">}</span>
-</code></pre></div><p>Do not worry, you do not have to run these steps manually every time when a new image needs to be built.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> jenkinsxio/builder-base:latest</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Install your tools and libraries</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> yum install -y gcc openssl-devel<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">CMD</span> [<span style="color:#e6db74">&#34;gcc&#34;</span>]<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Now you can build the image and publish it to your registry:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>export BUILDER_IMAGE<span style="color:#f92672">=</span>&lt;YOUR_REGISTRY&gt;/&lt;YOUR_BUILDER_IMAGE&gt;:&lt;VERSION&gt;
+</span></span><span style="display:flex;"><span>docker build -t <span style="color:#e6db74">${</span>BUILDER_IMAGE<span style="color:#e6db74">}</span> .
+</span></span><span style="display:flex;"><span>docker push <span style="color:#e6db74">${</span>BUILDER_IMAGE<span style="color:#e6db74">}</span>
+</span></span></code></pre></div><p>Do not worry, you do not have to run these steps manually every time when a new image needs to be built.
 Jenkins X can manage this for you. You just need to push your <code>Dockerfile</code> in a repository similar with <a href="https://github.com/jenkins-x/jenkins-x-builders/tree/master/builder-go">this</a> one.
 Adjust the <code>Jenkinsfile</code> according with your organization and application name, and then import the repository into your Jenkins X platform with:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx import --url &lt;REPOSITORY_URL&gt;
-</code></pre></div><p>From now on, every time you push a change, Jenkins X will build and publish automatically the image.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx import --url &lt;REPOSITORY_URL&gt;
+</span></span></code></pre></div><p>From now on, every time you push a change, Jenkins X will build and publish automatically the image.</p>
 <h3 id="install-the-builder">Install the Builder</h3>
 <p>You can now install your builder either when you install Jenkins X or upgrade it.</p>
 <p>Create a <code>myvalues.yaml</code> file in your <code>~/.jx/</code> folder with the following content:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">jenkins</span>:
-  <span style="color:#f92672">Agent</span>:
-    <span style="color:#f92672">PodTemplates</span>:
-      <span style="color:#f92672">MyBuilder</span>:
-        <span style="color:#f92672">Name</span>: <span style="color:#ae81ff">mybuilder</span>
-        <span style="color:#f92672">Label</span>: <span style="color:#ae81ff">jenkins-mybuilder</span>
-        <span style="color:#f92672">volumes</span>:
-        - <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Secret</span>
-          <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">jenkins-docker-cfg</span>
-          <span style="color:#f92672">mountPath</span>: <span style="color:#ae81ff">/home/jenkins/.docker</span>
-        <span style="color:#f92672">EnvVars</span>:
-          <span style="color:#f92672">JENKINS_URL</span>: <span style="color:#ae81ff">http://jenkins:8080</span>
-          <span style="color:#f92672">GIT_COMMITTER_EMAIL</span>: <span style="color:#ae81ff">jenkins-x@googlegroups.com</span>
-          <span style="color:#f92672">GIT_AUTHOR_EMAIL</span>: <span style="color:#ae81ff">jenkins-x@googlegroups.com</span>
-          <span style="color:#f92672">GIT_AUTHOR_NAME</span>: <span style="color:#ae81ff">jenkins-x-bot</span>
-          <span style="color:#f92672">GIT_COMMITTER_NAME</span>: <span style="color:#ae81ff">jenkins-x-bot</span>
-          <span style="color:#f92672">XDG_CONFIG_HOME</span>: <span style="color:#ae81ff">/home/jenkins</span>
-          <span style="color:#f92672">DOCKER_CONFIG</span>: <span style="color:#ae81ff">/home/jenkins/.docker/</span>
-        <span style="color:#f92672">ServiceAccount</span>: <span style="color:#ae81ff">jenkins</span>
-        <span style="color:#f92672">Containers</span>:
-          <span style="color:#f92672">Jnlp</span>:
-            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">jenkinsci/jnlp-slave:3.14-1</span>
-            <span style="color:#f92672">RequestCpu</span>: <span style="color:#e6db74">&#34;100m&#34;</span>
-            <span style="color:#f92672">RequestMemory</span>: <span style="color:#e6db74">&#34;128Mi&#34;</span>
-            <span style="color:#f92672">Args</span>: <span style="color:#e6db74">&#39;${computer.jnlpmac} ${computer.name}&#39;</span>
-          <span style="color:#f92672">Dlang</span>:
-            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_BUILDER_IMAGE&gt;</span>
-            <span style="color:#f92672">Privileged</span>: <span style="color:#66d9ef">true</span>
-            <span style="color:#f92672">RequestCpu</span>: <span style="color:#e6db74">&#34;400m&#34;</span>
-            <span style="color:#f92672">RequestMemory</span>: <span style="color:#e6db74">&#34;512Mi&#34;</span>
-            <span style="color:#f92672">LimitCpu</span>: <span style="color:#e6db74">&#34;1&#34;</span>
-            <span style="color:#f92672">LimitMemory</span>: <span style="color:#e6db74">&#34;1024Mi&#34;</span>
-            <span style="color:#f92672">Command</span>: <span style="color:#e6db74">&#34;/bin/sh -c&#34;</span>
-            <span style="color:#f92672">Args</span>: <span style="color:#e6db74">&#34;cat&#34;</span>
-            <span style="color:#f92672">Tty</span>: <span style="color:#66d9ef">true</span>
-</code></pre></div><p>Replace the builder name and image accordingly.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">jenkins</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Agent</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">PodTemplates</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">MyBuilder</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Name</span>: <span style="color:#ae81ff">mybuilder</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Label</span>: <span style="color:#ae81ff">jenkins-mybuilder</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">type</span>: <span style="color:#ae81ff">Secret</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">jenkins-docker-cfg</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">mountPath</span>: <span style="color:#ae81ff">/home/jenkins/.docker</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">EnvVars</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">JENKINS_URL</span>: <span style="color:#ae81ff">http://jenkins:8080</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">GIT_COMMITTER_EMAIL</span>: <span style="color:#ae81ff">jenkins-x@googlegroups.com</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">GIT_AUTHOR_EMAIL</span>: <span style="color:#ae81ff">jenkins-x@googlegroups.com</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">GIT_AUTHOR_NAME</span>: <span style="color:#ae81ff">jenkins-x-bot</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">GIT_COMMITTER_NAME</span>: <span style="color:#ae81ff">jenkins-x-bot</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">XDG_CONFIG_HOME</span>: <span style="color:#ae81ff">/home/jenkins</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">DOCKER_CONFIG</span>: <span style="color:#ae81ff">/home/jenkins/.docker/</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">ServiceAccount</span>: <span style="color:#ae81ff">jenkins</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Containers</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">Jnlp</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">jenkinsci/jnlp-slave:3.14-1</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">RequestCpu</span>: <span style="color:#e6db74">&#34;100m&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">RequestMemory</span>: <span style="color:#e6db74">&#34;128Mi&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Args</span>: <span style="color:#e6db74">&#39;${computer.jnlpmac} ${computer.name}&#39;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">Dlang</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_BUILDER_IMAGE&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Privileged</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">RequestCpu</span>: <span style="color:#e6db74">&#34;400m&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">RequestMemory</span>: <span style="color:#e6db74">&#34;512Mi&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">LimitCpu</span>: <span style="color:#e6db74">&#34;1&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">LimitMemory</span>: <span style="color:#e6db74">&#34;1024Mi&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Command</span>: <span style="color:#e6db74">&#34;/bin/sh -c&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Args</span>: <span style="color:#e6db74">&#34;cat&#34;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Tty</span>: <span style="color:#66d9ef">true</span>
+</span></span></code></pre></div><p>Replace the builder name and image accordingly.</p>
 <p>You can proceed now with the Jenkins X installation, the builder will be automatically added to the platform.</p>
 <h3 id="use-the-builder">Use the Builder</h3>
 <p>Now that your builder was installed in Jenkins, you can easily reference it in a <code>Jenkinsfile</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Groovy" data-lang="Groovy">pipeline <span style="color:#f92672">{</span>
-    agent <span style="color:#f92672">{</span>
-        label <span style="color:#e6db74">&#34;jenkins-mybuilder&#34;</span>
-    <span style="color:#f92672">}</span>
-    stages <span style="color:#f92672">{</span>
-      stage<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;Build&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        when <span style="color:#f92672">{</span>
-          branch <span style="color:#e6db74">&#39;master&#39;</span>
-        <span style="color:#f92672">}</span>
-        steps <span style="color:#f92672">{</span>
-          container<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;mybuilder&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-              <span style="color:#75715e">// your steps
-</span><span style="color:#75715e"></span>          <span style="color:#f92672">}</span>
-        <span style="color:#f92672">}</span>
-      <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-    post <span style="color:#f92672">{</span>
-        always <span style="color:#f92672">{</span>
-            cleanWs<span style="color:#f92672">()</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="overwrite-existing-builders">Overwrite existing Builders</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Groovy" data-lang="Groovy"><span style="display:flex;"><span>pipeline <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    agent <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        label <span style="color:#e6db74">&#34;jenkins-mybuilder&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    stages <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>      stage<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;Build&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        when <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>          branch <span style="color:#e6db74">&#39;master&#39;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        steps <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>          container<span style="color:#f92672">(</span><span style="color:#e6db74">&#39;mybuilder&#39;</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#75715e">// your steps
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>          <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    post <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>        always <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>            cleanWs<span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h2 id="overwrite-existing-builders">Overwrite existing Builders</h2>
 <p>Jenkins X comes with a number of <a href="https://raw.githubusercontent.com/jenkins-x/jenkins-x-platform/master/jenkins-x-platform/values.yaml">pre-installed builders</a> which you can overwrite if required during installation or upgrade.</p>
 <p>You just need to build your custom image either based on the <a href="https://github.com/jenkins-x/jenkins-x-builders-base/blob/master/Dockerfile.common">builder-base</a> image or the <a href="https://hub.docker.com/u/jenkinsxio/">builder image</a> you want to overwrite. See more details above.</p>
 <p>Then you can create a <code>myvalues.yaml</code> file in your <code>~/.jx/</code> folder with the following content:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">jenkins</span>:
-  <span style="color:#f92672">Agent</span>:
-    <span style="color:#f92672">PodTemplates</span>:
-      <span style="color:#f92672">Maven</span>:
-        <span style="color:#f92672">Containers</span>:
-          <span style="color:#f92672">Maven</span>:
-            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_MAVEN_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
-      <span style="color:#f92672">Nodejs</span>:
-        <span style="color:#f92672">Containers</span>:
-          <span style="color:#f92672">Nodejs</span>:
-            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_NODEJS_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
-      <span style="color:#f92672">Go</span>:
-        <span style="color:#f92672">Containers</span>:
-          <span style="color:#f92672">Go</span>:
-            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_GO_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
-</code></pre></div><p>You can proceed now with the Jenkins X installation, the builder will  be added automatically to the platform.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">jenkins</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Agent</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">PodTemplates</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">Maven</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Containers</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">Maven</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_MAVEN_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">Nodejs</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Containers</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">Nodejs</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_NODEJS_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">Go</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">Containers</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">Go</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">Image</span>: <span style="color:#ae81ff">&lt;YOUR_REGISTRY&gt;/&lt;YOUR_GO_BUILDER_IMAGE&gt;:&lt;VERSION&gt;</span>
+</span></span></code></pre></div><p>You can proceed now with the Jenkins X installation, the builder will  be added automatically to the platform.</p>
 
 	
 		<style>
@@ -1248,7 +1248,7 @@ Adjust the <code>Jenkinsfile</code> according with your organization and applica
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

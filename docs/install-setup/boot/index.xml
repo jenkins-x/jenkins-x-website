@@ -61,18 +61,18 @@ Though we support a few &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4
 &lt;p&gt;This means we can populate all the Parameters we need on startup then refer to them from &lt;code&gt;values.tmpl.yaml&lt;/code&gt; to populate the tree of values to then inject those into Vault.&lt;/p&gt;
 &lt;h3 id=&#34;populating-the-parametersyaml-file&#34;&gt;Populating the &lt;code&gt;parameters.yaml&lt;/code&gt; file&lt;/h3&gt;
 &lt;p&gt;We can then use the new step to populate the &lt;code&gt;parameters.yaml&lt;/code&gt; file in the Pipeline via this command in the &lt;code&gt;env&lt;/code&gt; folder:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx step create values --name parameters
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This uses the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/parameters.tmpl.schema.json&#34;&gt;parameters.tmpl.schema.json&lt;/a&gt; file which powers the UI.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step create values --name parameters
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This uses the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/parameters.tmpl.schema.json&#34;&gt;parameters.tmpl.schema.json&lt;/a&gt; file which powers the UI.&lt;/p&gt;
 &lt;h3 id=&#34;improvements-to-valuesyaml&#34;&gt;Improvements to values.yaml&lt;/h3&gt;
 &lt;h4 id=&#34;support-a-tree-of-valuesyaml-files&#34;&gt;Support a tree of values.yaml files&lt;/h4&gt;
 &lt;p&gt;Rather than a huge huge deeply nested values.yaml file we can have a tree of files for each App only include the App specific configuration in each folder. e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;env/
-  values.yaml   &lt;span style=&#34;color:#75715e&#34;&gt;# top level configuration&lt;/span&gt;
-  prow/
-    values.yaml &lt;span style=&#34;color:#75715e&#34;&gt;# prow specific config&lt;/span&gt;
-  tekton/
-    values.yaml  &lt;span style=&#34;color:#75715e&#34;&gt;# tekton specific config&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then you can omit the &lt;code&gt;prow:&lt;/code&gt; indentation in the &lt;code&gt;env/prow/values.yaml&lt;/code&gt; file to make the YAML you create/edit smaller and simpler.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;env/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  values.yaml   &lt;span style=&#34;color:#75715e&#34;&gt;# top level configuration&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  prow/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml &lt;span style=&#34;color:#75715e&#34;&gt;# prow specific config&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tekton/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml  &lt;span style=&#34;color:#75715e&#34;&gt;# tekton specific config&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;then you can omit the &lt;code&gt;prow:&lt;/code&gt; indentation in the &lt;code&gt;env/prow/values.yaml&lt;/code&gt; file to make the YAML you create/edit smaller and simpler.
 It also means longer term we can generate JSON schema files for each &lt;code&gt;env/$app/values.yaml&lt;/code&gt; files so that we can support better editor/IDE integration.&lt;/p&gt;
 &lt;h4 id=&#34;valuestmplyaml-templates&#34;&gt;values.tmpl.yaml templates&lt;/h4&gt;
 &lt;p&gt;When using &lt;code&gt;jx step helm apply&lt;/code&gt; we now allow &lt;code&gt;values.tmpl.yaml&lt;/code&gt; files to use Go/Helm templates just like &lt;code&gt;templates/foo.yaml&lt;/code&gt; files support inside Helm charts so that we can generate value/secret strings which can use templating to compose things from smaller secret values (for example, creating a maven &lt;code&gt;settings.xml&lt;/code&gt; file or docker &lt;code&gt;config.json&lt;/code&gt; which includes many user/passwords for different registries).&lt;/p&gt;
@@ -104,8 +104,8 @@ It is not recommended to use this option in production.&lt;/li&gt;
 &lt;h3 id=&#34;local&#34;&gt;Local&lt;/h3&gt;
 &lt;p&gt;This is the default option for managing secrets.
 It can be explicitly configured via &lt;code&gt;secretStorage: local&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If enabled secrets are loaded/saved into the folder &lt;code&gt;~/.jx/localSecrets/$clusterName&lt;/code&gt;.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If enabled secrets are loaded/saved into the folder &lt;code&gt;~/.jx/localSecrets/$clusterName&lt;/code&gt;.
 You can use &lt;code&gt;$JX_HOME&lt;/code&gt; to change the location of &lt;code&gt;~/.jx&lt;/code&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;vault&#34;&gt;Vault&lt;/h3&gt;
 &lt;p&gt;There are two ways you can use Vault in Jenkins X.
@@ -127,29 +127,29 @@ This apporach is referred to as the &lt;em&gt;internal&lt;/em&gt; Vault setup.&l
 &lt;h4 id=&#34;internal&#34;&gt;Internal&lt;/h4&gt;
 &lt;p&gt;This approach is currently only supported for GKE and EKS clusters.
 It can be explicitly configured via &lt;code&gt;secretStorage: vault&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After a successful run of &lt;code&gt;jx boot&lt;/code&gt;, &lt;code&gt;jx-requirements.yml&lt;/code&gt; will also contain a Vault configuration section containing the following information:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;vault&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;bucket&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;keyring&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;serviceAccount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-vt&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The Vault configuration options are in this case generated and should not be modified.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After a successful run of &lt;code&gt;jx boot&lt;/code&gt;, &lt;code&gt;jx-requirements.yml&lt;/code&gt; will also contain a Vault configuration section containing the following information:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;vault&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;bucket&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;keyring&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-&amp;lt;generated-id&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;serviceAccount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;&amp;lt;cluster-name&amp;gt;-vt&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The Vault configuration options are in this case generated and should not be modified.
 They also differ between cloud providers.&lt;/p&gt;
 &lt;h4 id=&#34;external&#34;&gt;External&lt;/h4&gt;
 &lt;p&gt;In the case where you have an existing Vault instance and you want Jenkins X to store its secrets there, you also set &lt;code&gt;secretStorage: vault&lt;/code&gt;.
 On top setting &lt;em&gt;secretStorage&lt;/em&gt; to &lt;em&gt;vault&lt;/em&gt;, you have to specify the mandatory &lt;em&gt;url&lt;/em&gt; and &lt;em&gt;serviceAccount&lt;/em&gt; options.&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;url&lt;/em&gt; specifies the URL to your existing Vault instance and &lt;em&gt;serviceAccount&lt;/em&gt; is the Kubernetes service account which is allowed to authenticate using Vault&amp;rsquo;s &lt;a href=&#34;https://www.vaultproject.io/docs/auth/kubernetes&#34;&gt;Kubernetes Auth Method&lt;/a&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;vault&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;kubernetesAuthPath&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kubernetes&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;secretEngineMountPoint&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;secret&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;serviceAccount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-sa&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://my-vault.com&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;kubernetesAuthPath&lt;/em&gt; and &lt;em&gt;secretEngineMountPoint&lt;/em&gt; are optional and default to &lt;em&gt;&amp;ldquo;secret&amp;rdquo;&lt;/em&gt; and &lt;em&gt;&amp;ldquo;kubernetes&amp;rdquo;&lt;/em&gt;.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;vault&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;kubernetesAuthPath&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;kubernetes&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;secretEngineMountPoint&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;secret&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;serviceAccount&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-sa&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://my-vault.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;em&gt;kubernetesAuthPath&lt;/em&gt; and &lt;em&gt;secretEngineMountPoint&lt;/em&gt; are optional and default to &lt;em&gt;&amp;ldquo;secret&amp;rdquo;&lt;/em&gt; and &lt;em&gt;&amp;ldquo;kubernetes&amp;rdquo;&lt;/em&gt;.
 &lt;em&gt;kubernetesAuthPath&lt;/em&gt; specifies the path under which the Kubernetes auth method is enabled for your Jenkins X cluster.
 &lt;em&gt;secretEngineMountPoint&lt;/em&gt; specifies the mount point for the KV engine Jenkins X is supposed to use.
 The current design requires that each Jenkins X cluster gets its own Vault &lt;a href=&#34;https://www.vaultproject.io/docs/secrets/kv&#34;&gt;KV secret engine&lt;/a&gt;.&lt;/p&gt;
@@ -163,66 +163,66 @@ The current design requires that each Jenkins X cluster gets its own Vault &lt;a
 &lt;li&gt;Enable the Vault KV secret engine&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;The following script can help you to make the required preparation.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;export VAULT_ADDR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;url-to-vault-instance&amp;gt;
-export VAULT_TOKEN&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;vault-token&amp;gt;
-
-kubernetes_api_url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;url-to-jenkins-x-cluster&amp;gt;
-namespace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-namespace&amp;gt;
-service_account_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-name&amp;gt;
-secret_mount_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;secret
-kubernetes_auth_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;kubernetes
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 1.&lt;/span&gt;
-read -r -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt; role_binding &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;apiVersion: rbac.authorization.k8s.io/v1beta1
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;kind: ClusterRoleBinding
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;metadata:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: role-tokenreview-binding
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: ${namespace}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;roleRef:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  apiGroup: rbac.authorization.k8s.io
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  kind: ClusterRole
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: system:auth-delegator
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;subjects:
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;- kind: ServiceAccount
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: ${service_account_name}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: ${namespace}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-
-kubectl create namespace &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
-kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; create serviceaccount &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
-echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$role_binding&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | kubectl apply -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -f -
-
-service_account_secret&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;  get sa &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.secrets[*][&amp;#39;name&amp;#39;]}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-service_account_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_secret&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.token}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-service_account_cert&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_secret&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;ca\.crt&amp;#39;]}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 2.&lt;/span&gt;
-vault auth enable -path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 3.&lt;/span&gt;
-vault policy write &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt;EOF
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;path &amp;#34;${secret_mount_path}/*&amp;#34; {
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;   capabilities = [&amp;#34;create&amp;#34;, &amp;#34;update&amp;#34;, &amp;#34;read&amp;#34;, &amp;#34;delete&amp;#34;, &amp;#34;list&amp;#34;]
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
-&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 4.&lt;/span&gt;
-vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/role/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; bound_service_account_names&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;  bound_service_account_namespaces&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; policies&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; ttl&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;24h
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 5.&lt;/span&gt;
-vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/config token_reviewer_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_jwt&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes_host&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_api_url&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes_ca_cert&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_cert&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# 6.&lt;/span&gt;
-vault secrets enable -path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;secret_mount_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kv-v2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can verify the Vault configuration by running:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;namespace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-namespace&amp;gt;
-service_account_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-name&amp;gt;
-service_account_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.token}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-kubernetes_auth_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;kubernetes
-
-vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/login role&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_jwt&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export VAULT_ADDR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;url-to-vault-instance&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export VAULT_TOKEN&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;vault-token&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubernetes_api_url&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;url-to-jenkins-x-cluster&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;namespace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-namespace&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-name&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;secret_mount_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;secret
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubernetes_auth_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;kubernetes
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 1.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;read -r -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt; role_binding &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt; EOF
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;apiVersion: rbac.authorization.k8s.io/v1beta1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;kind: ClusterRoleBinding
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;metadata:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: role-tokenreview-binding
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: ${namespace}
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;roleRef:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  apiGroup: rbac.authorization.k8s.io
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  kind: ClusterRole
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: system:auth-delegator
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;subjects:
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;- kind: ServiceAccount
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  name: ${service_account_name}
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;  namespace: ${namespace}
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl create namespace &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; create serviceaccount &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$role_binding&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; | kubectl apply -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -f -
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_secret&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;  get sa &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.secrets[*][&amp;#39;name&amp;#39;]}&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_secret&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.token}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_cert&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_secret&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;ca\.crt&amp;#39;]}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 2.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault auth enable -path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 3.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault policy write &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; - &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt;EOF
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;path &amp;#34;${secret_mount_path}/*&amp;#34; {
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;   capabilities = [&amp;#34;create&amp;#34;, &amp;#34;update&amp;#34;, &amp;#34;read&amp;#34;, &amp;#34;delete&amp;#34;, &amp;#34;list&amp;#34;]
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 4.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/role/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; bound_service_account_names&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;  bound_service_account_namespaces&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; policies&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; ttl&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;24h
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 5.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/config token_reviewer_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_jwt&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes_host&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_api_url&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kubernetes_ca_cert&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_cert&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 6.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault secrets enable -path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;secret_mount_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; kv-v2
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can verify the Vault configuration by running:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;namespace&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-namespace&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&amp;lt;service-account-name&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;service_account_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;namespace&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; get secret &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data.token}&amp;#34;&lt;/span&gt; | base64 --decode; echo&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubernetes_auth_path&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;kubernetes
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault write auth/&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;kubernetes_auth_path&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;/login role&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_name&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt; jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;service_account_jwt&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -255,42 +255,42 @@ Refer to &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/#changing-
 &lt;h2 id=&#34;github&#34;&gt;GitHub&lt;/h2&gt;
 &lt;p&gt;This is the default Git provider if you don&amp;rsquo;t specify one.
 Explicitly it is configured by &lt;em&gt;gitKind: github&lt;/em&gt; such as the following example:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;github-enterprise&#34;&gt;GitHub Enterprise&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/enterprise&#34;&gt;GitHub Enterprise&lt;/a&gt; supports the same features as the github.com service but scaled for on-premises deployment on local networks.&lt;/p&gt;
 &lt;p&gt;The configuration is similar to the above but you need to specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: github&lt;/code&gt;.
 For example:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.myserver.com&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.myserver.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;bitbucket-server&#34;&gt;Bitbucket Server&lt;/h2&gt;
 &lt;p&gt;For Bitbucket Server specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: bitbucketserver&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitbucketserver&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://bitbucket.myserver.com&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitbucketserver&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://bitbucket.myserver.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;bitbucket-cloud&#34;&gt;Bitbucket Cloud&lt;/h2&gt;
 &lt;p&gt;For Bitbucket Cloud specify&lt;code&gt;gitKind: bitbucketcloud&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitbucketcloud&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bitbucketcloud&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;gitlab&#34;&gt;GitLab&lt;/h2&gt;
 &lt;p&gt;For &lt;a href=&#34;https://about.gitlab.com/stages-devops-lifecycle/source-code-management/&#34;&gt;GitLab&lt;/a&gt; specify the URL of the &lt;code&gt;gitServer&lt;/code&gt; and &lt;code&gt;gitKind: gitlab&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gitlab&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://gitlab.com&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gitlab&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://gitlab.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Ensure you specify &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/webhooks/#lighthouse&#34;&gt;Lighthouse&lt;/a&gt; webhook handler by setting &lt;code&gt;webhook: lighthouse&lt;/code&gt;.&lt;/p&gt;
 
       </description>
     </item>
@@ -307,21 +307,21 @@ For example:&lt;/p&gt;
         &lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
 &lt;p&gt;the &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file can configure whether you want to use long-term storage for logs + reports and what cloud storage buckets to use to store the data.&lt;/p&gt;
 &lt;p&gt;e.g. the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file enables long-term storage:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can also specify the URLs of the storage buckets in the &lt;code&gt;storage&lt;/code&gt; section.
 The following URL syntax is supported&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;gs://anotherBucket/mydir/something.txt&lt;/code&gt; : using a GCS bucket on GCP&lt;/li&gt;
@@ -331,24 +331,24 @@ The following URL syntax is supported&lt;/p&gt;
 &lt;li&gt;&lt;code&gt;https://foo/bar&lt;/code&gt; : file stored in a Git repo using HTTPS&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;e.g.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-logs&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-logs&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-repo&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-logs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-logs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://my-repo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;
 
 &lt;div class=&#34;pageinfo pageinfo-primary&#34;&gt;
 &lt;strong&gt;NOTE&lt;/strong&gt; On GKE your node-pool requires additional permissions to write into GCS buckets,
@@ -359,72 +359,72 @@ For more details see the &lt;a href=&#34;https://jenkins-x.io/architecture/stora
 &lt;h2 id=&#34;ingress&#34;&gt;Ingress&lt;/h2&gt;
 &lt;p&gt;If you don&amp;rsquo;t specify anything in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file then boot will default to using HTTP (rather than HTTPS) and using &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; as the DNS mechanism.&lt;/p&gt;
 &lt;p&gt;After running boot your &lt;code&gt;jx-requirements.yml&lt;/code&gt; may look like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-cluster-name&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-git-org&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;project&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-gke-project&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;zone&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;europe-west1-d&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3.4&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.nip.io&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-cluster-name&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-git-org&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;project&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-gke-project&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;zone&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;europe-west1-d&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3.4&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.nip.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;.
 There&amp;rsquo;s a complete example below.&lt;/p&gt;
 &lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.tls.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mycluster&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;vaultName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-vault-myname&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my.domain.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespaceSubDomain&lt;/span&gt;: -&lt;span style=&#34;color:#ae81ff&#34;&gt;jx.&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;someone@acme.com&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://jx-prod-logs&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mycluster&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;vaultName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-vault-myname&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my.domain.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespaceSubDomain&lt;/span&gt;: -&lt;span style=&#34;color:#ae81ff&#34;&gt;jx.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;someone@acme.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://jx-prod-logs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -440,72 +440,72 @@ There&amp;rsquo;s a complete example below.&lt;/p&gt;
         &lt;h2 id=&#34;ingress&#34;&gt;Ingress&lt;/h2&gt;
 &lt;p&gt;If you don&amp;rsquo;t specify anything in your &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jx-requirements.yml&#34;&gt;jx-requirements.yml&lt;/a&gt; file then Boot will default to using HTTP (rather than HTTPS) and using &lt;a href=&#34;https://nip.io/&#34;&gt;nip.io&lt;/a&gt; as the DNS mechanism.&lt;/p&gt;
 &lt;p&gt;After running Boot your &lt;code&gt;jx-requirements.yml&lt;/code&gt; may look like:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-cluster-name&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-git-org&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;project&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-gke-project&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;zone&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;europe-west1-d&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3.4&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.nip.io&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-cluster-name&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-git-org&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;project&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-gke-project&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;zone&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;europe-west1-d&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1.2.3.4&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.nip.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;local&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you wish to enable external DNS (to automatically register DNS names for all of your exported services) a DNS domain name or TLS then modify the &lt;code&gt;ingress&lt;/code&gt; section of your to add &lt;code&gt;ingress.domain&lt;/code&gt; and &lt;code&gt;ingress.externalDNS = true&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and re-run &lt;code&gt;jx boot&lt;/code&gt;.
 There&amp;rsquo;s a complete example below.&lt;/p&gt;
 &lt;p&gt;You can also update your configuration to enable TLS via &lt;code&gt;ingress.tls.enabled = true&lt;/code&gt;. Here&amp;rsquo;s an example:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mycluster&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;vaultName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-vault-myname&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my.domain.com&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;namespaceSubDomain&lt;/span&gt;: -&lt;span style=&#34;color:#ae81ff&#34;&gt;jx.&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;someone@acme.com&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://jx-prod-logs&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;clusterName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mycluster&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;environmentGitOwner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myorg&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitKind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;github&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;gitServer&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;vaultName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-vault-myname&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;gitops&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;ingress&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;domain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my.domain.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespaceSubDomain&lt;/span&gt;: -&lt;span style=&#34;color:#ae81ff&#34;&gt;jx.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;tls&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;email&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;someone@acme.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;production&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;secretStorage&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;vault&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gs://jx-prod-logs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;url&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -524,41 +524,41 @@ There&amp;rsquo;s a complete example below.&lt;/p&gt;
 &lt;h3 id=&#34;prow&#34;&gt;Prow&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/docs/reference/components/prow/&#34;&gt;Prow&lt;/a&gt; is currently the default webhook and &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/using/chatops/&#34;&gt;ChatOps&lt;/a&gt; engine when using &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; and GitHub.&lt;/p&gt;
 &lt;p&gt;It&amp;rsquo;s configured via the &lt;code&gt;webhook: prow&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;lighthouse&#34;&gt;Lighthouse&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;lighthouse&#34;&gt;Lighthouse&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/architecture/lighthouse/&#34;&gt;Lighthouse&lt;/a&gt; is currently the default webhook and &lt;a href=&#34;https://jenkins-x.io/docs/resources/faq/using/chatops/&#34;&gt;ChatOps&lt;/a&gt; engine when using &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt; with &lt;a href=&#34;https://tekton.dev/&#34;&gt;Tekton&lt;/a&gt; and a git server other than &lt;a href=&#34;https://github.com&#34;&gt;https://github.com&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Once Lighthouse is more stable and well tested we&amp;rsquo;ll make it the default for all installations using &lt;a href=&#34;https://jenkins-x.io/about/concepts/jenkins-x-pipelines/&#34;&gt;Serverless Jenkins X Pipelines&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;It&amp;rsquo;s configured via the &lt;code&gt;webhook: lighthouse&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
-- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;jenkins&#34;&gt;Jenkins&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;cluster&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;provider&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gke&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;environments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;dev&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;production&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kaniko&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;storage&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;logs&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;reports&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabled&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;webhook&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;lighthouse&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;jenkins&#34;&gt;Jenkins&lt;/h3&gt;
 &lt;p&gt;To use a Jenkins server in boot for processing webhooks and pipelines configure it via &lt;code&gt;webhook: jenkins&lt;/code&gt; in &lt;code&gt;jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
 
       </description>
@@ -588,8 +588,8 @@ We use artifact repositories to:&lt;/p&gt;
 &lt;li&gt;&lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; as a repository of charts&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;You can explicitly configure nexus via the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nexus&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bucketrepo&#34;&gt;Bucketrepo&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;nexus&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;bucketrepo&#34;&gt;Bucketrepo&lt;/h3&gt;
 &lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x/bucketrepo&#34;&gt;bucketrepo&lt;/a&gt; chart is a small footprint microservice that is an alternative to both &lt;a href=&#34;https://www.sonatype.com/nexus-repository-oss&#34;&gt;Nexus&lt;/a&gt; and &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;Chartmusem&lt;/a&gt; which can:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;act as a Maven proxy to cache maven dependencies when using java/maven builds&lt;/li&gt;
@@ -597,13 +597,13 @@ We use artifact repositories to:&lt;/p&gt;
 &lt;li&gt;implement a chart repository for releasing helm charts&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;To enable &lt;code&gt;bucketrepo&lt;/code&gt; use the following &lt;code&gt;jx-requirements.yml&lt;/code&gt; file:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default the local file system in the bucket repo is used to store artifacts.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;bucketrepo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By default the local file system in the bucket repo is used to store artifacts.&lt;/p&gt;
 &lt;p&gt;To enable cloud storage for artifacts in &lt;code&gt;bucketrepo&lt;/code&gt; you need to enable the &lt;code&gt;storage.repository&lt;/code&gt; configuration in which case a cloud bucket is used instead. See the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/boot/storage&#34;&gt;storage section for more details&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;none&#34;&gt;None&lt;/h3&gt;
 &lt;p&gt;If you want to disable the artifact repository (nexus) but still use ChartMuseum for charts you can use the following:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that without using an artifact repository you will not be able to deploy Maven artifacts; though &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; will still be used as a repository of charts.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;none&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that without using an artifact repository you will not be able to deploy Maven artifacts; though &lt;a href=&#34;https://chartmuseum.com/&#34;&gt;ChartMuseum&lt;/a&gt; will still be used as a repository of charts.&lt;/p&gt;
 
       </description>
     </item>

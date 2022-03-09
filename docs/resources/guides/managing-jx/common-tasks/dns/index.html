@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -956,17 +956,17 @@ if (!doNotTrack) {
 	<div class="lead">Configuring DNS for external access to cluster services</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>To be able to access services hosted within your cluster we default to an <a href="https://nip.io/">nip.io</a> domain. This makes it super easy to setup and manage DNS.</p>
@@ -976,39 +976,38 @@ if (!doNotTrack) {
 <p><a href="https://github.com/kubernetes-incubator/external-dns">ExternalDNS</a> can be used to help expose Kubernetes Services and Ingresses by synchronizing with DNS providers.</p>
 <p>If you are using <a href="/docs/install-setup/boot/">jx boot</a> to install and configure your setup then modify your <code>jx-requirements.yml</code> file to enable <code>ingress.externalDNS: true</code> as described in the <a href="/docs/install-setup/boot/ingress/">boot ingress documentation</a></p>
 <p>Otherwise to setup your cluster using ExternalDNS use:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx install --provider gke --tekton --external-dns
-</code></pre></div><p><em>This will then prompt you for your domain.</em></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">🙅 developer ~/go-workspace/jx<span style="color:#f92672">(</span>master<span style="color:#f92672">)</span>$ jx install --provider gke --tekton --external-dns
-WARNING: When using tekton, only kaniko is supported as a builder
-Context <span style="color:#e6db74">&#34;gke_&lt;your-project-id&gt;_europe-west1-b_&lt;your-cluster-name&gt;&#34;</span> modified.
-set exposeController Config URLTemplate <span style="color:#e6db74">&#34;{{.Service}}-{{.Namespace}}.{{.Domain}}&#34;</span>
-Git configured <span style="color:#66d9ef">for</span> user: **********  and email *********@****.***
-helm installed and configured
-? Provide the domain Jenkins X should be available at: your-domain.com
-</code></pre></div><p>A CloudDNS managed zone is then created within your clusters GCP Project, the record-sets which expose your services will be created by ExternalDNS within this managed zone.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">🙅 developer ~/go-workspace<span style="color:#f92672">()</span>$ gcloud dns managed-zones list
-NAME                           DNS_NAME                   DESCRIPTION                       VISIBILITY
-your-domain-com-zone           your-domain.com.           managed-zone utilised by jx       public
-</code></pre></div><h3 id="delegation">delegation</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx install --provider gke --tekton --external-dns
+</span></span></code></pre></div><p><em>This will then prompt you for your domain.</em></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>🙅 developer ~/go-workspace/jx<span style="color:#f92672">(</span>master<span style="color:#f92672">)</span>$ jx install --provider gke --tekton --external-dns
+</span></span><span style="display:flex;"><span>WARNING: When using tekton, only kaniko is supported as a builder
+</span></span><span style="display:flex;"><span>Context <span style="color:#e6db74">&#34;gke_&lt;your-project-id&gt;_europe-west1-b_&lt;your-cluster-name&gt;&#34;</span> modified.
+</span></span><span style="display:flex;"><span>set exposeController Config URLTemplate <span style="color:#e6db74">&#34;{{.Service}}-{{.Namespace}}.{{.Domain}}&#34;</span>
+</span></span><span style="display:flex;"><span>Git configured <span style="color:#66d9ef">for</span> user: **********  and email *********@****.***
+</span></span><span style="display:flex;"><span>helm installed and configured
+</span></span><span style="display:flex;"><span>? Provide the domain Jenkins X should be available at: your-domain.com
+</span></span></code></pre></div><p>A CloudDNS managed zone is then created within your clusters GCP Project, the record-sets which expose your services will be created by ExternalDNS within this managed zone.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>🙅 developer ~/go-workspace<span style="color:#f92672">()</span>$ gcloud dns managed-zones list
+</span></span><span style="display:flex;"><span>NAME                           DNS_NAME                   DESCRIPTION                       VISIBILITY
+</span></span><span style="display:flex;"><span>your-domain-com-zone           your-domain.com.           managed-zone utilised by jx       public
+</span></span></code></pre></div><h3 id="delegation">delegation</h3>
 <p>Once the installation is complete, a list of name servers will be outputted to the terminal, please update your registrar using these name servers in order to delegate your domain onto Google CloudDNS.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">
-        ********************************************************
-
-            External DNS: Please delegate your-domain.com via
-            your registrar onto the following name servers:
-                ns-cloud-d1.googledomains.com.
-                ns-cloud-d2.googledomains.com.
-                ns-cloud-d3.googledomains.com.
-                ns-cloud-d4.googledomains.com.
-
-        ********************************************************
-
-</code></pre></div><h4 id="google-domainshttpsdomainsgoogle"><a href="https://domains.google">Google domains</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        ********************************************************
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            External DNS: Please delegate your-domain.com via
+</span></span><span style="display:flex;"><span>            your registrar onto the following name servers:
+</span></span><span style="display:flex;"><span>                ns-cloud-d1.googledomains.com.
+</span></span><span style="display:flex;"><span>                ns-cloud-d2.googledomains.com.
+</span></span><span style="display:flex;"><span>                ns-cloud-d3.googledomains.com.
+</span></span><span style="display:flex;"><span>                ns-cloud-d4.googledomains.com.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        ********************************************************
+</span></span></code></pre></div><h4 id="google-domainshttpsdomainsgoogle"><a href="https://domains.google">Google domains</a></h4>
 <p>If you&rsquo;re using Google Domains as your domain registrar please see <a href="https://support.google.com/domains/answer/3290309?hl=en-GB&amp;ref_topic=9018335">here</a> for details on delegating to custom name servers.</p>
 <h3 id="url-template">URL template</h3>
 <p>All services should be available on the same domain, of which is derived as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">&lt;service&gt;-&lt;namespace&gt;.&lt;your-domain&gt;
-</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>&lt;service&gt;-&lt;namespace&gt;.&lt;your-domain&gt;
+</span></span></code></pre></div>
 	
 		<style>
   .feedback--answer {
@@ -1171,7 +1170,7 @@ your-domain-com-zone           your-domain.com.           managed-zone utilised 
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

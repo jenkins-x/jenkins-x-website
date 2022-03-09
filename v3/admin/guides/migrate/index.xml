@@ -27,13 +27,13 @@
 &lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; once you upgrade your cluster you will also need to make sure all the quickstarts and imported projects are using the latest pipelines from the catalog to ensure the container images are at least at 3.0 beta level.&lt;/p&gt;
 &lt;h2 id=&#34;upgrading-pipelines-in-your-repositories&#34;&gt;Upgrading pipelines in your repositories&lt;/h2&gt;
 &lt;p&gt;You can create Pull Requests on all the repositories you&amp;rsquo;ve imported or created via quickstarts via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx updatebot pipeline
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will use the default &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; strategy of &lt;code&gt;resource-merge&lt;/code&gt; which will try merge any local changes with those changes in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/&#34;&gt;pipeline catalog&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx updatebot pipeline
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will use the default &lt;a href=&#34;https://googlecontainertools.github.io/kpt/&#34;&gt;kpt&lt;/a&gt; strategy of &lt;code&gt;resource-merge&lt;/code&gt; which will try merge any local changes with those changes in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/&#34;&gt;pipeline catalog&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;You can use the &lt;code&gt;--strategy&lt;/code&gt; to change this default if you wish. See &lt;code&gt;jx updatebot pipeline --help&lt;/code&gt; for more detail.&lt;/p&gt;
 &lt;h2 id=&#34;converting-pipelines&#34;&gt;Converting pipelines&lt;/h2&gt;
 &lt;p&gt;You can follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/upgrading/#converting-older-pipelines&#34;&gt;guide on migrating pipelines individually&lt;/a&gt; via  &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/convert&#34;&gt;jx pipeline convert&lt;/a&gt; command to convert pipelines in a repository:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline convert 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;if-you-lose-some-pipeline-changes&#34;&gt;If you lose some pipeline changes&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx pipeline convert 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;if-you-lose-some-pipeline-changes&#34;&gt;If you lose some pipeline changes&lt;/h3&gt;
 &lt;p&gt;To be totally sure you don&amp;rsquo;t miss any local changes to pipelines you can use the  &lt;code&gt;--strategy alpha-git-patch&lt;/code&gt; argument.&lt;/p&gt;
 &lt;p&gt;Though you can get &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/upgrade/#merge-conflicts&#34;&gt;merge conflicts&lt;/a&gt; which you then need to resolve in your IDE so its probably easier if you do those changes by hand in each repository via &lt;code&gt;jx gitops upgrade&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;The other option is to allow the above &lt;code&gt;resource-merge&lt;/code&gt; to create a PR and merge; then if you have lost some changes use your IDE to see the differences and bring things back you need.&lt;/p&gt;
@@ -42,14 +42,14 @@
 &lt;p&gt;If you have pipelines on your alpha that start to fail with issues around requirements parsing (missing fields or encoding of storage or whatever) then edit your pipeline files to replace any &lt;code&gt;latest&lt;/code&gt; images for &lt;code&gt;jx-cli&lt;/code&gt; with &lt;code&gt;jx-cli:3.0.766&lt;/code&gt; instead.&lt;/p&gt;
 &lt;p&gt;You may find new quickstarts / imports created on your cluster start to fail too.&lt;/p&gt;
 &lt;p&gt;To avoid that modify your pipeline catalog to use the &lt;code&gt;alpha&lt;/code&gt; tag rather than &lt;code&gt;master&lt;/code&gt;. e.g. if you edit your &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-kubernetes/blob/master/extensions/pipeline-catalog.yaml#L7&#34;&gt;extensions/pipeline-catalog.yaml&lt;/a&gt; file just make sure it has the &lt;code&gt;alpha&lt;/code&gt; reference like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;project.jenkins-x.io/v1alpha1&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;PipelineCatalog&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
-  - &lt;span style=&#34;color:#f92672&#34;&gt;label&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;JX3 Pipeline Catalog&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;gitUrl&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;gitRef&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;alpha&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;project.jenkins-x.io/v1alpha1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;PipelineCatalog&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;repositories&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;label&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;JX3 Pipeline Catalog&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;gitUrl&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;gitRef&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;alpha&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     
@@ -69,15 +69,15 @@
 &lt;p&gt;You can then test the projects work fine in the new v3 cluster. If they do you can remove them from the old cluster via &lt;code&gt;jx delete application&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;converting-pipelines&#34;&gt;Converting pipelines&lt;/h2&gt;
 &lt;p&gt;You can follow the &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/upgrading/#converting-older-pipelines&#34;&gt;guide on migrating pipelines individually&lt;/a&gt; via  &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/pipeline/convert&#34;&gt;jx pipeline convert&lt;/a&gt; command to convert pipelines in a repository:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;jx pipeline convert 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;batch-importing&#34;&gt;Batch importing&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx pipeline convert 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;batch-importing&#34;&gt;Batch importing&lt;/h2&gt;
 &lt;p&gt;To batch import lots of projects from the old cluster:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;git clone the new cluster&amp;rsquo;s git repository (with the &lt;code&gt;helmfile.yaml&lt;/code&gt; file inside) and &lt;code&gt;cd&lt;/code&gt; into the directory&lt;/li&gt;
 &lt;li&gt;verify you are in the correct git clone by running this command&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;ls -al helmfile.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ls -al helmfile.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;you should see the &lt;code&gt;helmfile.yaml&lt;/code&gt; file from the v3 installation&lt;/p&gt;
 &lt;/li&gt;
@@ -88,8 +88,8 @@
 &lt;p&gt;verify you can see the old source repositories via:&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get sourcerepository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;now run the &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/gitops/repository/export&#34;&gt;jx gitops repository export&lt;/a&gt; command&lt;/p&gt;
 &lt;/li&gt;
@@ -103,16 +103,16 @@
 &lt;p&gt;now git commit this file:&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git add .jx
-git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: import repositories&amp;#34;&lt;/span&gt;
-git push 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git add .jx
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;fix: import repositories&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git push 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;connect to your new cluster&lt;/li&gt;
 &lt;li&gt;you can watch the setup pipeline run via &lt;code&gt;jx admin log&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;once complete you should see the imported projects:&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;kubectl get sourcerepository
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get sourcerepository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
     </item>
     

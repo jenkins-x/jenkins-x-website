@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -589,9 +589,9 @@ if (!doNotTrack) {
 	</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -603,12 +603,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<figure>
@@ -624,92 +624,92 @@ if (!doNotTrack) {
 <p>Alibaba requires several things in order to create a Kubernetes cluster, so it is easier to do it through the <a href="https://cs.console.aliyun.com/">web UI</a> the first time.</p>
 <p>The following services need to be activated: Container Service, Resource Orchestration Service (ROS), RAM, and Auto Scaling service, and created the <a href="https://www.alibabacloud.com/help/doc-detail/86484.htm?spm=a2c63.p38356.b99.38.663a333eMXExon">Container Service roles</a>.</p>
 <p>If we want to use the command line we can install the <a href="https://github.com/aliyun/aliyun-cli"><code>aliyun</code></a> cli. I have added all the steps needed below in case you want to use it.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">brew install aliyun-cli
-aliyun configure
-REGION<span style="color:#f92672">=</span>ap-southeast-1
-</code></pre></div><p>The clusters need to be created in a VPC, so that needs to be created with VSwitches for each zone to be used.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">aliyun vpc CreateVpc <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --VpcName jx <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --Description <span style="color:#e6db74">&#34;Jenkins X&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --CidrBlock 172.16.0.0/12
-
-<span style="color:#f92672">{</span>
-    <span style="color:#e6db74">&#34;ResourceGroupId&#34;</span>: <span style="color:#e6db74">&#34;rg-acfmv2nomuaaaaa&#34;</span>,
-    <span style="color:#e6db74">&#34;RequestId&#34;</span>: <span style="color:#e6db74">&#34;2E795E99-AD73-4EA7-8BF5-F6F391000000&#34;</span>,
-    <span style="color:#e6db74">&#34;RouteTableId&#34;</span>: <span style="color:#e6db74">&#34;vtb-t4nesimu804j33p4aaaaa&#34;</span>,
-    <span style="color:#e6db74">&#34;VRouterId&#34;</span>: <span style="color:#e6db74">&#34;vrt-t4n2w07mdra52kakaaaaa&#34;</span>,
-    <span style="color:#e6db74">&#34;VpcId&#34;</span>: <span style="color:#e6db74">&#34;vpc-t4nszyte14vie746aaaaa&#34;</span>
-<span style="color:#f92672">}</span>
-
-VPC<span style="color:#f92672">=</span>vpc-t4nszyte14vie746aaaaa
-
-aliyun vpc CreateVSwitch <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --VSwitchName jx <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --VpcId <span style="color:#e6db74">${</span>VPC<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --ZoneId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span>a <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --Description <span style="color:#e6db74">&#34;Jenkins X&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --CidrBlock 172.16.0.0/24
-
-<span style="color:#f92672">{</span>
-    <span style="color:#e6db74">&#34;RequestId&#34;</span>: <span style="color:#e6db74">&#34;89D9AB1F-B4AB-4B4B-8CAA-F68F84417502&#34;</span>,
-    <span style="color:#e6db74">&#34;VSwitchId&#34;</span>: <span style="color:#e6db74">&#34;vsw-t4n7uxycbwgtg14maaaaa&#34;</span>
-<span style="color:#f92672">}</span>
-
-VSWITCH<span style="color:#f92672">=</span>vsw-t4n7uxycbwgtg14maaaaa
-</code></pre></div><p>Next, a keypair (or password) is needed for the cluster instances.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">aliyun ecs ImportKeyPair <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --KeyPairName jx <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --PublicKeyBody <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat ~/.ssh/id_rsa.pub<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
-</code></pre></div><p>The last step is to create the cluster using the just created VPC, VSwitch and Keypair. It&rsquo;s important to select the option <em>Expose API Server with EIP</em> (<code>public_slb</code> in the API json) to be able to connect to the API from the internet.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">echo <span style="color:#e6db74">&lt;&lt; EOF &gt; cluster.json
-</span><span style="color:#e6db74">{
-</span><span style="color:#e6db74">    &#34;name&#34;: &#34;jx-rocks&#34;,
-</span><span style="color:#e6db74">    &#34;cluster_type&#34;: &#34;ManagedKubernetes&#34;,
-</span><span style="color:#e6db74">    &#34;disable_rollback&#34;: true,
-</span><span style="color:#e6db74">    &#34;timeout_mins&#34;: 60,
-</span><span style="color:#e6db74">    &#34;region_id&#34;: &#34;${REGION}&#34;,
-</span><span style="color:#e6db74">    &#34;zoneid&#34;: &#34;${REGION}a&#34;,
-</span><span style="color:#e6db74">    &#34;snat_entry&#34;: true,
-</span><span style="color:#e6db74">    &#34;cloud_monitor_flags&#34;: false,
-</span><span style="color:#e6db74">    &#34;public_slb&#34;: true,
-</span><span style="color:#e6db74">    &#34;worker_instance_type&#34;: &#34;ecs.c4.xlarge&#34;,
-</span><span style="color:#e6db74">    &#34;num_of_nodes&#34;: 3,
-</span><span style="color:#e6db74">    &#34;worker_system_disk_category&#34;: &#34;cloud_efficiency&#34;,
-</span><span style="color:#e6db74">    &#34;worker_system_disk_size&#34;: 120,
-</span><span style="color:#e6db74">    &#34;worker_instance_charge_type&#34;: &#34;PostPaid&#34;,
-</span><span style="color:#e6db74">    &#34;vpcid&#34;: &#34;${VPC}&#34;,
-</span><span style="color:#e6db74">    &#34;vswitchid&#34;: &#34;${VSWITCH}&#34;,
-</span><span style="color:#e6db74">    &#34;container_cidr&#34;: &#34;172.20.0.0/16&#34;,
-</span><span style="color:#e6db74">    &#34;service_cidr&#34;: &#34;172.21.0.0/20&#34;,
-</span><span style="color:#e6db74">    &#34;key_pair&#34;: &#34;jx&#34;
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">EOF</span>
-
-aliyun cs  POST /clusters <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat create.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
-
-<span style="color:#f92672">{</span>
-    <span style="color:#e6db74">&#34;cluster_id&#34;</span>: <span style="color:#e6db74">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>,
-    <span style="color:#e6db74">&#34;request_id&#34;</span>: <span style="color:#e6db74">&#34;0C1E16F8-6A9E-4726-AF6E-A8F37CDDC50C&#34;</span>,
-    <span style="color:#e6db74">&#34;task_id&#34;</span>: <span style="color:#e6db74">&#34;T-5cd93cf5b8ff804bb40000e1&#34;</span>,
-    <span style="color:#e6db74">&#34;instanceId&#34;</span>: <span style="color:#e6db74">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>
-<span style="color:#f92672">}</span>
-
-CLUSTER<span style="color:#f92672">=</span>cb643152f97ae4e44980f6199f298f223
-</code></pre></div><p>We can now download <code>kubectl</code> configuration with</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">aliyun cs GET /k8s/<span style="color:#e6db74">${</span>CLUSTER<span style="color:#e6db74">}</span>/user_config | jq -r .config &gt; ~/.kube/config-alibaba
-export KUBECONFIG<span style="color:#f92672">=</span>$KUBECONFIG:~/.kube/config-alibaba
-</code></pre></div><p>Another detail before being able to install applications that use <code>PersistentVolumeClaims</code> is to <a href="https://www.alibabacloud.com/help/doc-detail/86612.htm#a2c63.p38356.879954.i0.11497ec4J5rKJd">configure a default storage class</a>. There are several volume options that can be listed with <code>kubectl get storageclass</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">NAME                          PROVISIONER     AGE
-alicloud-disk-available       alicloud/disk   44h
-alicloud-disk-common          alicloud/disk   44h
-alicloud-disk-efficiency      alicloud/disk   44h
-alicloud-disk-ssd             alicloud/disk   44h
-</code></pre></div><p>Each of them matches the following cloud disks:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>brew install aliyun-cli
+</span></span><span style="display:flex;"><span>aliyun configure
+</span></span><span style="display:flex;"><span>REGION<span style="color:#f92672">=</span>ap-southeast-1
+</span></span></code></pre></div><p>The clusters need to be created in a VPC, so that needs to be created with VSwitches for each zone to be used.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>aliyun vpc CreateVpc <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --VpcName jx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --Description <span style="color:#e6db74">&#34;Jenkins X&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --CidrBlock 172.16.0.0/12
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;ResourceGroupId&#34;</span>: <span style="color:#e6db74">&#34;rg-acfmv2nomuaaaaa&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;RequestId&#34;</span>: <span style="color:#e6db74">&#34;2E795E99-AD73-4EA7-8BF5-F6F391000000&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;RouteTableId&#34;</span>: <span style="color:#e6db74">&#34;vtb-t4nesimu804j33p4aaaaa&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;VRouterId&#34;</span>: <span style="color:#e6db74">&#34;vrt-t4n2w07mdra52kakaaaaa&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;VpcId&#34;</span>: <span style="color:#e6db74">&#34;vpc-t4nszyte14vie746aaaaa&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>VPC<span style="color:#f92672">=</span>vpc-t4nszyte14vie746aaaaa
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aliyun vpc CreateVSwitch <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --VSwitchName jx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --VpcId <span style="color:#e6db74">${</span>VPC<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --ZoneId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span>a <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --Description <span style="color:#e6db74">&#34;Jenkins X&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --CidrBlock 172.16.0.0/24
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;RequestId&#34;</span>: <span style="color:#e6db74">&#34;89D9AB1F-B4AB-4B4B-8CAA-F68F84417502&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;VSwitchId&#34;</span>: <span style="color:#e6db74">&#34;vsw-t4n7uxycbwgtg14maaaaa&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>VSWITCH<span style="color:#f92672">=</span>vsw-t4n7uxycbwgtg14maaaaa
+</span></span></code></pre></div><p>Next, a keypair (or password) is needed for the cluster instances.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>aliyun ecs ImportKeyPair <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --KeyPairName jx <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --RegionId <span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --PublicKeyBody <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat ~/.ssh/id_rsa.pub<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><p>The last step is to create the cluster using the just created VPC, VSwitch and Keypair. It&rsquo;s important to select the option <em>Expose API Server with EIP</em> (<code>public_slb</code> in the API json) to be able to connect to the API from the internet.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>echo <span style="color:#e6db74">&lt;&lt; EOF &gt; cluster.json
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;name&#34;: &#34;jx-rocks&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;cluster_type&#34;: &#34;ManagedKubernetes&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;disable_rollback&#34;: true,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;timeout_mins&#34;: 60,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;region_id&#34;: &#34;${REGION}&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;zoneid&#34;: &#34;${REGION}a&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;snat_entry&#34;: true,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;cloud_monitor_flags&#34;: false,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;public_slb&#34;: true,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;worker_instance_type&#34;: &#34;ecs.c4.xlarge&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;num_of_nodes&#34;: 3,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;worker_system_disk_category&#34;: &#34;cloud_efficiency&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;worker_system_disk_size&#34;: 120,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;worker_instance_charge_type&#34;: &#34;PostPaid&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;vpcid&#34;: &#34;${VPC}&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;vswitchid&#34;: &#34;${VSWITCH}&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;container_cidr&#34;: &#34;172.20.0.0/16&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;service_cidr&#34;: &#34;172.21.0.0/20&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;key_pair&#34;: &#34;jx&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aliyun cs  POST /clusters <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat create.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;cluster_id&#34;</span>: <span style="color:#e6db74">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;request_id&#34;</span>: <span style="color:#e6db74">&#34;0C1E16F8-6A9E-4726-AF6E-A8F37CDDC50C&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;task_id&#34;</span>: <span style="color:#e6db74">&#34;T-5cd93cf5b8ff804bb40000e1&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;instanceId&#34;</span>: <span style="color:#e6db74">&#34;cb643152f97ae4e44980f6199f298f223&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>CLUSTER<span style="color:#f92672">=</span>cb643152f97ae4e44980f6199f298f223
+</span></span></code></pre></div><p>We can now download <code>kubectl</code> configuration with</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>aliyun cs GET /k8s/<span style="color:#e6db74">${</span>CLUSTER<span style="color:#e6db74">}</span>/user_config | jq -r .config &gt; ~/.kube/config-alibaba
+</span></span><span style="display:flex;"><span>export KUBECONFIG<span style="color:#f92672">=</span>$KUBECONFIG:~/.kube/config-alibaba
+</span></span></code></pre></div><p>Another detail before being able to install applications that use <code>PersistentVolumeClaims</code> is to <a href="https://www.alibabacloud.com/help/doc-detail/86612.htm#a2c63.p38356.879954.i0.11497ec4J5rKJd">configure a default storage class</a>. There are several volume options that can be listed with <code>kubectl get storageclass</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>NAME                          PROVISIONER     AGE
+</span></span><span style="display:flex;"><span>alicloud-disk-available       alicloud/disk   44h
+</span></span><span style="display:flex;"><span>alicloud-disk-common          alicloud/disk   44h
+</span></span><span style="display:flex;"><span>alicloud-disk-efficiency      alicloud/disk   44h
+</span></span><span style="display:flex;"><span>alicloud-disk-ssd             alicloud/disk   44h
+</span></span></code></pre></div><p>Each of them matches the following cloud disks:</p>
 <ul>
 <li>alicloud-disk-common: basic cloud disk (minimum size 5GiB). Only available in some zones (us-west-1a, cn-beijing-b,&hellip;)</li>
 <li>alicloud-disk-efficiency: high-efficiency cloud disk, ultra disk (minimum size 20GiB).</li>
@@ -717,87 +717,86 @@ alicloud-disk-ssd             alicloud/disk   44h
 <li>alicloud-disk-available: provides highly available options, first attempts to create a high-efficiency cloud disk. If the corresponding AZ&rsquo;s efficient cloud disk resources are sold out, tries to create an SSD disk. If the SSD is sold out, tries to create a common cloud disk.</li>
 </ul>
 <p>To set SSDs as the default:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl patch storageclass alicloud-disk-ssd <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    -p <span style="color:#e6db74">&#39;{&#34;metadata&#34;: {&#34;annotations&#34;: {&#34;storageclass.kubernetes.io/is-default-class&#34;:&#34;true&#34;}}}&#39;</span>
-</code></pre></div><p><strong>NOTE</strong>: Alibaba cloud disks must be <a href="https://www.alibabacloud.com/help/doc-detail/25513.htm#h2-url-2">more than 5GiB (basic) or 20GiB (SSD and Ultra)</a>) so we will need to configure any service that is deployed with PVCs to have that size as a minimum or the <code>PersistentVolume</code> provision will fail. The Jenkins X deployments <a href="https://github.com/jenkins-x/cloud-environments/blob/master/env-alibaba/myvalues.yaml">are already configured with this in mind</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl patch storageclass alicloud-disk-ssd <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    -p <span style="color:#e6db74">&#39;{&#34;metadata&#34;: {&#34;annotations&#34;: {&#34;storageclass.kubernetes.io/is-default-class&#34;:&#34;true&#34;}}}&#39;</span>
+</span></span></code></pre></div><p><strong>NOTE</strong>: Alibaba cloud disks must be <a href="https://www.alibabacloud.com/help/doc-detail/25513.htm#h2-url-2">more than 5GiB (basic) or 20GiB (SSD and Ultra)</a>) so we will need to configure any service that is deployed with PVCs to have that size as a minimum or the <code>PersistentVolume</code> provision will fail. The Jenkins X deployments <a href="https://github.com/jenkins-x/cloud-environments/blob/master/env-alibaba/myvalues.yaml">are already configured with this in mind</a>.</p>
 <h2 id="installing-jenkins-x">Installing Jenkins X</h2>
 <p>Alibaba Kubernetes clusters won&rsquo;t be able to pull images from the insecure docker registry included in Jenkins X, we need to use Alibaba&rsquo;s Container Registry by going to <a href="https://cr.console.aliyun.com">https://cr.console.aliyun.com</a> and setting a password.</p>
 <p>Then we need to create a Container Registry namespace that allows us to push any image and make them public by default.</p>
 <p>From the web UI we can create a Docker login password that we will be using later.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">NAMESPACE<span style="color:#f92672">=</span>jenkins-x-<span style="color:#66d9ef">$(</span>cat /dev/urandom | env LC_CTYPE<span style="color:#f92672">=</span>C tr -dc <span style="color:#e6db74">&#39;a-z&#39;</span> | fold -w <span style="color:#ae81ff">6</span> | head -n 1<span style="color:#66d9ef">)</span>
-cat <span style="color:#e6db74">&lt;&lt; EOF &gt; namespace.json
-</span><span style="color:#e6db74">{
-</span><span style="color:#e6db74">    &#34;Namespace&#34;: {
-</span><span style="color:#e6db74">        &#34;Namespace&#34;: &#34;${NAMESPACE}&#34;
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">EOF</span>
-aliyun cr PUT /namespace <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat namespace.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
-
-cat <span style="color:#e6db74">&lt;&lt; EOF &gt; namespace.json
-</span><span style="color:#e6db74">{
-</span><span style="color:#e6db74">    &#34;namespace&#34;: {
-</span><span style="color:#e6db74">        &#34;namespace&#34;: &#34;${NAMESPACE}&#34;,
-</span><span style="color:#e6db74">        &#34;defaultVisibility&#34;: &#34;PUBLIC&#34;,
-</span><span style="color:#e6db74">        &#34;autoCreate&#34;: true
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">EOF</span>
-
-aliyun cr POST /namespace/<span style="color:#e6db74">${</span>NAMESPACE<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat namespace.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
-
-</code></pre></div><p>Now we can install Jenkins X as usual, passing the <code>--provider alibaba</code> flag.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx install <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --provider alibaba <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --default-admin-password<span style="color:#f92672">=</span>admin <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --default-environment-prefix<span style="color:#f92672">=</span>jx-rocks <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --tekton <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --docker-registry<span style="color:#f92672">=</span>registry.<span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span>.aliyuncs.com <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    --docker-registry-org<span style="color:#f92672">=</span><span style="color:#e6db74">${</span>NAMESPACE<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    -b
-</code></pre></div><p>After installation we need to add the Container Registry credentials to the cluster, the Docker password we have previously created.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">AUTH<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo -n <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>DOCKER_USERNAME<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">${</span>DOCKER_PASSWORD<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> | base64<span style="color:#66d9ef">)</span>
-DATA<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>cat <span style="color:#e6db74">&lt;&lt; EOF | base64
-</span><span style="color:#e6db74">{
-</span><span style="color:#e6db74">    &#34;auths&#34;: {
-</span><span style="color:#e6db74">        &#34;registry.${REGION}.aliyuncs.com&#34;: {
-</span><span style="color:#e6db74">            &#34;auth&#34;: &#34;${AUTH}&#34;
-</span><span style="color:#e6db74">        }
-</span><span style="color:#e6db74">    }
-</span><span style="color:#e6db74">}
-</span><span style="color:#e6db74">EOF</span>
-<span style="color:#66d9ef">)</span>
-cat <span style="color:#e6db74">&lt;&lt; EOF | kubectl apply -f -
-</span><span style="color:#e6db74">apiVersion: v1
-</span><span style="color:#e6db74">kind: Secret
-</span><span style="color:#e6db74">type: Opaque
-</span><span style="color:#e6db74">metadata:
-</span><span style="color:#e6db74">  name: jenkins-docker-cfg
-</span><span style="color:#e6db74">  namespace: jx
-</span><span style="color:#e6db74">data:
-</span><span style="color:#e6db74">  config.json: ${DATA}
-</span><span style="color:#e6db74">EOF</span>
-</code></pre></div><h2 id="installing-addons">Installing Addons</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>NAMESPACE<span style="color:#f92672">=</span>jenkins-x-<span style="color:#66d9ef">$(</span>cat /dev/urandom | env LC_CTYPE<span style="color:#f92672">=</span>C tr -dc <span style="color:#e6db74">&#39;a-z&#39;</span> | fold -w <span style="color:#ae81ff">6</span> | head -n 1<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>cat <span style="color:#e6db74">&lt;&lt; EOF &gt; namespace.json
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;Namespace&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;Namespace&#34;: &#34;${NAMESPACE}&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span><span style="display:flex;"><span>aliyun cr PUT /namespace <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat namespace.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cat <span style="color:#e6db74">&lt;&lt; EOF &gt; namespace.json
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;namespace&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;namespace&#34;: &#34;${NAMESPACE}&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;defaultVisibility&#34;: &#34;PUBLIC&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;autoCreate&#34;: true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>aliyun cr POST /namespace/<span style="color:#e6db74">${</span>NAMESPACE<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --header <span style="color:#e6db74">&#34;Content-Type=application/json&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --body <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>cat namespace.json<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><p>Now we can install Jenkins X as usual, passing the <code>--provider alibaba</code> flag.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx install <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --provider alibaba <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --default-admin-password<span style="color:#f92672">=</span>admin <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --default-environment-prefix<span style="color:#f92672">=</span>jx-rocks <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --tekton <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --docker-registry<span style="color:#f92672">=</span>registry.<span style="color:#e6db74">${</span>REGION<span style="color:#e6db74">}</span>.aliyuncs.com <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    --docker-registry-org<span style="color:#f92672">=</span><span style="color:#e6db74">${</span>NAMESPACE<span style="color:#e6db74">}</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    -b
+</span></span></code></pre></div><p>After installation we need to add the Container Registry credentials to the cluster, the Docker password we have previously created.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>AUTH<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo -n <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>DOCKER_USERNAME<span style="color:#e6db74">}</span><span style="color:#e6db74">:</span><span style="color:#e6db74">${</span>DOCKER_PASSWORD<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> | base64<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>DATA<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>cat <span style="color:#e6db74">&lt;&lt; EOF | base64
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;auths&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;registry.${REGION}.aliyuncs.com&#34;: {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            &#34;auth&#34;: &#34;${AUTH}&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    }
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>cat <span style="color:#e6db74">&lt;&lt; EOF | kubectl apply -f -
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">apiVersion: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">kind: Secret
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">type: Opaque
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">metadata:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  name: jenkins-docker-cfg
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  namespace: jx
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">data:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  config.json: ${DATA}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div><h2 id="installing-addons">Installing Addons</h2>
 <p>Addons can be installed normally with the caveat mentioned above about PVC minimum size. Which means that we may need to pass some Helm values to the <code>create addon</code> command, depending on the chart we are installing.</p>
 <p>For instance to install Prometheus with 20Gi disks:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create addon prometheus <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>    -s alertmanager.persistentVolume.size<span style="color:#f92672">=</span>20Gi,pushgateway.persistentVolume.size<span style="color:#f92672">=</span>20Gi,server.persistentVolume.size<span style="color:#f92672">=</span>20Gi
-</code></pre></div><h2 id="tekton">Tekton</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx create addon prometheus <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>    -s alertmanager.persistentVolume.size<span style="color:#f92672">=</span>20Gi,pushgateway.persistentVolume.size<span style="color:#f92672">=</span>20Gi,server.persistentVolume.size<span style="color:#f92672">=</span>20Gi
+</span></span></code></pre></div><h2 id="tekton">Tekton</h2>
 <p>Tekton builds need to be configured to use PVCs bigger than 20Gi due to the same reasons. The default is to use 5GiB PVCs.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cat <span style="color:#e6db74">&lt;&lt; EOF | kubectl apply -f -
-</span><span style="color:#e6db74">apiVersion: v1
-</span><span style="color:#e6db74">kind: ConfigMap
-</span><span style="color:#e6db74">metadata:
-</span><span style="color:#e6db74">  name: config-artifact-pvc
-</span><span style="color:#e6db74">  namespace: jx
-</span><span style="color:#e6db74">data:
-</span><span style="color:#e6db74">  size: 20Gi
-</span><span style="color:#e6db74">EOF</span>
-</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>cat <span style="color:#e6db74">&lt;&lt; EOF | kubectl apply -f -
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">apiVersion: v1
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">kind: ConfigMap
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">metadata:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  name: config-artifact-pvc
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  namespace: jx
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">data:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  size: 20Gi
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">EOF</span>
+</span></span></code></pre></div>
 	
 
 	<ul class="list-unstyled d-flex justify-content-between align-items-center mb-0 pt-5">
@@ -904,7 +903,7 @@ cat <span style="color:#e6db74">&lt;&lt; EOF | kubectl apply -f -
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

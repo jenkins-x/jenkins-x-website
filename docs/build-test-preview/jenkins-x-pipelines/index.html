@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <link rel="alternate" type="application/rss&#43;xml" href="https://jenkins-x.io/docs/build-test-preview/jenkins-x-pipelines/index.xml">
 <meta name="robots" content="index, follow">
 
@@ -921,17 +921,17 @@ if (!doNotTrack) {
   <div class="lead">cloud native serverless pipelines</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<p>In continuous delivery (CD) environments, a <em>pipeline</em> is a process (expressed
@@ -986,137 +986,137 @@ to another environment, such as Staging or Production.</p>
 configuration file called jenkins-x.yml. This file configures the default
 development pipeline for building applications on kubernetes clusters with
 Jenkins X.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">buildPack: none
-pipelineConfig:
-  pipelines:
-    release:
-      pipeline:
-        agent:
-          image: gcr.io/jenkinsxio/builder-go
-</code></pre></div><p><code>buildPack</code> specifies a build pack which contains a <code>pipeline.yml</code> file that
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>buildPack: none
+</span></span><span style="display:flex;"><span>pipelineConfig:
+</span></span><span style="display:flex;"><span>  pipelines:
+</span></span><span style="display:flex;"><span>    release:
+</span></span><span style="display:flex;"><span>      pipeline:
+</span></span><span style="display:flex;"><span>        agent:
+</span></span><span style="display:flex;"><span>          image: gcr.io/jenkinsxio/builder-go
+</span></span></code></pre></div><p><code>buildPack</code> specifies a build pack which contains a <code>pipeline.yml</code> file that
 supersedes the <code>jenkins-x.yml</code> file in the project directory. If none is
 specified, there is no build pack and Jenkins X uses the default pipeline
 configuration.</p>
 <p>The configuration defines the pipeline agent, in this case a Google Container
 Registry image for the Go language build tools.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">        environment:
-          - name: DEPLOY_NAMESPACE
-            value: jx
-</code></pre></div><p><code>environment</code> specifies environment variables used in the pipeline
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>        environment:
+</span></span><span style="display:flex;"><span>          - name: DEPLOY_NAMESPACE
+</span></span><span style="display:flex;"><span>            value: jx
+</span></span></code></pre></div><p><code>environment</code> specifies environment variables used in the pipeline
 configuration. In this instance, the <code>DEPLOY_NAMESPACE</code> variable is used with a
 value of <code>jx</code> for the Jenkins X namespace.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">        stages:
-          - name: release
-            steps:
-              - name: verify-preintall
-                dir: /workspace/source/env
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;verify&#39;</span>,<span style="color:#e6db74">&#39;preinstall&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p><code>stages</code> are unique groups of steps (or nested stages sequentially run within a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>        stages:
+</span></span><span style="display:flex;"><span>          - name: release
+</span></span><span style="display:flex;"><span>            steps:
+</span></span><span style="display:flex;"><span>              - name: verify-preintall
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/env
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;verify&#39;</span>,<span style="color:#e6db74">&#39;preinstall&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p><code>stages</code> are unique groups of steps (or nested stages sequentially run within a
 stage) that specify commands, directories, and arguments for a particular
 pipeline stage. In this instance, there is a step within the <code>release</code> stage
 called <code>verify-preinstall</code> that runs a <code>jx</code> command that verifies whether cloud
 infrastructure (such as the presence of the <code>kubectl</code> binary and the correct
 version of git is installed) was setup in the preinstallation process.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">              - name: install-vault
-                dir: /workspace/source/systems/vault
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>, <span style="color:#e6db74">&#39;boot&#39;</span>,<span style="color:#e6db74">&#39;vault&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p><code>name</code> calls out a unique step in the pipeline configuration that defines
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>              - name: install-vault
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/systems/vault
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>, <span style="color:#e6db74">&#39;boot&#39;</span>,<span style="color:#e6db74">&#39;vault&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p><code>name</code> calls out a unique step in the pipeline configuration that defines
 development steps to verify and apply arguments to various commands necessary
 for the stage under which it is nested. In this instance, <code>install-vault</code>
 installs the Hashicorp Vault tool for secrets management.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">              - name: apply-repositories
-                dir: /workspace/source/repositories
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;helm&#39;</span>,<span style="color:#e6db74">&#39;apply&#39;</span>, <span style="color:#e6db74">&#39;--name&#39;</span>, <span style="color:#e6db74">&#39;repos&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p>This step creates and applies the Helm Package Manager for installation and
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>              - name: apply-repositories
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/repositories
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;helm&#39;</span>,<span style="color:#e6db74">&#39;apply&#39;</span>, <span style="color:#e6db74">&#39;--name&#39;</span>, <span style="color:#e6db74">&#39;repos&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>This step creates and applies the Helm Package Manager for installation and
 management of helm kubernetes applications.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">              - name: apply-pipeline-schedulers
-                dir: /workspace/source/prowConfig
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;scheduler&#39;</span>,<span style="color:#e6db74">&#39;config&#39;</span>, <span style="color:#e6db74">&#39;apply&#39;</span>, <span style="color:#e6db74">&#39;--direct=true&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p>This step allows the pipeline to work with a scheduler, which executes program
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>              - name: apply-pipeline-schedulers
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/prowConfig
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;scheduler&#39;</span>,<span style="color:#e6db74">&#39;config&#39;</span>, <span style="color:#e6db74">&#39;apply&#39;</span>, <span style="color:#e6db74">&#39;--direct=true&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>This step allows the pipeline to work with a scheduler, which executes program
 jobs unattended in the background.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">              - name: update-webhooks
-                dir: /workspace/source/repositories
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;update&#39;</span>,<span style="color:#e6db74">&#39;webhooks&#39;</span>,<span style="color:#e6db74">&#39;--verbose&#39;</span>, <span style="color:#e6db74">&#39;--warn-on-fail&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p>This step updates webhooks, which is a service that listens for GitHub activity
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>              - name: update-webhooks
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/repositories
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;update&#39;</span>,<span style="color:#e6db74">&#39;webhooks&#39;</span>,<span style="color:#e6db74">&#39;--verbose&#39;</span>, <span style="color:#e6db74">&#39;--warn-on-fail&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>This step updates webhooks, which is a service that listens for GitHub activity
 and trigger jobs, send automated messages to chat clients such as Slack, and
 other configurable actions.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">              - name: verify-install
-                dir: /workspace/source/env
-                command: jx
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;verify&#39;</span>,<span style="color:#e6db74">&#39;install&#39;</span>, <span style="color:#e6db74">&#39;--pod-wait-time&#39;</span>, <span style="color:#e6db74">&#39;30m&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p>This step verifies the project installation, downloading and installing or
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>              - name: verify-install
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/env
+</span></span><span style="display:flex;"><span>                command: jx
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;step&#39;</span>,<span style="color:#e6db74">&#39;verify&#39;</span>,<span style="color:#e6db74">&#39;install&#39;</span>, <span style="color:#e6db74">&#39;--pod-wait-time&#39;</span>, <span style="color:#e6db74">&#39;30m&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>This step verifies the project installation, downloading and installing or
 updating components when necessary.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">    pullRequest:
-      pipeline:
-        agent:
-          image: gcr.io/jenkinsxio/builder-go
-</code></pre></div><p><code>pullRequest</code> is a logical pipeline within the project pipeline that specifies how pull requests are managed when changes are made to the project repository in GitHub.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">        stages:
-          - name: release
-            steps:
-              - name: helm-build
-                dir: /workspace/source/env
-                command: make
-                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;build&#39;</span><span style="color:#f92672">]</span>
-</code></pre></div><p>The <code>pullRequest</code> pipeline contains a stage wherein steps can also be executed. In this instance, make is run to create a helm chart and validate that a build has been completed.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>    pullRequest:
+</span></span><span style="display:flex;"><span>      pipeline:
+</span></span><span style="display:flex;"><span>        agent:
+</span></span><span style="display:flex;"><span>          image: gcr.io/jenkinsxio/builder-go
+</span></span></code></pre></div><p><code>pullRequest</code> is a logical pipeline within the project pipeline that specifies how pull requests are managed when changes are made to the project repository in GitHub.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>        stages:
+</span></span><span style="display:flex;"><span>          - name: release
+</span></span><span style="display:flex;"><span>            steps:
+</span></span><span style="display:flex;"><span>              - name: helm-build
+</span></span><span style="display:flex;"><span>                dir: /workspace/source/env
+</span></span><span style="display:flex;"><span>                command: make
+</span></span><span style="display:flex;"><span>                args: <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;build&#39;</span><span style="color:#f92672">]</span>
+</span></span></code></pre></div><p>The <code>pullRequest</code> pipeline contains a stage wherein steps can also be executed. In this instance, make is run to create a helm chart and validate that a build has been completed.</p>
 <h2 id="extending-pipelines">Extending pipelines</h2>
 <p>A pipeline YAML can extend another YAML file. You can reference a base pipeline
 YAML using the following methods:</p>
 <ul>
 <li>
 <p>Using file to reference a relative file path in the same build pack</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">extends:
-  file: ../jenkins-x.yaml
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>extends:
+</span></span><span style="display:flex;"><span>  file: ../jenkins-x.yaml
+</span></span></code></pre></div></li>
 <li>
 <p>Using import to reference a YAML file:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">extends:
-  import: classic
-  file: maven/pipeline.yaml
-</code></pre></div></li>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>extends:
+</span></span><span style="display:flex;"><span>  import: classic
+</span></span><span style="display:flex;"><span>  file: maven/pipeline.yaml
+</span></span></code></pre></div></li>
 </ul>
 <p>which then refers to a named imported module via git:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">modules:
-- name: classic
-  gitUrl: https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git
-  gitRef: master
-</code></pre></div><h2 id="overriding-steps">Overriding steps</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>modules:
+</span></span><span style="display:flex;"><span>- name: classic
+</span></span><span style="display:flex;"><span>  gitUrl: https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes.git
+</span></span><span style="display:flex;"><span>  gitRef: master
+</span></span></code></pre></div><h2 id="overriding-steps">Overriding steps</h2>
 <p>Users can override steps in a pipeline YAML from a base pipeline YAML, similar to overriding classes in languages like Java. This allows users reuse the steps in a base pipeline’s lifecycle, then add additional steps.</p>
 <p>By default any steps you define are added after the base pipeline YAML steps. For example:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">extends:
-  file: base-pipeline.yaml
-pipelines:
-  pullRequest:
-    build:
-      steps:
-      - sh: export VERSION<span style="color:#f92672">=</span>$PREVIEW_VERSION <span style="color:#f92672">&amp;&amp;</span> skaffold build -f skaffold.yaml
-</code></pre></div><p>You can add steps before the base pipeline steps using the preSteps: property:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">extends:
-  file: base-pipeline.yaml
-pipelines:
-  release:
-    setup:
-      preSteps:
-      - sh: echo BEFORE BASE SETUP
-      steps:
-      - sh: echo AFTER BASE SETUP
-    build:
-      replace: true
-      steps:
-      - sh: mvn clean deploy -Pmyprofile
-        comment: this command is overridden from the base pipeline
-</code></pre></div><p>If you want to completely replace all the steps from a base pipeline for a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>extends:
+</span></span><span style="display:flex;"><span>  file: base-pipeline.yaml
+</span></span><span style="display:flex;"><span>pipelines:
+</span></span><span style="display:flex;"><span>  pullRequest:
+</span></span><span style="display:flex;"><span>    build:
+</span></span><span style="display:flex;"><span>      steps:
+</span></span><span style="display:flex;"><span>      - sh: export VERSION<span style="color:#f92672">=</span>$PREVIEW_VERSION <span style="color:#f92672">&amp;&amp;</span> skaffold build -f skaffold.yaml
+</span></span></code></pre></div><p>You can add steps before the base pipeline steps using the preSteps: property:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>extends:
+</span></span><span style="display:flex;"><span>  file: base-pipeline.yaml
+</span></span><span style="display:flex;"><span>pipelines:
+</span></span><span style="display:flex;"><span>  release:
+</span></span><span style="display:flex;"><span>    setup:
+</span></span><span style="display:flex;"><span>      preSteps:
+</span></span><span style="display:flex;"><span>      - sh: echo BEFORE BASE SETUP
+</span></span><span style="display:flex;"><span>      steps:
+</span></span><span style="display:flex;"><span>      - sh: echo AFTER BASE SETUP
+</span></span><span style="display:flex;"><span>    build:
+</span></span><span style="display:flex;"><span>      replace: true
+</span></span><span style="display:flex;"><span>      steps:
+</span></span><span style="display:flex;"><span>      - sh: mvn clean deploy -Pmyprofile
+</span></span><span style="display:flex;"><span>        comment: this command is overridden from the base pipeline
+</span></span></code></pre></div><p>If you want to completely replace all the steps from a base pipeline for a
 particular lifecycle you can use replace: true:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">  replace: true
-  steps:
-  - sh: mvn clean deploy -Pmyprofile
-    comment: this command is overridden from the base pipeline
-</code></pre></div><!--
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>  replace: true
+</span></span><span style="display:flex;"><span>  steps:
+</span></span><span style="display:flex;"><span>  - sh: mvn clean deploy -Pmyprofile
+</span></span><span style="display:flex;"><span>    comment: this command is overridden from the base pipeline
+</span></span></code></pre></div><!--
 ## Trying Jenkins X Pipelines
 
 Create a new cluster installed with Jenkins X Pipelines using `jx` and the following flags:
@@ -1373,7 +1373,7 @@ We'd love to improve this UX if you fancy [helping out](/docs/contributing/).
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

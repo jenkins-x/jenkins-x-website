@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -548,17 +548,17 @@ if (!doNotTrack) {
 	<div class="lead">Current status of Jenkins X</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>Refer to the <a href="/about/capabilities">Jenkins X Capabilities Matrix</a> for cloud provider support maturity.</p>
@@ -568,10 +568,10 @@ if (!doNotTrack) {
 <p>It looks like the monocular docker images got removed today!</p>
 <p>It turns out that monocular is not an absolute requirement for Jenkins X; it works great without it.</p>
 <p>So a quick workaround to the problem is to scale down your monocular deployment:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl scale deploy jenkins-x-monocular-api --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
-kubectl scale deploy jenkins-x-monocular-prerender --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
-kubectl scale deploy jenkins-x-monocular-ui --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
-</code></pre></div><p>The latest <a href="/about/concepts/version-stream/">version stream release</a> has removed monocular so if you <a href="/docs/resources/guides/managing-jx/common-tasks/upgrade-jx/">upgrade your platform
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl scale deploy jenkins-x-monocular-api --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>kubectl scale deploy jenkins-x-monocular-prerender --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>kubectl scale deploy jenkins-x-monocular-ui --replicas<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span></code></pre></div><p>The latest <a href="/about/concepts/version-stream/">version stream release</a> has removed monocular so if you <a href="/docs/resources/guides/managing-jx/common-tasks/upgrade-jx/">upgrade your platform
 </a> this issue should be resolved.</p>
 <p>We can always add monocular back as an optional <a href="/docs/contributing/addons/">App</a> later on when it works again.</p>
 <h2 id="12th-june-2019-knative-build-now-deprecated">12th June 2019: Knative Build now deprecated</h2>
@@ -582,9 +582,9 @@ kubectl scale deploy jenkins-x-monocular-ui --replicas<span style="color:#f92672
 <p>We have noticed an incompatibility with older Skaffold configuration files and the new v0.29.0 Skaffold release.  Freshly generated applications will not suffer from this problem, but for existing applications changes to the configuration file may be required.</p>
 <p>If you are running a static master or serverless (Jenkins file runner) cluster and are having issues building existing applications with the following error <code>creating runner: invalid skaffold config: required value not set: image</code> you will need to modify your <code>skaffold.yaml</code>.</p>
 <p>In the <code>dev</code> profile, remove the following section:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">    <span style="color:#f92672">artifacts</span>:
-    - <span style="color:#f92672">docker</span>: {}
-</code></pre></div><p>For more information, refer to this <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/pull/50/files">PR</a>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    <span style="color:#f92672">artifacts</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">docker</span>: {}
+</span></span></code></pre></div><p>For more information, refer to this <a href="https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/pull/50/files">PR</a>.</p>
 <h2 id="16th-april-2019-jenkins-x-2x">16th April 2019: Jenkins X 2.x</h2>
 <p>We are pleased to announce 2.0.x of Jenkins X.</p>
 <p>We have changed some of the default CLI arguments when installing Jenkins X.</p>
@@ -595,39 +595,39 @@ kubectl scale deploy jenkins-x-monocular-ui --replicas<span style="color:#f92672
 <h2 id="6th-feb-2019-regression-in-jx-install-config-secret">6th Feb 2019: Regression in <code>jx-install-config</code> secret.</h2>
 <p>We have spotted a regression in the install process that generates an invalid config file inside the secret <code>jx-install-config</code> secret.  Whilst the original defect has been fixed, the invalid secret will create an issue with <code>jx upgrade platform</code> causing the cluster to loose all secrets.</p>
 <p>To work around this, we have added some logic into <code>jx upgrade platform</code> to detect the invalid secret and attempt to fix.  This feature is included in jx version <code>1.3.842</code>.  An extract of a running upgrade is shown below:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Creating /Users/garethjevans/.jx/adminSecrets.yaml from jx-install-config
-Creating /Users/garethjevans/.jx/extraValues.yaml from jx-install-config
-We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an invalid format
-? Would you like to repair the file? Yes
-</code></pre></div><h2 id="1st-feb-2019-changes-to-the-default-nexus-configuration">1st Feb 2019: Changes to the default Nexus configuration</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Creating /Users/garethjevans/.jx/adminSecrets.yaml from jx-install-config
+</span></span><span style="display:flex;"><span>Creating /Users/garethjevans/.jx/extraValues.yaml from jx-install-config
+</span></span><span style="display:flex;"><span>We have detected that the /Users/garethjevans/.jx/adminSecrets.yaml file has an invalid format
+</span></span><span style="display:flex;"><span>? Would you like to repair the file? Yes
+</span></span></code></pre></div><h2 id="1st-feb-2019-changes-to-the-default-nexus-configuration">1st Feb 2019: Changes to the default Nexus configuration</h2>
 <p>Anonymous access to Nexus has been disabled by default, this has implications to those running Maven based builds.  To support this, the maven settings.xml injected into each build pod needs to be modified.</p>
 <p>This can be done automatically using:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx upgrade platform --update-secrets
-</code></pre></div><p>NOTE: this will regenerate the settings.xml from a defined template.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx upgrade platform --update-secrets
+</span></span></code></pre></div><p>NOTE: this will regenerate the settings.xml from a defined template.</p>
 <p>If you would prefer to apply this changes manually, edit the secret <code>jenkins-maven-settings</code>, duplicating the server block for <code>local-nexus</code>, changing the server id to <code>nexus</code> e.g.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;server&gt;</span>
-    <span style="color:#f92672">&lt;id&gt;</span>local-nexus<span style="color:#f92672">&lt;/id&gt;</span>
-    <span style="color:#f92672">&lt;username&gt;</span>admin<span style="color:#f92672">&lt;/username&gt;</span>
-    <span style="color:#f92672">&lt;password&gt;</span>%s<span style="color:#f92672">&lt;/password&gt;</span>
-<span style="color:#f92672">&lt;/server&gt;</span>
-<span style="color:#f92672">&lt;server&gt;</span>
-    <span style="color:#f92672">&lt;id&gt;</span>nexus<span style="color:#f92672">&lt;/id&gt;</span>
-    <span style="color:#f92672">&lt;username&gt;</span>admin<span style="color:#f92672">&lt;/username&gt;</span>
-    <span style="color:#f92672">&lt;password&gt;</span>%s<span style="color:#f92672">&lt;/password&gt;</span>
-<span style="color:#f92672">&lt;/server&gt;</span>
-</code></pre></div><h2 id="8-jan-2019-prow-and-knative-build-upgrade">8 Jan 2019: Prow and Knative Build upgrade</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;server&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;id&gt;</span>local-nexus<span style="color:#f92672">&lt;/id&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;username&gt;</span>admin<span style="color:#f92672">&lt;/username&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;password&gt;</span>%s<span style="color:#f92672">&lt;/password&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/server&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;server&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;id&gt;</span>nexus<span style="color:#f92672">&lt;/id&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;username&gt;</span>admin<span style="color:#f92672">&lt;/username&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;password&gt;</span>%s<span style="color:#f92672">&lt;/password&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/server&gt;</span>
+</span></span></code></pre></div><h2 id="8-jan-2019-prow-and-knative-build-upgrade">8 Jan 2019: Prow and Knative Build upgrade</h2>
 <p>There are three critical bugs with the prow based Jenkins X
 <a href="https://github.com/jenkins-x/jx/issues/2539">https://github.com/jenkins-x/jx/issues/2539</a>
 <a href="https://github.com/jenkins-x/jx/issues/2561">https://github.com/jenkins-x/jx/issues/2561</a>
 <a href="https://github.com/jenkins-x/jx/issues/2544">https://github.com/jenkins-x/jx/issues/2544</a></p>
 <p>The fixes involve upgrading to a newer version of Prow and Knative Build, the latter caused an issue when performing a traditional <code>jx upgrade addon</code> so we recommend uninstalling Knative Build first (removes Knative Build related Custom Resource Definitions) and install the latest release.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx delete addon knative-build
-</code></pre></div><p>And to be extra sure it’s gone maybe do an extra:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">helm del --purge knative-build
-</code></pre></div><p>then:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx upgrade cli
-jx upgrade addon prow
-</code></pre></div><p>But this means any existing builds or custom changes to <code>BuildTemplate</code> resources will be lost.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx delete addon knative-build
+</span></span></code></pre></div><p>And to be extra sure it’s gone maybe do an extra:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>helm del --purge knative-build
+</span></span></code></pre></div><p>then:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx upgrade cli
+</span></span><span style="display:flex;"><span>jx upgrade addon prow
+</span></span></code></pre></div><p>But this means any existing builds or custom changes to <code>BuildTemplate</code> resources will be lost.</p>
 <h2 id="5-jan-2019-environment-git-repository-issue">5 Jan 2019: environment git repository issue</h2>
 <p>There was a regression added a few weeks ago which led to new installations setting up invalid <code>exposecontroller</code> configuration in your <code>Staging/Production</code> git repositories. See the <a href="https://github.com/jenkins-x/jx/issues/2591#issuecomment-451516674">issue and workaround</a>.</p>
 <p>Make sure that the <code>env/values.yaml</code> file for your environment git repository uses <code>expose:</code> as the key in the YAML and not <code>exposecontroller:</code> - if it uses <code>exposecontroller:</code> just edit it back to <code>expose:</code> and you should be good to go!</p>
@@ -795,7 +795,7 @@ jx upgrade addon prow
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

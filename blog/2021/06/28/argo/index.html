@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -576,9 +576,9 @@ if (!doNotTrack) {
 	</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -590,12 +590,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<p>There have been a number of requests from the Jenkins X community to use <a href="https://argoproj.github.io/argo-cd/">Argo CD</a> for the last mile deployment phase of their continuous delivery pipelines.  This blog explains some of the advantages of using Jenkins X and Argo CD all together.</p>
@@ -636,18 +636,18 @@ Jenkins X aims to embrace OSS, where possible providing a nice UX to integrate w
 <ol>
 <li>Add a Argo CD helmefile to your Jenkins X cluster git repository:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p helmfiles/argocd
-</code></pre></div><p>Create a new file</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir -p helmfiles/argocd
+</span></span></code></pre></div><p>Create a new file</p>
 <p><code>./helmfiles/argocd/helmfile.yaml</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
-<span style="color:#f92672">releases</span>:
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">argocd/argo-cd</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argocd</span>
-- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">../../charts/argo-applications</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-applications</span>
-</code></pre></div><p>Edit the root <code>./helmfile.yaml</code> and add a new path reference to the helmfile above</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">- <span style="color:#f92672">path</span>: <span style="color:#ae81ff">helmfiles/argocd/helmfile.yaml</span>
-</code></pre></div><p>Jenkins X will resolve default helm values from the Jenkins X version stream.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">releases</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">argocd/argo-cd</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argocd</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">chart</span>: <span style="color:#ae81ff">../../charts/argo-applications</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">argo-applications</span>
+</span></span></code></pre></div><p>Edit the root <code>./helmfile.yaml</code> and add a new path reference to the helmfile above</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">path</span>: <span style="color:#ae81ff">helmfiles/argocd/helmfile.yaml</span>
+</span></span></code></pre></div><p>Jenkins X will resolve default helm values from the Jenkins X version stream.</p>
 <ol start="2">
 <li>
 <p>Create a new git repository to contain the Argo CD <code>Application</code> Kubernetes resources, this means we can use Jenkins X pipelines to promote users applications via GitOps.</p>
@@ -656,66 +656,65 @@ Jenkins X aims to embrace OSS, where possible providing a nice UX to integrate w
 <p>Back in your clusters Git repository create a new folder:</p>
 </li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mkdir -p charts/argo-applications
-</code></pre></div><p>create a file in the new folder and replace the <code>repoURL:</code> with the Git URL from step 2 above.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mkdir -p charts/argo-applications
+</span></span></code></pre></div><p>create a file in the new folder and replace the <code>repoURL:</code> with the Git URL from step 2 above.</p>
 <p><code>charts/argo-applications/applications.yaml</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">argoproj.io/v1alpha1</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Application</span>
-<span style="color:#f92672">metadata</span>:
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">staging</span>
-  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
-<span style="color:#f92672">finalizers</span>:
-- <span style="color:#ae81ff">resources-finalizer.argocd.argoproj.io</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#f92672">destination</span>:
-    <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#39;&#39;</span>
-    <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
-    <span style="color:#f92672">server</span>: <span style="color:#e6db74">&#39;https://kubernetes.default.svc&#39;</span>
-  <span style="color:#f92672">source</span>:
-    <span style="color:#f92672">path</span>: <span style="color:#ae81ff">.</span>
-    <span style="color:#f92672">repoURL</span>: <span style="color:#e6db74">&#39;https://github.com/$REPLACE_WITH_GIT_OWNER/  $REPLACE_WITH_GIT_REPO&#39;</span>
-    <span style="color:#f92672">targetRevision</span>: <span style="color:#ae81ff">HEAD</span>
-    <span style="color:#f92672">directory</span>:
-      <span style="color:#f92672">recurse</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">project</span>: <span style="color:#ae81ff">default</span>
-  <span style="color:#f92672">syncPolicy</span>:
-    <span style="color:#f92672">automated</span>:
-      <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
-      <span style="color:#f92672">selfHeal</span>: <span style="color:#66d9ef">true</span>
-    <span style="color:#f92672">syncOptions</span>:
-      - <span style="color:#ae81ff">Replace=true</span>
-      - <span style="color:#ae81ff">CreateNamespace=true</span>
-</code></pre></div><ol start="4">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">argoproj.io/v1alpha1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Application</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">staging</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">finalizers</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">resources-finalizer.argocd.argoproj.io</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">destination</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#39;&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">argocd</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">server</span>: <span style="color:#e6db74">&#39;https://kubernetes.default.svc&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">source</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">path</span>: <span style="color:#ae81ff">.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">repoURL</span>: <span style="color:#e6db74">&#39;https://github.com/$REPLACE_WITH_GIT_OWNER/  $REPLACE_WITH_GIT_REPO&#39;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">targetRevision</span>: <span style="color:#ae81ff">HEAD</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">directory</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">recurse</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">project</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">syncPolicy</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">automated</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">prune</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">selfHeal</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">syncOptions</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">Replace=true</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">CreateNamespace=true</span>
+</span></span></code></pre></div><ol start="4">
 <li>commit your changes and push</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">git add helmfiles/argocd/helmfile.yaml
-git add charts/argo/applications.yaml
-git commit -m <span style="color:#e6db74">&#39;feat: enable Argo CD&#39;</span>
-git push
-</code></pre></div><p>If you are on a fork then PR your changes</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add helmfiles/argocd/helmfile.yaml
+</span></span><span style="display:flex;"><span>git add charts/argo/applications.yaml
+</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#39;feat: enable Argo CD&#39;</span>
+</span></span><span style="display:flex;"><span>git push
+</span></span></code></pre></div><p>If you are on a fork then PR your changes</p>
 <ol start="5">
 <li>Follow Jenkins X admin logs to ensure Argo CD is installed</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jx admin logs
-</code></pre></div><ol start="6">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx admin logs
+</span></span></code></pre></div><ol start="6">
 <li>Get the Argo CD UI password using something like <a href="https://github.com/mfuentesg/ksd">ksd</a> or <code>base64 -D</code> to decode the value:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get secret argocd-initial-admin-secret -n argocd -oyaml | ksd
-
-</code></pre></div><ol start="7">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get secret argocd-initial-admin-secret -n argocd -oyaml | ksd
+</span></span></code></pre></div><ol start="7">
 <li>Get the Argo CD UI hostname and login using the <code>admin</code> username + passowrd from step 6 above (you may need to accept insecure TLS browser prompt if not using production TLS)</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">kubectl get ing argocd-server -n argocd
-</code></pre></div><ol start="8">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get ing argocd-server -n argocd
+</span></span></code></pre></div><ol start="8">
 <li>Create a new quickstart or update an existing Jenkins X applications <code>./lighthouse/jenkins-x/release.yaml</code> pipeline, replaceing the Tekton <code>promote-jx-promote</code> step to use argo instead:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">- <span style="color:#f92672">image</span>: <span style="color:#ae81ff">uses:jenkins-x/jx3-pipeline-catalog/tasks/updatebot/release.yaml@versionStream</span>
-  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">promote-release</span>
-  <span style="color:#f92672">script</span>: |<span style="color:#e6db74">
-</span><span style="color:#e6db74">    #!/usr/bin/env sh
-</span><span style="color:#e6db74">    source .jx/variables.sh
-</span><span style="color:#e6db74">    jx updatebot argo promote --target-git-url https://github.com/$REPLACE_WITH_GIT_OWNER/$REPLACE_WITH_GIT_REPO</span>    
-</code></pre></div><p>Now merge a change to your application or manually trigger a release pipeline <code>jx pipeline start</code> to get a new release and promote using Argo CD.
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">image</span>: <span style="color:#ae81ff">uses:jenkins-x/jx3-pipeline-catalog/tasks/updatebot/release.yaml@versionStream</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">promote-release</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">script</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    #!/usr/bin/env sh
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    source .jx/variables.sh
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    jx updatebot argo promote --target-git-url https://github.com/$REPLACE_WITH_GIT_OWNER/$REPLACE_WITH_GIT_REPO</span>    
+</span></span></code></pre></div><p>Now merge a change to your application or manually trigger a release pipeline <code>jx pipeline start</code> to get a new release and promote using Argo CD.
 Once the release pipeline finished for your application you should see a new <code>application.yaml</code> resource in your uber application Git repository we created in step 2 above.
 Once this change is merged to the main branch Argo detects the new chart / version and applies it to the cluster.  You will be able to track the status and health of the deployment via the GUI that you logged in with step 7 above.</p>
 <h1 id="conclusion">Conclusion</h1>
@@ -827,7 +826,7 @@ Once this change is merged to the main branch Argo detects the new chart / versi
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

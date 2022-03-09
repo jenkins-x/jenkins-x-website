@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -594,9 +594,9 @@ if (!doNotTrack) {
 	</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
 <div class="taxonomy taxonomy-terms-article taxo-categories">
@@ -608,12 +608,12 @@ if (!doNotTrack) {
   </ul>
 </div>
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>
 	<figure>
@@ -663,152 +663,148 @@ Diagram by: [Peter Bourgon](https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 
 <h4 id="create-kubernetes-secret">Create Kubernetes Secret</h4>
 <p>Once we have our API Key, we want to create a Kubernetes Secret which is required to make API calls within our pipeline.  To do this, we create it in the <code>jx</code> and <code>jx-staging</code> namespaces.  For each namespace execute the following command (be sure to modify the namespace value as needed).</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl create secret generic honeycomb-creds —from-literal<span style="color:#f92672">=</span>BUILDEVENT_APIKEY<span style="color:#f92672">=</span>&lt;KEY&gt; --namespace<span style="color:#f92672">=</span>&lt;NAMESPACE&gt;
-</code></pre></div><h4 id="modify-tekton-pipeline">Modify Tekton Pipeline</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl create secret generic honeycomb-creds —from-literal<span style="color:#f92672">=</span>BUILDEVENT_APIKEY<span style="color:#f92672">=</span>&lt;KEY&gt; --namespace<span style="color:#f92672">=</span>&lt;NAMESPACE&gt;
+</span></span></code></pre></div><h4 id="modify-tekton-pipeline">Modify Tekton Pipeline</h4>
 <p>Now that we have our Kubernetes Secret in place, we will modify the <code>jenkins-x.yaml</code> file, which currently has exactly one line as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">buildpack</span>: <span style="color:#ae81ff">javascript</span>
-</code></pre></div><p>Let&rsquo;s go over the important components of the YAML file once modified.  The first items I&rsquo;d like to highlight, are the environment variables needed.  We need to provide honeycomb.io three key pieces of information:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">buildpack</span>: <span style="color:#ae81ff">javascript</span>
+</span></span></code></pre></div><p>Let&rsquo;s go over the important components of the YAML file once modified.  The first items I&rsquo;d like to highlight, are the environment variables needed.  We need to provide honeycomb.io three key pieces of information:</p>
 <ul>
 <li><strong>CI Provider</strong>:  this is the JENKINS-X environment variable.  Honeycomb will add additional metadata fields to our dataset</li>
 <li><strong>BUILDEVENT_DATASET</strong>: this indicates which dataset we want to populate (you can have many).</li>
 <li><strong>BUILDEVENT_APIKEY</strong>: the Kubernetes Secret value, which is the API Key provided via the honeycomb site</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">javascript</span>
-<span style="color:#f92672">pipelineConfig</span>:
-  <span style="color:#f92672">env</span>:
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">JENKINS-X</span>
-    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">JENKINS-X</span>
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">BUILDEVENT_DATASET</span>
-    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">jx</span>
-  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">BUILDEVENT_APIKEY</span>
-    <span style="color:#f92672">valueFrom</span>:
-      <span style="color:#f92672">secretKeyRef</span>:
-        <span style="color:#f92672">key</span>: <span style="color:#ae81ff">BUILDEVENT_APIKEY</span>
-        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-creds</span>
-
-</code></pre></div><p>The <strong>build-pack</strong> used for a NodeJS app is <strong>javascript</strong> as detected by the language.  Hence, why the single line we had as the contents of the <code>jenkins-x.yaml</code> file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">buildPack</span>: <span style="color:#ae81ff">javascript</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">pipelineConfig</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">JENKINS-X</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">JENKINS-X</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">BUILDEVENT_DATASET</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">value</span>: <span style="color:#ae81ff">jx</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">BUILDEVENT_APIKEY</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">valueFrom</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">secretKeyRef</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">key</span>: <span style="color:#ae81ff">BUILDEVENT_APIKEY</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-creds</span>
+</span></span></code></pre></div><p>The <strong>build-pack</strong> used for a NodeJS app is <strong>javascript</strong> as detected by the language.  Hence, why the single line we had as the contents of the <code>jenkins-x.yaml</code> file.</p>
 <p>Because we know which build-pack is being used, we can determine which named steps exist.  As you can imagine, a typical <code>npm install</code> and <code>npm test</code> typically exist.</p>
 <p>Therefore, we want to inject a timestamp <strong>before</strong> and <strong>after</strong> each of these named steps are called.  The following shows how I inject this.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">  <span style="color:#f92672">pipelines</span>:
-    <span style="color:#f92672">overrides</span>:
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== pullrequest:build:before  sending honeycomb step trace  ===============</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-set-step-start-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; step_start</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-before-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
-
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== pullrequest:build:after   sending honeycomb step trace  ===============</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-after-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-step-log-after-npm-install</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo npm-install | sum | cut -f 1 -d \ ) $(cat step_start) npm-install</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-test</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-set-step-start-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; step_start</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-before-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-test</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-after-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-step-log-after-npm-test</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo npm-test | sum | cut -f 1 -d \ ) $(cat step_start) npm-test</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
-
-</code></pre></div><p>Now that I have  captured timestamps for these two named steps, I want to send an API call to honeycomb as follows.  You will notice how I am using a binary called <strong>buildevents</strong> this is downloaded during the setup of my pipelines which I discuss shortly.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>  <span style="color:#f92672">pipelines</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">overrides</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== pullrequest:build:before  sending honeycomb step trace  ===============</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-set-step-start-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; step_start</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-before-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== pullrequest:build:after   sending honeycomb step trace  ===============</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-install-after-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-step-log-after-npm-install</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo npm-install | sum | cut -f 1 -d \ ) $(cat step_start) npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-test</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-set-step-start-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; step_start</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-before-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-test</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-npm-test-after-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo =================================  $(cat step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-step-log-after-npm-test</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo npm-test | sum | cut -f 1 -d \ ) $(cat step_start) npm-test</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
+</span></span></code></pre></div><p>Now that I have  captured timestamps for these two named steps, I want to send an API call to honeycomb as follows.  You will notice how I am using a binary called <strong>buildevents</strong> this is downloaded during the setup of my pipelines which I discuss shortly.</p>
 <p>By concatenating a few metadata pieces that exist as <strong>environment variables</strong> in Jenkins X, I build a unique name which is needed by honeycomb to track things correctly.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">    - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-build-name-concat</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat build_start)</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-send-success</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents build &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(cat build_start) success</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
-</code></pre></div><p>We do the same for the <strong>Release</strong> pipeline&hellip;</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#75715e"># release pipeline releated calls</span>
-
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== release:build:before  sending honeycomb step trace  ===============</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-step-start-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; release_step_start</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-before-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo ================================= release  release-npm-install step start  $(cat release_step_start)  =================================</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
-
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
-      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-after-timestamp</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo ================================= release npm-install step end  $(cat release_step_start)  =================================</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-step-log-after-npm-install</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo release-npm-install | sum | cut -f 1 -d \ ) $(cat release_step_start) release-npm-install</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
-
-    - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
-      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
-      <span style="color:#f92672">steps</span>:
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-build-name-concat</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat release_start)</span>
-      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-build-send-success</span>
-        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents build &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(cat release_start) success</span>
-      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
-
-</code></pre></div><p>This is portion of the pipeline executes first hence the <strong>setup</strong> node.  There are several things we want to accomplish in the setup of our pipelines.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>    - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">pullRequest</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-build-name-concat</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat build_start)</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-send-success</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents build &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(cat build_start) success</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
+</span></span></code></pre></div><p>We do the same for the <strong>Release</strong> pipeline&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># release pipeline releated calls</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo ===== release:build:before  sending honeycomb step trace  ===============</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-step-start-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; release_step_start</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-before-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo ================================= release  release-npm-install step start  $(cat release_step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">before</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-npm-install-after-timestamp</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo ================================= release npm-install step end  $(cat release_step_start)  =================================</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-step-log-after-npm-install</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents step &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(echo release-npm-install | sum | cut -f 1 -d \ ) $(cat release_step_start) release-npm-install</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">pipeline</span>: <span style="color:#ae81ff">release</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">stage</span>: <span style="color:#ae81ff">build</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-build-name-concat</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat release_start)</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-build-send-success</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents build &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; $(cat release_start) success</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">type</span>: <span style="color:#ae81ff">after</span>
+</span></span></code></pre></div><p>This is portion of the pipeline executes first hence the <strong>setup</strong> node.  There are several things we want to accomplish in the setup of our pipelines.</p>
 <ul>
 <li>Download the Build Events binary provided by Honeycomb, make it executable</li>
 <li>Create the timestamp we will use to track the <strong>pullRequest</strong> pipeline execution.  I do this by saving a temporary file with the timestamp.</li>
 </ul>
 <p>This is done for both pipelines, as we are working with both.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">
-    <span style="color:#f92672">pullRequest</span>:
-      <span style="color:#f92672">setup</span>:
-        <span style="color:#f92672">steps</span>:
-          - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo =========================== pullrequest:setup downloading Honeycomb.io buildevents binary ===========================</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">pullrequest-download-honeycomb-binary</span>
-            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-set-binary-permissions</span>
-            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">chmod 755 buildevents</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-display-buildevents-version</span>
-            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents --version</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-setup-build-timestamp</span>
-            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; build_start</span>
-          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-output-debug</span>
-            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat build_start)   =======================================================</span>
-    <span style="color:#f92672">release</span>:
-      <span style="color:#f92672">setup</span>:
-        <span style="color:#f92672">steps</span>:
-        - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo =========================== release:setup downloading Honeycomb.io buildevents binary ===========================</span>
-        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-download-honeycomb-binary</span>
-          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64</span>
-        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-set-binary-permissions</span>
-          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">chmod 755 buildevents</span>
-        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-setup-build-timestamp</span>
-          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; release_start</span>
-        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-output-debug</span>
-          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat release_start)   =======================================================</span>
-
-</code></pre></div><p>Once this pipeline executes, the dashboard on the honeycomb.io site will show us the execution tracing as follows.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pullRequest</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">setup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo =========================== pullrequest:setup downloading Honeycomb.io buildevents binary ===========================</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">pullrequest-download-honeycomb-binary</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-set-binary-permissions</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">chmod 755 buildevents</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-display-buildevents-version</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">./buildevents --version</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-setup-build-timestamp</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; build_start</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">honeycomb-output-debug</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat build_start)   =======================================================</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">release</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">setup</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">command</span>: <span style="color:#ae81ff">echo =========================== release:setup downloading Honeycomb.io buildevents binary ===========================</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-download-honeycomb-binary</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">curl -L -o buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-set-binary-permissions</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">chmod 755 buildevents</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-setup-build-timestamp</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo $(date +%s) &gt; release_start</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">release-honeycomb-output-debug</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">sh</span>: <span style="color:#ae81ff">echo the build is &#34;${APP_NAME}-${PULL_NUMBER}-${VERSION}-${BUILD_NUMBER}&#34; and HONEYCOMB_BUILD_START=$(cat release_start)   =======================================================</span>
+</span></span></code></pre></div><p>Once this pipeline executes, the dashboard on the honeycomb.io site will show us the execution tracing as follows.</p>
 <p><img src="/news/jenkins-x-observability/honeycomb_trace_example.png" alt="Honeycomb Dashboard"></p>
 <p>As you can see, we have a unique name for our build being traced, underneath that we are tracking the two events <code>npm install</code> and <code>npm test</code> time spans.  We can easily see how long our dependencies are taking to download, and how long does it take to run the tests for the app.</p>
 <h1 id="conclusion">Conclusion</h1>
@@ -924,7 +920,7 @@ Diagram by: [Peter Bourgon](https://peter.bourgon.org/blog/2017/02/21/metrics-tr
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

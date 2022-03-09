@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -725,17 +725,17 @@ if (!doNotTrack) {
 	<div class="lead">Configure su registro de Docker</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>Para poder crear y publicar imágenes de Docker necesitamos usar un Registro de Docker.</p>
@@ -744,69 +744,68 @@ if (!doNotTrack) {
 <p>Si está utilizando la nube pública, puede aprovechar el registro de docker de sus proveedores de nube; o reutilice su propio registro de docker existente.</p>
 <h3 id="si-está-utilizando-un-master-de-jenkins-estático">Si está utilizando un Master de Jenkins Estático</h3>
 <p>Para especificar el host/puerto Docker Registry, puede usar la consola Jenkins:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ jx console
-</code></pre></div><p>Luego navegue a <code>Manage Jenkins -&gt; Configure System</code> y cambie la variable de entorno <code>DOCKER_REGISTRY</code> para apuntar a su registro de docker de elección.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ jx console
+</span></span></code></pre></div><p>Luego navegue a <code>Manage Jenkins -&gt; Configure System</code> y cambie la variable de entorno <code>DOCKER_REGISTRY</code> para apuntar a su registro de docker de elección.</p>
 <p>Otro enfoque es agregar lo siguiente a su archivo <code>values.yaml</code> para la personalización de los charts de Helm en la plataforma Jenkins X:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">jenkins</span>:
-  <span style="color:#f92672">Servers</span>:
-    <span style="color:#f92672">Global</span>:
-      <span style="color:#f92672">EnvVars</span>:
-        <span style="color:#f92672">DOCKER_REGISTRY</span>: <span style="color:#e6db74">&#34;gcr.io&#34;</span>
-</code></pre></div><h2 id="actualice-el-secreto-en-configjson">Actualice el secreto en config.json</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">jenkins</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">Servers</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">Global</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">EnvVars</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">DOCKER_REGISTRY</span>: <span style="color:#e6db74">&#34;gcr.io&#34;</span>
+</span></span></code></pre></div><h2 id="actualice-el-secreto-en-configjson">Actualice el secreto en config.json</h2>
 <p>Va a necesitar actualizar el valor del secreto de docker almacenado en <code>config.json</code>.</p>
 <p>Puede logarlo a través del comando <a href="/commands/jx_create_docker/">jx create docker auth</a>:</p>
-<pre tabindex="0"><code>$ jx create docker auth --host &quot;foo.private.docker.registry&quot; --user &quot;foo&quot; --secret &quot;FooDockerHubToken&quot; --email &quot;fakeemail@gmail.com&quot;
-
+<pre tabindex="0"><code>$ jx create docker auth --host &#34;foo.private.docker.registry&#34; --user &#34;foo&#34; --secret &#34;FooDockerHubToken&#34; --email &#34;fakeemail@gmail.com&#34;
 </code></pre><p>Si crea un fichero <code>config.json</code> para su proveedor de registro de docker, p.ej para GCR en Google Cloud, seguramente necesitará algo como esto:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#f92672">&#34;credHelpers&#34;</span>: {
-        <span style="color:#f92672">&#34;gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;us.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;eu.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;asia.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
-        <span style="color:#f92672">&#34;staging-k8s.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>
-    }
-}
-</code></pre></div><p>Para AWS es como esto:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-	<span style="color:#f92672">&#34;credsStore&#34;</span>: <span style="color:#e6db74">&#34;ecr-login&#34;</span>
-}
-</code></pre></div><p>Para actualizar el secreto <code>jenkins-docker-cfg</code> puede hacerlo de la siguiente forma:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;credHelpers&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;us.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;eu.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;asia.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;staging-k8s.gcr.io&#34;</span>: <span style="color:#e6db74">&#34;gcloud&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Para AWS es como esto:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#f92672">&#34;credsStore&#34;</span>: <span style="color:#e6db74">&#34;ecr-login&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Para actualizar el secreto <code>jenkins-docker-cfg</code> puede hacerlo de la siguiente forma:</p>
 <pre tabindex="0"><code>$ kubectl delete secret jenkins-docker-cfg
 $ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 </code></pre><p><strong>NOTA</strong> el archivo debe llamarse <code>config.json</code> ya que el nombre del archivo se usa en la clave del <code>secret</code> subyacente en kubernetes</p>
 <h2 id="utilizando-docker-hub">Utilizando Docker Hub</h2>
 <p>Si desea almacenar las imágenes en DockerHub, entonces debe modificar su fichero <code>config.json</code> como se describe a continuación:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#f92672">&#34;auths&#34;</span>: {
-        <span style="color:#f92672">&#34;https://index.docker.io/v1/&#34;</span>: {
-            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;MyDockerHubToken&#34;</span>,
-            <span style="color:#f92672">&#34;email&#34;</span>: <span style="color:#e6db74">&#34;myemail@acme.com&#34;</span>
-        }
-    }
-}
-</code></pre></div><h2 id="utilizando-jfrog-bintray-artifactory">Utilizando jFrog BinTray (Artifactory)</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;auths&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;https://index.docker.io/v1/&#34;</span>: {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;MyDockerHubToken&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;email&#34;</span>: <span style="color:#e6db74">&#34;myemail@acme.com&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="utilizando-jfrog-bintray-artifactory">Utilizando jFrog BinTray (Artifactory)</h2>
 <p>Utilizar JFrog BinTray como registro privado para docker es posible. Esto ha sido probado solamente durante la creación del clúster y pasando el parámetro <code>--docker-registry=private-reg.bintray.io</code>. Luego, después de creado el clúster, va a necesitar lo siguiente:</p>
 <ol>
 <li>Borre el <code>Secret</code> existente con el nombre <code>jenkins-docker-cfg</code> ejecutando:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kubectl delete secret jenkins-docker-cfg
-</code></pre></div><ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ kubectl delete secret jenkins-docker-cfg
+</span></span></code></pre></div><ol>
 <li>Cree un fichero local con el nombre <code>config.json</code> y su valor debe estar en el siguiente formato (actualice los valores basados en su registro de usuario y FQDN):</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-    <span style="color:#f92672">&#34;auths&#34;</span>: {
-        <span style="color:#f92672">&#34;https://private-reg.bintray.io&#34;</span>: {
-            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;username:password (base64 encoded)&#34;</span>,
-            <span style="color:#f92672">&#34;email&#34;</span>: <span style="color:#e6db74">&#34;myemail@acme.com&#34;</span>
-        }
-    }
-}
-</code></pre></div><ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;auths&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;https://private-reg.bintray.io&#34;</span>: {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;auth&#34;</span>: <span style="color:#e6db74">&#34;username:password (base64 encoded)&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;email&#34;</span>: <span style="color:#e6db74">&#34;myemail@acme.com&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ol>
 <li>Cree el nuevo recurso <code>Secret</code> con nombre <code>jenkins-docker-cfg</code> con el contenido del fichero <code>config.json</code> como lo siguiente:</li>
 </ol>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kubectl create secret generic jenkins-docker-cfg --from-file<span style="color:#f92672">=</span>./config.json
-</code></pre></div><p>Con esto debe ser sufiente, ahora debe poder ejecutar los pipelines y almacenar las imágenes en registro jFrog BinTray.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ kubectl create secret generic jenkins-docker-cfg --from-file<span style="color:#f92672">=</span>./config.json
+</span></span></code></pre></div><p>Con esto debe ser sufiente, ahora debe poder ejecutar los pipelines y almacenar las imágenes en registro jFrog BinTray.</p>
 <h3 id="montar-el-secreto-para-su-registro">Montar el Secreto para su registro</h3>
 <p>Su registro docker va a necesitar un Secreto que necesita ser montado en la <a href="/docs/resources/guides/managing-jx/common-tasks/pod-templates/">Plantilla Pod</a>.</p>
 
@@ -972,7 +971,7 @@ $ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

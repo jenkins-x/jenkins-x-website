@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="generator" content="Hugo 0.91.2" />
+<meta name="generator" content="Hugo 0.93.2" />
 <meta name="robots" content="index, follow">
 
 
@@ -925,17 +925,17 @@ if (!doNotTrack) {
 	<div class="lead">Gradually rollout changes and canary releases</div>
 	<header class="article-meta">
 		
-		
-			
-				
+
+  
+    
 
 
-			
-				
+  
+    
 
 
-			
-		
+  
+
 		
 	</header>    
 	<p>It&rsquo;s likely you have heard of &ldquo;blue green deployment&rdquo; or &ldquo;canary deployment&rdquo;. The idea is to carefully roll out new versions of your application, if problems happen (gasp!) in production, then the system will automatically roll them back, and the majority of users will not be impacted.</p>
@@ -956,78 +956,78 @@ if (!doNotTrack) {
 <li><a href="https://github.com/weaveworks/flagger">Flagger</a>: a project that uses Istio to automate canarying and rollbacks using metrics from Prometheus.</li>
 </ul>
 <p>The addons can be installed with</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">jx create addon istio --version 1.1.7
-jx create addon flagger
-</code></pre></div><p>This will enable Istio in the <strong>jx-production</strong> namespace for metrics gathering.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>jx create addon istio --version 1.1.7
+</span></span><span style="display:flex;"><span>jx create addon flagger
+</span></span></code></pre></div><p>This will enable Istio in the <strong>jx-production</strong> namespace for metrics gathering.</p>
 <p>Now get the ip of the Istio ingress and point a wildcard domain to it (e.g. <code>*.example.com</code>), so we can use it to route multiple services based on host names. The Istio ingress provides the routing capabilities needed for Canary releases (traffic shifting) that the traditional Kubernetes ingress objects do not support.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl -n istio-system get service istio-ingressgateway <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>-o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{.status.loadBalancer.ingress[0].ip}&#39;</span>
-</code></pre></div><p>The cluster is configured, and it’s time to configure our application. Add a <code>canary.yaml</code> to your helm chart, under <code>charts/myapp/templates</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">{{- <span style="color:#ae81ff">if eq .Release.Namespace &#34;jx-production&#34; }}</span>
-{{- <span style="color:#ae81ff">if .Values.canary.enable }}</span>
-<span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">flagger.app/v1alpha2</span>
-<span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Canary</span>
-<span style="color:#f92672">metadata</span>:
-  <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">template &#34;fullname&#34; . }}</span>
-<span style="color:#f92672">spec</span>:
-  <span style="color:#f92672">targetRef</span>:
-    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
-    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
-    <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">template &#34;fullname&#34; . }}</span>
-  <span style="color:#f92672">progressDeadlineSeconds</span>: <span style="color:#ae81ff">60</span>
-  <span style="color:#f92672">service</span>:
-    <span style="color:#f92672">port</span>: {{<span style="color:#ae81ff">.Values.service.internalPort}}</span>
-{{- <span style="color:#ae81ff">if .Values.canary.service.gateways }}</span>
-    <span style="color:#f92672">gateways</span>:
-{{ <span style="color:#ae81ff">toYaml .Values.canary.service.gateways | indent 4 }}</span>
-{{- <span style="color:#ae81ff">end }}</span>
-{{- <span style="color:#ae81ff">if .Values.canary.service.hosts }}</span>
-    <span style="color:#f92672">hosts</span>:
-{{ <span style="color:#ae81ff">toYaml .Values.canary.service.hosts | indent 4 }}</span>
-{{- <span style="color:#ae81ff">end }}</span>
-  <span style="color:#f92672">canaryAnalysis</span>:
-    <span style="color:#f92672">interval</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.interval }}</span>
-    <span style="color:#f92672">threshold</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.threshold }}</span>
-    <span style="color:#f92672">maxWeight</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.maxWeight }}</span>
-    <span style="color:#f92672">stepWeight</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.stepWeight }}</span>
-{{- <span style="color:#ae81ff">if .Values.canary.canaryAnalysis.metrics }}</span>
-    <span style="color:#f92672">metrics</span>:
-{{ <span style="color:#ae81ff">toYaml .Values.canary.canaryAnalysis.metrics | indent 4 }}</span>
-{{- <span style="color:#ae81ff">end }}</span>
-{{- <span style="color:#ae81ff">end }}</span>
-{{- <span style="color:#ae81ff">end }}</span>
-</code></pre></div><p>Then append to the <code>charts/myapp/values.yaml</code> the following, changing <code>myapp.example.com</code> to your host name or names:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#f92672">canary</span>:
-  <span style="color:#f92672">enable</span>: <span style="color:#66d9ef">true</span>
-  <span style="color:#f92672">service</span>:
-    <span style="color:#75715e"># Istio virtual service host names</span>
-    <span style="color:#f92672">hosts</span>:
-    - <span style="color:#ae81ff">myapp.example.com</span>
-    <span style="color:#f92672">gateways</span>:
-    - <span style="color:#ae81ff">jx-gateway.istio-system.svc.cluster.local</span>
-  <span style="color:#f92672">canaryAnalysis</span>:
-    <span style="color:#75715e"># schedule interval (default 60s)</span>
-    <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
-    <span style="color:#75715e"># max number of failed metric checks before rollback</span>
-    <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">5</span>
-    <span style="color:#75715e"># max traffic percentage routed to canary</span>
-    <span style="color:#75715e"># percentage (0-100)</span>
-    <span style="color:#f92672">maxWeight</span>: <span style="color:#ae81ff">50</span>
-    <span style="color:#75715e"># canary increment step</span>
-    <span style="color:#75715e"># percentage (0-100)</span>
-    <span style="color:#f92672">stepWeight</span>: <span style="color:#ae81ff">10</span>
-    <span style="color:#f92672">metrics</span>:
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">request-success-rate</span>
-      <span style="color:#75715e"># minimum req success rate (non 5xx responses)</span>
-      <span style="color:#75715e"># percentage (0-100)</span>
-      <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">99</span>
-      <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
-    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">request-duration</span>
-      <span style="color:#75715e"># maximum req duration P99</span>
-      <span style="color:#75715e"># milliseconds</span>
-      <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">500</span>
-      <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
-</code></pre></div><p>That’s it! Now when the app is promoted to the production environment with <code>jx promote myapp --version 1.0 --env production</code> it will do a Canary rollout. Note that the first time it is promoted it will not do a Canary as it needs a previous version data to compare to, but it will work from the second promotion on.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl -n istio-system get service istio-ingressgateway <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>-o jsonpath<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;{.status.loadBalancer.ingress[0].ip}&#39;</span>
+</span></span></code></pre></div><p>The cluster is configured, and it’s time to configure our application. Add a <code>canary.yaml</code> to your helm chart, under <code>charts/myapp/templates</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if eq .Release.Namespace &#34;jx-production&#34; }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if .Values.canary.enable }}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">flagger.app/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Canary</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">template &#34;fullname&#34; . }}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">targetRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: {{ <span style="color:#ae81ff">template &#34;fullname&#34; . }}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">progressDeadlineSeconds</span>: <span style="color:#ae81ff">60</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">service</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">port</span>: {{<span style="color:#ae81ff">.Values.service.internalPort}}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if .Values.canary.service.gateways }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">gateways</span>:
+</span></span><span style="display:flex;"><span>{{ <span style="color:#ae81ff">toYaml .Values.canary.service.gateways | indent 4 }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">end }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if .Values.canary.service.hosts }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hosts</span>:
+</span></span><span style="display:flex;"><span>{{ <span style="color:#ae81ff">toYaml .Values.canary.service.hosts | indent 4 }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">end }}</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">canaryAnalysis</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">interval</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.interval }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">threshold</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.threshold }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">maxWeight</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.maxWeight }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">stepWeight</span>: {{ <span style="color:#ae81ff">.Values.canary.canaryAnalysis.stepWeight }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">if .Values.canary.canaryAnalysis.metrics }}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metrics</span>:
+</span></span><span style="display:flex;"><span>{{ <span style="color:#ae81ff">toYaml .Values.canary.canaryAnalysis.metrics | indent 4 }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">end }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">end }}</span>
+</span></span><span style="display:flex;"><span>{{- <span style="color:#ae81ff">end }}</span>
+</span></span></code></pre></div><p>Then append to the <code>charts/myapp/values.yaml</code> the following, changing <code>myapp.example.com</code> to your host name or names:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">canary</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">enable</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">service</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Istio virtual service host names</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">hosts</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">myapp.example.com</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">gateways</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">jx-gateway.istio-system.svc.cluster.local</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">canaryAnalysis</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># schedule interval (default 60s)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># max number of failed metric checks before rollback</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># max traffic percentage routed to canary</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># percentage (0-100)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">maxWeight</span>: <span style="color:#ae81ff">50</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># canary increment step</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># percentage (0-100)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">stepWeight</span>: <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metrics</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">request-success-rate</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># minimum req success rate (non 5xx responses)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># percentage (0-100)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">99</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">request-duration</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># maximum req duration P99</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># milliseconds</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">threshold</span>: <span style="color:#ae81ff">500</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">60s</span>
+</span></span></code></pre></div><p>That’s it! Now when the app is promoted to the production environment with <code>jx promote myapp --version 1.0 --env production</code> it will do a Canary rollout. Note that the first time it is promoted it will not do a Canary as it needs a previous version data to compare to, but it will work from the second promotion on.</p>
 <p>With the configuration in the values.yaml file above it would look like:</p>
 <ul>
 <li>minute 1: send 10% of the traffic to the new version</li>
@@ -1038,22 +1038,22 @@ jx create addon flagger
 </ul>
 <p>If the metrics we have configured (request duration over 500 milliseconds or more than 1% responses returning 500 errors) fail, Flagger then will note that failure, and if it is repeated 5 times it will rollback the release, sending 100% of the traffic to the old version.</p>
 <p>To get the Canary events run</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ kubectl -n jx-production get events --watch <span style="color:#ae81ff">\
-</span><span style="color:#ae81ff"></span>  --field-selector involvedObject.kind<span style="color:#f92672">=</span>Canary
-LAST SEEN   FIRST SEEN   COUNT   NAME                                                  KIND     SUBOBJECT   TYPE     REASON   SOURCE    MESSAGE
-23m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d8fbf5c306ee   Canary               Normal   Synced   flagger   New revision detected! Scaling up jx-production-myapp.jx-production
-22m         10d          <span style="color:#ae81ff">8</span>       jx-production-myapp.1584d89a36d2e2f2   Canary               Normal   Synced   flagger   Starting canary analysis <span style="color:#66d9ef">for</span> jx-production-myapp.jx-production
-22m         10d          <span style="color:#ae81ff">8</span>       jx-production-myapp.1584d89a38592636   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">10</span>
-21m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d917ed63f6ec   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">20</span>
-20m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d925d801faa0   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">30</span>
-19m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d933da5f218e   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">40</span>
-18m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d941d4cb21e8   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">50</span>
-18m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d941d4cbc55b   Canary               Normal   Synced   flagger   Copying jx-production-myapp.jx-production template spec to jx-production-myapp-primary.jx-production
-17m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d94fd1218ebc   Canary               Normal   Synced   flagger   Promotion completed! Scaling down jx-production-myapp.jx-production
-</code></pre></div><h2 id="dashboard">Dashboard</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ kubectl -n jx-production get events --watch <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --field-selector involvedObject.kind<span style="color:#f92672">=</span>Canary
+</span></span><span style="display:flex;"><span>LAST SEEN   FIRST SEEN   COUNT   NAME                                                  KIND     SUBOBJECT   TYPE     REASON   SOURCE    MESSAGE
+</span></span><span style="display:flex;"><span>23m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d8fbf5c306ee   Canary               Normal   Synced   flagger   New revision detected! Scaling up jx-production-myapp.jx-production
+</span></span><span style="display:flex;"><span>22m         10d          <span style="color:#ae81ff">8</span>       jx-production-myapp.1584d89a36d2e2f2   Canary               Normal   Synced   flagger   Starting canary analysis <span style="color:#66d9ef">for</span> jx-production-myapp.jx-production
+</span></span><span style="display:flex;"><span>22m         10d          <span style="color:#ae81ff">8</span>       jx-production-myapp.1584d89a38592636   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>21m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d917ed63f6ec   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">20</span>
+</span></span><span style="display:flex;"><span>20m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d925d801faa0   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span>19m         10d          <span style="color:#ae81ff">7</span>       jx-production-myapp.1584d933da5f218e   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">40</span>
+</span></span><span style="display:flex;"><span>18m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d941d4cb21e8   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight <span style="color:#ae81ff">50</span>
+</span></span><span style="display:flex;"><span>18m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d941d4cbc55b   Canary               Normal   Synced   flagger   Copying jx-production-myapp.jx-production template spec to jx-production-myapp-primary.jx-production
+</span></span><span style="display:flex;"><span>17m         10d          <span style="color:#ae81ff">6</span>       jx-production-myapp.1584d94fd1218ebc   Canary               Normal   Synced   flagger   Promotion completed! Scaling down jx-production-myapp.jx-production
+</span></span></code></pre></div><h2 id="dashboard">Dashboard</h2>
 <p>Flagger includes a Grafana dashboard for visualization purposes as it is not needed for the Canary releases. It can be accessed locally using Kubernetes port forwarding</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">kubectl --namespace istio-system port-forward deploy/flagger-grafana <span style="color:#ae81ff">3000</span>
-</code></pre></div><p>Then accessing http://localhost:3000 using admin/admin, selecting the canary-analysis dashboard and</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>kubectl --namespace istio-system port-forward deploy/flagger-grafana <span style="color:#ae81ff">3000</span>
+</span></span></code></pre></div><p>Then accessing http://localhost:3000 using admin/admin, selecting the canary-analysis dashboard and</p>
 <ul>
 <li>namespace: jx-production</li>
 <li>primary: jx-production-myapp-primary</li>
@@ -1227,7 +1227,7 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 
 
 
-<script src="/js/main.min.ad24b64b9b408e8a77066448b46cc4852b67062bc906a18a31a6967a5b2c3dfe.js" integrity="sha256-rSS2S5tAjop3BmRItGzEhStnBivJBqGKMaaWelssPf4=" crossorigin="anonymous"></script>
+<script src="/js/main.min.b3b4b3fa89c5af75bdb934ad1b96ab159a812a59cd6b9dde4653346dd635b40f.js" integrity="sha256-s7Sz&#43;onFr3W9uTStG5arFZqBKlnNa53eRlM0bdY1tA8=" crossorigin="anonymous"></script>
 
 <script>
 

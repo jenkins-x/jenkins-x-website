@@ -106,78 +106,78 @@
 &lt;li&gt;&lt;a href=&#34;https://github.com/weaveworks/flagger&#34;&gt;Flagger&lt;/a&gt;: a project that uses Istio to automate canarying and rollbacks using metrics from Prometheus.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;The addons can be installed with&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon istio --version 1.1.7
-jx create addon flagger
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will enable Istio in the &lt;strong&gt;jx-production&lt;/strong&gt; namespace for metrics gathering.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon istio --version 1.1.7
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon flagger
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This will enable Istio in the &lt;strong&gt;jx-production&lt;/strong&gt; namespace for metrics gathering.&lt;/p&gt;
 &lt;p&gt;Now get the ip of the Istio ingress and point a wildcard domain to it (e.g. &lt;code&gt;*.example.com&lt;/code&gt;), so we can use it to route multiple services based on host names. The Istio ingress provides the routing capabilities needed for Canary releases (traffic shifting) that the traditional Kubernetes ingress objects do not support.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl -n istio-system get service istio-ingressgateway &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;-o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{.status.loadBalancer.ingress[0].ip}&amp;#39;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The cluster is configured, and it’s time to configure our application. Add a &lt;code&gt;canary.yaml&lt;/code&gt; to your helm chart, under &lt;code&gt;charts/myapp/templates&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if eq .Release.Namespace &amp;#34;jx-production&amp;#34; }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.enable }}&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;flagger.app/v1alpha2&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Canary&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;template &amp;#34;fullname&amp;#34; . }}&lt;/span&gt;
-&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;targetRef&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;apps/v1&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Deployment&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;template &amp;#34;fullname&amp;#34; . }}&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;progressDeadlineSeconds&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;service&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;port&lt;/span&gt;: {{&lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.service.internalPort}}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.service.gateways }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;gateways&lt;/span&gt;:
-{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.service.gateways | indent 4 }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.service.hosts }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;hosts&lt;/span&gt;:
-{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.service.hosts | indent 4 }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;canaryAnalysis&lt;/span&gt;:
-    &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.interval }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.threshold }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;maxWeight&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.maxWeight }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;stepWeight&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.stepWeight }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.canaryAnalysis.metrics }}&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;metrics&lt;/span&gt;:
-{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.canaryAnalysis.metrics | indent 4 }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
-{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then append to the &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; the following, changing &lt;code&gt;myapp.example.com&lt;/code&gt; to your host name or names:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;canary&lt;/span&gt;:
-  &lt;span style=&#34;color:#f92672&#34;&gt;enable&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;service&lt;/span&gt;:
-    &lt;span style=&#34;color:#75715e&#34;&gt;# Istio virtual service host names&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;hosts&lt;/span&gt;:
-    - &lt;span style=&#34;color:#ae81ff&#34;&gt;myapp.example.com&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;gateways&lt;/span&gt;:
-    - &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-gateway.istio-system.svc.cluster.local&lt;/span&gt;
-  &lt;span style=&#34;color:#f92672&#34;&gt;canaryAnalysis&lt;/span&gt;:
-    &lt;span style=&#34;color:#75715e&#34;&gt;# schedule interval (default 60s)&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
-    &lt;span style=&#34;color:#75715e&#34;&gt;# max number of failed metric checks before rollback&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;
-    &lt;span style=&#34;color:#75715e&#34;&gt;# max traffic percentage routed to canary&lt;/span&gt;
-    &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;maxWeight&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;
-    &lt;span style=&#34;color:#75715e&#34;&gt;# canary increment step&lt;/span&gt;
-    &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;stepWeight&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;
-    &lt;span style=&#34;color:#f92672&#34;&gt;metrics&lt;/span&gt;:
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;request-success-rate&lt;/span&gt;
-      &lt;span style=&#34;color:#75715e&#34;&gt;# minimum req success rate (non 5xx responses)&lt;/span&gt;
-      &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;99&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
-    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;request-duration&lt;/span&gt;
-      &lt;span style=&#34;color:#75715e&#34;&gt;# maximum req duration P99&lt;/span&gt;
-      &lt;span style=&#34;color:#75715e&#34;&gt;# milliseconds&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;
-      &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That’s it! Now when the app is promoted to the production environment with &lt;code&gt;jx promote myapp --version 1.0 --env production&lt;/code&gt; it will do a Canary rollout. Note that the first time it is promoted it will not do a Canary as it needs a previous version data to compare to, but it will work from the second promotion on.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl -n istio-system get service istio-ingressgateway &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;-o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{.status.loadBalancer.ingress[0].ip}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The cluster is configured, and it’s time to configure our application. Add a &lt;code&gt;canary.yaml&lt;/code&gt; to your helm chart, under &lt;code&gt;charts/myapp/templates&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if eq .Release.Namespace &amp;#34;jx-production&amp;#34; }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.enable }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;flagger.app/v1alpha2&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Canary&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;template &amp;#34;fullname&amp;#34; . }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;targetRef&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;apps/v1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Deployment&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;template &amp;#34;fullname&amp;#34; . }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;progressDeadlineSeconds&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;service&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;port&lt;/span&gt;: {{&lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.service.internalPort}}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.service.gateways }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;gateways&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.service.gateways | indent 4 }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.service.hosts }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;hosts&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.service.hosts | indent 4 }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;canaryAnalysis&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.interval }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.threshold }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;maxWeight&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.maxWeight }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;stepWeight&lt;/span&gt;: {{ &lt;span style=&#34;color:#ae81ff&#34;&gt;.Values.canary.canaryAnalysis.stepWeight }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;if .Values.canary.canaryAnalysis.metrics }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;metrics&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{ &lt;span style=&#34;color:#ae81ff&#34;&gt;toYaml .Values.canary.canaryAnalysis.metrics | indent 4 }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;{{- &lt;span style=&#34;color:#ae81ff&#34;&gt;end }}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then append to the &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; the following, changing &lt;code&gt;myapp.example.com&lt;/code&gt; to your host name or names:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;canary&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;enable&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;service&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# Istio virtual service host names&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;hosts&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#ae81ff&#34;&gt;myapp.example.com&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;gateways&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-gateway.istio-system.svc.cluster.local&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;canaryAnalysis&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# schedule interval (default 60s)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# max number of failed metric checks before rollback&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# max traffic percentage routed to canary&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;maxWeight&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# canary increment step&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;stepWeight&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;metrics&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;request-success-rate&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#75715e&#34;&gt;# minimum req success rate (non 5xx responses)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#75715e&#34;&gt;# percentage (0-100)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;99&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;request-duration&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#75715e&#34;&gt;# maximum req duration P99&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#75715e&#34;&gt;# milliseconds&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;threshold&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;interval&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;60s&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That’s it! Now when the app is promoted to the production environment with &lt;code&gt;jx promote myapp --version 1.0 --env production&lt;/code&gt; it will do a Canary rollout. Note that the first time it is promoted it will not do a Canary as it needs a previous version data to compare to, but it will work from the second promotion on.&lt;/p&gt;
 &lt;p&gt;With the configuration in the values.yaml file above it would look like:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;minute 1: send 10% of the traffic to the new version&lt;/li&gt;
@@ -188,22 +188,22 @@ jx create addon flagger
 &lt;/ul&gt;
 &lt;p&gt;If the metrics we have configured (request duration over 500 milliseconds or more than 1% responses returning 500 errors) fail, Flagger then will note that failure, and if it is repeated 5 times it will rollback the release, sending 100% of the traffic to the old version.&lt;/p&gt;
 &lt;p&gt;To get the Canary events run&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;$ kubectl -n jx-production get events --watch &lt;span style=&#34;color:#ae81ff&#34;&gt;\
-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --field-selector involvedObject.kind&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;Canary
-LAST SEEN   FIRST SEEN   COUNT   NAME                                                  KIND     SUBOBJECT   TYPE     REASON   SOURCE    MESSAGE
-23m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d8fbf5c306ee   Canary               Normal   Synced   flagger   New revision detected! Scaling up jx-production-myapp.jx-production
-22m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;       jx-production-myapp.1584d89a36d2e2f2   Canary               Normal   Synced   flagger   Starting canary analysis &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; jx-production-myapp.jx-production
-22m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;       jx-production-myapp.1584d89a38592636   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;
-21m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d917ed63f6ec   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;
-20m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d925d801faa0   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;
-19m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d933da5f218e   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;40&lt;/span&gt;
-18m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d941d4cb21e8   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;
-18m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d941d4cbc55b   Canary               Normal   Synced   flagger   Copying jx-production-myapp.jx-production template spec to jx-production-myapp-primary.jx-production
-17m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d94fd1218ebc   Canary               Normal   Synced   flagger   Promotion completed! Scaling down jx-production-myapp.jx-production
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;dashboard&#34;&gt;Dashboard&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ kubectl -n jx-production get events --watch &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --field-selector involvedObject.kind&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;Canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;LAST SEEN   FIRST SEEN   COUNT   NAME                                                  KIND     SUBOBJECT   TYPE     REASON   SOURCE    MESSAGE
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;23m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d8fbf5c306ee   Canary               Normal   Synced   flagger   New revision detected! Scaling up jx-production-myapp.jx-production
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;22m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;       jx-production-myapp.1584d89a36d2e2f2   Canary               Normal   Synced   flagger   Starting canary analysis &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; jx-production-myapp.jx-production
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;22m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;       jx-production-myapp.1584d89a38592636   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;21m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d917ed63f6ec   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;20m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d925d801faa0   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;19m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;       jx-production-myapp.1584d933da5f218e   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;40&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;18m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d941d4cb21e8   Canary               Normal   Synced   flagger   Advance jx-production-myapp.jx-production canary weight &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;18m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d941d4cbc55b   Canary               Normal   Synced   flagger   Copying jx-production-myapp.jx-production template spec to jx-production-myapp-primary.jx-production
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;17m         10d          &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;       jx-production-myapp.1584d94fd1218ebc   Canary               Normal   Synced   flagger   Promotion completed! Scaling down jx-production-myapp.jx-production
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;dashboard&#34;&gt;Dashboard&lt;/h2&gt;
 &lt;p&gt;Flagger includes a Grafana dashboard for visualization purposes as it is not needed for the Canary releases. It can be accessed locally using Kubernetes port forwarding&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl --namespace istio-system port-forward deploy/flagger-grafana &lt;span style=&#34;color:#ae81ff&#34;&gt;3000&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then accessing http://localhost:3000 using admin/admin, selecting the canary-analysis dashboard and&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl --namespace istio-system port-forward deploy/flagger-grafana &lt;span style=&#34;color:#ae81ff&#34;&gt;3000&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then accessing http://localhost:3000 using admin/admin, selecting the canary-analysis dashboard and&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;namespace: jx-production&lt;/li&gt;
 &lt;li&gt;primary: jx-production-myapp-primary&lt;/li&gt;
@@ -230,17 +230,17 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
         &lt;p&gt;Serverless applications are regular applications that &amp;ldquo;scale to zero&amp;rdquo;. This means when your application isn&amp;rsquo;t in use - no resources at all will be used. You only pay for what you use. These applications scale up elastically to meet the workload.&lt;/p&gt;
 &lt;p&gt;Once you have this feature enabled - all new apps you import or quickstarts you use by default will be serverless style (you can override as needed - see below). You don&amp;rsquo;t have to change the way you build web apps. This is currently in a preview state (but works well), and in future most web apps will work in this fashion (and this will be the default).&lt;/p&gt;
 &lt;h2 id=&#34;enabling-serverless-apps&#34;&gt;Enabling serverless apps&lt;/h2&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon gloo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And you are then good to go. Any new projects you create will be created in this serverless style.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon gloo
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And you are then good to go. Any new projects you create will be created in this serverless style.&lt;/p&gt;
 &lt;h2 id=&#34;converting-existing-applications&#34;&gt;Converting existing applications&lt;/h2&gt;
 &lt;p&gt;If you already have a microservice and you want to convert it over to Knative Serve just &lt;a href=&#34;https://jenkins-x.io/docs/resources/guides/using-jx/creating/import/&#34;&gt;import the source repository into Jenkins X&lt;/a&gt; and you should be all done.&lt;/p&gt;
 &lt;p&gt;If your application was imported recently into Jenkins X but before you installed and enabled Knative Serve you can use &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx edit deploy&lt;/a&gt; to switch between the &lt;code&gt;default&lt;/code&gt; deployment kind (using kubernetes &lt;code&gt;Deployment&lt;/code&gt; and &lt;code&gt;Service&lt;/code&gt; resources) and the &lt;code&gt;knative&lt;/code&gt; kind (using Knative &lt;code&gt;Service&lt;/code&gt; resource)&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit deploy
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will modify the &lt;code&gt;knativeDeploy&lt;/code&gt; flag in your helm &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; file to enable / disable Knative Serve. Once you have committed that code change and merged to master your application will be released to staging using Knative Serve by the automated CI/CD pipeline in Jenkins X.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit deploy
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will modify the &lt;code&gt;knativeDeploy&lt;/code&gt; flag in your helm &lt;code&gt;charts/myapp/values.yaml&lt;/code&gt; file to enable / disable Knative Serve. Once you have committed that code change and merged to master your application will be released to staging using Knative Serve by the automated CI/CD pipeline in Jenkins X.&lt;/p&gt;
 &lt;h2 id=&#34;edit-your-teams-deploy-kind&#34;&gt;Edit your team’s deploy kind&lt;/h2&gt;
 &lt;p&gt;You can edit the default deployment kind for your team which is used when’re you create a QuickStart or import a repository via the &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx edit deploy&lt;/a&gt; command with the &lt;code&gt;-t&lt;/code&gt; argument:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx edit deploy -t
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit deploy -t
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;how-it-works&#34;&gt;How it works&lt;/h3&gt;
 &lt;p&gt;We use an open source project called &lt;a href=&#34;https://www.knative.dev/&#34;&gt;Knative&lt;/a&gt; to provide the elastic scaling of your applications and functions.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.knative.dev/&#34;&gt;Knative Serve&lt;/a&gt; exposes functions in any programming language over HTTP with elastic scaling from zero to many pods. This lets you build serverless applications which run on any cloud or kubernetes cluster and make an efficient use of resources.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.knative.dev/&#34;&gt;Knative&lt;/a&gt; works with service mesh technologies like &lt;a href=&#34;https://istio.io/&#34;&gt;Istio&lt;/a&gt; or &lt;a href=&#34;https://gloo.solo.io/&#34;&gt;Gloo&lt;/a&gt;.&lt;/p&gt;
@@ -248,16 +248,16 @@ LAST SEEN   FIRST SEEN   COUNT   NAME                                           
 &lt;h2 id=&#34;installing-knative-serve&#34;&gt;Installing Knative Serve&lt;/h2&gt;
 &lt;p&gt;&lt;a href=&#34;https://gloo.solo.io/&#34;&gt;Gloo&lt;/a&gt; is much smaller and simpler to install than &lt;a href=&#34;https://istio.io/&#34;&gt;Istio&lt;/a&gt; so in this guide we are going to use that.&lt;/p&gt;
 &lt;p&gt;We have a simple command &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_addon_gloo/&#34;&gt;jx create addon gloo&lt;/a&gt; to install Gloo and Knative Serve on Jenkins X:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;jx create addon gloo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will install Knative Serve into the &lt;code&gt;knative-serving&lt;/code&gt; namespace and Gloo into the &lt;code&gt;gloo-system&lt;/code&gt; namespace. You can check it’s all installed and working via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get pod -n knative-serving
-kubectl get pod -n gloo-system
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or you can follow the &lt;a href=&#34;https://www.knative.dev/docs/install/&#34;&gt;Knative install guide&lt;/a&gt; to install it directly via istio or gloo.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon gloo
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This command will install Knative Serve into the &lt;code&gt;knative-serving&lt;/code&gt; namespace and Gloo into the &lt;code&gt;gloo-system&lt;/code&gt; namespace. You can check it’s all installed and working via:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get pod -n knative-serving
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get pod -n gloo-system
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Or you can follow the &lt;a href=&#34;https://www.knative.dev/docs/install/&#34;&gt;Knative install guide&lt;/a&gt; to install it directly via istio or gloo.&lt;/p&gt;
 &lt;h2 id=&#34;using-knative-serve&#34;&gt;Using Knative Serve&lt;/h2&gt;
 &lt;p&gt;Now you have installed &lt;a href=&#34;https://www.knative.dev/&#34;&gt;Knative Serve&lt;/a&gt; snd &lt;a href=&#34;https://gloo.solo.io/&#34;&gt;Gloo&lt;/a&gt; you can &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/create-quickstart/&#34;&gt;create a new quicktart&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/docs/resources/demos-talks-posts/create_spring/&#34;&gt;create a new spring boot application&lt;/a&gt; and it will default to using Knative Serve to elastically scale your microservice based on its load over HTTP.&lt;/p&gt;
 &lt;p&gt;You can check if Knative Serve is being used on your application by doing:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;kubectl get ksvc -n jx-staging
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Which should show all of the Knative Service resources in your Staging environment.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get ksvc -n jx-staging
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Which should show all of the Knative Service resources in your Staging environment.&lt;/p&gt;
 &lt;h2 id=&#34;demo&#34;&gt;Demo&lt;/h2&gt;
 &lt;p&gt;Here is a &lt;a href=&#34;https://youtu.be/eYIaz_plUOw?t=1980&#34;&gt;demo of using Knative Serve snd Gloo&lt;/a&gt; from the &lt;a href=&#34;https://jenkins-x.io/community/april-4/&#34;&gt;April 4th, 2019&lt;/a&gt; &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;Office Hours&lt;/a&gt;:&lt;/p&gt;
 &lt;iframe width=&#34;565&#34; height=&#34;480&#34; src=&#34;https://www.youtube.com/embed/eYIaz_plUOw&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
