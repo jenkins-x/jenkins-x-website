@@ -237,11 +237,29 @@ You do not need to install kalm for the rest of the tutorial.&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;v1.21 sh -s - --write-kubeconfig-mode &lt;span style=&#34;color:#ae81ff&#34;&gt;644&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;KUBECONFIG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;~/.kube/config:~/.kube/k3s-config
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export KUBECONFIG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;~/.kube/config:~/.kube/k3s-config
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To verify that k3s has been installed successfully, and configured run:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get nodes
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;You will need to open multiple terminals later, so setting these env variables in the bashrc or zshrc might help you&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;nano ~/.bashrc
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#go to the end of the file and paste the export command&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export KUBECONFIG&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;~/.kube/config:~/.kube/k3s-config
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Optional&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If the above method didn&amp;rsquo;t work, copy the configurations to the ~/.kube/config instead (if you don&amp;rsquo;t have any other clusters, that should be fine)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sudo rm ~/.kube/k3s-config  &lt;span style=&#34;color:#75715e&#34;&gt;#to make k3s uses ~/.kube/config&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;If still got &lt;code&gt;permission denied&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sudo chmod &lt;span style=&#34;color:#ae81ff&#34;&gt;777&lt;/span&gt; ~/.kube/config &lt;span style=&#34;color:#75715e&#34;&gt;#warning: this maybe vulnerable to multiple users &lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This value of the node will be used later during installation and configuring of Jenkins X.&lt;/p&gt;
-&lt;p&gt;Check &lt;a href=&#34;https://rancher.com/docs/k3s/latest/en/installation/&#34;&gt;k3s install guide&lt;/a&gt; for more installation options.&lt;/p&gt;
+&lt;p&gt;Check &lt;a href=&#34;https://rancher.com/docs/k3s/latest/en/installation/&#34;&gt;k3s install guide&lt;/a&gt; for more installation options but keep in mind we don&amp;rsquo;t support Kubernetes 1.22+ yet&lt;/p&gt;
+&lt;h4 id=&#34;docker&#34;&gt;Docker&lt;/h4&gt;
+&lt;p&gt;You need to install &lt;a href=&#34;https://docs.docker.com/engine/install/&#34;&gt;docker&lt;/a&gt; and &lt;a href=&#34;https://docs.docker.com/engine/install/linux-postinstall/&#34;&gt;manage it as a non root user&lt;/a&gt;&lt;/p&gt;
 &lt;h4 id=&#34;vault&#34;&gt;Vault&lt;/h4&gt;
 &lt;p&gt;Install vault cli.
 Refer to the &lt;a href=&#34;https://www.vaultproject.io/docs/install&#34;&gt;vault docs&lt;/a&gt; on how to install vault for your platform.&lt;/p&gt;
@@ -250,12 +268,17 @@ Refer to the &lt;a href=&#34;https://www.vaultproject.io/docs/install&#34;&gt;va
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To verify if vault started properly use &lt;code&gt;docker logs jx-k3s-vault&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Next enable kubernetes auth in vault.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export VAULT_ADDR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;http://0.0.0.0:8200&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# you may want to set this at the end of the ~/.bashrc file or ~/.zshrc either to be accesible for all terminals you open like the way we did above&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault auth enable kubernetes
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note: If you get the error &lt;code&gt;Error enabling kubernetes auth: Post &amp;quot;https://127.0.0.1:8200/v1/sys/auth/kubernetes&amp;quot;: http: server gave HTTP response to HTTPS client&lt;/code&gt;, try the command &lt;code&gt;vault login myroot&lt;/code&gt;.&lt;/p&gt;
 &lt;h4 id=&#34;github&#34;&gt;Github&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;Create a git bot user (different from your own personal user) e.g. &lt;a href=&#34;https://github.com/join&#34;&gt;https://github.com/join&lt;/a&gt; and generate a a personal access token, this will be used by Jenkins X to interact with git repositories. e.g. &lt;a href=&#34;https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook&#34;&gt;https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;This bot user needs to have write permission to write to any git repository used by Jenkins X. This can be done by adding the bot user to the git organisation level or individual repositories as a collaborator Add the new bot user to your Git Organisation, for now give it Owner permissions, we will reduce this to member permissions soon.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;jenkins-x&#34;&gt;Jenkins-X&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Make sure you have installed &lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/jx3/&#34;&gt;jx 3.x binary&lt;/a&gt; and put it on your &lt;code&gt;$PATH&lt;/code&gt; as the &lt;code&gt;jx admin operator&lt;/code&gt; will be used&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;jenkins-x-v3-installation&#34;&gt;Jenkins X v3 installation&lt;/h3&gt;
 &lt;ul&gt;
@@ -284,10 +307,13 @@ If you get an error connecting to the cluster, try running &lt;code&gt;kubectl c
 &lt;li&gt;Create a vault config&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export VAULT_ADDR&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;http://0.0.0.0:8200&amp;#39;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;VAULT_HELM_SECRET_NAME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secrets --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;json | jq -r &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;.items[].metadata | select(.name|startswith(&amp;#34;kubernetes-external-secrets-token-&amp;#34;)).name&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;TOKEN_REVIEW_JWT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;go-template={{ .data.token }}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;KUBE_CA_CERT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.certificate-authority-data}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;KUBE_HOST&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.server}&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export VAULT_HELM_SECRET_NAME&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secrets --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;json | jq -r &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;.items[].metadata | select(.name|startswith(&amp;#34;kubernetes-external-secrets-token-&amp;#34;)).name&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export TOKEN_REVIEW_JWT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;go-template={{ .data.token }}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export KUBE_CA_CERT&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.certificate-authority-data}&amp;#39;&lt;/span&gt; | base64 --decode&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export KUBE_HOST&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl config view --raw --minify --flatten --output&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;jsonpath={.clusters[].cluster.server}&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# you may want to set this at the end of the ~/.bashrc file or ~/.zshrc either to be accesible for all terminals you open like the way we did above&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;vault write auth/kubernetes/config &lt;span style=&#34;color:#ae81ff&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        token_reviewer_jwt&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$TOKEN_REVIEW_JWT&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;        kubernetes_host&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;$KUBE_HOST&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
@@ -320,6 +346,7 @@ This job will create the secrets in vault which will be used by external secrets
 &lt;ul&gt;
 &lt;li&gt;To verify the job succeeded, run &lt;code&gt;jx admin log&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;To verfiy the secrets were created, run &lt;code&gt;kubectl get es -A&lt;/code&gt; and &lt;code&gt;jx secret verify&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If this didn&amp;rsquo;t work try and repeat the steps but commit your dummy changes through github repository directly other than the &lt;code&gt;git push origin main&lt;/code&gt; command&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;set-up-ingress-and-webhook&#34;&gt;Set up ingress and webhook&lt;/h3&gt;
 &lt;ul&gt;

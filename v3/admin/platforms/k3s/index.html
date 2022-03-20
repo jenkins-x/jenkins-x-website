@@ -1470,11 +1470,29 @@ You do not need to install kalm for the rest of the tutorial.</p>
 </span></span><span style="display:flex;"><span>curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL<span style="color:#f92672">=</span>v1.21 sh -s - --write-kubeconfig-mode <span style="color:#ae81ff">644</span>
 </span></span><span style="display:flex;"><span>sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/k3s-config
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Set it also in the bashrc or zshrc file, or you can flatten both of these configs into a single file</span>
-</span></span><span style="display:flex;"><span>KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
+</span></span><span style="display:flex;"><span>export KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
 </span></span></code></pre></div><p>To verify that k3s has been installed successfully, and configured run:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get nodes
+</span></span></code></pre></div><ul>
+<li>You will need to open multiple terminals later, so setting these env variables in the bashrc or zshrc might help you</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nano ~/.bashrc
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#go to the end of the file and paste the export command</span>
+</span></span><span style="display:flex;"><span>export KUBECONFIG<span style="color:#f92672">=</span>~/.kube/config:~/.kube/k3s-config
+</span></span></code></pre></div><p><strong>Optional</strong></p>
+<ul>
+<li>If the above method didn&rsquo;t work, copy the configurations to the ~/.kube/config instead (if you don&rsquo;t have any other clusters, that should be fine)</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo rm ~/.kube/k3s-config  <span style="color:#75715e">#to make k3s uses ~/.kube/config</span>
+</span></span><span style="display:flex;"><span>sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+</span></span></code></pre></div><ul>
+<li>If still got <code>permission denied</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo chmod <span style="color:#ae81ff">777</span> ~/.kube/config <span style="color:#75715e">#warning: this maybe vulnerable to multiple users </span>
 </span></span></code></pre></div><p>This value of the node will be used later during installation and configuring of Jenkins X.</p>
-<p>Check <a href="https://rancher.com/docs/k3s/latest/en/installation/">k3s install guide</a> for more installation options.</p>
+<p>Check <a href="https://rancher.com/docs/k3s/latest/en/installation/">k3s install guide</a> for more installation options but keep in mind we don&rsquo;t support Kubernetes 1.22+ yet</p>
+<h4 id="docker">Docker</h4>
+<p>You need to install <a href="https://docs.docker.com/engine/install/">docker</a> and <a href="https://docs.docker.com/engine/install/linux-postinstall/">manage it as a non root user</a></p>
 <h4 id="vault">Vault</h4>
 <p>Install vault cli.
 Refer to the <a href="https://www.vaultproject.io/docs/install">vault docs</a> on how to install vault for your platform.</p>
@@ -1483,12 +1501,17 @@ Refer to the <a href="https://www.vaultproject.io/docs/install">vault docs</a> o
 </span></span></code></pre></div><p>To verify if vault started properly use <code>docker logs jx-k3s-vault</code>.</p>
 <p>Next enable kubernetes auth in vault.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># you may want to set this at the end of the ~/.bashrc file or ~/.zshrc either to be accesible for all terminals you open like the way we did above</span>
 </span></span><span style="display:flex;"><span>vault auth enable kubernetes
 </span></span></code></pre></div><p>Note: If you get the error <code>Error enabling kubernetes auth: Post &quot;https://127.0.0.1:8200/v1/sys/auth/kubernetes&quot;: http: server gave HTTP response to HTTPS client</code>, try the command <code>vault login myroot</code>.</p>
 <h4 id="github">Github</h4>
 <ul>
 <li>Create a git bot user (different from your own personal user) e.g. <a href="https://github.com/join">https://github.com/join</a> and generate a a personal access token, this will be used by Jenkins X to interact with git repositories. e.g. <a href="https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook">https://github.com/settings/tokens/new?scopes=repo,read:user,read:org,user:email,write:repo_hook,delete_repo,admin:repo_hook</a></li>
 <li>This bot user needs to have write permission to write to any git repository used by Jenkins X. This can be done by adding the bot user to the git organisation level or individual repositories as a collaborator Add the new bot user to your Git Organisation, for now give it Owner permissions, we will reduce this to member permissions soon.</li>
+</ul>
+<h4 id="jenkins-x">Jenkins-X</h4>
+<ul>
+<li>Make sure you have installed <a href="https://jenkins-x.io/v3/admin/setup/jx3/">jx 3.x binary</a> and put it on your <code>$PATH</code> as the <code>jx admin operator</code> will be used</li>
 </ul>
 <h3 id="jenkins-x-v3-installation">Jenkins X v3 installation</h3>
 <ul>
@@ -1517,10 +1540,13 @@ If you get an error connecting to the cluster, try running <code>kubectl config 
 <li>Create a vault config</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>export VAULT_ADDR<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;http://0.0.0.0:8200&#39;</span>
-</span></span><span style="display:flex;"><span>VAULT_HELM_SECRET_NAME<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secrets --output<span style="color:#f92672">=</span>json | jq -r <span style="color:#e6db74">&#39;.items[].metadata | select(.name|startswith(&#34;kubernetes-external-secrets-token-&#34;)).name&#39;</span><span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>TOKEN_REVIEW_JWT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;go-template={{ .data.token }}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>KUBE_CA_CERT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.certificate-authority-data}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>KUBE_HOST<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.server}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>export VAULT_HELM_SECRET_NAME<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secrets --output<span style="color:#f92672">=</span>json | jq -r <span style="color:#e6db74">&#39;.items[].metadata | select(.name|startswith(&#34;kubernetes-external-secrets-token-&#34;)).name&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>export TOKEN_REVIEW_JWT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl -n secret-infra get secret $VAULT_HELM_SECRET_NAME --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;go-template={{ .data.token }}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>export KUBE_CA_CERT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.certificate-authority-data}&#39;</span> | base64 --decode<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>export KUBE_HOST<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>kubectl config view --raw --minify --flatten --output<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;jsonpath={.clusters[].cluster.server}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># you may want to set this at the end of the ~/.bashrc file or ~/.zshrc either to be accesible for all terminals you open like the way we did above</span>
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>vault write auth/kubernetes/config <span style="color:#ae81ff">\
 </span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        token_reviewer_jwt<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$TOKEN_REVIEW_JWT<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
 </span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>        kubernetes_host<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span>$KUBE_HOST<span style="color:#e6db74">&#34;</span> <span style="color:#ae81ff">\
@@ -1553,6 +1579,7 @@ This job will create the secrets in vault which will be used by external secrets
 <ul>
 <li>To verify the job succeeded, run <code>jx admin log</code></li>
 <li>To verfiy the secrets were created, run <code>kubectl get es -A</code> and <code>jx secret verify</code></li>
+<li>If this didn&rsquo;t work try and repeat the steps but commit your dummy changes through github repository directly other than the <code>git push origin main</code> command</li>
 </ul>
 <h3 id="set-up-ingress-and-webhook">Set up ingress and webhook</h3>
 <ul>
@@ -1669,7 +1696,7 @@ This job will create the secrets in vault which will be used by external secrets
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified March 13, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/14734ea0325b8bf81eaa1107ef436f9ddd87e4d1">refactor: make it more clear that v2 is not maintained (14734ea032)</a>
+  Last modified March 20, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/57e0df738320a55693e339d8215371943b80ebbd">apply changes by reviewer (57e0df7383)</a>
 </div>
 
 </div>
