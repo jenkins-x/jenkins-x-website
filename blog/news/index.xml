@@ -14,6 +14,47 @@
     
     
     <item>
+      <title>Blog: Kubernetes 1.22 - Breaking change!</title>
+      <link>https://jenkins-x.io/blog/2022/04/22/kubernetes-1.22-tekton/</link>
+      <pubDate>Fri, 22 Apr 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/04/22/kubernetes-1.22-tekton/</guid>
+      <description>
+        
+        
+        &lt;p&gt;To allow Jenkins X to support Kubernetes 1.22, we had to update our version of Tekton. This updated version of Tekton contains breaking changes that has consequences if you made your own custom Jenkins X pipelines.&lt;/p&gt;
+&lt;p&gt;To make sure that your custom pipelines continue to work after this upgrade, you must edit the resource settings in your pipelines. Otherwise your pipelines will most likely not be able to start at all, or if they do, consume a lot of resources.&lt;/p&gt;
+&lt;h4 id=&#34;changes-in-tekton-version-28&#34;&gt;Changes in Tekton version 28&lt;/h4&gt;
+&lt;p&gt;Tekton made changes in how to calculate the resources needed to run a pipeline, in order to support the concept of &lt;a href=&#34;https://kubernetes.io/docs/concepts/policy/limit-range/&#34;&gt;LimitRange&lt;/a&gt; in Kubernetes (introduced in Kubernetes version 1.10). Previously, Tekton simply used the maximum requested cpu and memory of any single step, and set that as limits for the all steps in the pipeline.&lt;/p&gt;
+&lt;p&gt;For more details, please read the
+&lt;a href=&#34;https://tekton.dev/vault/pipelines-main/limitrange/&#34;&gt;Tekton documentation on LimitRange&lt;/a&gt;.&lt;/p&gt;
+&lt;h4 id=&#34;how-to-prepare-for-upgrade&#34;&gt;How to prepare for upgrade&lt;/h4&gt;
+&lt;p&gt;In the Tekton pipeline files, the StepTemplate needs to be changed to not specify resource &lt;code&gt;requests&lt;/code&gt;, but only setting an empty resource &lt;code&gt;limits&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;stepTemplate&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;uses:jenkins-x/jx3-pipeline-catalog/tasks/go/release.yaml@a5ab19ebc5a074e0402c5016b11bc11b32cc5c83&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# override limits for all containers here&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;limits&lt;/span&gt;: {}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The resource &lt;code&gt;requests&lt;/code&gt; should be set on only one individual step:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;steps&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;image&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;uses:Mentor-Medier/jx3-pipeline-catalog/tasks/git-clone/git-clone-pr.yaml@versionStream&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;: {}
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-variables&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;resources&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;requests&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;cpu&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;400m&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;memory&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;512Mi&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To see examples of what changes you need to apply to your custom pipelines you may investigate &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/984/files&#34;&gt;this PR&lt;/a&gt; on The Jenkins X pipeline catalog. The PR will be merged and released simultaneous with the upgrade of Tekton.&lt;/p&gt;
+&lt;p&gt;In the current version of Tekton used by Jenkins X, the resource &lt;code&gt;requests&lt;/code&gt; are set on the stepTemplate. Running the old pipelines in the new version will lead to resource &lt;code&gt;requests&lt;/code&gt; being multiplied by the number of steps.&lt;/p&gt;
+&lt;p&gt;To prepare for upgrade, you should create a PR applying the changes described above. We done some tests on applying the changes to the current version of Jenkins X/Tekton, and it seemed to work. But - that does not mean it will work on your machines or even pipelines!&lt;/p&gt;
+&lt;p&gt;So, please prepare for upgrade now! We want people to have a safe upgrade experience. If you have questions, you can find us on &lt;a href=&#34;https://kubernetes.slack.com/messages/C9MBGQJRH&#34;&gt;Slack&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Google Summer of Code 2022 project proposal template ☀️</title>
       <link>https://jenkins-x.io/blog/2022/04/05/gsoc2022-proposal-template/</link>
       <pubDate>Tue, 05 Apr 2022 00:00:00 +0000</pubDate>
@@ -3857,69 +3898,6 @@ The trend over time clearly shows we are making good progress.
 &lt;p&gt;💻 To find out more about how to apply click &lt;a href=&#34;https://developers.google.com/open-source/gsoc/help/student-advice&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;📅 Please note the timeline for the programme &lt;a href=&#34;https://summerofcode.withgoogle.com/how-it-works/#timeline&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;We look forward to reading your applications and working with you on the Jenkins X project!&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins X  ❤ Tekton</title>
-      <link>https://jenkins-x.io/blog/2020/03/11/tekton/</link>
-      <pubDate>Wed, 11 Mar 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/03/11/tekton/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X is committing fully to Tekton as its pipeline execution engine. We are convinced that this is the right choice for Jenkins X, as a cloud-native CI/CD platform on Kubernetes, and for our users.&lt;/p&gt;
-&lt;p&gt;This means we are formally deprecating - and will be removing - traditional Jenkins static masters support inside Jenkins X. We are excited about the new way forward, which we’ll discuss further below, but it’s important to be clear about what this means for current users. If you are already using Jenkins X with Tekton-based pipelines, then nothing will change for you, and you do not need to change anything. If you’re running a traditional Jenkinsfile on Jenkins X, then you have three choices:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Continue using static masters with a version of Jenkins X that supports Jenkins static masters
-&lt;ul&gt;
-&lt;li&gt;Note that for versions of Jenkins X that support Jenkins static masters we will not provide any security fixes either to the jx CLI or to the Jenkins image used after mid April.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Return to a more optimized Jenkins installation&lt;/li&gt;
-&lt;li&gt;Or, if you plan on updating your version of Jenkins X to keep up with the latest features, then you will need to adapt your setup&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In this post, we will discuss how we arrived at this decision, why there is currently a choice between two different pipeline execution engines, and why it is better for the project and for our users to standardize on one. We will go over in more detail what these changes mean for current users, and the options we have to help current users on Jenkins static masters with these changes.&lt;/p&gt;
-&lt;h2 id=&#34;a-story-of-pipeline-engines&#34;&gt;A story of Pipeline Engines&lt;/h2&gt;
-&lt;p&gt;When Jenkins X was founded two years ago, Jenkins was chosen as its pipeline execution engine. Why?&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;Familiarity: Jenkins is the most widely used orchestration system in history, and at CloudBees we know it quite well.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;There was not a Kubernetes native pipeline engine, ie, there was no Tekton&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;A year later, Tekton had been founded and Jenkins X rapidly adopted the new Kubernetes-native pipeline engine. It became one of two options for users to choose as their pipeline execution engine within Jenkins X. This was huge for us, because Jenkins was never built to be used in the way we were using it, and the way Jenkins is architected made it very difficult to build Jenkins X forward with our dream features and keep things compatible and running well - Tekton solved all these problems.&lt;/p&gt;
-&lt;p&gt;As a result, though, the users of Jenkins X can now choose between two very different pipeline execution engines &amp;ndash; Jenkins static masters or our own Tekton-based pipelines.&lt;/p&gt;
-&lt;p&gt;Ideally, a developer using Jenkins X does not need to think about the pipeline engine executing their CI/CD pipelines.  In practice, though, the Jenkins X user experience varies significantly depending on which pipeline engine the user choses. This is because of technical complexity and use case difference that makes standardization hard to achieve and even harder to maintain.&lt;/p&gt;
-&lt;p&gt;As more functionality is added to the project which fits seamlessly with Tekton, Jenkins as a pipeline engine for Jenkins X increasingly feels unoptimized and inappropriate for the project. As amazing as Jenkins is, it wasn’t built to be an ephemeral cloud-native pipeline engine inside of a larger workflow tool, and maintaining Jenkins as a pipeline engine for Jenkins X has proven difficult and complex. The Jenkins X user experience with Jenkins static masters is already lesser than the user experience with Tekton, and it will only degrade further over time. For this reason, we have been recommending Tekton as the default pipeline engine in Jenkins X for more than 6 months now.&lt;/p&gt;
-&lt;p&gt;The way we see it, traditional Jenkins running on Kubernetes makes sense for Jenkins-based apps that already exist and for teams that aren’t ready to change their tooling and their process. Jenkins is rock-solid and can run forever doing what it does today for the hundreds of thousands of teams that use it. But, that’s not what Jenkins X is for. Jenkins X is for brand new applications, being built from the ground up for the world of Kubernetes-based, cloud-native development - and we want to make things as great as possible for all the developers building those kinds of applications right now.&lt;/p&gt;
-&lt;h2 id=&#34;kubernetes-native&#34;&gt;Kubernetes native&lt;/h2&gt;
-&lt;p&gt;Although for users the pipeline execution engine should be an implementation detail, for the Jenkins X project Tekton is clearly a better, more natural, fit. Like Jenkins X, Tekton is Kubernetes native: it was designed from the ground up to leverage Kubernetes, not merely integrate with Kubernetes.&lt;/p&gt;
-&lt;p&gt;The Jenkins X core team has chosen to standardize on Tekton as a pipeline execution engine for the following reasons:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Kubernetes native&lt;/li&gt;
-&lt;li&gt;Declarative, not scripted
-&lt;ul&gt;
-&lt;li&gt;This makes pipelines easier to author, read, and maintain&lt;/li&gt;
-&lt;li&gt;Highly opinionated syntax, making it easier to work in a best-practices way&lt;/li&gt;
-&lt;li&gt;YAML! Not Groovy or Groovy-based syntax&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;However, Jenkins X has its own syntax on top of Tekton, to improve the user experience. Tekton’s syntax is very explicit, which is excellent for the level at which Tekton is operating. Jenkins X, as a developer-centric CI/CD platform, is able to take the information already available regarding a user’s configuration and provide that context. Additionally, Jenkins X provides an opinionated, best-practices based workflow. For these reasons, the amount of information a user needs to provide is reduced and the user experience is guided and simplified.&lt;/p&gt;
-&lt;p&gt;For Jenkins X, as a CI/CD platform on Kubernetes, Tekton is the right choice for the pipeline execution engine. Focusing on one pipeline engine going forward will enable a leaner, cleaner codebase and a better end-user experience. Standardizing on Tekton as the pipeline execution engine for Jenkins X enables the core team to focus on improving the Jenkins X user experience without having to support compatibility with two different pipeline engines.&lt;/p&gt;
-&lt;h2 id=&#34;whats-next&#34;&gt;What’s next&lt;/h2&gt;
-&lt;p&gt;We’re deprecating traditional Jenkins masters in all new versions of Jenkins X. They will be removed from the codebase of future Jenkins X versions from April 20th.&lt;/p&gt;
-&lt;p&gt;While this is an aggressive timeline, it’s important to know that if you’re currently running Jenkins X with traditional Jenkins today, it’s not going to disappear. You won’t be able to upgrade to new versions - but we will cut one final release right before the deadline to give you a stable version to use for as long as you need.&lt;/p&gt;
-&lt;p&gt;Next, If you’re looking to migrate existing declarative Jenkins jobs to Jenkins X, we have a &lt;a href=&#34;https://github.com/jenkins-x/jx-convert-jenkinsfile&#34;&gt;partial Jenkinsfile translator&lt;/a&gt; that can help point you in the right direction. While it won’t fully translate all Jenkinsfiles, it will help point you in the right direction to get the ball rolling.&lt;/p&gt;
-&lt;p&gt;And finally, if you’d like to keep your Jenkins jobs running but as individual steps inside a Jenkins X pipeline, &lt;a href=&#34;https://jenkins-x.io/docs/labs/jenkins/&#34;&gt;we have a proposal for remote execution&lt;/a&gt; as a new path forward. Since Jenkins itself can be run on Kubernetes, switching to a remote execution step via Jenkins X - or entirely to Jenkins if it makes more sense for you - should be an easy switch to make. We think this is a much better path forward, as it keeps Jenkins entirely out of Jenkins X while still letting you adopt Jenkins X right away and migrate your traditional Jenkins jobs to Tekton-based jobs over time. We expect a working proof of concept for the community soon.&lt;/p&gt;
-&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;We know this is a big announcement on a fast timeline and a lot of ideas to take in. We’d love to talk to you about it! Please join the &lt;a href=&#34;https://jenkins-x.io/community/office_hours/&#34;&gt;office hours we have arranged on March 19th&lt;/a&gt; that will be fully dedicated to discussing this.&lt;/p&gt;
-&lt;p&gt;You may reach out to me, &lt;a href=&#34;mailto:ejones@cloudbees.com&#34;&gt;Ethan Jones&lt;/a&gt;, if you’d like to discuss things one on one with some of our product and engineering team members.&lt;/p&gt;
 
       </description>
     </item>
