@@ -98,6 +98,9 @@
         
         
         &lt;p&gt;This is an example on building a JX3 Google/GSM environment from scratch which includes a Jenkins server and the import of a pipeline. It will utilize DNS (&lt;code&gt;jx3rocks.com&lt;/code&gt;), TLS, Let&amp;rsquo;s Encrypt certificates,  and additional Jenkins plugins and installer resources. It is inteded for an audience already familiar with Jenkins X operability and focuses on an example of actual commands required to build and operate the  environment. Additional information regarding using Google as the provider for this example can be found under &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/tls_dns/#prerequisites&#34;&gt;Google Cloud Platform Prequisites&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡 This doc has been designed to build the Jenkins server under the Google cloud platform. &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/jenkins/example/#initialize-jenkins-server-configuration&#34;&gt;The Jenkins server configuration steps&lt;/a&gt; have also been tested under &lt;b&gt;Azure&lt;/b&gt; and &lt;b&gt;Amazon&lt;/b&gt; cloud environments.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;initialize-the-infra-and-cluster-repos&#34;&gt;Initialize the Infra and Cluster Repos&lt;/h3&gt;
 &lt;p&gt;Using a command-line based approach, the example employs a process modeled after the doc &lt;a href=&#34;https://jenkins-x.io/v3/admin/platforms/google&#34;&gt;Setup Jenkins X on Google Cloud with GKE&lt;/a&gt;, and will use Google Secret Manger. It requires installation of &lt;a href=&#34;https://git-scm.com/downloads&#34;&gt;Git&lt;/a&gt; and &lt;a href=&#34;https://hub.github.com/&#34;&gt;Hub&lt;/a&gt; command line tools.&lt;/p&gt;
 &lt;p&gt;The following are the values used for the creation of the Infra and Cluster repos:&lt;/p&gt;
@@ -113,7 +116,7 @@ JX3 Root Directory:	$JX3HOME                ## i.e. /home/user
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git remote set-url origin https://github.com/jx3rocksorg/jx3-terraform-gke.git
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hub create -p jx3rocksorg/jx3-terraform-gke
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git push -u origin master
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git push -u origin main
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Buidling cluster repo: &lt;code&gt;https://github.com/jx3rocksorg/jx3-gke-gsm&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cd $JX3HOME
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git clone https://github.com/jx3-gitops-repositories/jx3-gke-gsm.git jx3-gke-gsm
@@ -121,7 +124,7 @@ JX3 Root Directory:	$JX3HOME                ## i.e. /home/user
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git remote set-url origin https://github.com/jx3rocksorg/jx3-gke-gsm.git
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hub create -p jx3rocksorg/jx3-gke-gsm
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git commit -a -m &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;chore: Initial&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git push -u origin master
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;git push -u origin main
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;manage-url-format&#34;&gt;Manage URL format&lt;/h3&gt;
 &lt;p&gt;This example uses external DNS with subdomain and URLs will have a root of &lt;code&gt;web.jx3rocks.com&lt;/code&gt;. To avoid including the default string &lt;code&gt;&amp;quot;-jx&amp;quot;&lt;/code&gt;  in the URLs, the example blanks out the &lt;code&gt;spec:ingress:namespaceSubDomain&lt;/code&gt; value (&lt;code&gt;&amp;quot;.&amp;quot;&lt;/code&gt;) in the &lt;code&gt;jx-requirements.yml&lt;/code&gt; file. To eliminate having non-unique URLs after doing this type of update, an additional &lt;code&gt;spec:environment:ingress:namespaceSubDomain&lt;/code&gt; line item is added (&lt;code&gt;&amp;quot;-stg.&amp;quot;&lt;/code&gt;) for the staging environment.&lt;/p&gt;
 &lt;p&gt;File:&lt;code&gt;$JX3HOME/jx3-gke-gsm/jx-requirements.yml&lt;/code&gt;&lt;/p&gt;
@@ -136,10 +139,15 @@ JX3 Root Directory:	$JX3HOME                ## i.e. /home/user
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;externalDNS&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;namespaceSubDomain&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;.&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;define-jenkins-plugins-and-installers&#34;&gt;Define Jenkins plugins and installers.&lt;/h3&gt;
-&lt;p&gt;The default Jenkins installation uses a pre-determine set of plugins and installers. Include additional plugin(s) in Jenkins by putting the complete list of plugins (dependencies not required) in a new file (i.e. &lt;code&gt;customPlugs.yaml&lt;/code&gt;). Include additional installer(s) by placing them in a &lt;code&gt;values.yaml&lt;/code&gt; file.&lt;/p&gt;
-&lt;p&gt;File:&lt;code&gt;/tmp/values.yaml&lt;/code&gt; - Installers&lt;/p&gt;
+&lt;p&gt;The default Jenkins server installation is a minimum configuration and generally requires additional installers and plugin components for the your specific Jenkins project to operate. The Jenkins components (i.e. plugins, installerss, etc.) are defined in 3 locations; Chart, System, and User configurations which get loaded in that order. During the build process settings get inherited and can be modified but depending on the end config how to make modifications may vary. This example takes into account the default configuration based upon the Chart and System settings. It will only require small additions to the configuration which is done at the User level. To make these config changes will require the modification of the User  &lt;code&gt;values.yaml&lt;/code&gt; file.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡 Currently there is an issue where the Jenkins URL does not resolve to an IP address. To address this issue, it is imperative to have the &lt;code&gt;ingressClassName: nginx&lt;/code&gt; included in the values.yaml file.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;File: &lt;code&gt;/tmp/values.yaml&lt;/code&gt; - Config Scripts&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;controller:
-  JCasC:
+  ingress:             ## Required versionStream DNS/Ingress break fix
+    ingressClassName: nginx
+  JCasC:               ## Example of building an installer
     configScripts:
       mystuff: |
         tool:
@@ -152,35 +160,15 @@ JX3 Root Directory:	$JX3HOME                ## i.e. /home/user
                   - nodeJSInstaller:
                       id: &amp;#34;15.7.0&amp;#34;
                       npmPackagesRefreshHours: 72
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;File:&lt;code&gt;/tmp/customPlugs.yaml&lt;/code&gt; - Plugins&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;controller:
-  installPlugins:
-    - kubernetes:1.29.0
-    - workflow-aggregator:2.6
-    - git:4.6.0
-    - configuration-as-code:1.47
-    - nodejs:1.3.11
-  additionalPlugins:
-    - job-dsl:1.77
-    - github-branch-source:2.9.5
-    - kubernetes-credentials-provider:0.15
-    - jx-resources:1.0.38
+  additionalPlugins:   ## Additional plugins for example
+    - pipeline-stage-view:2.24
+    - nodejs:1.5.1
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;initialize-jenkins-server-configuration&#34;&gt;Initialize Jenkins server configuration&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;jx gitops&lt;/code&gt; commands are used to create the Jenkins server configuration. More information can be found under &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/#adding-jenkins-servers-into-jenkins-x&#34;&gt;Adding Jenkins Server into Jenkins X&lt;/a&gt;. The example uses the following command sequence:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cd $JX3HOME/jx3-gke-gsm                           &lt;span style=&#34;color:#75715e&#34;&gt;## cluster repo root&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx gitops jenkins add --name jx-jenkins           &lt;span style=&#34;color:#75715e&#34;&gt;## add Jenkins&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx gitops helmfile resolve --namespace jx-jenkins &lt;span style=&#34;color:#75715e&#34;&gt;## resolve charts references (optional but helps later on in editing)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp /tmp/values.yaml helmfiles/jx-jenkins          &lt;span style=&#34;color:#75715e&#34;&gt;## Update tool config&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp /tmp/customPlugs.yaml helmfiles/jx-jenkins     &lt;span style=&#34;color:#75715e&#34;&gt;## Update plugin config&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Modification to the &lt;code&gt;$JX3HOME/jx3-gke-gsm/helmfiles/jx-jenkins/helmfiles.yaml&lt;/code&gt; file is done to include the additional &lt;code&gt;customPlugs.yaml&lt;/code&gt;.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; - &lt;span style=&#34;color:#f92672&#34;&gt;chart&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkinsci/jenkins&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jenkins&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-jenkins&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   &lt;span style=&#34;color:#f92672&#34;&gt;values&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   - &lt;span style=&#34;color:#ae81ff&#34;&gt;values.yaml&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   - &lt;span style=&#34;color:#ae81ff&#34;&gt;../../versionStream/charts/jenkinsci/jenkins/values.yaml.gotmpl&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   - &lt;span style=&#34;color:#ae81ff&#34;&gt;customPlugs.yaml&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;   - &lt;span style=&#34;color:#ae81ff&#34;&gt;jx-values.yaml&lt;/span&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cd $JX3HOME/jx3-gke-gsm                             &lt;span style=&#34;color:#75715e&#34;&gt;## cluster repo root&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx gitops jenkins add --name jx-jenkins             &lt;span style=&#34;color:#75715e&#34;&gt;## add Jenkins&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx gitops helmfile resolve --namespace jx-jenkins   &lt;span style=&#34;color:#75715e&#34;&gt;## resolve charts references (optional but helps later on in editing)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp /tmp/values.yaml helmfiles/jx-jenkins            &lt;span style=&#34;color:#75715e&#34;&gt;## Update tool config&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;push-initial-changes-to-cluster-repo&#34;&gt;Push initial changes to cluster repo&lt;/h3&gt;
 &lt;p&gt;All the customizations for the cluster repo are now propagated.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cd $JX3HOME/jx3-gke-gsm
@@ -204,7 +192,7 @@ TF_VAR_cluster_location=us-east1-b
 TF_VAR_jx_git_url=https://github.com/jx3rocksorg/jx3-gke-gsm.src.git
 TF_VAR_lets_encrypt_production=false
 TF_VAR_force_destroy=true
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Additional detail on Terraform settings can be found under &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/master/README.md&#34;&gt;Google Terraform Quickstart Template&lt;/a&gt;&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Additional detail on Terraform settings can be found under &lt;a href=&#34;https://github.com/jx3-gitops-repositories/jx3-terraform-gke/blob/main/README.md&#34;&gt;Google Terraform Quickstart Template&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Commands to build intrastructure:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cd $JX3HOME/jx3-terraform-gke
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;bin/create.sh                &lt;span style=&#34;color:#75715e&#34;&gt;# Performs terraform init, plan and apply&lt;/span&gt;
@@ -254,20 +242,39 @@ TF_VAR_force_destroy=true
 &lt;p&gt;To deploy a Jenkins Pipeline requires a &lt;code&gt;Jenkinsfile&lt;/code&gt; file and can be created through either a &lt;code&gt;jx project import&lt;/code&gt; or &lt;code&gt;jx project quickstart&lt;/code&gt; command. You can find more detail in &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/jenkins/getting-started/#importing-projects-or-creating-quickstarts&#34;&gt;Importing project or creating quickstarts&lt;/a&gt;. This example creates a file &lt;code&gt;Jenkinsfile&lt;/code&gt; in a new project directory (&lt;code&gt;jx-example-node&lt;/code&gt;) and executes the &lt;code&gt;jx project import&lt;/code&gt; command.&lt;/p&gt;
 &lt;p&gt;File: &lt;code&gt;~/jx-example-node/Jenkinsfile&lt;/code&gt;&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;pipeline {
-    agent any
-    environment {
-        CI = &amp;#39;true&amp;#39;
-        NODEJS_HOME = tool(&amp;#39;NodeJS&amp;#39;)
-        PATH = &amp;#34;${NODEJS_HOME}/bin:${PATH}&amp;#34;
-    }
-
-    stages {
-        stage(&amp;#39;Build NPM&amp;#39;) {
+    agent none
+stages {
+        stage (&amp;#39;First&amp;#39;) {
+            agent any
             steps {
-                sh &amp;#39;npm install&amp;#39;
-           }
+                echo &amp;#34;First dummy stage&amp;#34;
+            }
         }
-    }
+        stage (&amp;#39;Input&amp;#39;) {
+
+            steps {
+                script {
+                    myStage = input message: &amp;#39;What service type do you want to run now?&amp;#39;, parameters: [choice(choices: &amp;#39;Create\nUpdate&amp;#39;, description: &amp;#39;&amp;#39;, name: &amp;#39;Stage&amp;#39;)]
+                }
+                echo myStage
+            }
+        }
+stage(&amp;#39;Stage1&amp;#39;) {
+            when {
+                expression { myStage == &amp;#39;Create&amp;#39; }
+            }
+            steps {
+                echo &amp;#34;Running Service: Create&amp;#34;
+            }
+        }
+stage(&amp;#39;Stage2&amp;#39;) {
+            when {
+                expression { myStage == &amp;#39;Update&amp;#39; }
+            }
+            steps {
+                echo &amp;#34;Running Service:Update&amp;#34;
+            }
+        }
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Import the project to deploy the pipeline&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx project import --git-token &amp;lt;token&amp;gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;\
@@ -277,7 +284,10 @@ TF_VAR_force_destroy=true
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;                  --dir ~/jx-example-node &lt;span style=&#34;color:#ae81ff&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;                  --name jx-example-node &lt;span style=&#34;color:#ae81ff&#34;&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;                  --batch-mode
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;adding-github-webhook-optional&#34;&gt;Adding Github Webhook (optional)&lt;/h3&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;restarting-jenkins-pod-after-pipeline-deployment&#34;&gt;Restarting Jenkins pod after pipeline deployment.&lt;/h3&gt;
+&lt;p&gt;When the above pipeline is deployed it may be necessary to restart the Jenkins pod berfore you see it appear in the Jenkins dashboard.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;kubectl delete pod jenkins-0 -n jx-jenkins            ## Restarts Jenkins pods
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;adding-github-webhook-optional&#34;&gt;Adding Github Webhook (optional)&lt;/h3&gt;
 &lt;p&gt;The current default configuration of JX3 for the import of Jenkins projects does not include the creation of a GitHub webhook for automated pipeline execution. You can use an GitHub API call to set up a webhook to provide a mechanism to kick off a pipeline when there&amp;rsquo;s an update to the project&amp;rsquo;s repo. Below is an example of the API call for this Jenkins configuration and import project example.&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;curl -X POST \
   https://api.github.com/repos/jx3rocksorg/jx-example-node/hooks \
@@ -317,6 +327,10 @@ spec:
       repositories:
       - name: jx-example-node
     server: jx-jenkins
+  slack:
+    channel: &amp;#39;#jenkins-x-pipelines&amp;#39;
+    kind: failureOrNextSuccess
+    pipeline: release
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Commands to remove Jenkins resources and repo:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;rm $JX3HOME/jx3-gke-gsm/.jx/gitops/source-config.yaml
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;rm -rf $JX3HOME/jx3-gke-gsm/helmfiles/jx-jenkins
@@ -327,7 +341,7 @@ spec:
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;troubleshooting&#34;&gt;Troubleshooting&lt;/h3&gt;
 &lt;p&gt;Sometimes Jenkins requires attention due to invalid plugin versions and/or syntax. The following commands are helpful in debugging:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl logs -f jenkins-0 -n jx-jenkins -c init       &lt;span style=&#34;color:#75715e&#34;&gt;## View init container&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl logs -f jenkins-0 -n jx-jenksin -c jenkins    &lt;span style=&#34;color:#75715e&#34;&gt;## View jenkins container&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl logs -f jenkins-0 -n jx-jenkins -c jenkins    &lt;span style=&#34;color:#75715e&#34;&gt;## View jenkins container&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl delete pod jenkins-0 -n jx-jenkins            &lt;span style=&#34;color:#75715e&#34;&gt;## Restarts Jenkins pods&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
       </description>
