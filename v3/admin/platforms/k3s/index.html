@@ -1639,12 +1639,30 @@ This job will create the secrets in vault which will be used by external secrets
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># There may be some changes committed by the jx boot job</span>
 </span></span><span style="display:flex;"><span>git pull
 </span></span><span style="display:flex;"><span>jx gitops requirements edit --domain &lt;external-ip&gt;.nip.io
+</span></span></code></pre></div><h4 id="ngrok">Ngrok</h4>
+<p>Next, download and install <a href="https://ngrok.com/">ngrok</a>.
+Log into ngrok account and get the ngrok auth token (Authenticated sessions can run for unlimited time, unauthenticated sessions expire in 1.5 hours):</p>
+<p>Create a ngrok config file at <code>~/.config/ngrok/ngrok.yml</code> with the following content (replace <code>&lt;ngrok-auth-token&gt;</code> with the auth token from the ngrok account):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">authtoken</span>: <span style="color:#ae81ff">&lt;ngrok-auth-token&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">tunnels</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hook</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">proto</span>: <span style="color:#ae81ff">http</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">addr</span>: <span style="color:#ae81ff">8080</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">schemes</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">http</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ui</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">proto</span>: <span style="color:#ae81ff">http</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">addr</span>: <span style="color:#ae81ff">9090</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">schemes</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">http</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">region</span>: <span style="color:#ae81ff">us</span>
+</span></span></code></pre></div><p>Verify that the config is correct using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok config check
+</span></span></code></pre></div><p>Run this in a new terminal window/tab:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok start --all
 </span></span></code></pre></div><ul>
-<li>Next, download and install <a href="https://ngrok.com/">ngrok</a>. Run this in a new terminal window/tab:</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok http <span style="color:#ae81ff">8080</span>
-</span></span></code></pre></div><ul>
-<li>Once this tunnel is open, paste the ngrok url (without http and https) in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.</li>
+<li>Once this tunnel is open, paste the ngrok url (without http) in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.</li>
 <li>commit and push the changes.</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add .
@@ -1742,7 +1760,7 @@ This job will create the secrets in vault which will be used by external secrets
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified June 14, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/e754b4d34f9a016054251b393c045d79094e6101">fix: add missing helm documentation for internal vault set up in k3s (e754b4d34f)</a>
+  Last modified June 26, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/415ad6c3f90efd993a10a5ec1c3c6be25cc2f3c7">fix: add docs around multiple named ngrok tunnels (415ad6c3f9)</a>
 </div>
 
 </div>
