@@ -2481,6 +2481,54 @@ $ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
     </item>
     
     <item>
+      <title>Docs: ¿Cómo funciona?</title>
+      <link>https://jenkins-x.io/es/docs/getting-started/setup/boot/how-it-works/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/es/docs/getting-started/setup/boot/how-it-works/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;repositorio-de-origen&#34;&gt;Repositorio de Origen&lt;/h2&gt;
+&lt;p&gt;Boot configura automáticamente todos los elementos de tipo &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt; que existan en la carpeta &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34;&gt;repositories/templates&lt;/a&gt;. De igual agrega todo los elementos de tipo &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#scheduler&#34;&gt;Scheduler&lt;/a&gt; para reconstruir la configuración de Prow.&lt;/p&gt;
+&lt;p&gt;De igual forma, Boot crea y actualiza automáticamente los webhooks que se necesiten en el proveedor de git para los recursos &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Si está utilizando GitOps, esperamos automatizar la gestión de la carpeta &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34;&gt;repositories/templates&lt;/a&gt; a medida que se importa/crea proyectos. Hasta entonces, puede crear manualmente un Pull Request en su repositorio git de boot a través de &lt;a href=&#34;https://jenkins-x.io/commands/jx_step_create_pullrequest_repositories/&#34;&gt;jx step create pullrequest repositories&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;pipeline&#34;&gt;Pipeline&lt;/h2&gt;
+&lt;p&gt;El proceso de instalación/actualización está definido en un &lt;a href=&#34;https://jenkins-x.io/es/about/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline&lt;/a&gt; en el fichero con nombre &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml&#34;&gt;jenkins-x.yml&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Lo típico es que no tenga que modificar este fichero, pero si necesitas hacerlo revisa primero &lt;a href=&#34;https://jenkins-x.io/es/about/concepts/jenkins-x-pipelines/#personalizar-el-pipelines&#34;&gt;esta guía&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;configuración&#34;&gt;Configuración&lt;/h2&gt;
+&lt;p&gt;El proceso boot se configura utilizando el estilo de configuración de Helm basado en ficheros &lt;code&gt;values.yaml&lt;/code&gt;. Aunque también admitimos el uso de algunas &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4328&#34;&gt;extensiones para helm&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;fichero-de-parámetros&#34;&gt;Fichero de Parámetros&lt;/h3&gt;
+&lt;p&gt;Se ha definido el fichero &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/parameters.yaml&#34;&gt;env/parameters.yaml&lt;/a&gt; para establecer todos los parámetros registrados y cargados desde Vault o desde el directorio de archivos local con información sensible.&lt;/p&gt;
+&lt;h4 id=&#34;inserción-de-secrets-en-los-parámetros&#34;&gt;Inserción de secrets en los parámetros&lt;/h4&gt;
+&lt;p&gt;Si observan en el fichero &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/parameters.yaml&#34;&gt;env/parameters.yaml&lt;/a&gt; podrán ver algunos valores en el propio fichero y otros relacionados con un enlace, por ejemplo &lt;code&gt;local:my-cluster-folder/nameofSecret/key&lt;/code&gt;. Las definiciones con enlace permiten 2 esquemas:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;vault:&lt;/code&gt; para obtener valores desde Vault (ubicación + llave).&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;local:&lt;/code&gt; para obtener valores desde el fichero almacenado en &lt;code&gt;~/.jx/localSecrets/$path.yml&lt;/code&gt; (llave solamente).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Esto significa que se pueden almacenar todos los Parámetros utilizados en la configuración inicial para luego hacer referencia a ellos desde la fichero &lt;code&gt;values.tmpl.yaml&lt;/code&gt; y poblar el árbol de valores a insertar luego en Vault.&lt;/p&gt;
+&lt;h3 id=&#34;poblar-el-fichero-parametersyaml&#34;&gt;Poblar el fichero &lt;code&gt;parameters.yaml&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;Se puede poblar o nutrir el fichero &lt;code&gt;env/parameters.yaml&lt;/code&gt; del Pipeline a través del comando:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step create values --name parameters
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Se utiliza el fichero &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/parameters.tmpl.schema.json&#34;&gt;parameters.schema.json&lt;/a&gt; para nutrir el UI.&lt;/p&gt;
+&lt;h3 id=&#34;mejoras-al-fichero-valuesyaml&#34;&gt;Mejoras al fichero values.yaml&lt;/h3&gt;
+&lt;h4 id=&#34;mantenimiento-del-árbol-de-ficheros-valuesyaml&#34;&gt;Mantenimiento del árbol de ficheros values.yaml&lt;/h4&gt;
+&lt;p&gt;En lugar de tener solo un fichero enorme values.yaml con todas las anidaciones posibles, se puede tener una estructura de arbórea de archivos para cada aplicación que solo incluya la configuración específica en cada carpeta. p.ej.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;env/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  values.yaml   &lt;span style=&#34;color:#75715e&#34;&gt;# nivel máximo de configuración&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  prow/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml &lt;span style=&#34;color:#75715e&#34;&gt;# configuraciones específicas de Prow&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tekton/
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml  &lt;span style=&#34;color:#75715e&#34;&gt;# configuraciones específicas de Tekton&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;plantillas-valuestmplyaml&#34;&gt;Plantillas values.tmpl.yaml&lt;/h4&gt;
+&lt;p&gt;Al utilizar &lt;code&gt;jx step helm apply&lt;/code&gt; permitimos que los archivos &lt;code&gt;values.tmpl.yaml&lt;/code&gt; utilicen las plantillas go/helm en la misma forma que los archivos &lt;code&gt;templates/foo.yaml&lt;/code&gt; son utilizados dentro de las plantillas helm. De esta forma se pueden generar cadenas de valor/dato que utilicen plantillas para estructurar cosas como valores de secrets más pequeños. p.ej. crear un fichero maven &lt;code&gt;settings.xml&lt;/code&gt;  o un fichero docker &lt;code&gt;config.json&lt;/code&gt; que incluye muchos usuarios/contraseñas para diferentes registros.&lt;/p&gt;
+&lt;p&gt;Podemos ver en el fichero &lt;code&gt;values.tmpl.yaml&lt;/code&gt; cómo están todos los elementos estructurados y podremos referencia a ellos como valore de secrets a través de URLs (o funciones de plantillas) para acceder a Vault o al almacenamiento local.&lt;/p&gt;
+&lt;p&gt;Para hacer esto se utiliza la expresión &lt;code&gt;{{ .Parameter.pipelineUser.token }}&lt;/code&gt; en algún lugar del archivo &lt;code&gt;values.tmpl.yaml&lt;/code&gt;. Entonces se podrá insertar valores dentro de la plantillas helm; pero esto sucede primero para ayudar a generar el fichero &lt;code&gt;values.yaml&lt;/code&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: Servidores Git</title>
       <link>https://jenkins-x.io/es/docs/reference/components/git/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -2564,54 +2612,6 @@ $ kubectl create secret generic jenkins-docker-cfg --from-file=./config.json
 &lt;h4 id=&#34;limitaciones-conocidas-de-gitea&#34;&gt;Limitaciones conocidas de gitea&lt;/h4&gt;
 &lt;p&gt;Al momento de escribir, &lt;a href=&#34;https://issues.jenkins-ci.org/browse/JENKINS-50459&#34;&gt;el plugin de gitea para Jenkins&lt;/a&gt; no actualiza correctamente el PR y los estados de construcción de git commit que rompen los canales de promoción de GitOps. La promoción puede funcionar a través de la aprobación manual, pero el pipeline informa un fallo.&lt;/p&gt;
 &lt;p&gt;Otro problema es que los nuevos proyectos creados por &lt;code&gt;jx&lt;/code&gt; dentro de &lt;code&gt;gitea&lt;/code&gt; no habilitan los &lt;a href=&#34;https://github.com/go-gitea/go-sdk/issues/100&#34;&gt;botones de combinación en los PR&lt;/a&gt;. La solución es que después de crear un proyecto en github, vaya a la página de &lt;code&gt;Settings&lt;/code&gt; para el repositorio dentro de la consola web de &lt;code&gt;gitea&lt;/code&gt; y active los botones de mezcla allí.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: ¿Cómo funciona?</title>
-      <link>https://jenkins-x.io/es/docs/getting-started/setup/boot/how-it-works/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/es/docs/getting-started/setup/boot/how-it-works/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;repositorio-de-origen&#34;&gt;Repositorio de Origen&lt;/h2&gt;
-&lt;p&gt;Boot configura automáticamente todos los elementos de tipo &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt; que existan en la carpeta &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34;&gt;repositories/templates&lt;/a&gt;. De igual agrega todo los elementos de tipo &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#scheduler&#34;&gt;Scheduler&lt;/a&gt; para reconstruir la configuración de Prow.&lt;/p&gt;
-&lt;p&gt;De igual forma, Boot crea y actualiza automáticamente los webhooks que se necesiten en el proveedor de git para los recursos &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/custom-resources/#sourcerepository&#34;&gt;SourceRepository&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Si está utilizando GitOps, esperamos automatizar la gestión de la carpeta &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/tree/master/repositories/templates&#34;&gt;repositories/templates&lt;/a&gt; a medida que se importa/crea proyectos. Hasta entonces, puede crear manualmente un Pull Request en su repositorio git de boot a través de &lt;a href=&#34;https://jenkins-x.io/commands/jx_step_create_pullrequest_repositories/&#34;&gt;jx step create pullrequest repositories&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;pipeline&#34;&gt;Pipeline&lt;/h2&gt;
-&lt;p&gt;El proceso de instalación/actualización está definido en un &lt;a href=&#34;https://jenkins-x.io/es/about/concepts/jenkins-x-pipelines/&#34;&gt;Jenkins X Pipeline&lt;/a&gt; en el fichero con nombre &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/jenkins-x.yml&#34;&gt;jenkins-x.yml&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Lo típico es que no tenga que modificar este fichero, pero si necesitas hacerlo revisa primero &lt;a href=&#34;https://jenkins-x.io/es/about/concepts/jenkins-x-pipelines/#personalizar-el-pipelines&#34;&gt;esta guía&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;configuración&#34;&gt;Configuración&lt;/h2&gt;
-&lt;p&gt;El proceso boot se configura utilizando el estilo de configuración de Helm basado en ficheros &lt;code&gt;values.yaml&lt;/code&gt;. Aunque también admitimos el uso de algunas &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/4328&#34;&gt;extensiones para helm&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;fichero-de-parámetros&#34;&gt;Fichero de Parámetros&lt;/h3&gt;
-&lt;p&gt;Se ha definido el fichero &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/parameters.yaml&#34;&gt;env/parameters.yaml&lt;/a&gt; para establecer todos los parámetros registrados y cargados desde Vault o desde el directorio de archivos local con información sensible.&lt;/p&gt;
-&lt;h4 id=&#34;inserción-de-secrets-en-los-parámetros&#34;&gt;Inserción de secrets en los parámetros&lt;/h4&gt;
-&lt;p&gt;Si observan en el fichero &lt;a href=&#34;https://github.com/jenkins-x/environment-tekton-weasel-dev/blob/master/env/parameters.yaml&#34;&gt;env/parameters.yaml&lt;/a&gt; podrán ver algunos valores en el propio fichero y otros relacionados con un enlace, por ejemplo &lt;code&gt;local:my-cluster-folder/nameofSecret/key&lt;/code&gt;. Las definiciones con enlace permiten 2 esquemas:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;vault:&lt;/code&gt; para obtener valores desde Vault (ubicación + llave).&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;local:&lt;/code&gt; para obtener valores desde el fichero almacenado en &lt;code&gt;~/.jx/localSecrets/$path.yml&lt;/code&gt; (llave solamente).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Esto significa que se pueden almacenar todos los Parámetros utilizados en la configuración inicial para luego hacer referencia a ellos desde la fichero &lt;code&gt;values.tmpl.yaml&lt;/code&gt; y poblar el árbol de valores a insertar luego en Vault.&lt;/p&gt;
-&lt;h3 id=&#34;poblar-el-fichero-parametersyaml&#34;&gt;Poblar el fichero &lt;code&gt;parameters.yaml&lt;/code&gt;&lt;/h3&gt;
-&lt;p&gt;Se puede poblar o nutrir el fichero &lt;code&gt;env/parameters.yaml&lt;/code&gt; del Pipeline a través del comando:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx step create values --name parameters
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Se utiliza el fichero &lt;a href=&#34;https://github.com/jenkins-x/jenkins-x-boot-config/blob/master/env/parameters.tmpl.schema.json&#34;&gt;parameters.schema.json&lt;/a&gt; para nutrir el UI.&lt;/p&gt;
-&lt;h3 id=&#34;mejoras-al-fichero-valuesyaml&#34;&gt;Mejoras al fichero values.yaml&lt;/h3&gt;
-&lt;h4 id=&#34;mantenimiento-del-árbol-de-ficheros-valuesyaml&#34;&gt;Mantenimiento del árbol de ficheros values.yaml&lt;/h4&gt;
-&lt;p&gt;En lugar de tener solo un fichero enorme values.yaml con todas las anidaciones posibles, se puede tener una estructura de arbórea de archivos para cada aplicación que solo incluya la configuración específica en cada carpeta. p.ej.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;env/
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  values.yaml   &lt;span style=&#34;color:#75715e&#34;&gt;# nivel máximo de configuración&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  prow/
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml &lt;span style=&#34;color:#75715e&#34;&gt;# configuraciones específicas de Prow&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  tekton/
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    values.yaml  &lt;span style=&#34;color:#75715e&#34;&gt;# configuraciones específicas de Tekton&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;plantillas-valuestmplyaml&#34;&gt;Plantillas values.tmpl.yaml&lt;/h4&gt;
-&lt;p&gt;Al utilizar &lt;code&gt;jx step helm apply&lt;/code&gt; permitimos que los archivos &lt;code&gt;values.tmpl.yaml&lt;/code&gt; utilicen las plantillas go/helm en la misma forma que los archivos &lt;code&gt;templates/foo.yaml&lt;/code&gt; son utilizados dentro de las plantillas helm. De esta forma se pueden generar cadenas de valor/dato que utilicen plantillas para estructurar cosas como valores de secrets más pequeños. p.ej. crear un fichero maven &lt;code&gt;settings.xml&lt;/code&gt;  o un fichero docker &lt;code&gt;config.json&lt;/code&gt; que incluye muchos usuarios/contraseñas para diferentes registros.&lt;/p&gt;
-&lt;p&gt;Podemos ver en el fichero &lt;code&gt;values.tmpl.yaml&lt;/code&gt; cómo están todos los elementos estructurados y podremos referencia a ellos como valore de secrets a través de URLs (o funciones de plantillas) para acceder a Vault o al almacenamiento local.&lt;/p&gt;
-&lt;p&gt;Para hacer esto se utiliza la expresión &lt;code&gt;{{ .Parameter.pipelineUser.token }}&lt;/code&gt; en algún lugar del archivo &lt;code&gt;values.tmpl.yaml&lt;/code&gt;. Entonces se podrá insertar valores dentro de la plantillas helm; pero esto sucede primero para ayudar a generar el fichero &lt;code&gt;values.yaml&lt;/code&gt;.&lt;/p&gt;
 
       </description>
     </item>

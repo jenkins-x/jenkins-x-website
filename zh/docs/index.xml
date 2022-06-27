@@ -433,49 +433,6 @@ Derivative Works; and&lt;/li&gt;
     </item>
     
     <item>
-      <title>Docs: 在 Kubernetes 上安装</title>
-      <link>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/install-on-cluster/</link>
-      <pubDate>Sat, 21 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/install-on-cluster/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X 可以在 Kubernetes 1.8 以及更高版本上安装。需要的依赖有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;RBAC 是可用的&lt;/li&gt;
-&lt;li&gt;启用 docker 私有仓库。这样的话，流水线可以在 Kubernetes 集群中使用 docker 仓库（通常不是公共的因此不支持 https）。后续，你可以修改你的流水线来使用其他仓库。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;通过-kops-启用私有仓库&#34;&gt;通过 kops 启用私有仓库&lt;/h3&gt;
-&lt;p&gt;注意，如果你是在 AWS 环境中，你可能会想使用 &lt;a href=&#34;https://jenkins-x.io/zh/docs/getting-started/setup/create-cluster/&#34;&gt;jx create aws&lt;/a&gt; 命令来帮你自动化完成所有步骤！&lt;/p&gt;
-&lt;p&gt;如果你是通过 &lt;a href=&#34;https://github.com/kubernetes/kops&#34;&gt;kops&lt;/a&gt; 创建的 kubernetes 集群，那么你可以这么做：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops edit cluster
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，确保在 YAML 文件的章节 &lt;code&gt;spec&lt;/code&gt; 中有 &lt;code&gt;docker&lt;/code&gt; 配置：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;...
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;docker&lt;/span&gt;:
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;insecureRegistry&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;100.64.0.0&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;/10&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;logDriver&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面的 IP 范围 &lt;code&gt;100.64.0.0/10&lt;/code&gt; 是 AWS 上的，但你需要修改为其他 Kubernetes 集群的；它依赖于 Kubernetes 服务的 IP 范围。&lt;/p&gt;
-&lt;p&gt;保存后，你可以参考下面的命令进行验证：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops get cluster -oyaml
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后查找 &lt;code&gt;insecureRegistry&lt;/code&gt; 章节。&lt;/p&gt;
-&lt;p&gt;现在，确保这些修改在你的集群类型上是激活的：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops update cluster --yes
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops rolling-update cluster --yes
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你现在可以继续了！&lt;/p&gt;
-&lt;h3 id=&#34;安装-jenkins-x&#34;&gt;安装 Jenkins X&lt;/h3&gt;
-&lt;p&gt;为了在已有的 kubernetes 集群上安装 Jenkins X 你可以使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx install&lt;/a&gt; ：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx install
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;如果你知道提供商的话，可以通过命令行来指定。例如：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx install --provider=aws
-&lt;/code&gt;&lt;/pre&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: 特色</title>
       <link>https://jenkins-x.io/zh/docs/concepts/features/</link>
       <pubDate>Sat, 21 Apr 2018 00:00:00 +0000</pubDate>
@@ -522,6 +479,49 @@ Derivative Works; and&lt;/li&gt;
 &lt;p&gt;要安装插件的话，使用命令&lt;a href=&#34;https://jenkins-x.io/commands/jx_create_addon/&#34;&gt;jx create addon&lt;/a&gt;。例如：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create addon grafana
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 在 Kubernetes 上安装</title>
+      <link>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/install-on-cluster/</link>
+      <pubDate>Sat, 21 Apr 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/install-on-cluster/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 可以在 Kubernetes 1.8 以及更高版本上安装。需要的依赖有：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;RBAC 是可用的&lt;/li&gt;
+&lt;li&gt;启用 docker 私有仓库。这样的话，流水线可以在 Kubernetes 集群中使用 docker 仓库（通常不是公共的因此不支持 https）。后续，你可以修改你的流水线来使用其他仓库。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;通过-kops-启用私有仓库&#34;&gt;通过 kops 启用私有仓库&lt;/h3&gt;
+&lt;p&gt;注意，如果你是在 AWS 环境中，你可能会想使用 &lt;a href=&#34;https://jenkins-x.io/zh/docs/getting-started/setup/create-cluster/&#34;&gt;jx create aws&lt;/a&gt; 命令来帮你自动化完成所有步骤！&lt;/p&gt;
+&lt;p&gt;如果你是通过 &lt;a href=&#34;https://github.com/kubernetes/kops&#34;&gt;kops&lt;/a&gt; 创建的 kubernetes 集群，那么你可以这么做：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops edit cluster
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，确保在 YAML 文件的章节 &lt;code&gt;spec&lt;/code&gt; 中有 &lt;code&gt;docker&lt;/code&gt; 配置：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;docker&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;insecureRegistry&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;100.64.0.0&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;/10&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;logDriver&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上面的 IP 范围 &lt;code&gt;100.64.0.0/10&lt;/code&gt; 是 AWS 上的，但你需要修改为其他 Kubernetes 集群的；它依赖于 Kubernetes 服务的 IP 范围。&lt;/p&gt;
+&lt;p&gt;保存后，你可以参考下面的命令进行验证：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops get cluster -oyaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后查找 &lt;code&gt;insecureRegistry&lt;/code&gt; 章节。&lt;/p&gt;
+&lt;p&gt;现在，确保这些修改在你的集群类型上是激活的：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops update cluster --yes
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kops rolling-update cluster --yes
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你现在可以继续了！&lt;/p&gt;
+&lt;h3 id=&#34;安装-jenkins-x&#34;&gt;安装 Jenkins X&lt;/h3&gt;
+&lt;p&gt;为了在已有的 kubernetes 集群上安装 Jenkins X 你可以使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;jx install&lt;/a&gt; ：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx install
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如果你知道提供商的话，可以通过命令行来指定。例如：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx install --provider=aws
+&lt;/code&gt;&lt;/pre&gt;
+
       </description>
     </item>
     
@@ -1008,32 +1008,32 @@ rm -rf ~/.minikube
     </item>
     
     <item>
-      <title>Docs: 分类问题</title>
-      <link>https://jenkins-x.io/zh/docs/contributing/code/triage/</link>
+      <title>Docs: 安装问题</title>
+      <link>https://jenkins-x.io/zh/docs/managing-jx/setup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://jenkins-x.io/zh/docs/contributing/code/triage/</guid>
+      <guid>https://jenkins-x.io/zh/docs/managing-jx/setup/</guid>
       <description>
         
         
-        &lt;p&gt;Jenkins X 项目主要的问题跟踪系统是 &lt;a href=&#34;https://github.com/jenkins-x/jx/issues&#34;&gt;https://github.com/jenkins-x/jx/issues&lt;/a&gt;。这旨在捕捉问题、想法和开发工作。如有疑问请提交一个问题，一名 Jenkins X 团队成员将考虑尽快给它分类。&lt;/p&gt;
-&lt;p&gt;由于 Jenkins X 使用来自 Kubernetes 生态的 &lt;a href=&#34;https://jenkins-x.io/https://www.cloudbees.com/blog/serverless-jenkins-jenkins-x&#34;&gt;prow&lt;/a&gt;，我们认为，我们应该带领他们参与处理分类大量问题，以帮助和鼓励贡献者。我们正在重用标签的样式，包括颜色，以尝试在跨开源项目时创建熟悉度，并减少贡献的障碍。&lt;/p&gt;
-&lt;h1 id=&#34;分类问题&#34;&gt;分类问题&lt;/h1&gt;
-&lt;p&gt;所有可用标签列表请参考：https://github.com/jenkins-x/jx/labels&lt;/p&gt;
-&lt;p&gt;当对问题进行分类时，来自 Jenkins X 团队的某个成员将分配标签用来描述问题的 &lt;strong&gt;area&lt;/strong&gt; 和 &lt;strong&gt;kind&lt;/strong&gt; 。有可能，他们还将增加一个 priority ，但是，在进一步分析或更广泛的可见性之后，这些 priority 可能会发生变化。&lt;/p&gt;
-&lt;p&gt;标签通过 prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34;&gt;label&lt;/a&gt; 插件使用 GitHub 评论被添加。例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/kind bug
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/area prow
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/priority important-soon
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/contribute/triage.png&#34; alt=&#34;Triage&#34;&gt;&lt;/p&gt;
-&lt;h1 id=&#34;分配问题&#34;&gt;分配问题&lt;/h1&gt;
-&lt;p&gt;当进行分类时我们尝试将问题分配给某个人。这可能会随着调查或人员的可用性而改变。&lt;/p&gt;
-&lt;h1 id=&#34;调查问题&#34;&gt;调查问题&lt;/h1&gt;
-&lt;p&gt;当任何人在处理一个问题时，我们的目的是通过添加注释来捕获任何分析。这有助于人们学习如何调查类似问题的技巧，帮助人们理解思考过程，并通过 pull request 为任何链接修复提供上下文。&lt;/p&gt;
-&lt;h1 id=&#34;新建标签&#34;&gt;新建标签&lt;/h1&gt;
-&lt;p&gt;如果你想要请求创建一个新的标签，那么请提交一个问题并附带尽可能多的内容。&lt;/p&gt;
-&lt;h1 id=&#34;陈旧的问题&#34;&gt;陈旧的问题&lt;/h1&gt;
-&lt;p&gt;当我们鼓励广泛的问题类型，如一般的想法和想法，问题跟踪器可能增长得相当高。我们将启用 prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34;&gt;lifecycle&lt;/a&gt; 插件来帮助管理陈旧的问题。这并不意味着具有侵入性，而是允许我们不断地重新思考问题，并保持跨问题的势头。&lt;/p&gt;
+        &lt;h2 id=&#34;如何在-jenkins-x-的安装当中添加用户&#34;&gt;如何在 Jenkins X 的安装当中添加用户？&lt;/h2&gt;
+&lt;p&gt;Jenkins X 假设每个用户都可以访问运行 Jenkins X 的 kubernetes 开发集群。&lt;/p&gt;
+&lt;p&gt;如果您的用户无权访问 kubernetes 集群，我们需要设置他们的 &lt;code&gt;~/.kube/config&lt;/code&gt; 文件，以便他们可以访问它。&lt;/p&gt;
+&lt;p&gt;如果您正在使用 Google 的 GKE ，那么您可以浏览 &lt;a href=&#34;https://console.cloud.google.com&#34;&gt;GKE Console&lt;/a&gt; 以查看所有集群，然后单击开发集群旁边的 &lt;code&gt;Connect&lt;/code&gt; 按钮，然后可以运行复制/粘贴命令以连接到集群。&lt;/p&gt;
+&lt;p&gt;对于其他集群，我们计划编写一些 &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/1406&#34;&gt;CLI 命令来导出和导入kube配置&lt;/a&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;当用户拥有了-kubernetes-集群的访问权限&#34;&gt;当用户拥有了 kubernetes 集群的访问权限&lt;/h3&gt;
+&lt;p&gt;当用户拥有了 kubernetes 集群的访问权限：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/zh/getting-started/setup/install/&#34;&gt;安装 jx 二进制文件&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果 Jenkins X 安装在命名空间 &lt;code&gt;jx&lt;/code&gt; 中，那么应该 &lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/kube-context/&#34;&gt;切换你的上下文&lt;/a&gt; 到命名空间 &lt;code&gt;jx&lt;/code&gt; 当中：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx ns jx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;测试安装成功可以输入下列命令：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jx get env
+jx open
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;查看环境和任何开发工具，如 Jenkins 或 Nexus 控制台。&lt;/p&gt;
 
       </description>
     </item>
@@ -1122,62 +1122,6 @@ rm -rf ~/.minikube
     </item>
     
     <item>
-      <title>Docs: 升级</title>
-      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/promote/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/promote/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X 的升级策略配置为 &lt;code&gt;Auto&lt;/code&gt; 时，持续部署流水线通过配置好的&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#promotion&#34;&gt;环境&lt;/a&gt;来自动化&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#promotion&#34;&gt;升级&lt;/a&gt;版本。默认情况下，&lt;code&gt;Staging&lt;/code&gt; 环境使用自动升级，&lt;code&gt;生产&lt;/code&gt;环境使用&lt;code&gt;手动&lt;/code&gt;升级。&lt;/p&gt;
-&lt;p&gt;要手动升级应用的一个版本到特定环境上，可以使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_promote/&#34;&gt;jx promote&lt;/a&gt;。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx promote myapp --version 1.2.3 --env production
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;该命令会等待升级完成，并记录过程的详细信息。你可以通过参数 &lt;code&gt;--timeeout&lt;/code&gt; 为升级等待设置超时时间。&lt;/p&gt;
-&lt;p&gt;例如：等待5小时&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx promote myapp --version 1.2.3 --env production --timeout 5h
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你可以使用类似 &lt;code&gt;20m&lt;/code&gt; 或 &lt;code&gt;10h30m&lt;/code&gt; 这样的时间表达式。&lt;/p&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/overview.png&#34; class=&#34;img-thumbnail&#34;&gt;
-&lt;h3 id=&#34;反馈&#34;&gt;反馈&lt;/h3&gt;
-&lt;p&gt;如果提交注释中引用了问题（例如：通过文本 &lt;code&gt;fixes #123&lt;/code&gt;），那么，Jenkins X 流水线会自动生成类似 &lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34;&gt;jx 发布&lt;/a&gt; 的发布记录。&lt;/p&gt;
-&lt;p&gt;同样的，升级到 &lt;code&gt;Staging&lt;/code&gt; 或 &lt;code&gt;生产&lt;/code&gt; 环境中的提交日志中也会自动关联每个修复的问题，包括有发布日志和应用所运行环境的链接。&lt;/p&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/issue-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: 安装问题</title>
-      <link>https://jenkins-x.io/zh/docs/managing-jx/setup/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/managing-jx/setup/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;如何在-jenkins-x-的安装当中添加用户&#34;&gt;如何在 Jenkins X 的安装当中添加用户？&lt;/h2&gt;
-&lt;p&gt;Jenkins X 假设每个用户都可以访问运行 Jenkins X 的 kubernetes 开发集群。&lt;/p&gt;
-&lt;p&gt;如果您的用户无权访问 kubernetes 集群，我们需要设置他们的 &lt;code&gt;~/.kube/config&lt;/code&gt; 文件，以便他们可以访问它。&lt;/p&gt;
-&lt;p&gt;如果您正在使用 Google 的 GKE ，那么您可以浏览 &lt;a href=&#34;https://console.cloud.google.com&#34;&gt;GKE Console&lt;/a&gt; 以查看所有集群，然后单击开发集群旁边的 &lt;code&gt;Connect&lt;/code&gt; 按钮，然后可以运行复制/粘贴命令以连接到集群。&lt;/p&gt;
-&lt;p&gt;对于其他集群，我们计划编写一些 &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/1406&#34;&gt;CLI 命令来导出和导入kube配置&lt;/a&gt;。&lt;/p&gt;
-&lt;h3 id=&#34;当用户拥有了-kubernetes-集群的访问权限&#34;&gt;当用户拥有了 kubernetes 集群的访问权限&lt;/h3&gt;
-&lt;p&gt;当用户拥有了 kubernetes 集群的访问权限：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/zh/getting-started/setup/install/&#34;&gt;安装 jx 二进制文件&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;如果 Jenkins X 安装在命名空间 &lt;code&gt;jx&lt;/code&gt; 中，那么应该 &lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/kube-context/&#34;&gt;切换你的上下文&lt;/a&gt; 到命名空间 &lt;code&gt;jx&lt;/code&gt; 当中：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx ns jx
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;测试安装成功可以输入下列命令：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;jx get env
-jx open
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;查看环境和任何开发工具，如 Jenkins 或 Nexus 控制台。&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: 导入</title>
       <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/import/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1219,6 +1163,136 @@ jx open
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为了过滤列表，你可以添加参数 &lt;code&gt;--filter&lt;/code&gt;&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx import --github --org myname --all --filter foo
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 分类问题</title>
+      <link>https://jenkins-x.io/zh/docs/contributing/code/triage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/contributing/code/triage/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 项目主要的问题跟踪系统是 &lt;a href=&#34;https://github.com/jenkins-x/jx/issues&#34;&gt;https://github.com/jenkins-x/jx/issues&lt;/a&gt;。这旨在捕捉问题、想法和开发工作。如有疑问请提交一个问题，一名 Jenkins X 团队成员将考虑尽快给它分类。&lt;/p&gt;
+&lt;p&gt;由于 Jenkins X 使用来自 Kubernetes 生态的 &lt;a href=&#34;https://jenkins-x.io/https://www.cloudbees.com/blog/serverless-jenkins-jenkins-x&#34;&gt;prow&lt;/a&gt;，我们认为，我们应该带领他们参与处理分类大量问题，以帮助和鼓励贡献者。我们正在重用标签的样式，包括颜色，以尝试在跨开源项目时创建熟悉度，并减少贡献的障碍。&lt;/p&gt;
+&lt;h1 id=&#34;分类问题&#34;&gt;分类问题&lt;/h1&gt;
+&lt;p&gt;所有可用标签列表请参考：https://github.com/jenkins-x/jx/labels&lt;/p&gt;
+&lt;p&gt;当对问题进行分类时，来自 Jenkins X 团队的某个成员将分配标签用来描述问题的 &lt;strong&gt;area&lt;/strong&gt; 和 &lt;strong&gt;kind&lt;/strong&gt; 。有可能，他们还将增加一个 priority ，但是，在进一步分析或更广泛的可见性之后，这些 priority 可能会发生变化。&lt;/p&gt;
+&lt;p&gt;标签通过 prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34;&gt;label&lt;/a&gt; 插件使用 GitHub 评论被添加。例如：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/kind bug
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/area prow
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;/priority important-soon
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/contribute/triage.png&#34; alt=&#34;Triage&#34;&gt;&lt;/p&gt;
+&lt;h1 id=&#34;分配问题&#34;&gt;分配问题&lt;/h1&gt;
+&lt;p&gt;当进行分类时我们尝试将问题分配给某个人。这可能会随着调查或人员的可用性而改变。&lt;/p&gt;
+&lt;h1 id=&#34;调查问题&#34;&gt;调查问题&lt;/h1&gt;
+&lt;p&gt;当任何人在处理一个问题时，我们的目的是通过添加注释来捕获任何分析。这有助于人们学习如何调查类似问题的技巧，帮助人们理解思考过程，并通过 pull request 为任何链接修复提供上下文。&lt;/p&gt;
+&lt;h1 id=&#34;新建标签&#34;&gt;新建标签&lt;/h1&gt;
+&lt;p&gt;如果你想要请求创建一个新的标签，那么请提交一个问题并附带尽可能多的内容。&lt;/p&gt;
+&lt;h1 id=&#34;陈旧的问题&#34;&gt;陈旧的问题&lt;/h1&gt;
+&lt;p&gt;当我们鼓励广泛的问题类型，如一般的想法和想法，问题跟踪器可能增长得相当高。我们将启用 prow &lt;a href=&#34;https://prow.k8s.io/plugins&#34;&gt;lifecycle&lt;/a&gt; 插件来帮助管理陈旧的问题。这并不意味着具有侵入性，而是允许我们不断地重新思考问题，并保持跨问题的势头。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 构建打包</title>
+      <link>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/build-packs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/build-packs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;我们使用 &lt;a href=&#34;https://draft.sh/&#34;&gt;draft&lt;/a&gt; 风格为不同的语言_构建打包_ ，我们通过&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/import/&#34;&gt;导入&lt;/a&gt;或者&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/create-spring/&#34;&gt;创建&lt;/a&gt;&lt;a href=&#34;https://jenkins-x.io/zh/docs/getting-started/first-project/create-quickstart/&#34;&gt;他们&lt;/a&gt;，运行时和构建工具添加必要的配置文件，因此我们可以在 Kubernetes 中构建和部署他们。&lt;/p&gt;
+&lt;p&gt;如果由于工程没有被创建或导入而不存在的话，构建包会默认使用下面的文件：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; 把代码构建为不可变的 docker 镜像，准备在 Kubernetes 中运行&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; 为应用使用申明式 Jenkins 流水线定义 CI/CD 步骤&lt;/li&gt;
+&lt;li&gt;helm chart 在文件夹 &lt;code&gt;charts&lt;/code&gt; 中生成可以在 Kubernetes 中运行的 Kubernetes 资源&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;charts/preview&lt;/code&gt; 文件夹中的 &lt;em&gt;preview chart&lt;/em&gt; 定义了基于 Pull Request 部署一个&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt;的所有依赖&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;默认的构建包在 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&lt;/a&gt;，每个语言或者构建工具在一个文件夹中。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;jx&lt;/code&gt; 命令行克隆构建包到你的文件夹 &lt;code&gt;.~/.jx/draft/packs/&lt;/code&gt; ，并在你每次尝试创建或者到一个工程时通过 &lt;code&gt;git pull&lt;/code&gt; 来更新他们。&lt;/p&gt;
+&lt;h2 id=&#34;创建新的构建&#34;&gt;创建新的构建&lt;/h2&gt;
+&lt;p&gt;我们欢迎&lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;贡献&lt;/a&gt;，因此，请考虑增加新的构建包和 &lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod 模板&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;这里有如何创建一个新的构建包的指导 —— 如果有任何不清楚的请&lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;加入社区并提问&lt;/a&gt;，我们很乐意帮助！&lt;/p&gt;
+&lt;p&gt;最好的开始就是 &lt;em&gt;快速开始&lt;/em&gt; 应用。你可以当作一个测试的样例工程。因此，创建或查找一个合适的例子工程，然后&lt;a href=&#34;https://jenkins-x.io/zh/developing/import&#34;&gt;导入&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;然后，如果不存在的话，手动添加 &lt;code&gt;Dockerfile&lt;/code&gt; 和 &lt;code&gt;Jenkinsfile&lt;/code&gt; 。你可以从&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs&#34;&gt;当前构建包文件夹&lt;/a&gt;开始 —— 使用相似的语言或框架。&lt;/p&gt;
+&lt;p&gt;如果你的构建包使用了 &lt;a href=&#34;https://jenkins-x.io/zh/architecture/pod-templates&#34;&gt;pod 模板&lt;/a&gt; 中不存在的构建工具，你需要&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/managing-jx/common-tasks/pod-templates/#submitting-new-pod-templates&#34;&gt;提交一个新的 pod 模板&lt;/a&gt;，还可能需要一个新的构建容器景象。&lt;/p&gt;
+&lt;p&gt;一旦你有了 pod 模板可以使用，例如你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中引用到的 &lt;code&gt;jenkins-foo&lt;/code&gt; ：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// my declarative Jenkinsfile
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;pipeline &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    agent &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      label &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-foo&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    environment &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    stages &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      stage&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CI Build and push snapshot&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        steps &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          container&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            sh &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo deploy&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一旦你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 可以在你的示例工程为你的语言实现 CI/CD 的话，我们因该把 &lt;code&gt;Dockerfile&lt;/code&gt;, &lt;code&gt;Jenkinsfile&lt;/code&gt; 和 charts 文件夹拷贝到你的派生 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;jenkins-x/draft-packs 仓库&lt;/a&gt; 中。&lt;/p&gt;
+&lt;p&gt;你可以通过把他们添加到构建包的本地库 &lt;code&gt; ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt; 中来尝试。&lt;/p&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export PACK&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# the charts will be in some folder charts/somefoo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK/charts
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当你的构建包在 &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;/code&gt; 文件夹中，就可以通过命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; 来导入工程，使用编程语言来检测并查找最合适的构建包。如果你的构建包自定义检测逻辑的话，请让我们指导，我们可以帮助改进 &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; 使得在你的构建包上做的更好。例如：我们有一些自定义逻辑更好地处理 &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/import.go#L383-L397&#34;&gt;maven 和 Gradle&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;如果你需要任何帮助 &lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;请加入社区&lt;/a&gt; 。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 技术性问题</title>
+      <link>https://jenkins-x.io/zh/docs/concepts/technology/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/concepts/technology/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;什么是-helm&#34;&gt;什么是 Helm?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.helm.sh/&#34;&gt;helm&lt;/a&gt; 是 Kubernetes 的开源包管理器。&lt;/p&gt;
+&lt;p&gt;它和其他的包管理工具（brew, yum, npm等）类似，有一个或者更多的包仓库可以安装（在 helm 中叫做 &lt;code&gt;charts&lt;/code&gt; 和 kubernetes 的主题保持一致），可以搜索、安装和升级。&lt;/p&gt;
+&lt;p&gt;一个 &lt;a href=&#34;https://docs.helm.sh/developing_charts/#charts&#34;&gt;helm chart 基本上是带版本的 kubernetes yaml 压缩包&lt;/a&gt; ，可以轻松地安装在任何 kubnernetes 集群上。&lt;/p&gt;
+&lt;p&gt;Helm 通过文件 &lt;code&gt;requirements.yaml&lt;/code&gt; 支持组合（一个 chart 可以包含其他 charts）。&lt;/p&gt;
+&lt;h2 id=&#34;什么是-skaffold&#34;&gt;什么是 Skaffold?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34;&gt;skaffold&lt;/a&gt; 是一个开源的工具，用于在 Kubernetes 集群中构建 docker 镜像，并通过 &lt;code&gt;kubectl&lt;/code&gt; 或 &lt;code&gt;helm&lt;/code&gt; 部署、升级。&lt;/p&gt;
+&lt;p&gt;在 kubernetes 集群中构建 docker 镜像的挑战有几种方法来实现：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用本地 docker daemon 和 kubernetes 集群的 socket&lt;/li&gt;
+&lt;li&gt;使用一个云服务，例如：Google Cloud Builder&lt;/li&gt;
+&lt;li&gt;使用无 docker-daemon，例如：&lt;a href=&#34;https://github.com/GoogleContainerTools/kaniko&#34;&gt;kaniko&lt;/a&gt; 不需要访问权限&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Skaffold 的好处是把你的代码或 CLI 从细节中抽象出来；你可以在文件 &lt;code&gt;skaffold.yaml&lt;/code&gt; 中配置构建 docker 镜像的策略，切换 docker daemon、GCB 或 kaniko等。&lt;/p&gt;
+&lt;p&gt;Skaffold 在 &lt;a href=&#34;https://jenkins-x.io/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; 中也很有用，当你改变代码后可以执行快速增量构建。&lt;/p&gt;
+&lt;h2 id=&#34;helm-和-skaffold-比较&#34;&gt;Helm 和 Skaffold 比较？&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;helm&lt;/code&gt; 允许你安装、升级叫做 charts 的包，使用一个或者多个在一些 docker registry 中的 docker 镜像以及一些 kubernetes YAML 文件来安装、升级 kubernetes 集群中的应用。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;skaffold&lt;/code&gt; 是一个用于执行 docker 构建的工具，也可以通过 &lt;code&gt;kubectl&lt;/code&gt; 或 &lt;code&gt;helm&lt;/code&gt; 重启部署应用——或者在一个 CI/CD 流水线中以及本地开发中使用。&lt;/p&gt;
+&lt;p&gt;Jenkins X 使用在它的 CI/CD 流水线中使用 &lt;code&gt;skaffold&lt;/code&gt; 创建 docker 镜像。我们在每次合并到 master 时发布版本化的 docker 镜像和 helm charts。然后，我们通过 &lt;code&gt;helm&lt;/code&gt; 升级环境。&lt;/p&gt;
+&lt;h2 id=&#34;什么是-exposecontroller&#34;&gt;什么是 exposecontroller?&lt;/h2&gt;
+&lt;p&gt;事实证明，在 Kubernetes 集群中暴露服务比较复杂。例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用什么域名？&lt;/li&gt;
+&lt;li&gt;你是否应该使用 TLS 和生成的证书，并把它们关联到域名上？&lt;/li&gt;
+&lt;li&gt;你是否在使用 OpenShift，如果是的话，可能使用 &lt;code&gt;Route&lt;/code&gt; 会比 &lt;code&gt;Ingress&lt;/code&gt; 更好？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此，我们在 Jenkins X 中通过把微服务代理到一个叫做 &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34;&gt;exposecontroller&lt;/a&gt; 的服务上实现简化，它的职责就是处理上面的事情——把所有带有表明希望暴露到当前集群的 &lt;code&gt;Service&lt;/code&gt; 资源暴露，类似域名的命名空间的暴露规则，是否使用 TLS 以及 &lt;code&gt;Route&lt;/code&gt; 或 &lt;code&gt;Ingress&lt;/code&gt;等。&lt;/p&gt;
+&lt;p&gt;如果你看一下你的环境 git 仓库，可能会注意到两个 &lt;code&gt;exposecontroller&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml&#34;&gt;默认是 charts&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;默认有两个任务用来自动化生成或者清理 &lt;code&gt;Ingress&lt;/code&gt; 资源，以实现暴露标记了你希望从集群外部访问的 &lt;code&gt;Services&lt;/code&gt; 资源。例如：web 应用或者 rest 接口。&lt;/p&gt;
+&lt;p&gt;你也可以不使用 exposecontroller —— 只要不在你的服务中使用 exposecontroller 标签即可。你也可以从环境中移除 exposecontroller 任务 —— 这么做的话，我们所有的快速开始（QuickStarts）都无法从集群外部访问！&lt;/p&gt;
+
       </description>
     </item>
     
@@ -1319,105 +1393,6 @@ jx open
     </item>
     
     <item>
-      <title>Docs: 技术性问题</title>
-      <link>https://jenkins-x.io/zh/docs/concepts/technology/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/concepts/technology/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;什么是-helm&#34;&gt;什么是 Helm?&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.helm.sh/&#34;&gt;helm&lt;/a&gt; 是 Kubernetes 的开源包管理器。&lt;/p&gt;
-&lt;p&gt;它和其他的包管理工具（brew, yum, npm等）类似，有一个或者更多的包仓库可以安装（在 helm 中叫做 &lt;code&gt;charts&lt;/code&gt; 和 kubernetes 的主题保持一致），可以搜索、安装和升级。&lt;/p&gt;
-&lt;p&gt;一个 &lt;a href=&#34;https://docs.helm.sh/developing_charts/#charts&#34;&gt;helm chart 基本上是带版本的 kubernetes yaml 压缩包&lt;/a&gt; ，可以轻松地安装在任何 kubnernetes 集群上。&lt;/p&gt;
-&lt;p&gt;Helm 通过文件 &lt;code&gt;requirements.yaml&lt;/code&gt; 支持组合（一个 chart 可以包含其他 charts）。&lt;/p&gt;
-&lt;h2 id=&#34;什么是-skaffold&#34;&gt;什么是 Skaffold?&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34;&gt;skaffold&lt;/a&gt; 是一个开源的工具，用于在 Kubernetes 集群中构建 docker 镜像，并通过 &lt;code&gt;kubectl&lt;/code&gt; 或 &lt;code&gt;helm&lt;/code&gt; 部署、升级。&lt;/p&gt;
-&lt;p&gt;在 kubernetes 集群中构建 docker 镜像的挑战有几种方法来实现：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;使用本地 docker daemon 和 kubernetes 集群的 socket&lt;/li&gt;
-&lt;li&gt;使用一个云服务，例如：Google Cloud Builder&lt;/li&gt;
-&lt;li&gt;使用无 docker-daemon，例如：&lt;a href=&#34;https://github.com/GoogleContainerTools/kaniko&#34;&gt;kaniko&lt;/a&gt; 不需要访问权限&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Skaffold 的好处是把你的代码或 CLI 从细节中抽象出来；你可以在文件 &lt;code&gt;skaffold.yaml&lt;/code&gt; 中配置构建 docker 镜像的策略，切换 docker daemon、GCB 或 kaniko等。&lt;/p&gt;
-&lt;p&gt;Skaffold 在 &lt;a href=&#34;https://jenkins-x.io/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; 中也很有用，当你改变代码后可以执行快速增量构建。&lt;/p&gt;
-&lt;h2 id=&#34;helm-和-skaffold-比较&#34;&gt;Helm 和 Skaffold 比较？&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;helm&lt;/code&gt; 允许你安装、升级叫做 charts 的包，使用一个或者多个在一些 docker registry 中的 docker 镜像以及一些 kubernetes YAML 文件来安装、升级 kubernetes 集群中的应用。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;skaffold&lt;/code&gt; 是一个用于执行 docker 构建的工具，也可以通过 &lt;code&gt;kubectl&lt;/code&gt; 或 &lt;code&gt;helm&lt;/code&gt; 重启部署应用——或者在一个 CI/CD 流水线中以及本地开发中使用。&lt;/p&gt;
-&lt;p&gt;Jenkins X 使用在它的 CI/CD 流水线中使用 &lt;code&gt;skaffold&lt;/code&gt; 创建 docker 镜像。我们在每次合并到 master 时发布版本化的 docker 镜像和 helm charts。然后，我们通过 &lt;code&gt;helm&lt;/code&gt; 升级环境。&lt;/p&gt;
-&lt;h2 id=&#34;什么是-exposecontroller&#34;&gt;什么是 exposecontroller?&lt;/h2&gt;
-&lt;p&gt;事实证明，在 Kubernetes 集群中暴露服务比较复杂。例如：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;使用什么域名？&lt;/li&gt;
-&lt;li&gt;你是否应该使用 TLS 和生成的证书，并把它们关联到域名上？&lt;/li&gt;
-&lt;li&gt;你是否在使用 OpenShift，如果是的话，可能使用 &lt;code&gt;Route&lt;/code&gt; 会比 &lt;code&gt;Ingress&lt;/code&gt; 更好？&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;因此，我们在 Jenkins X 中通过把微服务代理到一个叫做 &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34;&gt;exposecontroller&lt;/a&gt; 的服务上实现简化，它的职责就是处理上面的事情——把所有带有表明希望暴露到当前集群的 &lt;code&gt;Service&lt;/code&gt; 资源暴露，类似域名的命名空间的暴露规则，是否使用 TLS 以及 &lt;code&gt;Route&lt;/code&gt; 或 &lt;code&gt;Ingress&lt;/code&gt;等。&lt;/p&gt;
-&lt;p&gt;如果你看一下你的环境 git 仓库，可能会注意到两个 &lt;code&gt;exposecontroller&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml&#34;&gt;默认是 charts&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;默认有两个任务用来自动化生成或者清理 &lt;code&gt;Ingress&lt;/code&gt; 资源，以实现暴露标记了你希望从集群外部访问的 &lt;code&gt;Services&lt;/code&gt; 资源。例如：web 应用或者 rest 接口。&lt;/p&gt;
-&lt;p&gt;你也可以不使用 exposecontroller —— 只要不在你的服务中使用 exposecontroller 标签即可。你也可以从环境中移除 exposecontroller 任务 —— 这么做的话，我们所有的快速开始（QuickStarts）都无法从集群外部访问！&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: 构建打包</title>
-      <link>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/build-packs/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/managing-jx/common-tasks/build-packs/</guid>
-      <description>
-        
-        
-        &lt;p&gt;我们使用 &lt;a href=&#34;https://draft.sh/&#34;&gt;draft&lt;/a&gt; 风格为不同的语言_构建打包_ ，我们通过&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/import/&#34;&gt;导入&lt;/a&gt;或者&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/using-jx/common-tasks/create-spring/&#34;&gt;创建&lt;/a&gt;&lt;a href=&#34;https://jenkins-x.io/zh/docs/getting-started/first-project/create-quickstart/&#34;&gt;他们&lt;/a&gt;，运行时和构建工具添加必要的配置文件，因此我们可以在 Kubernetes 中构建和部署他们。&lt;/p&gt;
-&lt;p&gt;如果由于工程没有被创建或导入而不存在的话，构建包会默认使用下面的文件：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;Dockerfile&lt;/code&gt; 把代码构建为不可变的 docker 镜像，准备在 Kubernetes 中运行&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;Jenkinsfile&lt;/code&gt; 为应用使用申明式 Jenkins 流水线定义 CI/CD 步骤&lt;/li&gt;
-&lt;li&gt;helm chart 在文件夹 &lt;code&gt;charts&lt;/code&gt; 中生成可以在 Kubernetes 中运行的 Kubernetes 资源&lt;/li&gt;
-&lt;li&gt;在 &lt;code&gt;charts/preview&lt;/code&gt; 文件夹中的 &lt;em&gt;preview chart&lt;/em&gt; 定义了基于 Pull Request 部署一个&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt;的所有依赖&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;默认的构建包在 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&lt;/a&gt;，每个语言或者构建工具在一个文件夹中。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;jx&lt;/code&gt; 命令行克隆构建包到你的文件夹 &lt;code&gt;.~/.jx/draft/packs/&lt;/code&gt; ，并在你每次尝试创建或者到一个工程时通过 &lt;code&gt;git pull&lt;/code&gt; 来更新他们。&lt;/p&gt;
-&lt;h2 id=&#34;创建新的构建&#34;&gt;创建新的构建&lt;/h2&gt;
-&lt;p&gt;我们欢迎&lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;贡献&lt;/a&gt;，因此，请考虑增加新的构建包和 &lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/managing-jx/common-tasks/pod-templates/&#34;&gt;pod 模板&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;这里有如何创建一个新的构建包的指导 —— 如果有任何不清楚的请&lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;加入社区并提问&lt;/a&gt;，我们很乐意帮助！&lt;/p&gt;
-&lt;p&gt;最好的开始就是 &lt;em&gt;快速开始&lt;/em&gt; 应用。你可以当作一个测试的样例工程。因此，创建或查找一个合适的例子工程，然后&lt;a href=&#34;https://jenkins-x.io/zh/developing/import&#34;&gt;导入&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;然后，如果不存在的话，手动添加 &lt;code&gt;Dockerfile&lt;/code&gt; 和 &lt;code&gt;Jenkinsfile&lt;/code&gt; 。你可以从&lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes/tree/master/packs&#34;&gt;当前构建包文件夹&lt;/a&gt;开始 —— 使用相似的语言或框架。&lt;/p&gt;
-&lt;p&gt;如果你的构建包使用了 &lt;a href=&#34;https://jenkins-x.io/zh/architecture/pod-templates&#34;&gt;pod 模板&lt;/a&gt; 中不存在的构建工具，你需要&lt;a href=&#34;https://jenkins-x.io/zh/docs/resources/guides/managing-jx/common-tasks/pod-templates/#submitting-new-pod-templates&#34;&gt;提交一个新的 pod 模板&lt;/a&gt;，还可能需要一个新的构建容器景象。&lt;/p&gt;
-&lt;p&gt;一旦你有了 pod 模板可以使用，例如你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 中引用到的 &lt;code&gt;jenkins-foo&lt;/code&gt; ：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// my declarative Jenkinsfile
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;pipeline &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    agent &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      label &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;jenkins-foo&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    environment &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;...&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    stages &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      stage&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CI Build and push snapshot&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        steps &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          container&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            sh &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo deploy&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一旦你的 &lt;code&gt;Jenkinsfile&lt;/code&gt; 可以在你的示例工程为你的语言实现 CI/CD 的话，我们因该把 &lt;code&gt;Dockerfile&lt;/code&gt;, &lt;code&gt;Jenkinsfile&lt;/code&gt; 和 charts 文件夹拷贝到你的派生 &lt;a href=&#34;https://github.com/jenkins-x-buildpacks/jenkins-x-kubernetes&#34;&gt;jenkins-x/draft-packs 仓库&lt;/a&gt; 中。&lt;/p&gt;
-&lt;p&gt;你可以通过把他们添加到构建包的本地库 &lt;code&gt; ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs&lt;/code&gt; 中来尝试。&lt;/p&gt;
-&lt;p&gt;例如：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;export PACK&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;foo&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;mkdir ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp Dockerfile Jenkinsfile  ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# the charts will be in some folder charts/somefoo&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cp -r charts/somefoo ~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/$PACK/charts
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当你的构建包在 &lt;code&gt;~/.jx/draft/packs/github.com/jenkins-x/draft-packs/packs/&lt;/code&gt; 文件夹中，就可以通过命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; 来导入工程，使用编程语言来检测并查找最合适的构建包。如果你的构建包自定义检测逻辑的话，请让我们指导，我们可以帮助改进 &lt;a href=&#34;https://jenkins-x.io/commands/jx_import/&#34;&gt;jx import&lt;/a&gt; 使得在你的构建包上做的更好。例如：我们有一些自定义逻辑更好地处理 &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/master/pkg/jx/cmd/import.go#L383-L397&#34;&gt;maven 和 Gradle&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;如果你需要任何帮助 &lt;a href=&#34;https://jenkins-x.io/zh/community/&#34;&gt;请加入社区&lt;/a&gt; 。&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
       <title>Docs: 浏览</title>
       <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/browsing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1473,6 +1448,105 @@ jx open
     </item>
     
     <item>
+      <title>Docs: 升级</title>
+      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/promote/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/promote/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 的升级策略配置为 &lt;code&gt;Auto&lt;/code&gt; 时，持续部署流水线通过配置好的&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#promotion&#34;&gt;环境&lt;/a&gt;来自动化&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#promotion&#34;&gt;升级&lt;/a&gt;版本。默认情况下，&lt;code&gt;Staging&lt;/code&gt; 环境使用自动升级，&lt;code&gt;生产&lt;/code&gt;环境使用&lt;code&gt;手动&lt;/code&gt;升级。&lt;/p&gt;
+&lt;p&gt;要手动升级应用的一个版本到特定环境上，可以使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_promote/&#34;&gt;jx promote&lt;/a&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx promote myapp --version 1.2.3 --env production
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;该命令会等待升级完成，并记录过程的详细信息。你可以通过参数 &lt;code&gt;--timeeout&lt;/code&gt; 为升级等待设置超时时间。&lt;/p&gt;
+&lt;p&gt;例如：等待5小时&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx promote myapp --version 1.2.3 --env production --timeout 5h
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;你可以使用类似 &lt;code&gt;20m&lt;/code&gt; 或 &lt;code&gt;10h30m&lt;/code&gt; 这样的时间表达式。&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/overview.png&#34; class=&#34;img-thumbnail&#34;&gt;
+&lt;h3 id=&#34;反馈&#34;&gt;反馈&lt;/h3&gt;
+&lt;p&gt;如果提交注释中引用了问题（例如：通过文本 &lt;code&gt;fixes #123&lt;/code&gt;），那么，Jenkins X 流水线会自动生成类似 &lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34;&gt;jx 发布&lt;/a&gt; 的发布记录。&lt;/p&gt;
+&lt;p&gt;同样的，升级到 &lt;code&gt;Staging&lt;/code&gt; 或 &lt;code&gt;生产&lt;/code&gt; 环境中的提交日志中也会自动关联每个修复的问题，包括有发布日志和应用所运行环境的链接。&lt;/p&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/issue-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 问题</title>
+      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/issues/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/issues/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Jenkins X 默认使用你的 git 提供商中的问题跟踪系统来创建和浏览问题。&lt;/p&gt;
+&lt;p&gt;例如：如果你在 GitHub 项目中的源码中，那么你可以输入 &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_issue/&#34;&gt;jx create issue&lt;/a&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create issue -t &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;lets make things more awesome&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一个新的问题就会在 GitHub 上被创建。&lt;/p&gt;
+&lt;p&gt;你可以在你的项目上通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_issues/&#34;&gt;jx get issues&lt;/a&gt; 列出打开的问题：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get issues
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;使用不同的问题跟踪&#34;&gt;使用不同的问题跟踪&lt;/h3&gt;
+&lt;p&gt;如果你希望在项目中使用 JIRA，你首先需要添加一个 JIRA 服务。&lt;/p&gt;
+&lt;p&gt;你可以通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_tracker_server/&#34;&gt;jx create tracker server&lt;/a&gt; 注册你的 JIRA服务：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create tracker server jira https://mycompany.atlassian.net/
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，你就可以通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_tracker/&#34;&gt;jx get tracker&lt;/a&gt; 来查看你的问题追踪了：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get tracker
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，通过下面添加一个用户和 token：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create tracker token -n jira  myEmailAddress
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;配置项目的问题跟踪&#34;&gt;配置项目的问题跟踪&lt;/h3&gt;
+&lt;p&gt;在你项目的源码中使用 &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_config/&#34;&gt;jx edit config&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit config -k issues
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如果你有多个问题跟踪系统，选择一个用于当前项目&lt;/li&gt;
+&lt;li&gt;在问题跟踪系统中输入项目名称（例如：大写的 JIRA 项目名称）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在你的项目中一个叫做 &lt;code&gt;jenkins-x.xml&lt;/code&gt; 的文件会被修改，这个文件应该被加到你的 git 库中。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 研发</title>
+      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/devpods/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/devpods/</guid>
+      <description>
+        
+        
+        &lt;p&gt;如何使用 Jenkins X 产生持续交付价值。&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Docs: 预览</title>
+      <link>https://jenkins-x.io/zh/docs/reference/preview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/zh/docs/reference/preview/</guid>
+      <description>
+        
+        
+        &lt;p&gt;我们强烈建议使用 &lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt; ，使得在变更合并到 master 之前尽快地得到反馈。&lt;/p&gt;
+&lt;p&gt;通常，预览环境是由 Jenkins X 的流水线中自动创建的。&lt;/p&gt;
+&lt;p&gt;然而，你可以使用 &lt;a href=&#34;https://jenkins-x.io/commands/jx/&#34;&gt;jx&lt;/a&gt; 通过命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_preview/&#34;&gt;jx preview&lt;/a&gt; 手动创建一个&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt;。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx preview
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;创建预览环境时都做了什么&#34;&gt;创建预览环境时都做了什么&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;一个新的 &lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#environments&#34;&gt;环境&lt;/a&gt; ，例如 &lt;code&gt;预览&lt;/code&gt; 被创建时，一个 &lt;a href=&#34;https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/&#34;&gt;kubernetes 命名空间&lt;/a&gt; 会在 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; 出现， 使用 &lt;a href=&#34;https://jenkins-x.io/zh/developing/kube-context&#34;&gt;jx 环境和 jx 命名空间命令&lt;/a&gt; 你可以看到那个预览环境是活跃的，并可以进入查看。&lt;/li&gt;
+&lt;li&gt;Pull Request 会作为预览 Docker 镜像和 chart 构建，并被部署到预览环境中&lt;/li&gt;
+&lt;li&gt;添加一条注释到 Pull Request 中，让你们团队知道该预览应用已经准备好可以测试了，并带有打开应用的链接。因此，只要点击一下就可以让你们团队成员体验预览环境！&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;https://jenkins-x.io/images/pr-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Docs: 源码</title>
       <link>https://jenkins-x.io/zh/docs/contributing/components/source/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -1519,15 +1593,35 @@ jx open
     </item>
     
     <item>
-      <title>Docs: 研发</title>
-      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/devpods/</link>
+      <title>Docs: 自定义资源</title>
+      <link>https://jenkins-x.io/zh/docs/contributing/components/custom-resources/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/devpods/</guid>
+      <guid>https://jenkins-x.io/zh/docs/contributing/components/custom-resources/</guid>
       <description>
         
         
-        &lt;p&gt;如何使用 Jenkins X 产生持续交付价值。&lt;/p&gt;
+        &lt;p&gt;Kubernetes 提供了一个叫做&lt;a href=&#34;https://kubernetes.io/docs/concepts/api-extension/custom-resources/&#34;&gt;自定义资源&lt;/a&gt;的扩展机制，它允许微服务扩展 Kubernetes 平台来解决更高级的问题。&lt;/p&gt;
+&lt;p&gt;因此，在 Jenkins X 中定义了若干个自定义资源来扩展 Kubernetes 支持 CI/CD：&lt;/p&gt;
+&lt;h3 id=&#34;环境&#34;&gt;环境&lt;/h3&gt;
+&lt;p&gt;Jenkins X 原生地支持&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#environments&#34;&gt;环境&lt;/a&gt;，允许为你们团队定义环境，并通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; 查询：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get environments
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以下的命令都使用 Kubernetes 自定义资源&lt;code&gt;环境&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;因此，你还可以通过 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34;&gt;kubectl&lt;/a&gt; 查询环境：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get environments
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者你想要通过 &lt;code&gt;YAML&lt;/code&gt; 直接编辑它们的话：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl edit env staging
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;尽管，你使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_environment/&#34;&gt;jx edit environment&lt;/a&gt; 会更容易。&lt;/p&gt;
+&lt;h3 id=&#34;发版&#34;&gt;发版&lt;/h3&gt;
+&lt;p&gt;Jenkins X 流水线生成了一个自定义资源 &lt;code&gt;发版&lt;/code&gt;，我们可以用来跟踪：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;版本、git 标签、git 地址映射到 Kubernetes/Helm 中的发版&lt;/li&gt;
+&lt;li&gt;Jenkins 流水线地址和执行日志用于执行发布&lt;/li&gt;
+&lt;li&gt;提交日志、问题和 Pull Requests 是每次发版的一部分，因此我们可以实现&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#feedback&#34;&gt;在 Staging/生产环境中修复的问题反馈&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;流水线活动&#34;&gt;流水线活动&lt;/h3&gt;
+&lt;p&gt;该资源保存了基于 Jenkins 流水线阶段以及 &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#promotion&#34;&gt;升级活动&lt;/a&gt; 的流水线状态&lt;/p&gt;
+&lt;p&gt;该资源还会被命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_activities/&#34;&gt;jx get activities&lt;/a&gt; 用到&lt;/p&gt;
 
       </description>
     </item>
@@ -1572,100 +1666,6 @@ jx open
 &lt;p&gt;&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt; 和&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#environments&#34;&gt;永久环境&lt;/a&gt; 类似，都在源码中使用 Helm charts 定义。&lt;/p&gt;
 &lt;p&gt;主要的不同之处，是预览环境配置在应用的源码的 &lt;code&gt;./chart/preview&lt;/code&gt; 目录中。&lt;/p&gt;
 &lt;p&gt;而且，它们不是固定的，而是由一个应用的 git 仓库的 Pull Request 创建，而且后面会被删除（手动或者通过垃圾回收自动）。&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: 自定义资源</title>
-      <link>https://jenkins-x.io/zh/docs/contributing/components/custom-resources/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/contributing/components/custom-resources/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Kubernetes 提供了一个叫做&lt;a href=&#34;https://kubernetes.io/docs/concepts/api-extension/custom-resources/&#34;&gt;自定义资源&lt;/a&gt;的扩展机制，它允许微服务扩展 Kubernetes 平台来解决更高级的问题。&lt;/p&gt;
-&lt;p&gt;因此，在 Jenkins X 中定义了若干个自定义资源来扩展 Kubernetes 支持 CI/CD：&lt;/p&gt;
-&lt;h3 id=&#34;环境&#34;&gt;环境&lt;/h3&gt;
-&lt;p&gt;Jenkins X 原生地支持&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#environments&#34;&gt;环境&lt;/a&gt;，允许为你们团队定义环境，并通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; 查询：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get environments
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以下的命令都使用 Kubernetes 自定义资源&lt;code&gt;环境&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;因此，你还可以通过 &lt;a href=&#34;https://kubernetes.io/docs/reference/kubectl/overview/&#34;&gt;kubectl&lt;/a&gt; 查询环境：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl get environments
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者你想要通过 &lt;code&gt;YAML&lt;/code&gt; 直接编辑它们的话：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl edit env staging
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;尽管，你使用命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_environment/&#34;&gt;jx edit environment&lt;/a&gt; 会更容易。&lt;/p&gt;
-&lt;h3 id=&#34;发版&#34;&gt;发版&lt;/h3&gt;
-&lt;p&gt;Jenkins X 流水线生成了一个自定义资源 &lt;code&gt;发版&lt;/code&gt;，我们可以用来跟踪：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;版本、git 标签、git 地址映射到 Kubernetes/Helm 中的发版&lt;/li&gt;
-&lt;li&gt;Jenkins 流水线地址和执行日志用于执行发布&lt;/li&gt;
-&lt;li&gt;提交日志、问题和 Pull Requests 是每次发版的一部分，因此我们可以实现&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#feedback&#34;&gt;在 Staging/生产环境中修复的问题反馈&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;流水线活动&#34;&gt;流水线活动&lt;/h3&gt;
-&lt;p&gt;该资源保存了基于 Jenkins 流水线阶段以及 &lt;a href=&#34;https://jenkins-x.io/about/concepts/features/#promotion&#34;&gt;升级活动&lt;/a&gt; 的流水线状态&lt;/p&gt;
-&lt;p&gt;该资源还会被命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_activities/&#34;&gt;jx get activities&lt;/a&gt; 用到&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: 问题</title>
-      <link>https://jenkins-x.io/zh/docs/using-jx/common-tasks/issues/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/using-jx/common-tasks/issues/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X 默认使用你的 git 提供商中的问题跟踪系统来创建和浏览问题。&lt;/p&gt;
-&lt;p&gt;例如：如果你在 GitHub 项目中的源码中，那么你可以输入 &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_issue/&#34;&gt;jx create issue&lt;/a&gt;：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create issue -t &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;lets make things more awesome&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一个新的问题就会在 GitHub 上被创建。&lt;/p&gt;
-&lt;p&gt;你可以在你的项目上通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_issues/&#34;&gt;jx get issues&lt;/a&gt; 列出打开的问题：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get issues
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;使用不同的问题跟踪&#34;&gt;使用不同的问题跟踪&lt;/h3&gt;
-&lt;p&gt;如果你希望在项目中使用 JIRA，你首先需要添加一个 JIRA 服务。&lt;/p&gt;
-&lt;p&gt;你可以通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_create_tracker_server/&#34;&gt;jx create tracker server&lt;/a&gt; 注册你的 JIRA服务：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create tracker server jira https://mycompany.atlassian.net/
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，你就可以通过 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_tracker/&#34;&gt;jx get tracker&lt;/a&gt; 来查看你的问题追踪了：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx get tracker
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后，通过下面添加一个用户和 token：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx create tracker token -n jira  myEmailAddress
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;配置项目的问题跟踪&#34;&gt;配置项目的问题跟踪&lt;/h3&gt;
-&lt;p&gt;在你项目的源码中使用 &lt;a href=&#34;https://jenkins-x.io/commands/jx_edit_config/&#34;&gt;jx edit config&lt;/a&gt;:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx edit config -k issues
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;如果你有多个问题跟踪系统，选择一个用于当前项目&lt;/li&gt;
-&lt;li&gt;在问题跟踪系统中输入项目名称（例如：大写的 JIRA 项目名称）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;在你的项目中一个叫做 &lt;code&gt;jenkins-x.xml&lt;/code&gt; 的文件会被修改，这个文件应该被加到你的 git 库中。&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Docs: 预览</title>
-      <link>https://jenkins-x.io/zh/docs/reference/preview/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/zh/docs/reference/preview/</guid>
-      <description>
-        
-        
-        &lt;p&gt;我们强烈建议使用 &lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt; ，使得在变更合并到 master 之前尽快地得到反馈。&lt;/p&gt;
-&lt;p&gt;通常，预览环境是由 Jenkins X 的流水线中自动创建的。&lt;/p&gt;
-&lt;p&gt;然而，你可以使用 &lt;a href=&#34;https://jenkins-x.io/commands/jx/&#34;&gt;jx&lt;/a&gt; 通过命令 &lt;a href=&#34;https://jenkins-x.io/commands/jx_preview/&#34;&gt;jx preview&lt;/a&gt; 手动创建一个&lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#preview-environments&#34;&gt;预览环境&lt;/a&gt;。&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx preview
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;创建预览环境时都做了什么&#34;&gt;创建预览环境时都做了什么&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;一个新的 &lt;a href=&#34;https://jenkins-x.io/zh/about/concepts/features/#environments&#34;&gt;环境&lt;/a&gt; ，例如 &lt;code&gt;预览&lt;/code&gt; 被创建时，一个 &lt;a href=&#34;https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/&#34;&gt;kubernetes 命名空间&lt;/a&gt; 会在 &lt;a href=&#34;https://jenkins-x.io/commands/jx_get_environments/&#34;&gt;jx get environments&lt;/a&gt; 出现， 使用 &lt;a href=&#34;https://jenkins-x.io/zh/developing/kube-context&#34;&gt;jx 环境和 jx 命名空间命令&lt;/a&gt; 你可以看到那个预览环境是活跃的，并可以进入查看。&lt;/li&gt;
-&lt;li&gt;Pull Request 会作为预览 Docker 镜像和 chart 构建，并被部署到预览环境中&lt;/li&gt;
-&lt;li&gt;添加一条注释到 Pull Request 中，让你们团队知道该预览应用已经准备好可以测试了，并带有打开应用的链接。因此，只要点击一下就可以让你们团队成员体验预览环境！&lt;/li&gt;
-&lt;/ul&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/pr-comment.png&#34; class=&#34;img-thumbnail&#34;&gt;
 
       </description>
     </item>
