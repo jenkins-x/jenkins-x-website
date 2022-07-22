@@ -27,14 +27,14 @@ To execute the commands listed in your local bash shell will require the Azure C
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/platforms/azure/svc_principal/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2022-01-06T09:28:59-05:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2022-07-22T09:22:32+02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Configure Azure Service Principal">
 <meta itemprop="description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
 💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.
 To execute the commands listed in your local bash shell will require the Azure CLI and the JQ command-line JSON processor.">
-<meta itemprop="dateModified" content="2022-01-06T09:28:59-05:00" />
-<meta itemprop="wordCount" content="961">
+<meta itemprop="dateModified" content="2022-07-22T09:22:32+02:00" />
+<meta itemprop="wordCount" content="936">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Configure Azure Service Principal"/>
 <meta name="twitter:description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
@@ -1531,7 +1531,7 @@ Always perform all commands in the same local terminal session to preserve depen
 </span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SUBSCRIPTION_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az account show --query id --output tsv<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>SVCP<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp create-for-rbac --role Contributor --name $APP_NAME --scopes /subscriptions/$SUBSCRIPTION_ID --output json --only-show-errors<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>APP_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .appId<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>OBJ_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp list --filter <span style="color:#e6db74">&#34;appId eq &#39;</span>$APP_ID<span style="color:#e6db74">&#39;&#34;</span> --output json | jq <span style="color:#e6db74">&#39;.[0].objectId&#39;</span> -r<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>OBJ_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp list --filter <span style="color:#e6db74">&#34;appId eq &#39;</span>$APP_ID<span style="color:#e6db74">&#39;&#34;</span> --output json | jq <span style="color:#e6db74">&#39;.[0].id&#39;</span> -r<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>PASS_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .password<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>TENANT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .tenant<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>az role assignment create --role <span style="color:#e6db74">&#34;User Access Administrator&#34;</span> --assignee-object-id $OBJ_ID --only-show-errors
@@ -1571,9 +1571,7 @@ To validate that the assignment was made, while stll on SCREEN 2 click on <code>
 </span></span><span style="display:flex;"><span>APPLICATION_READWRITE_ALL_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $API_ID --query <span style="color:#e6db74">&#34;appRoles[?value==&#39;Application.ReadWrite.All&#39;].id&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>az ad app permission add --id $APP_ID --api $API_ID --api-permissions $APPLICATION_READWRITE_ALL_ID<span style="color:#f92672">=</span>Role --only-show-errors
 </span></span><span style="display:flex;"><span>az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors
-</span></span><span style="display:flex;"><span>APP_OBJECT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $APP_ID --query <span style="color:#e6db74">&#34;objectId&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>API_OBJECT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $API_ID --query <span style="color:#e6db74">&#34;objectId&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>az rest --method POST --uri <span style="color:#e6db74">&#34;https://graph.microsoft.com/v1.0/servicePrincipals/</span>$APP_OBJECT_ID<span style="color:#e6db74">/appRoleAssignments&#34;</span> --headers <span style="color:#e6db74">&#39;{&#34;Content-Type&#34;: &#34;application/json&#34;}&#39;</span> --body <span style="color:#e6db74">&#34;{\&#34;principalId\&#34;: \&#34;</span>$APP_OBJECT_ID<span style="color:#e6db74">\&#34;, \&#34;resourceId\&#34;: \&#34;</span>$API_OBJECT_ID<span style="color:#e6db74">\&#34;, \&#34;appRoleId\&#34;: \&#34;</span>$APPLICATION_READWRITE_ALL_ID<span style="color:#e6db74">\&#34;}&#34;</span> --only-show-errors
+</span></span><span style="display:flex;"><span>az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors --scope Application.ReadWrite.All
 </span></span></code></pre></div><p>Use the following command to check the service principal API settings.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>az ad app permission list --id $APP_ID --only-show-errors --output table
 </span></span></code></pre></div><p>You should see something like the following:</p>
@@ -1667,7 +1665,7 @@ export ARM_SUBSCRIPTION_ID=${SUBSCRIPTION_ID}
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified January 6, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/fcd6eafed54adab72cdb694b1305f73f5be56ea2">docs: syntax corretions (fcd6eafed5)</a>
+  Last modified July 22, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/f42a62a5fb19f8263ab65a37de152b0992d31bf6">Update svc_principal.md (f42a62a5fb)</a>
 </div>
 
 </div>
