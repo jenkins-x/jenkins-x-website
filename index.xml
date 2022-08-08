@@ -13,6 +13,343 @@
     
     
     <item>
+      <title>Blog: Software Bill Of Materials generation tools</title>
+      <link>https://jenkins-x.io/blog/2022/07/24/sbom-tools/</link>
+      <pubDate>Sun, 24 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/07/24/sbom-tools/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;prerequisite&#34;&gt;Prerequisite&lt;/h2&gt;
+&lt;p&gt;Before you read this, you have to understand &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/intro-to-sbom&#34;&gt;what are SBOMs&lt;/a&gt; and &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/sbom-formats&#34;&gt;what are different formats of SBOMs&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;different-sbom-generation-tools-comparison&#34;&gt;Different SBOM generation tools comparison&lt;/h2&gt;
+&lt;p&gt;If you got this far, you already realize the importance of SBOM generation, and also it should meet certain requirements to achieve its purpose. Due to various requirements depending on what standard you&amp;rsquo;re following, there has to be a way to automatically generate different output formats for different standards. Also, it has to be suited for ci/cd solutions to keep up with the increasing number of releases for each organization.&lt;/p&gt;
+&lt;p&gt;Note: Here we&amp;rsquo;re only considering open source tools&lt;/p&gt;
+&lt;h3 id=&#34;1---anchore-syft&#34;&gt;1 - Anchore Syft&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://anchore.com/&#34;&gt;Anchore&lt;/a&gt;is a platform that implements sbom-powered supply chain security solutions for developers and enterprises. For generating SBOMs, a CLI tool and library named &lt;a href=&#34;https://github.com/anchore/syft&#34;&gt;Syft&lt;/a&gt; was developed by Anchore that could be injected into your ci/cd pipeline to generate SBOMs from container images and filesystems at each step.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Integration and Support:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Syft is supported on Linux, Mac, and Windows and it can run as a docker container which makes it a great suit for CI systems. Other than the 3 SBOM standards, Syft can generate its JSON standard format to be input for other Anchore tools like &lt;a href=&#34;https://github.com/anchore/grype/&#34;&gt;Grype&lt;/a&gt; which is a vulnerability scanner for container images and filesystems. It supports projects based on the following package managers:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Alpine (apk)&lt;/li&gt;
+&lt;li&gt;C (conan)&lt;/li&gt;
+&lt;li&gt;C++ (conan)&lt;/li&gt;
+&lt;li&gt;Dart (pubs)&lt;/li&gt;
+&lt;li&gt;Debian (dpkg)&lt;/li&gt;
+&lt;li&gt;Dotnet (deps.json)&lt;/li&gt;
+&lt;li&gt;Objective-C (cocoapods)&lt;/li&gt;
+&lt;li&gt;Go (go.mod, Go binaries)&lt;/li&gt;
+&lt;li&gt;Haskell (cabal, stack)&lt;/li&gt;
+&lt;li&gt;Java (jar, ear, war, par, sar)&lt;/li&gt;
+&lt;li&gt;JavaScript (npm, yarn)&lt;/li&gt;
+&lt;li&gt;Jenkins Plugins (jpi, hpi)&lt;/li&gt;
+&lt;li&gt;PHP (composer)&lt;/li&gt;
+&lt;li&gt;Python (wheel, egg, poetry, requirements.txt)&lt;/li&gt;
+&lt;li&gt;Red Hat (rpm)&lt;/li&gt;
+&lt;li&gt;Ruby (gem)&lt;/li&gt;
+&lt;li&gt;Rust (cargo.lock)&lt;/li&gt;
+&lt;li&gt;Swift (cocoapods)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Features and Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Easy to use
+&lt;ul&gt;
+&lt;li&gt;Syft can generate a simple basic sbom by just running &lt;code&gt;syft &amp;lt;image&amp;gt;&lt;/code&gt; this will only include the softwares included in the image&amp;rsquo;s final layer. Or &lt;code&gt;syft &amp;lt;image&amp;gt; --scope all-layers&lt;/code&gt; for more verbose sbom to include all image layers&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Different formats support the ability to convert between them.
+&lt;ul&gt;
+&lt;li&gt;Syft JSON&lt;/li&gt;
+&lt;li&gt;SPDX 2.2 JSON&lt;/li&gt;
+&lt;li&gt;SPDX 2.2 tag-value&lt;/li&gt;
+&lt;li&gt;CycloneDX 1.4 JSON&lt;/li&gt;
+&lt;li&gt;CycloneDX 1.4 XML&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Cryptographically sign and attest SBOMs
+&lt;ul&gt;
+&lt;li&gt;Syft uses &lt;a href=&#34;https://github.com/in-toto/attestation&#34;&gt;in-toto attestations&lt;/a&gt; with &lt;code&gt;syft attest&lt;/code&gt; command and the digital signature management is integrated with sigstore cosign. You can view more &lt;a href=&#34;https://anchore.com/sbom/creating-sbom-attestations-using-syft-and-sigstore/&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Support a variety of sources to generate SBOMs from
+&lt;ul&gt;
+&lt;li&gt;OCI and docker image formats &lt;code&gt;syft &amp;lt;image&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Container images archives &lt;code&gt;syft path/to/image.tar&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Filesystems and local directories &lt;code&gt;syft path/to/dir&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For more resources about Syft capabilities refer to the &lt;a href=&#34;https://github.com/anchore/syft&#34;&gt;source repo&lt;/a&gt; and &lt;a href=&#34;https://anchore.com/sbom/how-to-generate-an-sbom-with-free-open-source-tools/&#34;&gt;official documentation&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;2--opensboms-spdx-sbom-generator&#34;&gt;2- Opensbom&amp;rsquo;s Spdx-Sbom-Generator&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/opensbom-generator&#34;&gt;Opensbom-Generator&lt;/a&gt; is an open source project initiated by the Linux Foundation SPDX workgroup to generate SBOMs using CLI tools. Currently, they support the standard spdx 2.2 formats and JSON with their &lt;a href=&#34;https://github.com/opensbom-generator/spdx-sbom-generator&#34;&gt;spdx-sbom-generator&lt;/a&gt; tool based on golang. It can only be used to generate SBOMs from a repository containing package files (no container images or archives support yet). They aim to provide SBOM generation support in ci/cd solutions.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Integration and Support:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;You can download the binaries and install the tool on your system. The available binaries to install are for Linux, Windows, and macOS and it can also be used as a docker container from this spdx &lt;a href=&#34;https://hub.docker.com/r/spdx/spdx-sbom-generator&#34;&gt;repo&lt;/a&gt;. It can detect which package managers or build systems are being used by the software. It is supporting the following package managers:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;GoMod (go), Cargo (Rust), Composer (PHP), DotNet (.NET), Maven (Java), NPM (Node.js), Yarn (Node.js), PIP (Python), Pipenv (Python), Gems (Ruby), Swift Package Manager (Swift)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Features and Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CLI easy to use and simple interface&lt;/li&gt;
+&lt;li&gt;Automatic detection of the package manager&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;3--kubernetes-bom&#34;&gt;3- Kubernetes BOM&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/kubernetes-sigs/bom&#34;&gt;BOM&lt;/a&gt; is a general-purpose CLI tool developed by &lt;a href=&#34;https://github.com/kubernetes-sigs&#34;&gt;kubernetes-sigs&lt;/a&gt; (Special Interest Groups) that can generate SBOMs from directories, container images, single files, and other sources. The utility has a built-in license classifier that can check for license compliance of your packages with around 400+ licenses in the &lt;a href=&#34;https://spdx.org/licenses/&#34;&gt;SPDX catalog.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Integration and Support:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;BOM is supported as a Golang package that can be installed on any system having to go with &lt;code&gt;go install sigs.k8s.io/bom/cmd/bom&lt;/code&gt; this adds the support for Linux, Mac, and Windows. It is compatible with creating SBOMs from files, images, and docker archives (images in tarballs). It also supports pulling images from remote container registries for analysis. BOM is mainly generating SBOMs in SPDX formats.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Features and Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CLI usage to support CI/CD solutions&lt;/li&gt;
+&lt;li&gt;Golang dependency analysis&lt;/li&gt;
+&lt;li&gt;Full &lt;code&gt;.gitignore&lt;/code&gt; support when scanning git repositories&lt;/li&gt;
+&lt;li&gt;Ability to check for license compliance with SPDX catalog&lt;/li&gt;
+&lt;li&gt;Support for different sources to generate sboms&lt;/li&gt;
+&lt;li&gt;Other than the command &lt;code&gt;bom generate&lt;/code&gt;, it uses &lt;code&gt;bom document&lt;/code&gt; to work with already present SPDX documents to outline and draw a structure for them&lt;/li&gt;
+&lt;li&gt;It doesn&amp;rsquo;t necessarily require a whole project directory but it can specify a single file to analyze with the &lt;code&gt;-f path/to/file&lt;/code&gt; flag and it can have a collection of those files to be analyzed together.&lt;/li&gt;
+&lt;li&gt;It also supports the namespacing separation between SBOM documents using the &lt;code&gt;-n &amp;lt;URI&amp;gt;&lt;/code&gt; flag to isolate each document from the other&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;4--microsoft-sbom-tool&#34;&gt;4- Microsoft SBOM tool&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Recently, Microsoft open-sourced their SBOM generation tool which is described as a general purpose, enterprise-proven, build-time SBOM generator. They have been developing the tool internally since 2019 and tuning its feature according to their needs and providing other companies with the solution. What is new is that Microsoft has chosen to merge efforts with the Linux Foundation&amp;rsquo;s work and use &lt;a href=&#34;https://spdx.dev/&#34;&gt;Software Package Data Exchange (SPDX)&lt;/a&gt; for all SBOMs generated, and to do this for all software produced. It has a promising number of features like including other SBOM documents recursively to provide its users with the ability to have a full dependency tree that goes to the origin of every package.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Integration and Support:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Microsoft SBOM is supported on Linux, macOS, and Windows. It can be easily integrated into and auto-detects the following package managers&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;NPM, NuGet, PyPI, CocoaPods, Maven, Golang, Rust Crates, RubyGems, Linux packages within containers, Gradle, Ivy, GitHub public repositories&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;and Microsoft is adding more detectors to improve deeper integration with the community. The tool is currently committed to generating the SPDX 2.2.1 format for its users and is still in development to include all optional fields before integrating with other formats.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Features and Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Enterprise ready and highly scalable as already used at scale by Microsoft&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Adding build provenance information to the SBOM&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Auto-detection of the underlying package manager&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Supports namespacing separation between SBOM documents with the &lt;code&gt;-nsb&lt;/code&gt; flag&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Validating SBOMs at release using hashes and digital signatures&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/sbom-guide/microsoft-sbom.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Fig 1: &lt;a href=&#34;https://devblogs.microsoft.com/engineering-at-microsoft/wp-content/uploads/sites/72/2021/10/adiglio-figure-1.png&#34;&gt;https://devblogs.microsoft.com/engineering-at-microsoft/wp-content/uploads/sites/72/2021/10/adiglio-figure-1.png&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For more information about the tool visit the GitHub &lt;a href=&#34;https://github.com/microsoft/sbom-tool&#34;&gt;repo&lt;/a&gt;and refer to the documentation &lt;a href=&#34;https://github.com/microsoft/sbom-tool/tree/main/docs&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;5--tern&#34;&gt;5- Tern&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/tern-tools/tern&#34;&gt;Tern&lt;/a&gt; is a VMware-originated open source inspection tool used to generate SBOMs following standard formats. It gathers metadata for the packages installed in container images and Dockerfiles. Tern starts to analyze the contents of a container (through the image itself or the Dockerfile), layer by layer, without requiring the user to have in-depth technical knowledge about how the container was built.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Integration and Support:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Tern itself is available as a &lt;a href=&#34;https://github.com/marketplace/actions/tern-action&#34;&gt;Github Action&lt;/a&gt; but it is mainly supported to be installed as a CLI tool on Linux. With Linux installation, Tern is built with python so it requires python, pip, and jq installed mainly (more about installation &lt;a href=&#34;https://github.com/tern-tools/tern#getting-started&#34;&gt;here&lt;/a&gt;). Some features like analyzing Dockerfiles and the &lt;a href=&#34;https://automatecompliance.org/news/2020/04/23/tern-2-0-0-now-available/&#34;&gt;lock function&lt;/a&gt; require Docker installation in your Linux. Moreover, Tern can run as a docker container which makes it easy to use in ci systems and can be used as a workaround to run on other operating systems like Windows, and macOS. Also, this helps to deploy Tern as a Kubernetes job with a host mount to retrieve generated SBOMs.&lt;/p&gt;
+&lt;p&gt;For now, Tern only supports container images built using Docker using &lt;a href=&#34;https://docs.docker.com/registry/spec/manifest-v2-2/&#34;&gt;image manifest version 2, schema 2&lt;/a&gt; and it will support Docker images and it is aimed to support other images that follow the OCI standards in the future.&lt;/p&gt;
+&lt;p&gt;For license compliance, Term doesn&amp;rsquo;t have its file-level license analyzer. So, it allows you to extend its analysis using an external CLI tool or Python packages as extensions. An example is &lt;a href=&#34;https://github.com/tern-tools/tern#scancode&#34;&gt;Scancode&lt;/a&gt; which is a CLI tool used for license compliance along with other supported integrations like &lt;a href=&#34;https://github.com/tern-tools/tern#cve-bin-tool&#34;&gt;cve-bin-tool&lt;/a&gt; for vulnerability scanning.&lt;/p&gt;
+&lt;p&gt;Tern supports generating reports with multiple formats:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Human Readable Simple format&lt;/li&gt;
+&lt;li&gt;JSON format&lt;/li&gt;
+&lt;li&gt;HTML format&lt;/li&gt;
+&lt;li&gt;YAML format&lt;/li&gt;
+&lt;li&gt;SPDX tag-value Format&lt;/li&gt;
+&lt;li&gt;SPDX JSON Format&lt;/li&gt;
+&lt;li&gt;CycloneDX JSON Format&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Features and Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CLI is easy to use and can be installed as a docker container which makes it suitable for CI/CD solutions&lt;/li&gt;
+&lt;li&gt;Multiple supported output formats which are readable for both humans and machines&lt;/li&gt;
+&lt;li&gt;Ability to generate SBOMs following both SPDX and CycloneDX formats&lt;/li&gt;
+&lt;li&gt;Support for Dockerfile locking to create more reproducible Docker images which is a unique feature supported by Tern only, view more about it &lt;a href=&#34;https://automatecompliance.org/news/2020/04/23/tern-2-0-0-now-available/&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The concept of extensions/plugins is only supported by Tern between all the previously mentioned tools. This is a great feature that is proven to extend its capabilities in the coming future and open for creativity from the open source community (this was proven before to increase the functionality and popularity of other tools like Jenkins).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For more information about the tool visit the GitHub &lt;a href=&#34;https://github.com/tern-tools/tern&#34;&gt;repo&lt;/a&gt; and refer to the documentation &lt;a href=&#34;https://github.com/tern-tools/tern/tree/main/docs&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Software Bill Of Materials Formats</title>
+      <link>https://jenkins-x.io/blog/2022/07/24/sbom-formats/</link>
+      <pubDate>Sun, 24 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/07/24/sbom-formats/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;prerequisite&#34;&gt;Prerequisite&lt;/h2&gt;
+&lt;p&gt;If you don&amp;rsquo;t understand what is Software Bill of Materials (SBOM), please read this &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/intro-to-sbom&#34;&gt;blog post&lt;/a&gt; first.&lt;/p&gt;
+&lt;h2 id=&#34;different-sbom-formats-comparison&#34;&gt;Different SBOM formats comparison&lt;/h2&gt;
+&lt;p&gt;The National Telecommunications and Information Administration (NTIA) in the U.S. defined &lt;a href=&#34;https://www.ntia.doc.gov/report/2021/minimum-elements-software-bill-materials-sbom&#34;&gt;minimum requirements for SBOM formats&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Identifying the supplier of the software component.&lt;/li&gt;
+&lt;li&gt;Identifying the details about the version of the component.&lt;/li&gt;
+&lt;li&gt;Including unique identifiers for the component like cryptographic hash functions.&lt;/li&gt;
+&lt;li&gt;Including the relationships between all dependencies inside the component.&lt;/li&gt;
+&lt;li&gt;Including a timestamp of when and by whom the SBOM report was created or last modified&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In this section, we discuss different kinds and formats for SBOM standards and make a brief comparison between them. Three commonly used standards achieved the NTIA minimum requirements for SBOM generation and each one results in a different final SBOM document.&lt;/p&gt;
+&lt;h3 id=&#34;1---the-software-package-data-exchange-spdx&#34;&gt;1 - The Software Package Data Exchange (SPDX)&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;History:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;SPDX is an open-source machine-readable format adopted by the Linux Foundation as an industry standard. The specifications are implemented as a file format that identifies the software components within a larger piece of computer software and fulfilling the requirements of NTIA. The SPDX project started in 2010 and was initially dedicated to solving the issues around open source licensing compliance. It evolved over the years to adhere supply chain security challenges and has seen extensive uptake by companies and projects in the software industry. Companies like Hitachi, Fujitsu, and Toshiba contributed to furthering the standard in the &lt;a href=&#34;https://spdx.github.io/spdx-spec/&#34;&gt;SPDX v2.2.2 specification release&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://spdx.github.io/spdx-spec/&#34;&gt;SPDX specification&lt;/a&gt; describes the necessary sections and fields to produce a valid SPDX document. Note that the only mandatory field in all spdx documents is the &amp;ldquo;Document Creation Information&amp;rdquo; section. The presence of other sections (and subset fields of each section) is dependent on your use case and the information you want to provide.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/sbom-guide/spdx-2.2-document.png&#34; alt=&#34;spdx-specification&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Fig 1: &lt;a href=&#34;https://spdx.dev/wp-content/uploads/sites/41/2020/05/spdx-2.2-document.png&#34;&gt;https://spdx.dev/wp-content/uploads/sites/41/2020/05/spdx-2.2-document.png&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Document Creation Information&lt;/strong&gt; – Denotes who created the document, how it was created, and other useful information related to its creation. It provides the necessary information for forward and backward compatibility for processing tools (version numbers, license for data, authors, etc. )&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Package Information&lt;/strong&gt; – This section provides information about the “package”. A package can be one or more files. These files could be one or more files of any type including but not limited to source, documents, binaries, containers, and so forth. The package information contains the originator, where it was sourced from, a download URL, a checksum, and so forth. It also contains summary licensing for the package.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;File Information&lt;/strong&gt; –  This is information about a specific file. It can contain the file copyrights found in the file (if any), the license of the file, a checksum for the file, file contributors, and so forth.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Snippet Information&lt;/strong&gt; – Snippets can optionally be used when a file is known to have some content that has been included from another source. They are useful for denoting when part of a file may have been created under another licenseSnippet information can be used to define licensing for ranges within files.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Other Licensing Information&lt;/strong&gt; – Other licensing information provides a way to describe licenses that are not on the &lt;a href=&#34;https://spdx.org/licenses/&#34;&gt;SPDX License List&lt;/a&gt;. You can create a local (to the SPDX document) identifier for the license and place the license text itself in the document as a well and then reference it for files just like you would a license from the license list.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Relationships&lt;/strong&gt; –  Relationships were introduced in the 2.0 specification and are a very powerful way of expressing how SPDX documents relate to one another. See an example of how the SPDX represents those &lt;a href=&#34;https://spdx.dev/resources/use/#:~:text=Packages%20and%20Relationships&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Annotations&lt;/strong&gt; – Annotations are comments made by people on various entities and elements within the document. For example, someone reviewing the document may make an annotation about a file and its license. Annotations are useful for reviews of SPDX documents and for conveying specific information about the package, file, creation, license, file(s), etc.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the &lt;a href=&#34;https://spdx.github.io/spdx-spec/&#34;&gt;SPDX specification release 2.2.2&lt;/a&gt;, additional output formats of JSON, YAML, and XML are supported. A diverse set of examples for SPDX are available on this &lt;a href=&#34;https://github.com/spdx/spdx-examples&#34;&gt;github repo&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Further information on the data model and SPDX guide can be found on the &lt;a href=&#34;https://spdx.dev/&#34;&gt;SPDX website&lt;/a&gt;.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Use Cases:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SBOM for software components&lt;/li&gt;
+&lt;li&gt;Tracking of intellectual property (licensing, copyright) of software components&lt;/li&gt;
+&lt;li&gt;Listing contents of a software distribution&lt;/li&gt;
+&lt;li&gt;Container contents inventory&lt;/li&gt;
+&lt;li&gt;Associating CPEs with specific packages&lt;/li&gt;
+&lt;li&gt;Identifying provenance of lines of code embedded in files&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Key Features:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Documented artifacts can be checked using the provided hash values&lt;/li&gt;
+&lt;li&gt;Rich facilities for intellectual property and licensing information&lt;/li&gt;
+&lt;li&gt;Flexible model able to scale from snippets and files up to packages, containers, and even operating system distributions&lt;/li&gt;
+&lt;li&gt;Ability to add mappings to other package reference systems&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;2---software-identification-swid-tags&#34;&gt;2 - Software Identification (SWID) Tags&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;History:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;It is a standard implemented by the National Institute of Standards and Technology (NIST) in the U.S. that was published in 2009, then revised in 2015. They were designed to provide a transparent way for organizations to track the software installed on their managed devices. Standard SWID tags are not generated at the end of certain software creation, instead, they define a lifecycle where a new SWID tag is added to an endpoint with the software installation process and is deleted with the uninstall process. When this lifecycle is followed, the presence of a given SWID Tag corresponds directly to the presence of the software product that the Tag describes.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/sbom-guide/swid-tags-lifecycle.png&#34; alt=&#34;swid-tag-lifecycle&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Fig 2: &lt;a href=&#34;https://d3i71xaburhd42.cloudfront.net/496312d64dc77b223803a4ee1b717be8e528e86f/16-Figure1-1.png&#34;&gt;https://d3i71xaburhd42.cloudfront.net/496312d64dc77b223803a4ee1b717be8e528e86f/16-Figure1-1.png&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Note that the present SWID tags change depending on the current state of the software.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://nvlpubs.nist.gov/nistpubs/ir/2016/NIST.IR.8060.pdf&#34;&gt;NISTIR 8060&lt;/a&gt; Guideline identifies the standards of SWID tags and the components of each tag. We here go over the necessary types mentioned in the figure above. To capture the lifecycle of a software component, the SWID specification defines four types of SWID tags: primary, patch, corpus, and supplemental&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Corpus Tag&lt;/strong&gt; –  A SWID Tag that identifies and describes an installable software product in its pre-installation state. A corpus tag can be used to represent metadata about an
+installation package or installer for a software product, a software update, or a patch.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Primary Tag&lt;/strong&gt; –  A SWID Tag that identifies and describes a software product installed
+on a computing device.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Supplemental Tag&lt;/strong&gt; – A SWID Tag that allows additional information to be associated with any referenced SWID tag. This helps to ensure that SWID Primary and Patch Tags
+provided by a software provider are not modified by software management tools while
+allowing these tools to provide their software metadata.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Patch Information&lt;/strong&gt; – A SWID Tag that identifies and describes an installed patch that has made incremental changes to a software product installed on a computing device.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt; that Corpus, primary, and patch tags have similar functions in that they describe the existence and/or presence of different types of software (e.g., software installers, software installations, software patches), and, potentially, different states of software products. In contrast, supplemental tags furnish additional information not contained in the corpus, primary, or patch tags.&lt;/p&gt;
+&lt;p&gt;SWID tags are mainly implemented in XML format while JSON format is under development. Some tag examples can be found &lt;a href=&#34;https://www.adelton.com/docs/security/minting-collecting-swid-tags&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Use Cases:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SBOM for software components&lt;/li&gt;
+&lt;li&gt;Continuous monitoring of installed software inventory&lt;/li&gt;
+&lt;li&gt;Identifying vulnerable software on endpoints&lt;/li&gt;
+&lt;li&gt;Ensuring that installed software is properly patched&lt;/li&gt;
+&lt;li&gt;Preventing installation of unauthorized or corrupted software&lt;/li&gt;
+&lt;li&gt;Preventing the execution of corrupted software&lt;/li&gt;
+&lt;li&gt;Managing software entitlements&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Key Features:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Provides stable software identifiers created at build time&lt;/li&gt;
+&lt;li&gt;Standardizes software information that can be exchanged between software providers and consumers as part of the software installation process&lt;/li&gt;
+&lt;li&gt;Enables the correlation of information related to software including related patches or updates, configuration settings, security policies, and vulnerability and threat advisories.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;3---cyclonedx&#34;&gt;3 - CycloneDX&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;History:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;CycloneDX is a lightweight SBOM standard designed for use in application security context and supply chain component analysis as it was originally intended to identify vulnerabilities and supply chain component analysis. It also supports checking for licensing compliance. The CycloneDX project was initiated in 2017 in the &lt;a href=&#34;https://owasp.org/&#34;&gt;OWASP&lt;/a&gt;community, then it became a dedicated open source project and included other working groups from &lt;a href=&#34;https://www.sonatype.com/&#34;&gt;Sonatype&lt;/a&gt;and &lt;a href=&#34;https://www.servicenow.com/&#34;&gt;ServiceNow&lt;/a&gt;. Supported file formats for CycloneDX are (XML, JSON, and protocol buffers)&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Specs:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;CycloneDX provides schemas for both XML and JSON, defining a format for describing simple and complex compositions of software components. It&amp;rsquo;s designed to be flexible, and easily adaptable, with implementations for popular build systems. The specification encourages the use of ecosystem-native naming conventions and supports SPDX license IDs and expressions, pedigree, and external references. It also natively supports the Package URL specification and correlating components to CPEs. The CycloneDX object model is defined in the figure.&lt;/p&gt;
+&lt;p align=&#34;center&#34; width=&#34;100%&#34;&gt;
+    &lt;img src=&#34;https://jenkins-x.io/images/sbom-guide/cyclonedx-high-level-object-model-small.svg&#34; width=&#34;480&#34; height=&#34;320&#34;&gt;
+&lt;/p&gt;
+&lt;br/&gt;
+&lt;br/&gt;
+&lt;p&gt;Fig 3: &lt;a href=&#34;https://cyclonedx.org/theme/assets/images/high-level-object-model-small.svg&#34;&gt;https://cyclonedx.org/theme/assets/images/high-level-object-model-small.svg&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;BOM Metadata Information&lt;/strong&gt; – BOM metadata includes the supplier, manufacturer, and the target component for which the BOM describes. It also includes the tools used to create the BOM, and license information for the BOM document itself.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Components Information&lt;/strong&gt; – Components describe the complete inventory of first-party and third-party components. Component identity can be represented as:
+&amp;ndash; Coordinates (group, name, version)
+&amp;ndash; Package URL
+&amp;ndash; Common Platform Enumerations (CPE)
+&amp;ndash; SWID
+&amp;ndash; Cryptographic hash functions (SHA-1, SHA-2, SHA-3, BLAKE2b, BLAKE3)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Services Information&lt;/strong&gt; – Services describe external APIs that the software may call. Services describe endpoint URIs, authentication requirements, and trust boundary traversals. The flow of data between software and services can also be described including the data classifications and the flow direction of each type.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Dependency Relationships&lt;/strong&gt; – CycloneDX provides the ability to describe components and their dependency on other components. The dependency graph is capable of representing both direct and transitive relationships. Components that depend on services can be represented in the dependency graph and services that depend on other services can be represented as well.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Compositions&lt;/strong&gt; – Compositions describe constituent parts (including components, services, and dependency relationships) and their completeness. The aggregate of each composition can be described as complete, incomplete, incomplete first-party only, incomplete third-party only, or unknown.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vulnerabilities&lt;/strong&gt; –  Known vulnerabilities inherited from the use of third-party and open source software and the exploitability of the vulnerabilities can be communicated with CycloneDX. Previously unknown vulnerabilities affecting both components and services may also be disclosed using CycloneDX, making it ideal for both VEX and security advisory use cases.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Extensions&lt;/strong&gt; – Multiple extension points exist throughout the CycloneDX object model allowing fast prototyping of new capabilities and support for specialized and future use cases. The CycloneDX project maintains extensions that are beneficial to the larger community. The project encourages community participation and the development of extensions that target specialized or industry-specific use cases.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Use Cases:&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Inventory of all software components.&lt;/li&gt;
+&lt;li&gt;Identifying known vulnerabilities.&lt;/li&gt;
+&lt;li&gt;Integrity verification using the hash functions.&lt;/li&gt;
+&lt;li&gt;Authenticity of the software components using a digital signature.&lt;/li&gt;
+&lt;li&gt;License compliance&lt;/li&gt;
+&lt;li&gt;Provenance&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;generate-sboms-manually-definitely-not&#34;&gt;Generate SBOMs manually? definitely not&lt;/h2&gt;
+&lt;p&gt;SBOMs are frequently updated with each release of the software, so we need tools and packages to be integrated with our ci/cd pipeline. We talk about this &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/sbom-tools&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Introduction to Software Bill Of Materials</title>
+      <link>https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/</link>
+      <pubDate>Sun, 24 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Before going through Software Bill Of Materials (SBOMs), we need to set the ground for a rising concern in the software industry which is Software Supply Chain Security.
+Like traditional industries, deploying a piece of a software artifact goes through multiple stages composed of collecting source code components, libraries, tools, and processes used in those stages.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/sbom-guide/supply-chain.png&#34; alt=&#34;comparing the different steps in a real world supply chain with software supply chain&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Fig. 1 &lt;a href=&#34;https://blog.convisoappsec.com/en/is-your-software-supply-chain-secure/&#34;&gt;https://blog.convisoappsec.com/en/is-your-software-supply-chain-secure/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;A supply chain attack can occur along the chain from submitting unauthorized malicious code in your source, unauthorized injection of harmful dependencies, and even replacing packages after being built with other compromised artifacts.
+A more detailed explanation about those types of attacks is &lt;a href=&#34;https://slsa.dev/spec/v0.1/threats&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Due to its importance and being a critical issue, generating SBOM for your software adds another layer of protection to this threat.&lt;/p&gt;
+&lt;h2 id=&#34;definition-what-is-sbom&#34;&gt;Definition: What is SBOM?&lt;/h2&gt;
+&lt;p&gt;As far as we know, developers around the world are building web applications using hundreds of third-party open-source libraries and packages. You can confidently tell that 90% of the software products around the world are built over open-source components. With that in mind, we need to keep track of using these dependencies while building our applications. What if there are vulnerabilities in the libraries we use? How to efficiently protect ourselves against it?.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Software_supply_chain#:~:text=Software%20vendors%20often,could%20harm%20them.&#34;&gt;Software Bill Of Materials&lt;/a&gt;&lt;/strong&gt; (SBOM) is a complete formally structured list of the materials (components, packages, libraries, SDK) used to build (i.e. compile, link) a given piece of software and the supply chain relationships between all these materials.&lt;/p&gt;
+&lt;p&gt;It is an inventory of all the components developers used to make this software. It has many formats and many generating tools but all have the same purpose in the end.
+&lt;em&gt;&lt;strong&gt;Example: a simple formatted SBOM of Ubuntu alpine docker image using &lt;a href=&#34;https://anchore.com/sbom/how-to-generate-an-sbom-with-free-open-source-tools/&#34;&gt;syft&lt;/a&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;✔ Loaded image  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; ✔ Parsed image  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt; ✔ Cataloged packages      &lt;span style=&#34;color:#f92672&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;14&lt;/span&gt; packages&lt;span style=&#34;color:#f92672&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;NAME                    VERSION      TYPE 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;alpine-baselayout       3.2.0-r18    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;alpine-keys             2.4-r1       apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;apk-tools               2.12.7-r3    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;busybox                 1.34.1-r3    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ca-certificates-bundle  20191127-r7  apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;libc-utils              0.7.2-r3     apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;libcrypto1.1            1.1.1l-r7    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;libretls                3.3.4-r2     apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;libssl1.1               1.1.1l-r7    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;musl                    1.2.2-r7     apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;musl-utils              1.2.2-r7     apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;scanelf                 1.3.3-r0     apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ssl_client              1.34.1-r3    apk   
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;zlib                    1.2.11-r3    apk
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here it shows only softwares included in the final layer of the container (default choice by syft). If we want to view a detailed SBOM with one detailed format, we can run &lt;code&gt;syft alpine -o spdx-json&lt;/code&gt;. This will view the output as &lt;code&gt;.json&lt;/code&gt; file following the &lt;code&gt;spdx&lt;/code&gt; format (will discuss that later)&lt;/p&gt;
+&lt;h2 id=&#34;use-cases-in-supply-chain-security&#34;&gt;Use cases in Supply chain security&lt;/h2&gt;
+&lt;p&gt;What makes a supply chain attack susceptible is the lack of transparency and visibility about whether the software gets affected by a recent exploit or not. This greatly affects both producers and customers of the product.&lt;/p&gt;
+&lt;p&gt;On the user&amp;rsquo;s side if they know the components of the software and that there is one component affected by certain vulnerabilities, they are better aware and ready to protect against potential attacks. This is crucial in many cases, especially with open-source tools.&lt;/p&gt;
+&lt;p&gt;On the software producer&amp;rsquo;s side, it happens a lot that they are not fully aware of all the third parties used inside the project, and in turn, they can not track vulnerabilities in the system that could pose a threat. Cases like the &lt;a href=&#34;https://snyk.io/blog/log4shell-in-a-nutshell/&#34;&gt;Log4Shell&lt;/a&gt; vulnerability are an example of a component (in this case, a logging library) that many producers never bothered to check because it isn&amp;rsquo;t a direct software dependency, but rather a transitive one that is depended upon by other components.&lt;/p&gt;
+&lt;p&gt;SBOM can also be useful in licensing and legal issues with some formats. SPDX (Software Package Data Exchange) standard for SBOM identifies the licenses of the used components and can be checked for compliance later.&lt;/p&gt;
+&lt;p&gt;Next, we view the different standards and formats for SBOMs and the specifications of each one. See them &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/sbom-formats&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: GSoC 2022 Community Bonding Period with Jenkins X</title>
       <link>https://jenkins-x.io/blog/2022/07/12/gsoc2022-community-bonding-period/</link>
       <pubDate>Tue, 12 Jul 2022 00:00:00 +0000</pubDate>
@@ -3723,169 +4060,6 @@ During this time, I have migrated some addons to apps.&lt;/p&gt;
 &lt;p&gt;We’re not saying this is great - it’s a learning process for us too, and while we’re excited about the path to the future JXL has given us, we also have to make the best of it with the limitations that exist today and the large companies trying to count on Jenkins X more and more.&lt;/p&gt;
 &lt;h2 id=&#34;feedback-and-questions&#34;&gt;Feedback and questions&lt;/h2&gt;
 &lt;p&gt;We’d love to hear from you on this and discuss it more, so please ping us in the community Slack, join office hours and get involved. The Jenkins X community is critical to all of us and, even with some setbacks and missteps, we’re excited to keep learning and improving together.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: CloudBees contributions to Jenkins X - April 2020</title>
-      <link>https://jenkins-x.io/blog/2020/04/29/cjxd-april-20/</link>
-      <pubDate>Wed, 29 Apr 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/04/29/cjxd-april-20/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/logo/cloudbees.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;Despite the challenges of this particular time in the world it amazes me how members of the Jenkins X community continue to rise up and generously contribute to the project.  This month&amp;rsquo;s CJXD release is with no lack of upstream community contributions, thus I&amp;rsquo;m kicking off this blog with a very sincere THANK YOU to the contributors.&lt;/p&gt;
-&lt;p&gt;A number of folks here at CloudBees continue to focus on Jenkins X stability and supportability.  In parallel, other folks are focused on new features and expanding support for additional platforms.  In an effort to help us continue these efforts, we completed the plan to remove code for Jenkins static masters in favor of going full-on with Tekton pipelines.  In addition, a number of unsupported commands scheduled for deprecation have now been removed from the code.&lt;/p&gt;
-&lt;p&gt;The benefits of deprecating unsupported features and commands allows for more focus, clearer messaging, better documentation, better quality, faster development of new features, and expanding Kubernetes provider support.  You can learn more about our decision to remove traditional Jenkins masters &lt;a href=&#34;https://jenkins-x.io/blog/2020/03/11/tekton/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;This month&amp;rsquo;s CJXD release continues to add value with stability improvements as well as some minor enhancements.  A total of &lt;a href=&#34;https://docs.cloudbees.com/docs/release-notes/latest/cloudbees-jenkins-x-distribution/v9&#34;&gt;38 relevant issues&lt;/a&gt; have been addressed since the previous release.  Over &lt;a href=&#34;https://github.com/jenkins-x/jx/pulls?q=is%3Apr+is%3Aclosed+label%3Aapproved+closed%3A2020-03-29..2020-04-29+&#34;&gt;40 total upstream pull requests&lt;/a&gt; were merged since the previous release and all of them have been absorbed in to this CJXD release.  Community members submitted 10 of these PR&amp;rsquo;s and we greatly appreciate these contributions!&lt;/p&gt;
-&lt;p&gt;Looking ahead to the upcoming CJXD release in May, a good deal of energy over the past three months has been spent on several significant efforts which will begin to surface.  Without upsetting the product management team too much, I&amp;rsquo;ll just write about some of the things the engineering team is working on, BUT not necessarily what will be released or when&amp;hellip;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Lighthouse: Andrew Bayer took over completing James Strachan&amp;rsquo;s initial
-stab at Lighthouse (Lighthouse is our very own lighter-weight Prow
-substitute). Andrew has been working on it nearly full-time and it
-really shows. Lighthouse is running great in our busy production
-cluster and, well, keep your eye out upstream since I expect great
-things VERY soon.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Terraform: Hardy Ferentschik has been working diligently on an effort
-to eventually remove cloud orchestration concerns from Jenkins X. As a
-result we have some awesome new Terraform scripts for GKE and EKS
-where you can prepare your cluster and then leverage &lt;code&gt;jx boot&lt;/code&gt; to
-deploy Jenkins X. I anticipate official support for this in an
-upcoming CJXD release, hopefully very soon. You can read more about
-this in the upstream
-&lt;a href=&#34;https://jenkins-x.io/docs/getting-started/&#34;&gt;Jenkins X Documentation&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;CLI: Adam Magan did a huge amount of tedious work removing code for a
-multitude of deprecated commands. Thankfully that is largely behind us
-and Adam can move on to other more gratifying tasks. You can read more
-about which commands were deprecated in the
-&lt;a href=&#34;https://docs.cloudbees.com/docs/release-notes/latest/cloudbees-jenkins-x-distribution/v9#_deprecations_and_removals&#34;&gt;CJXD 9 Release Notes&lt;/a&gt;.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;JX Labs: Dave Conde disappeared a couple weeks ago to work with James
-Strachan and James Rawlings on something and I expect him to resurface
-in several weeks. If he doesn&amp;rsquo;t return, I&amp;rsquo;ll be sending out a search
-party.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So there you have it.  Enjoy the release.  Please stay safe, take care of yourself, and take care of each other.&lt;/p&gt;
-&lt;p&gt;Deane&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Season of Docs 2020 📄</title>
-      <link>https://jenkins-x.io/blog/2020/04/28/season-of-docs-2020/</link>
-      <pubDate>Tue, 28 Apr 2020 11:44:25 +0100</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/04/28/season-of-docs-2020/</guid>
-      <description>
-        
-        
-        &lt;p&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs&#34;&gt;Google Season of Docs&lt;/a&gt; fosters collaboration between open source projects and technical writers. This program brings the open source and technical writing communities together to improve documentation and increase awareness of open source. During the program, technical writers are given support in contributing to open source, information about the technical project to which they are contributing, and a stipend.&lt;/p&gt;
-&lt;p&gt;Jenkins X welcomes the opportunity to collaborate with technical writers on improving the Jenkins X documentation. We are excited to apply to participate in Google Season of Docs!&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/community/events/SeasonofDocs_Logo_.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;h3 id=&#34;project-ideas&#34;&gt;Project Ideas&lt;/h3&gt;
-&lt;p&gt;Jenkins X invites technical writers to engage with our ongoing efforts to restructure and update the Jenkins X documentation. There are a number of ongoing projects, and technical writers are welcome to engage with them or to make their own proposals in any area of Jenkins X documentation. We welcome the experience and perspecitve of new contributors and encourage proposals based on a technical writer&amp;rsquo;s interests and expertise.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Refactor the existing documentation to provide an improved user experience or a more accessible information architecture:&lt;/p&gt;
-&lt;p&gt;We are currently in the process of restructuring the information architecture on the docs site. We recognise this is an iterative process and would welcome input from a technical writer on further improvements to create an accessible information architecture and improve the user experience.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Improve our &lt;a href=&#34;https://jenkins-x.io/community/documentation/&#34;&gt;contributor’s guide&lt;/a&gt; to ensure the information for new contributors is clear and well organised, including basic information about getting started as a contributor to Jenkins X, as well as any rules around licence agreements, processes for pull requests and reviews, building the project, and so on.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Create a tutorial for provisioning a Kubernetes cluster and installing Jenkins X with &lt;code&gt;jx boot&lt;/code&gt; on platforms that are not covered with Terraform. Currently, the &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/&#34;&gt;Get started page&lt;/a&gt; gives the incorrect impression that Jenkins X works only in GKE (Google Cloud Platform) and EKS (Amazon Web Services).&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;!-- * Write a how-to guide on using the new Terraform scripts to create Kubernetes clusters. Currently, on the docs site there is a [TODO for documentation on using Terraform to set up cloud resources](https://jenkins-x.io/docs/labs/boot/getting-started/cloud/terraform/). Using Terraform scripts to create clusters makes cluster creation more transparent and can increase default security. For more information on using Terraform scripts, please see a [recent office hours demo](https://www.youtube.com/watch?v=yujge0PHxd4) by [Hardy Ferentschik](https://github.com/hferentschik). --&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Build out &lt;a href=&#34;https://jenkins-x.io/docs/getting-started/first-project/&#34;&gt;Creating Projects&lt;/a&gt; section to include new or extended sections such as Understanding Buildpacks, New Project With Quickstart Or Import, Defining Environments, etc. The GSoD writer would work with the Jenkins X engineering team and community to build out those pages.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Create FAQs for select docs pages. The GSoD writer would read through our &lt;a href=&#34;https://jenkins-x.io/community/#slack&#34;&gt;Kubernetes slack channels&lt;/a&gt; and &lt;a href=&#34;https://github.com/jenkins-x/jx/issues?q=is%3Aissue+is%3Aclosed&#34;&gt;closed issues&lt;/a&gt; to identify the most common questions we are asked and to take the answers given to build out the FAQs.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;-important-dates&#34;&gt;📆 Important Dates&lt;/h3&gt;
-&lt;p&gt;The main part of Season of Docs runs for three months, from September to December 2020, but the application period for technical writers ends on July 9, 2020. &lt;a href=&#34;https://developers.google.com/season-of-docs/docs/timeline&#34;&gt;Detailed GSoD Timeline can be found here&lt;/a&gt;.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;May 4, 2020: Deadline for Jenkins X to apply to Season of Docs&lt;/li&gt;
-&lt;li&gt;May 11 - June 8, 2020: Technical writers discuss project ideas with mentoring organisations&lt;/li&gt;
-&lt;li&gt;July 9, 2020: Deadline for technical writer applications&lt;/li&gt;
-&lt;li&gt;September 14 - December 5, 2020: Technical writers work on their projects with guidance from mentors&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;-come-meet-us-and-ask-us-questions&#34;&gt;👋 Come meet us and ask us questions&lt;/h3&gt;
-&lt;p&gt;We welcome technical writers to join our slack channels and our office hours. We&amp;rsquo;d be happy to answer your questions and guide you with your pull requests!&lt;/p&gt;
-&lt;p&gt;Talk to us on our slack channels, which are part of the Kubernetes slack. Join  Kubernetes slack &lt;a href=&#34;http://slack.k8s.io/&#34;&gt;here&lt;/a&gt;, and find us on our channels:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;#jenkins-x-dev for developers of Jenkins X&lt;/li&gt;
-&lt;li&gt;#jenkins-x-user for users of Jenkins X&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We also have online office hours, during which we talk about new developments in Jenkins X and you are welcome to ask us questions. We meet for office hours &lt;strong&gt;every other Tuesday&lt;/strong&gt; at 15:00 UTC (&lt;em&gt;See your timezone &lt;a href=&#34;https://time.is/1500_in_UTC&#34;&gt;here&lt;/a&gt;&lt;/em&gt;).&lt;/p&gt;
-&lt;p&gt;Next office hours are on &lt;strong&gt;5 May&lt;/strong&gt;. Join us here: &lt;a href=&#34;https://zoom.us/j/397862697&#34;&gt;https://zoom.us/j/397862697&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&#34;additional-information&#34;&gt;Additional Information&lt;/h3&gt;
-&lt;h4 id=&#34;technical-writers&#34;&gt;Technical Writers&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://jenkins-x.io/community/documentation/&#34;&gt;Contributing to the Jenkins X documentation&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/tech-writer-guide&#34;&gt;GSoD Technical Writer guide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/timeline&#34;&gt;GSoD Timeline&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;mentors&#34;&gt;Mentors&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/mentor-guide&#34;&gt;GSoD Mentor Guide&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/timeline&#34;&gt;GSoD Timeline&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/project-selection&#34;&gt;Selecting projects&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://developers.google.com/season-of-docs/docs/tech-writer-collaboration&#34;&gt;Working with a technical writer&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;em&gt;We&amp;rsquo;d love your help to make Jenkins X even more awesome and welcome your participation!&lt;/em&gt;&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: CloudBees contributions to Jenkins X - March 2020</title>
-      <link>https://jenkins-x.io/blog/2020/03/25/cjxd-march-20/</link>
-      <pubDate>Wed, 25 Mar 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/03/25/cjxd-march-20/</guid>
-      <description>
-        
-        
-        &lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/logo/cloudbees.png&#34;/&gt;
-&lt;/figure&gt;
-&lt;p&gt;March has been a really busy month for us working on Jenkins X, several exciting projects are now well underway.&lt;/p&gt;
-&lt;p&gt;Recently at office hours we discussed a &lt;a href=&#34;https://github.com/jenkins-x/enhancements/tree/master/proposals/3&#34;&gt;proposal to improve how we provision&lt;/a&gt; the cloud resources (storage buckets, service accounts &amp;amp; cryptographic keys) that Jenkins X requires.
-The idea behind this enhancement is that some companies may require the infrastructure to be provisioned by a user (someone in operations perhaps) that requires a different set of permissions than the user that runs &lt;code&gt;jx boot&lt;/code&gt; to install Jenkins X.
-Previously this happened when a user ran &lt;code&gt;jx boot&lt;/code&gt;. But from community feedback we learned that some users would like this process split.
-To help with this we are in the process of developing Terraform modules that you can use to create the necessary resources.
-Work on this has been moving really quickly and we have been focusing on support for GKE, EKS &amp;amp; AKS.
-We are really excited to see the awesome contributions from &lt;a href=&#34;https://github.com/helayoty&#34;&gt;Heba Elayoty&lt;/a&gt; of &lt;a href=&#34;https://www.microsoft.com&#34;&gt;Microsoft&lt;/a&gt; on adding support for &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/aks/&#34;&gt;Azure Kubernetes Service&lt;/a&gt; in Jenkins X.
-If you do not use Terraform and you have another way of provisioning infrastructure don&amp;rsquo;t worry, we&amp;rsquo;ll be providing lots of information in the docs on exactly what you will need to create before booting Jenkins X.
-For anyone that would like more information or would like to contribute to the Terraform modules you will find the git repository for GKE &lt;a href=&#34;https://github.com/jenkins-x/terraform-google-jx&#34;&gt;here&lt;/a&gt; and EKS &lt;a href=&#34;https://github.com/jenkins-x/terraform-aws-eks-jx&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Another area that some of the team are working in right now is the implementation of the depreciation policy, PRs are being lined up to remove commands that have been market for &lt;a href=&#34;https://jenkins-x.io/commands/deprecation/&#34;&gt;deprecation&lt;/a&gt;. This will help cut down the code surface area a bit and make Jenkins X a bit easier to maintain.&lt;/p&gt;
-&lt;p&gt;The &lt;a href=&#34;https://github.com/jenkins-x-labs&#34;&gt;labs team&lt;/a&gt; has also been extremely busy experimenting with &lt;a href=&#34;https://helm.sh/blog/helm-3-released/&#34;&gt;helm3&lt;/a&gt; and &lt;a href=&#34;https://github.com/roboll/helmfile&#34;&gt;helmfile&lt;/a&gt; with a view to using it as a foundation for multi cluster support in Jenkins X.
-We still have a bit to learn before we start to roll this into Jenkins X. One of the next areas we&amp;rsquo;ll be experimenting with is what the upgrade process from a helm2 environment to a helm3 environment will look like.
-You can jump over to the new &lt;a href=&#34;https://jenkins-x.io/docs/labs/&#34;&gt;lab&amp;rsquo;s documentation&lt;/a&gt; for more information on experiments and you can find the lab&amp;rsquo;s issue tracker &lt;a href=&#34;https://github.com/jenkins-x-labs/issues/issues&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;We have also fixed around &lt;a href=&#34;https://github.com/jenkins-x/jx/issues?q=is%3Aissue+is%3Aclosed+updated%3A2020-03-01..2020-03-25+-label%3Alifecycle%2Frotten+&#34;&gt;60 issues&lt;/a&gt; this month.
-We are constantly tracking our progress on closing out issues. The graph below shows the number of opened and closed issues on a weekly basis since September and the delta between them.
-The trend over time clearly shows we are making good progress.
-&lt;img src=&#34;https://jenkins-x.io/images/march-fixes-graph.png&#34;/&gt;&lt;/p&gt;
-&lt;p&gt;We are delighted to announce the March release (Release 8) of the CloudBees Jenkins X Distribution is now available. As always, you can download the latest distribution &lt;a href=&#34;https://www.cloudbees.com/products/cloudbees-jenkins-x-distribution/download&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
