@@ -129,5 +129,125 @@ Test clusters are created here when a pull request is opened in the &lt;a href=&
       </description>
     </item>
     
+    <item>
+      <title>Community: Add sbom generation step to release pipelines</title>
+      <link>https://jenkins-x.io/community/maintainer_guide/supply-chain-security/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/community/maintainer_guide/supply-chain-security/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Jenkins X started to support supply chain security through different steps.
+Till now we support:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SBOM generation&lt;/li&gt;
+&lt;li&gt;Uploading SBOMs to the release page and to our &lt;a href=&#34;https://github.com/orgs/jenkins-x/packages&#34;&gt;container-registry&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;how-we-do-it&#34;&gt;How we do it?&lt;/h2&gt;
+&lt;p&gt;There are two types of artifacts we deal with:&lt;/p&gt;
+&lt;h3 id=&#34;zipped-binaries&#34;&gt;Zipped binaries&lt;/h3&gt;
+&lt;p&gt;For &lt;code&gt;.tar.gz&lt;/code&gt; artifacts, we use &lt;code&gt;goreleaser&lt;/code&gt; to generate the artifacts themselves and to generate SBOMs for them. (Both get released on the release page on github of the repository). See Assets at the &lt;a href=&#34;https://github.com/jenkins-x/jx/releases&#34;&gt;release-page&lt;/a&gt; for example.&lt;/p&gt;
+&lt;p&gt;To generate SBOMs, add this to the &lt;code&gt;.goreleaser&lt;/code&gt; file&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sboms:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - artifacts: archive
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But &lt;code&gt;goreleaser&lt;/code&gt; requires &lt;a href=&#34;https://github.com/anchore/syft&#34;&gt;syft&lt;/a&gt; to be installed for SBOM generation. Refer to &lt;a href=&#34;https://goreleaser.com/customization/sbom/&#34;&gt;goreleaser documentation&lt;/a&gt; to know more details.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How to install syft&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;There are some of JX repositories that uses github actions for the release pipeline (&lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;jx&lt;/a&gt; for example). So, we&amp;rsquo;re installing syft in the &lt;code&gt;upload-binaries.sh&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x/jx/blob/49b8f966a16d2935f3e4dfff1089d421a81bc77d/.github/workflows/jenkins-x/upload-binaries.sh&#34;&gt;script&lt;/a&gt; executed by github actions before using &lt;code&gt;goreleaser release&lt;/code&gt;. Add this to the script to install
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;sh -s -- -b /usr/local/bin v0.54.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;chmod +x /usr/local/bin/syft
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Other repositories use JX itself to release different artifacts (&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline&#34;&gt;jx-pipeline&lt;/a&gt; for example). Installing syft is done through this &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/4debb1ef44ad846088ce48d7921dd57510b9eda2/tasks/supply-chain-security/task.yaml#L8&#34;&gt;step&lt;/a&gt; in the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog&#34;&gt;jx3-pipeline-catalog&lt;/a&gt;. To include it, you add this block before the &lt;code&gt;upload-binaries&lt;/code&gt; step in the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/blob/main/.lighthouse/jenkins-x/release.yaml&#34;&gt;release pipeline&lt;/a&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- image: uses:jenkins-x/jx3-pipeline-catalog/tasks/supply-chain-security/task.yaml@versionStream
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  name: download-syft
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;container-images&#34;&gt;Container images&lt;/h3&gt;
+&lt;p&gt;For container images, We use &lt;code&gt;syft&lt;/code&gt; to generate SBOMs from the container images (syft is already installed to be used by &lt;code&gt;goreleaser&lt;/code&gt; and it&amp;rsquo;s not an additional step). After that, we use &lt;a href=&#34;https://oras.land/&#34;&gt;oras&lt;/a&gt; to push the generated SBOM as an OCI artifact in the same container registry with the container image.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;How to generate and push&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;For JX repositories that uses github actions for the release pipeline (&lt;a href=&#34;https://github.com/jenkins-x/jx&#34;&gt;jx&lt;/a&gt; for example), we&amp;rsquo;re using oras as the base image for a separate github action.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add this block at the end of the release job
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - env:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      GITHUB_TOKEN: &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;{ secrets.GIT_BOT_TOKEN &lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      GIT_USERNAME: jenkins-x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      DOCKER_REGISTRY_ORG: jenkins-x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      REPO_NAME: &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;{ github.event.repository.name &lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      VERSION: &lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;{ steps.prep.outputs.version &lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    name: Generate and Push SBOM
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    uses: docker://ghcr.io/oras-project/oras:v0.13.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    with:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      entrypoint: .github/workflows/jenkins-x/sbom-container.sh
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Add this script &lt;code&gt;.github/workflows/jenkins-x/sbom-container.sh&lt;/code&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Install syft in this script&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;apk add --no-cache curl unzip
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;sh -s -- -b /usr/local/bin v0.55.0
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;chmod +x /usr/local/bin/syft
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Generate SBOM&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;syft ghcr.io/$DOCKER_REGISTRY_ORG/$REPO_NAME:$VERSION --scope all-layers &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;-o spdx-json &amp;gt; sbom.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#Push SBOM with oras&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo $GITHUB_TOKEN | oras push -u $GIT_USERNAME --password-stdin  &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;ghcr.io/$DOCKER_REGISTRY_ORG/$REPO_NAME:$VERSION-sbom sbom.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo $GITHUB_TOKEN | oras push -u $GIT_USERNAME --password-stdin  &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;ghcr.io/$DOCKER_REGISTRY_ORG/$REPO_NAME:latest-sbom sbom.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;For repositories that use JX itself to release (&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline&#34;&gt;jx-pipeline&lt;/a&gt; for example):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;First, replace the &lt;code&gt;build-and-push-image&lt;/code&gt; step here:
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - name: build-and-push-image
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    resources: &lt;span style=&#34;color:#f92672&#34;&gt;{}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;with those two steps which use kaniko to build the image and crane to push it (image.tar is required for syft to generate SBOM)&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/build-scan-push/build-scan-push.yaml@versionStream
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    name: build-container
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/build-scan-push/build-scan-push.yaml@versionStream
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    name: push-container
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;We created this &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/4debb1ef44ad846088ce48d7921dd57510b9eda2/tasks/supply-chain-security/task.yaml#L17&#34;&gt;step&lt;/a&gt; in the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog&#34;&gt;jx3-pipeline-catalog&lt;/a&gt; which uses syft to generate the SBOM from the container image &lt;code&gt;image.tar&lt;/code&gt; (built with kaniko) and then uploads the SBOM using oras. Since installing syft is done through this &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/blob/4debb1ef44ad846088ce48d7921dd57510b9eda2/tasks/supply-chain-security/task.yaml#L8&#34;&gt;step&lt;/a&gt; in the &lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog&#34;&gt;jx3-pipeline-catalog&lt;/a&gt;, you add this block before the &lt;code&gt;upload-binaries&lt;/code&gt; step in the &lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/blob/main/.lighthouse/jenkins-x/release.yaml&#34;&gt;release pipeline&lt;/a&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/supply-chain-security/task.yaml@versionStream
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    name: build-and-push-sbom
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    resources: &lt;span style=&#34;color:#f92672&#34;&gt;{}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;At the end add this step
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- name: cleanup-image-tar
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  image: alpine:3.16
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  resources: &lt;span style=&#34;color:#f92672&#34;&gt;{}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  script: |
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    rm -f /workspace/source/image.tar
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Edit the .gitignore&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Don&amp;rsquo;t forget to include those in the &lt;code&gt;.gitignore&lt;/code&gt; file&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# image tar files&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;image.tar
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# docker credential binaries&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;docker-credential-*
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# sbom json created by syft&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;sbom.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+      </description>
+    </item>
+    
   </channel>
 </rss>
