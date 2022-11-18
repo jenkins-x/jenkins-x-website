@@ -13,6 +13,143 @@
     
     
     <item>
+      <title>Blog: GSoC 2022 Final Report: Improving Supply Chain Security</title>
+      <link>https://jenkins-x.io/blog/2022/11/08/gsoc-2022/</link>
+      <pubDate>Tue, 08 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/11/08/gsoc-2022/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;project-description&#34;&gt;Project Description&lt;/h2&gt;
+&lt;p&gt;Supply chain security is a rising concern is the current software era. Securing the software supply chain encompasses vulnerability remediation and the implementation of controls throughout the software development process. Due to massive increase in Attacks on software supply chain and the diversity of its &lt;a href=&#34;https://slsa.dev/spec/v0.1/threats&#34;&gt;types&lt;/a&gt;, Jenkins X has to make efforts to ensure that the build process is secure. As part of making Jenkins X an end-to-end solution for CI/CD I worked on both securing our own components and enabling our users to use these features during using our CI/CD for build and release steps.&lt;/p&gt;
+&lt;h2 id=&#34;work-done&#34;&gt;Work Done&lt;/h2&gt;
+&lt;p&gt;The work done so far was going through three main sections&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Integrating with Tekton Chains to sign TaskRuns and PipelineRuns&lt;/li&gt;
+&lt;li&gt;Software Bill of Materials (SBOM)&lt;/li&gt;
+&lt;li&gt;Signing Jenkins X artifacts&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;integrating-with-tekton-chains-to-sign-taskruns-and-pipelineruns&#34;&gt;Integrating with Tekton Chains to sign TaskRuns and PipelineRuns&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;As Jenkins X uses tekton as its pipeline execution engine,&lt;code&gt; TaskRun&lt;/code&gt; and &lt;code&gt; PipelineRun&lt;/code&gt; are considered the key components of Jenkins X pipeline &lt;code&gt;activities&lt;/code&gt; and &lt;code&gt;steps&lt;/code&gt;
+Tekton Chains monitors the execution of all &lt;code&gt;TaskRun&lt;/code&gt; and &lt;code&gt; PipelineRun&lt;/code&gt; inside the cluster and takes a snapshot upon completion of each of them to sign with user-provided cryptographic keys and store them on the backend storage. The payload and signature cn be verified later using &lt;code&gt;cosign verify-blob&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Implementation&lt;/p&gt;
+&lt;p&gt;I used the helm chart developed by &lt;a href=&#34;https://www.chainguard.dev/&#34;&gt;Chainguard&lt;/a&gt; for integrating Chains with Jenkins X. To integrate the &lt;a href=&#34;https://github.com/chainguard-dev/tekton-helm-charts/tree/main/charts/tekton-chains&#34;&gt;chart&lt;/a&gt; and added support for it on &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions&#34;&gt;jx3-versions&lt;/a&gt; to make installation of helm chart easy for our users. The list of PRs for this:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/pull/3359&#34;&gt;https://github.com/jenkins-x/jx3-versions/pull/3359&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Supporting Tekton Chains helm chart with jx3-versions&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-docs/pull/3660&#34;&gt;https://github.com/jenkins-x/jx-docs/pull/3660&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Documentation on how to install and integrate Tekton Chains with Jenknins-X&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;NOTE: The integration is tested only on k3s cluster and work is in progress to test it on GKE and EKS.&lt;/p&gt;
+&lt;h3 id=&#34;software-bill-of-materials-sbom&#34;&gt;Software Bill of Materials (SBOM)&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Software_supply_chain#:~:text=Software%20vendors%20often,could%20harm%20them.&#34;&gt;Software Bill Of Materials&lt;/a&gt; (SBOM) is a complete formally structured list of the materials (components, packages, libraries, SDK) used to build (i.e. compile, link) a given piece of software and the supply chain relationships between all these materials.
+It is an inventory of all the components developers used to make this software. It has many formats and many generating tools but all have the same purpose in the end.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;p&gt;I first began with investigating available standards and formats for SBOMs and tools for generating them. The results of my investigation were written to a blog post &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve settled for using &lt;a href=&#34;https://github.com/anchore/syft&#34;&gt;syft&lt;/a&gt; for SBOM generation and &lt;a href=&#34;https://spdx.dev/&#34;&gt;spdx&lt;/a&gt; as the standard format for SBOMs. Also, I&amp;rsquo;ve added those installation as pre-defined steps in the Jenkins X pipeline catalog so it will also be available for our users to use in their pipelines and applied those steps to Jenkins X own pipelines. The list of PRs for this work are:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8312&#34;&gt;https://github.com/jenkins-x/jx/pull/8312&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Install syft using github action and generate SBOM with goreleaser&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1166&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1166&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add Syft Installation to JX3 pipeline Catalog so it can be used to generate SBOMs&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1173&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1173&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add Oras Steps to support pushing SBOMs as OCI artifacts&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/pull/490&#34;&gt;https://github.com/jenkins-x-plugins/jx-pipeline/pull/490&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Use Syft installation step in jx-pipeline from jx3-pipelines-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/pull/491&#34;&gt;https://github.com/jenkins-x-plugins/jx-pipeline/pull/491&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Use Oras bushing SBOMs step from jx3-pipeline-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-docs/pull/3643&#34;&gt;https://github.com/jenkins-x/jx-docs/pull/3643&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add documentation for supporting sbom generation and storing for other jx components and our users&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8351&#34;&gt;https://github.com/jenkins-x/jx/pull/8351&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Applying SBOM management to JX&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1190&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1190&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add grype tasks for SBOM vulnerability scanning to jx3-pipeline-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/cdfoundation/presentations/pull/44&#34;&gt;https://github.com/cdfoundation/presentations/pull/44&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add materials for my talk with the CDF Supply Chain Securtiy SIG about SBOMs with Jenkins X&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;There is also this issue to apply all steps on our active JX repositories &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/8348&#34;&gt;here&lt;/a&gt; (WIP as there are many repositories to be updated) and the list of PRs are referenced in the issue (except those of JX because they included testing and fixing PRs at the beginning).&lt;/p&gt;
+&lt;h3 id=&#34;signing-jenkins-x-artifacts&#34;&gt;Signing Jenkins X artifacts&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;Jenkins X is a collection of many components and tools that are used to provide the end-to-end CI/CD solution. Those components are used by our users and are also used by Jenkins X itself. It is important to sign those components to ensure the integrity of the components and the supply chain security of Jenkins X.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;p&gt;There are a set of tools developed by &lt;a href=&#34;https://sigstore.dev/&#34;&gt;sigstore&lt;/a&gt; to sign and verify artifacts. The most used tool in my implementation is &lt;a href=&#34;https://github.com/sigstore/cosign&#34;&gt;cosign&lt;/a&gt;. I first started with signing the Jenkins X CLI with keys stored in github secrets and then moved to signing the Jenkins X docker images. After that, I switched to use cosign &lt;a href=&#34;https://github.com/sigstore/cosign/blob/main/KEYLESS.md&#34;&gt;keyless signing&lt;/a&gt; (an experimental feature using other Sigstore components to save the effort by key management ) The list of PRs for this work are:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8432&#34;&gt;https://github.com/jenkins-x/jx/pull/8432&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Sign goreleaser artifacts with cosign&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8441&#34;&gt;https://github.com/jenkins-x/jx/pull/8441&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Sign published images with cosign&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8461&#34;&gt;https://github.com/jenkins-x/jx/pull/8461&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Keyless signing for goreleaser artifacts&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;whats-next&#34;&gt;What&amp;rsquo;s next?&lt;/h2&gt;
+&lt;p&gt;The work for supply chain security is still in progress and there are many things to be done. At Jenkins X, we are planning to develop new features and integrate more solutions to provide a better supply chain security for our users. The list of things to be done are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add a cli subcommand in JX to verify sbom/signed binaries against the public keys.&lt;/li&gt;
+&lt;li&gt;Add &lt;a href=&#34;https://github.com/ossf/scorecard&#34;&gt;openSSF security scorecard&lt;/a&gt; to Jenkins X repositories.&lt;/li&gt;
+&lt;li&gt;Integrate &lt;a href=&#34;https://buildsec.github.io/frsca/&#34;&gt;FRSCA&lt;/a&gt; work with Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;acknowledgements&#34;&gt;Acknowledgements&lt;/h2&gt;
+&lt;p&gt;Out of all internships and trainings I&amp;rsquo;ve done, this one was the most challenging, rewarding and educational experience. I would like to specially thank my mentor &lt;a href=&#34;https://github.com/ankitm123&#34;&gt;Ankit Mohabatra&lt;/a&gt; for his constant support and his patience to teach me a lot of his rich knowledge he gained by experience and thank the whole team of Jenkins X for their support and guidance and for welcoming me to the community. This internship was a great experience. I had a great time working on this project and I learned a lot from it. I hope to continue contributing to Jenkins X and the open-source community in the future. Thank you.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Software Bill Of Materials generation tools</title>
       <link>https://jenkins-x.io/blog/2022/07/24/sbom-tools/</link>
       <pubDate>Sun, 24 Jul 2022 00:00:00 +0000</pubDate>
@@ -4026,34 +4163,6 @@ During this time, I have migrated some addons to apps.&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;em&gt;🙌 I also welcome other developers of this project to guide me!&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;For more about the project, see &lt;a href=&#34;https://www.jenkins.io/projects/gsoc/2020/projects/jenkins-x-apps-consolidation/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Lighthouse Goes GA!</title>
-      <link>https://jenkins-x.io/blog/2020/06/08/lighthouse-goes-ga/</link>
-      <pubDate>Mon, 08 Jun 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/06/08/lighthouse-goes-ga/</guid>
-      <description>
-        
-        
-        &lt;p&gt;In May of this year, Jenkins X switched from using &lt;a href=&#34;https://github.com/kubernetes/test-infra/tree/master/prow&#34;&gt;Prow&lt;/a&gt; as its default webhook handler to using &lt;a href=&#34;https://github.com/jenkins-x/lighthouse&#34;&gt;Lighthouse&lt;/a&gt;. This is the result of almost a year of work, and provides some significant improvements for users of Jenkins X. You can find more information on the differences between Prow and Lighthouse &lt;a href=&#34;https://jenkins-x.io/docs/reference/components/lighthouse/#comparisons-to-prow&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Most notably, Jenkins X now properly supports GitHub Enterprise as well as github.com, with preview support for GitLab and BitBucket Server. Prow only supports github.com, so until now, Jenkins X users have had to jump through hoops or accept significant limitations to their workflows in order to use any other SCM (source control management) providers. Lighthouse is tested against every provider we list support for, including the preview support for GitLab and BitBucket Server. While some functionality may not behave exactly the same on all providers, the core functionality of &lt;a href=&#34;https://jenkins-x.io/docs/build-test-preview/chatops/&#34;&gt;ChatOps&lt;/a&gt; should work on all. Lighthouse also has a smaller footprint in terms of resources and pods used in your Kubernetes cluster than Prow.&lt;/p&gt;
-&lt;p&gt;If you&amp;rsquo;re interested in Jenkins X and Lighthouse support for other SCM providers, please let us know and we&amp;rsquo;ll see what we can do!&lt;/p&gt;
-&lt;h3 id=&#34;what-does-preview-support-mean&#34;&gt;What does &amp;ldquo;preview support&amp;rdquo; mean?&lt;/h3&gt;
-&lt;p&gt;The primary difference between Lighthouse&amp;rsquo;s support for GitHub and GitHub Enterprise, and its support for GitLab and BitBucket Server, is testing and usage. The Jenkins X project itself uses Lighthouse heavily, so we&amp;rsquo;re very confident in its behavior and reliability with the GitHub API. Its GitLab and BitBucket Server support is tested with every change to the project, but until we&amp;rsquo;ve had reports of Lighthouse users on GitLab or BitBucket Server in real-world usage, we don&amp;rsquo;t want to give the impression that support for those providers is known to be as stable as on GitHub.&lt;/p&gt;
-&lt;p&gt;So if you&amp;rsquo;re using Jenkins X and Lighthouse with GitLab or BitBucket Server, we&amp;rsquo;d love to hear how your experience has been, &lt;a href=&#34;https://jenkins-x.io/community/&#34;&gt;on our Slack channels or at our weekly office hours&lt;/a&gt;. If you run into in any problems with Lighthouse on any provider, whether it&amp;rsquo;s in preview or otherwise, please &lt;a href=&#34;https://github.com/jenkins-x/lighthouse/issues&#34;&gt;open an issue&lt;/a&gt; and we&amp;rsquo;ll look into it as soon as possible. Once we&amp;rsquo;ve gotten enough feedback to be confident that major changes will not be needed for GitLab or for BitBucket Server, we&amp;rsquo;ll move those providers out of preview.&lt;/p&gt;
-&lt;h3 id=&#34;differences-between-providers&#34;&gt;Differences between providers&lt;/h3&gt;
-&lt;h4 id=&#34;github-and-github-enterprise&#34;&gt;GitHub and GitHub Enterprise&lt;/h4&gt;
-&lt;p&gt;There should be no functional differences between Lighthouse&amp;rsquo;s behavior on github.com vs a GitHub Enterprise instance. The exact same APIs are used in both cases.&lt;/p&gt;
-&lt;h4 id=&#34;gitlab&#34;&gt;GitLab&lt;/h4&gt;
-&lt;p&gt;Lighthouse with GitLab may be more likely to hit API rate limits, due to GitLab&amp;rsquo;s GraphQL functionality not matching the particular capabilities of GitHub, but the overall functionality is the same. There is one significant difference with GitLab, however. Some of Lighthouse&amp;rsquo;s ChatOps commands, such as &lt;code&gt;/approve&lt;/code&gt; and &lt;code&gt;/assign&lt;/code&gt;, overlap with &lt;a href=&#34;https://docs.gitlab.com/ee/user/project/quick_actions.html&#34;&gt;GitLab quick actions&lt;/a&gt;, and currently, GitLab &lt;a href=&#34;https://gitlab.com/gitlab-org/gitlab/-/issues/215934&#34;&gt;does not trigger webhook events for quick actions&lt;/a&gt;. If Lighthouse does not receive a webhook event, it doesn&amp;rsquo;t have any way of knowing that a ChatOps command has been invoked. Therefore, we have added the ability to invoke &lt;a href=&#34;https://jenkins-x.io/docs/build-test-preview/chatops/#chatops-commands&#34;&gt;all Lighthouse ChatOps commands&lt;/a&gt; either with the traditional &lt;code&gt;/approve&lt;/code&gt; etc command, or by adding a &lt;code&gt;lh-&lt;/code&gt; prefix, like &lt;code&gt;/lh-approve&lt;/code&gt;. When using Lighthouse with GitLab, you will want to use the &lt;code&gt;/lh-(whatever)&lt;/code&gt; commands to ensure that your command is actually processed.&lt;/p&gt;
-&lt;p&gt;We believe that Lighthouse should work with gitlab.com and relatively current versions of GitLab Community Edition and GitLab Enterprise Edition, based on the API docs, but if you encounter any problems on GitLab CE or GitLab EE, please open an issue.&lt;/p&gt;
-&lt;h4 id=&#34;bitbucket-server&#34;&gt;BitBucket Server&lt;/h4&gt;
-&lt;p&gt;First, we should note that Lighthouse will not work properly with BitBucket Server versions earlier than 7.0. &lt;a href=&#34;https://confluence.atlassian.com/bitbucketserver/bitbucket-server-7-0-release-notes-990546638.html#BitbucketServer7.0releasenotes-Anewwebhookforsourcebranchupdatesinapullrequest&#34;&gt;A new webhook was added in 7.0&lt;/a&gt; to be sent when the source branch for a pull request has been updated, because of a new commit, rebase, or similar changes, and without that webhook, Lighthouse isn&amp;rsquo;t informed in those cases and doesn&amp;rsquo;t know to rebuild the pull request.&lt;/p&gt;
-&lt;p&gt;In addition, &lt;a href=&#34;https://jira.atlassian.com/browse/BCLOUD-11976&#34;&gt;due to BitBucket Server not having the concept of labels for pull requests&lt;/a&gt;, Lighthouse emulates labels by creating a comment on pull requests containing a table of labels for the pull request in question. This comment needs to remain in the consistent format Lighthouse creates or it won&amp;rsquo;t be able to detect the labels correctly. Comment formatting for BitBucket Server is also more limited than for GitHub or GitLab, so comments may be a bit awkward in their appearance at the moment.&lt;/p&gt;
 
       </description>
     </item>

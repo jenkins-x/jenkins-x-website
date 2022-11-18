@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 03 Oct 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 08 Nov 2022 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,6 +13,143 @@
         
       
     
+    
+    <item>
+      <title>Blog: GSoC 2022 Final Report: Improving Supply Chain Security</title>
+      <link>https://jenkins-x.io/blog/2022/11/08/gsoc-2022/</link>
+      <pubDate>Tue, 08 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/11/08/gsoc-2022/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;project-description&#34;&gt;Project Description&lt;/h2&gt;
+&lt;p&gt;Supply chain security is a rising concern is the current software era. Securing the software supply chain encompasses vulnerability remediation and the implementation of controls throughout the software development process. Due to massive increase in Attacks on software supply chain and the diversity of its &lt;a href=&#34;https://slsa.dev/spec/v0.1/threats&#34;&gt;types&lt;/a&gt;, Jenkins X has to make efforts to ensure that the build process is secure. As part of making Jenkins X an end-to-end solution for CI/CD I worked on both securing our own components and enabling our users to use these features during using our CI/CD for build and release steps.&lt;/p&gt;
+&lt;h2 id=&#34;work-done&#34;&gt;Work Done&lt;/h2&gt;
+&lt;p&gt;The work done so far was going through three main sections&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Integrating with Tekton Chains to sign TaskRuns and PipelineRuns&lt;/li&gt;
+&lt;li&gt;Software Bill of Materials (SBOM)&lt;/li&gt;
+&lt;li&gt;Signing Jenkins X artifacts&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;integrating-with-tekton-chains-to-sign-taskruns-and-pipelineruns&#34;&gt;Integrating with Tekton Chains to sign TaskRuns and PipelineRuns&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;As Jenkins X uses tekton as its pipeline execution engine,&lt;code&gt; TaskRun&lt;/code&gt; and &lt;code&gt; PipelineRun&lt;/code&gt; are considered the key components of Jenkins X pipeline &lt;code&gt;activities&lt;/code&gt; and &lt;code&gt;steps&lt;/code&gt;
+Tekton Chains monitors the execution of all &lt;code&gt;TaskRun&lt;/code&gt; and &lt;code&gt; PipelineRun&lt;/code&gt; inside the cluster and takes a snapshot upon completion of each of them to sign with user-provided cryptographic keys and store them on the backend storage. The payload and signature cn be verified later using &lt;code&gt;cosign verify-blob&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Implementation&lt;/p&gt;
+&lt;p&gt;I used the helm chart developed by &lt;a href=&#34;https://www.chainguard.dev/&#34;&gt;Chainguard&lt;/a&gt; for integrating Chains with Jenkins X. To integrate the &lt;a href=&#34;https://github.com/chainguard-dev/tekton-helm-charts/tree/main/charts/tekton-chains&#34;&gt;chart&lt;/a&gt; and added support for it on &lt;a href=&#34;https://github.com/jenkins-x/jx3-versions&#34;&gt;jx3-versions&lt;/a&gt; to make installation of helm chart easy for our users. The list of PRs for this:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-versions/pull/3359&#34;&gt;https://github.com/jenkins-x/jx3-versions/pull/3359&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Supporting Tekton Chains helm chart with jx3-versions&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-docs/pull/3660&#34;&gt;https://github.com/jenkins-x/jx-docs/pull/3660&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Documentation on how to install and integrate Tekton Chains with Jenknins-X&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;NOTE: The integration is tested only on k3s cluster and work is in progress to test it on GKE and EKS.&lt;/p&gt;
+&lt;h3 id=&#34;software-bill-of-materials-sbom&#34;&gt;Software Bill of Materials (SBOM)&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Software_supply_chain#:~:text=Software%20vendors%20often,could%20harm%20them.&#34;&gt;Software Bill Of Materials&lt;/a&gt; (SBOM) is a complete formally structured list of the materials (components, packages, libraries, SDK) used to build (i.e. compile, link) a given piece of software and the supply chain relationships between all these materials.
+It is an inventory of all the components developers used to make this software. It has many formats and many generating tools but all have the same purpose in the end.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;p&gt;I first began with investigating available standards and formats for SBOMs and tools for generating them. The results of my investigation were written to a blog post &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve settled for using &lt;a href=&#34;https://github.com/anchore/syft&#34;&gt;syft&lt;/a&gt; for SBOM generation and &lt;a href=&#34;https://spdx.dev/&#34;&gt;spdx&lt;/a&gt; as the standard format for SBOMs. Also, I&amp;rsquo;ve added those installation as pre-defined steps in the Jenkins X pipeline catalog so it will also be available for our users to use in their pipelines and applied those steps to Jenkins X own pipelines. The list of PRs for this work are:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8312&#34;&gt;https://github.com/jenkins-x/jx/pull/8312&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Install syft using github action and generate SBOM with goreleaser&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1166&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1166&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add Syft Installation to JX3 pipeline Catalog so it can be used to generate SBOMs&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1173&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1173&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add Oras Steps to support pushing SBOMs as OCI artifacts&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/pull/490&#34;&gt;https://github.com/jenkins-x-plugins/jx-pipeline/pull/490&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Use Syft installation step in jx-pipeline from jx3-pipelines-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/pull/491&#34;&gt;https://github.com/jenkins-x-plugins/jx-pipeline/pull/491&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Use Oras bushing SBOMs step from jx3-pipeline-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-docs/pull/3643&#34;&gt;https://github.com/jenkins-x/jx-docs/pull/3643&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add documentation for supporting sbom generation and storing for other jx components and our users&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8351&#34;&gt;https://github.com/jenkins-x/jx/pull/8351&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Applying SBOM management to JX&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1190&#34;&gt;https://github.com/jenkins-x/jx3-pipeline-catalog/pull/1190&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add grype tasks for SBOM vulnerability scanning to jx3-pipeline-catalog&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/cdfoundation/presentations/pull/44&#34;&gt;https://github.com/cdfoundation/presentations/pull/44&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Add materials for my talk with the CDF Supply Chain Securtiy SIG about SBOMs with Jenkins X&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;There is also this issue to apply all steps on our active JX repositories &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/8348&#34;&gt;here&lt;/a&gt; (WIP as there are many repositories to be updated) and the list of PRs are referenced in the issue (except those of JX because they included testing and fixing PRs at the beginning).&lt;/p&gt;
+&lt;h3 id=&#34;signing-jenkins-x-artifacts&#34;&gt;Signing Jenkins X artifacts&lt;/h3&gt;
+&lt;p&gt;Description:&lt;/p&gt;
+&lt;p&gt;Jenkins X is a collection of many components and tools that are used to provide the end-to-end CI/CD solution. Those components are used by our users and are also used by Jenkins X itself. It is important to sign those components to ensure the integrity of the components and the supply chain security of Jenkins X.&lt;/p&gt;
+&lt;p&gt;Implementation:&lt;/p&gt;
+&lt;p&gt;There are a set of tools developed by &lt;a href=&#34;https://sigstore.dev/&#34;&gt;sigstore&lt;/a&gt; to sign and verify artifacts. The most used tool in my implementation is &lt;a href=&#34;https://github.com/sigstore/cosign&#34;&gt;cosign&lt;/a&gt;. I first started with signing the Jenkins X CLI with keys stored in github secrets and then moved to signing the Jenkins X docker images. After that, I switched to use cosign &lt;a href=&#34;https://github.com/sigstore/cosign/blob/main/KEYLESS.md&#34;&gt;keyless signing&lt;/a&gt; (an experimental feature using other Sigstore components to save the effort by key management ) The list of PRs for this work are:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;PR&lt;/th&gt;
+&lt;th&gt;Short Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8432&#34;&gt;https://github.com/jenkins-x/jx/pull/8432&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Sign goreleaser artifacts with cosign&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8441&#34;&gt;https://github.com/jenkins-x/jx/pull/8441&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Sign published images with cosign&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx/pull/8461&#34;&gt;https://github.com/jenkins-x/jx/pull/8461&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Keyless signing for goreleaser artifacts&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;whats-next&#34;&gt;What&amp;rsquo;s next?&lt;/h2&gt;
+&lt;p&gt;The work for supply chain security is still in progress and there are many things to be done. At Jenkins X, we are planning to develop new features and integrate more solutions to provide a better supply chain security for our users. The list of things to be done are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add a cli subcommand in JX to verify sbom/signed binaries against the public keys.&lt;/li&gt;
+&lt;li&gt;Add &lt;a href=&#34;https://github.com/ossf/scorecard&#34;&gt;openSSF security scorecard&lt;/a&gt; to Jenkins X repositories.&lt;/li&gt;
+&lt;li&gt;Integrate &lt;a href=&#34;https://buildsec.github.io/frsca/&#34;&gt;FRSCA&lt;/a&gt; work with Jenkins X.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;acknowledgements&#34;&gt;Acknowledgements&lt;/h2&gt;
+&lt;p&gt;Out of all internships and trainings I&amp;rsquo;ve done, this one was the most challenging, rewarding and educational experience. I would like to specially thank my mentor &lt;a href=&#34;https://github.com/ankitm123&#34;&gt;Ankit Mohabatra&lt;/a&gt; for his constant support and his patience to teach me a lot of his rich knowledge he gained by experience and thank the whole team of Jenkins X for their support and guidance and for welcoming me to the community. This internship was a great experience. I had a great time working on this project and I learned a lot from it. I hope to continue contributing to Jenkins X and the open-source community in the future. Thank you.&lt;/p&gt;
+
+      </description>
+    </item>
     
     <item>
       <title>Blog: Software Bill Of Materials generation tools</title>
@@ -3906,47 +4043,6 @@ During this time, I have migrated some addons to apps.&lt;/p&gt;
 &lt;h4 id=&#34;bitbucket-server&#34;&gt;BitBucket Server&lt;/h4&gt;
 &lt;p&gt;First, we should note that Lighthouse will not work properly with BitBucket Server versions earlier than 7.0. &lt;a href=&#34;https://confluence.atlassian.com/bitbucketserver/bitbucket-server-7-0-release-notes-990546638.html#BitbucketServer7.0releasenotes-Anewwebhookforsourcebranchupdatesinapullrequest&#34;&gt;A new webhook was added in 7.0&lt;/a&gt; to be sent when the source branch for a pull request has been updated, because of a new commit, rebase, or similar changes, and without that webhook, Lighthouse isn&amp;rsquo;t informed in those cases and doesn&amp;rsquo;t know to rebuild the pull request.&lt;/p&gt;
 &lt;p&gt;In addition, &lt;a href=&#34;https://jira.atlassian.com/browse/BCLOUD-11976&#34;&gt;due to BitBucket Server not having the concept of labels for pull requests&lt;/a&gt;, Lighthouse emulates labels by creating a comment on pull requests containing a table of labels for the pull request in question. This comment needs to remain in the consistent format Lighthouse creates or it won&amp;rsquo;t be able to detect the labels correctly. Comment formatting for BitBucket Server is also more limited than for GitHub or GitLab, so comments may be a bit awkward in their appearance at the moment.&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: An update on helm 3 and JXL</title>
-      <link>https://jenkins-x.io/blog/2020/05/15/helm3/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/05/15/helm3/</guid>
-      <description>
-        
-        
-        &lt;h2 id=&#34;whats-next-for-jxl-and-helm-3&#34;&gt;What’s next for JXL and Helm 3?&lt;/h2&gt;
-&lt;p&gt;A few months back, we unveiled JXL to the Jenkins X community and framed it as a new thing, Jenkins X Labs, that would build out experimental features and test potential new things. Some would stick and go upstream into Jenkins X, others would be killed off as interesting but unsuccessful experiments.&lt;/p&gt;
-&lt;p&gt;This was a new thing for Jenkins X, trying to better separate the experimentation loop from the increasingly stable and relied-upon upstream. And, to a degree it worked great - the JXL workaround helm 3 was awesome, and got a lot of excitement.&lt;/p&gt;
-&lt;p&gt;Where it didn’t work so great, though, was on what happened next. While this may be a bit forgivable since the whole thing was itself a new experiment for our community, it’s pretty clear we’ve dropped the ball a bit and that’s informing our next steps now.&lt;/p&gt;
-&lt;h2 id=&#34;what-did-we-learn-from-jxl&#34;&gt;What did we learn from jxl?&lt;/h2&gt;
-&lt;p&gt;A few weeks back, we made it known that the JXL experiment was over. Specifically, the current jxl binary was over - not the idea of labs or any experiments, but the specific helm 3 experiment packaged into the current version of jxl had gotten us the info we needed to make some decisions about how we wanted to steer Jenkins X going forward.&lt;/p&gt;
-&lt;p&gt;There were two main things we learned as a result of the jxl work:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;First, it was mostly a success. The direction was exciting, and helmfile is a huge help.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Second, the scope of the change was enormous. Getting the change to be production-ready, to the increasing quality standards being established by the CloudBees Jenkins X Distribution, was even larger.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;It’s important to note here that regressing in terms of quality and reliability is not an option - we’ve heard loud and clear from the community that Jenkins X needs to be more stable and more dependable, and even exciting changes can’t compose the progress we’re making on those fronts.&lt;/p&gt;
-&lt;p&gt;So, with those takeaways in mind, we declared the helm 3 JXL experiment complete and got to work.&lt;/p&gt;
-&lt;h2 id=&#34;so-whats-next-for-helm-3-and-jenkins-x&#34;&gt;So, what’s next for helm 3 and Jenkins X?&lt;/h2&gt;
-&lt;p&gt;To be clear upfront: Jenkins X will get helm 3. We are working on that now internally at CloudBees. And, specifically, we are working on a way to introduce this large change iteratively, over time, with safe upgrade paths and no sudden breaking changes. For bleeding-edge people, maybe that’s slower than you might prefer - but after the volume of feedback around stability, we’re playing it safe on this one.&lt;/p&gt;
-&lt;p&gt;Now, you might ask next where you can find that work. And the answer, to be honest, is that right now you can’t. With the work we do on Jenkins X at CloudBees, we aspire to be as consistently open and upstream as possible, but there are times when keeping our heads down to workshop things is the right path. The UI so far is one example of this, and for the time being helm 3 is another.&lt;/p&gt;
-&lt;h2 id=&#34;can-you-get-involved-in-helm-3-at-all&#34;&gt;Can you get involved in helm 3 at all?&lt;/h2&gt;
-&lt;p&gt;If you are interested in the work going on regarding Jenkins X and helm 3, we are looking for pilot users who want to test drive what’s in progress and give feedback once it&amp;rsquo;s ready. It’s not all of JXL, like I said it’s iterative and this is phase 1. Please get in touch if you’d like to discuss it more, either by email (&lt;a href=&#34;mailto:jx-feedback@cloudbees.com&#34;&gt;jx-feedback@cloudbees.com&lt;/a&gt;) or just in the community Slack (ping &lt;em&gt;vfarcic&lt;/em&gt; and he’ll get you on the list for feedback.)&lt;/p&gt;
-&lt;h2 id=&#34;why-isnt-this-all-more-open&#34;&gt;Why isn’t this all more open?&lt;/h2&gt;
-&lt;p&gt;One thing we learned as part of doing JXL is that Jenkins X is not yet built well for safe experimentation. We want to fix that long term, and if we were doing it over again we’d likely handle jxl differently because of the unfortunate silence you’re now hearing from us after such exciting work, but like all corporate sponsors of open source projects, we have to balance priorities and one of the major ones is making Jenkins X high quality enough for large companies to use at scale.&lt;/p&gt;
-&lt;p&gt;Long term, as things continue to improve, we hope all experimentation can be done upstream without major issues - but we’re not there yet. And, continuing to build out on JXL risked a forking situation where the path back to upstream becomes harder and harder - we didn’t want that to happen. So, our solution for now, suboptimal as it is, is to build the next chapter out a little more privately, figure out what makes sense in upstream from day 1 and what we might want to first offer through the Distribution as an enterprise capability (similar to the UI) and then get the community back on track with a single direction.&lt;/p&gt;
-&lt;p&gt;We’re not saying this is great - it’s a learning process for us too, and while we’re excited about the path to the future JXL has given us, we also have to make the best of it with the limitations that exist today and the large companies trying to count on Jenkins X more and more.&lt;/p&gt;
-&lt;h2 id=&#34;feedback-and-questions&#34;&gt;Feedback and questions&lt;/h2&gt;
-&lt;p&gt;We’d love to hear from you on this and discuss it more, so please ping us in the community Slack, join office hours and get involved. The Jenkins X community is critical to all of us and, even with some setbacks and missteps, we’re excited to keep learning and improving together.&lt;/p&gt;
 
       </description>
     </item>
