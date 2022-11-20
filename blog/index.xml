@@ -488,6 +488,121 @@ A more detailed explanation about those types of attacks is &lt;a href=&#34;http
     </item>
     
     <item>
+      <title>Blog: GSoC 2022 Final Report: Building Jenkins X UI</title>
+      <link>https://jenkins-x.io/blog/2022/11/13/gsoc-2022-work-report/</link>
+      <pubDate>Sun, 13 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2022/11/13/gsoc-2022-work-report/</guid>
+      <description>
+        
+        
+        &lt;h2 id=&#34;jenkins-x-new-ui&#34;&gt;Jenkins X New UI&lt;/h2&gt;
+&lt;p&gt;It is a web application built with &lt;a href=&#34;https://go.dev/&#34;&gt;Golang&lt;/a&gt; for the backend and &lt;a href=&#34;https://kit.svelte.dev/&#34;&gt;Sveltekit&lt;/a&gt; for the frontend, both of which are built together and used in the same container.
+To function properly, it must be installed as a helm chart with Jenkins X CRDs.&lt;/p&gt;
+&lt;p&gt;🌟 It has light and dark themes.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/gsoc-work-report-22/homepage.png&#34; alt=&#34;homepage.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/gsoc-work-report-22/pipelinesPage.png&#34; alt=&#34;pipelinesPage.png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;why-need-a-new-ui&#34;&gt;Why need a new UI?&lt;/h2&gt;
+&lt;p&gt;A good UI is essential for a CI/CD tool, as not everyone is familiar with the CLI.
+The current UI (jx-pipeline-visualizer) is a read-only UI, the user can view the logs of PipelineActivity but neither can start nor stop the pipeline.&lt;/p&gt;
+&lt;p&gt;Features that the UI will provide:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Start and Stop a PipelineActivity.&lt;/li&gt;
+&lt;li&gt;Have an audit trail.&lt;/li&gt;
+&lt;li&gt;A graphical representation of PipelineActivity.&lt;/li&gt;
+&lt;li&gt;RBAC to limit access to certain functionalities.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;New Jenkins X UI focus on Simplicity, Security and a Superb User Experience.&lt;/p&gt;
+&lt;p&gt;This is NOT GA (General Availability) yet. Visit the project repo &lt;a href=&#34;https://github.com/jenkins-x/jx-ui&#34;&gt;here&lt;/a&gt; to try it.&lt;/p&gt;
+&lt;h2 id=&#34;how-to-use-it&#34;&gt;How to use it?&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Go to the &lt;code&gt;helmfiles/jx/helmfile.yaml&lt;/code&gt; in your cluster repo.&lt;/li&gt;
+&lt;li&gt;Replace &lt;strong&gt;jx-pipelines-visualizer&lt;/strong&gt; chart with the &lt;strong&gt;jx-ui&lt;/strong&gt; chart.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;- chart: jxgh/jx-ui
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  version: &amp;lt;latest-version&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  name: jx-ui
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  values:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - ../../versionStream/charts/jxgh/jx-ui/values.yaml.gotmpl
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - jx-values.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Do &lt;code&gt;git push&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Add the code snippet to &lt;strong&gt;~/.config/ngrok/ngrok.yml&lt;/strong&gt; under &lt;code&gt;tunnels:&lt;/code&gt;.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;ui:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;proto: http
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;addr: &lt;span style=&#34;color:#ae81ff&#34;&gt;9200&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;schemes:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - http
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Add that domain to the ingress file, Run the following command and replace &lt;strong&gt;dashboard.jx.change.me&lt;/strong&gt; with ngrok link.
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;kubectl edit ing jx-ui
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;And boom, visit localhost:9200 and it works, you should see the homepage screen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;work-done&#34;&gt;Work Done&lt;/h2&gt;
+&lt;h3 id=&#34;stop-a-running-or-pending-pipelineactivity-from-ui&#34;&gt;Stop a running or pending PipelineActivity from UI&lt;/h3&gt;
+&lt;p&gt;We have added a button in pipelines page and pipelineDetails page, it asks for confirmation and on selecting &lt;strong&gt;Yes&lt;/strong&gt; it will stop the PipelineActivity.&lt;/p&gt;
+&lt;p&gt;We can stop the PipelineActivity from the pipelines tables.
+&lt;img src=&#34;https://jenkins-x.io/images/gsoc-work-report-22/pipelinesPageStopBtn.png&#34; alt=&#34;pipelinesPageStopBtn.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can also stop the PipelineActivity from the pipelines details page.
+&lt;img src=&#34;https://jenkins-x.io/images/gsoc-work-report-22/pipelineDetailsPageStopBtn.png&#34; alt=&#34;pipelineDetailsPageStopBtn.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Issue:&lt;/strong&gt; &lt;a href=&#34;https://github.com/jenkins-x/jx-ui/issues/28&#34;&gt;https://github.com/jenkins-x/jx-ui/issues/28&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;PRs:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/50&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/50&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/51&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/51&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/59&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/59&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/75&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/75&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;show-message-with-status-of-the-pipelineactivity&#34;&gt;Show message with status of the PipelineActivity&lt;/h3&gt;
+&lt;p&gt;When a pipeline is cancelled or it has timedout, we update the status of the pipeline to cancelled or timed out.
+However, we do not show the reason why a job was timed out.
+That information should be displayed on the pipeline details page (along with the step which has timed out).
+&lt;strong&gt;Issue:&lt;/strong&gt; &lt;a href=&#34;https://github.com/jenkins-x/jx-ui/issues/23&#34;&gt;https://github.com/jenkins-x/jx-ui/issues/23&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;PRs:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-api/pull/171&#34;&gt;https://github.com/jenkins-x/jx-api/pull/171&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-pipeline/pull/481&#34;&gt;https://github.com/jenkins-x-plugins/jx-pipeline/pull/481&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;implement-a-dag-for-pipelineactivity&#34;&gt;Implement a DAG for PipelineActivity&lt;/h3&gt;
+&lt;p&gt;To make the UI more user friendly and to explain the sequence of the steps in a PipelineActivity, we have added a &lt;a href=&#34;https://en.wikipedia.org/wiki/Directed_acyclic_graph&#34;&gt;DAG&lt;/a&gt; (Directed Acyclic Graph) chart to graphically visualize the PipelineActivity.&lt;/p&gt;
+&lt;p&gt;We used &lt;a href=&#34;https://d3js.org/&#34;&gt;D3.js&lt;/a&gt; library to create a custom component which create a DAG chart of PipelineActivity for us.
+&lt;a href=&#34;https://github.com/d3/d3-hierarchy&#34;&gt;D3-hierarchy&lt;/a&gt; is an important part of our component.
+We&amp;rsquo;re unit testing the component using &lt;a href=&#34;https://vitest.dev/&#34;&gt;vitest&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/gsoc-work-report-22/pipelineDetailsPage.png&#34; alt=&#34;pipelineDetailsPage.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Issue:&lt;/strong&gt; &lt;a href=&#34;https://github.com/jenkins-x/jx-ui/issues/48&#34;&gt;https://github.com/jenkins-x/jx-ui/issues/48&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;PRs:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/57/files&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/57/files&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x/jx-ui/pull/65/files&#34;&gt;https://github.com/jenkins-x/jx-ui/pull/65/files&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;whats-next&#34;&gt;What&amp;rsquo;s next?&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The UI project is just started, we have also start a seperate &lt;strong&gt;UI-sig&lt;/strong&gt; which you can join from &lt;a href=&#34;https://jenkins-x.io/community/#office-hours&#34;&gt;calendar&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;There are some amazing features that we are planning to add to the new UI:
+&lt;ul&gt;
+&lt;li&gt;Dynamically update the list of pipelines&lt;/li&gt;
+&lt;li&gt;Upgrade version stream from the UI&lt;/li&gt;
+&lt;li&gt;Import repositories using the UI&lt;/li&gt;
+&lt;li&gt;Break down pipeline logs into individual steps&lt;/li&gt;
+&lt;li&gt;Mask secrets in the logs&lt;/li&gt;
+&lt;li&gt;Display logs for cancelled and timed out pipelines&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To read more read the issues created &lt;a href=&#34;https://github.com/jenkins-x/jx-ui/issues&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;acknowledgements&#34;&gt;Acknowledgements&lt;/h2&gt;
+&lt;p&gt;I never imagined I would be this sad after finishing an internship.
+Just as Osama noted in his &lt;a href=&#34;https://jenkins-x.io/blog/2022/11/08/gsoc-2022/&#34;&gt;work report&lt;/a&gt;, this was the most difficult experience we have had thus far, but the encouragement of the jx community and the direction of our mentor made it the best educational experience I have ever had.&lt;/p&gt;
+&lt;p&gt;I learned a lot here, but there are still many things I need to learn (I haven&amp;rsquo;t finished my 30-day plan yet). I knew I could learn a lot from open source, but I didn&amp;rsquo;t expect this much.
+In addition, I think the CD Foundation is very special, and the community and the ways in which we can collaborate with other projects are also very valuable.&lt;/p&gt;
+&lt;p&gt;I started my intern by attending conferences like kubecon and CD Summit, we started &lt;strong&gt;UI-SIG&lt;/strong&gt;, and in the last 2 months we&amp;rsquo;ve given 3 talks about Jenkins X.
+As I mentioned above there are still thing to do in the UI project and since we all loved the GSoC program, I&amp;rsquo;d love to became a part of it in future with Jenkins X.&lt;/p&gt;
+&lt;p&gt;Again &lt;strong&gt;Big Thanks&lt;/strong&gt; to all my mentor &lt;a href=&#34;https://github.com/ankitm123&#34;&gt;Ankit&lt;/a&gt;, &lt;a href=&#34;https://github.com/babadofar&#34;&gt;Christoffer&lt;/a&gt;, &lt;a href=&#34;https://github.com/msvticket&#34;&gt;Marten&lt;/a&gt;, &lt;a href=&#34;https://github.com/tomhobson&#34;&gt;Tom&lt;/a&gt; and gsoc fellow &lt;a href=&#34;https://github.com/osamamagdy&#34;&gt;Osama&lt;/a&gt; and JX community for such a great opportunity.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Hacktoberfest 2022</title>
       <link>https://jenkins-x.io/blog/2022/10/03/hacktoberfest2022/</link>
       <pubDate>Mon, 03 Oct 2022 00:00:00 +0000</pubDate>
@@ -4121,49 +4236,6 @@ Special thanks to &lt;a href=&#34;https://github.com/ankitm123&#34;&gt;ankitm123
 &lt;p&gt;Finally, we have a couple of things in progress that will come soon, be prepared for some exciting announcements around OpenShift support. Also Gitlab and Bitbucket Server support for Lighthouse are available in preview mode, if you want to give it a try, please check out the &lt;a href=&#34;https://jenkins-x.io/docs/install-setup/installing/boot/git-provider/#bitbucket-server&#34;&gt;documentation&lt;/a&gt;, we welcome feedback and bug reports !&lt;/p&gt;
 &lt;p&gt;If it’s not done yet, feel free to start using the Cloudbees Jenkins X Distribution, all you need to know in order to have it up and running is &lt;a href=&#34;https://docs.cloudbees.com/docs/cloudbees-jenkins-x-distribution/latest/&#34;&gt;here&lt;/a&gt; !&lt;/p&gt;
 &lt;p&gt;Romain&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: My story with Jenkins X GSoC - Consolidate the use of Apps / Addons</title>
-      <link>https://jenkins-x.io/blog/2020/06/18/gsoc2020/</link>
-      <pubDate>Thu, 18 Jun 2020 22:55:25 +0800</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/06/18/gsoc2020/</guid>
-      <description>
-        
-        
-        &lt;p&gt;I&amp;rsquo;m Zixuan, and I&amp;rsquo;m very happy to be recognized by the Jenkins and Jenkins X teams in Google Summer of Code 2020.&lt;/p&gt;
-&lt;p&gt;I&amp;rsquo;m working on &lt;a href=&#34;https://jenkins.io/projects/gsoc/2020/project-ideas/jenkins-x-apps-consolidation/&#34;&gt;Consolidate the use of Apps / Addons&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;excellent-mentor-team&#34;&gt;Excellent mentor team&lt;/h3&gt;
-&lt;p&gt;Jenkins and Jenkins X has an excellent team of mentors, everyone is very kind and super knowledgeable.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;James Strachan&lt;/li&gt;
-&lt;li&gt;Kara de la Marck&lt;/li&gt;
-&lt;li&gt;markyjackson&lt;/li&gt;
-&lt;li&gt;Nikhil Da Rocha&lt;/li&gt;
-&lt;li&gt;Oleg Nenashev&lt;/li&gt;
-&lt;li&gt;Oscar Medina&lt;/li&gt;
-&lt;li&gt;Sahil Kalra&lt;/li&gt;
-&lt;li&gt;Sladyn&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;work-output&#34;&gt;Work output&lt;/h3&gt;
-&lt;p&gt;I have been working on this project for some time.
-During this time, I have migrated some addons to apps.&lt;/p&gt;
-&lt;p&gt;If you want to test completed apps, you can open the repository below.&lt;/p&gt;
-&lt;h4 id=&#34;completed-work&#34;&gt;Completed Work&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/jenkins-x-apps/jx-app-kubeless&#34;&gt;jx-app-kubeless&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4 id=&#34;work-in-progress&#34;&gt;Work in Progress&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-owasp-zap&#34;&gt;jx-app-owasp-zap&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-flagger&#34;&gt;jx-app-flagger&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-gloo&#34;&gt;jx-app-gloo&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;em&gt;🙌 I also welcome other developers of this project to guide me!&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;For more about the project, see &lt;a href=&#34;https://www.jenkins.io/projects/gsoc/2020/projects/jenkins-x-apps-consolidation/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
       </description>
     </item>
