@@ -30,13 +30,13 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/blog/2022/11/08/gsoc-2022/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2022-11-08T00:00:00+00:00" />
-<meta property="article:modified_time" content="2022-11-17T13:30:21+02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2022-11-21T20:02:51+02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="GSoC 2022 Final Report: Improving Supply Chain Security">
 <meta itemprop="description" content="Going through my GSoC journey with Jenkins X, this works as a documentation for our work to improve supply chain security of Jenkins X
 "><meta itemprop="datePublished" content="2022-11-08T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2022-11-17T13:30:21+02:00" />
-<meta itemprop="wordCount" content="969">
+<meta itemprop="dateModified" content="2022-11-21T20:02:51+02:00" />
+<meta itemprop="wordCount" content="1018">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="GSoC 2022 Final Report: Improving Supply Chain Security"/>
 <meta name="twitter:description" content="Going through my GSoC journey with Jenkins X, this works as a documentation for our work to improve supply chain security of Jenkins X
@@ -532,6 +532,7 @@ if (!doNotTrack) {
     <li><a href="#project-description">Project Description</a></li>
     <li><a href="#work-done">Work Done</a>
       <ul>
+        <li><a href="#enhancing-the-jx-version-output">Enhancing the <code>jx version</code> output</a></li>
         <li><a href="#integrating-with-tekton-chains-to-sign-taskruns-and-pipelineruns">Integrating with Tekton Chains to sign TaskRuns and PipelineRuns</a></li>
         <li><a href="#software-bill-of-materials-sbom">Software Bill of Materials (SBOM)</a></li>
         <li><a href="#signing-jenkins-x-artifacts">Signing Jenkins X artifacts</a></li>
@@ -621,20 +622,33 @@ if (!doNotTrack) {
 		
 	</header>
 	<h2 id="project-description">Project Description</h2>
-<p>Supply chain security is a rising concern is the current software era. Securing the software supply chain encompasses vulnerability remediation and the implementation of controls throughout the software development process. Due to massive increase in Attacks on software supply chain and the diversity of its <a href="https://slsa.dev/spec/v0.1/threats">types</a>, Jenkins X has to make efforts to ensure that the build process is secure. As part of making Jenkins X an end-to-end solution for CI/CD I worked on both securing our own components and enabling our users to use these features during using our CI/CD for build and release steps.</p>
+<p>Supply chain security is a rising concern in the current software era.
+Securing the software supply chain encompasses vulnerability remediation and the implementation of controls throughout the software development process.
+Due to massive increase in attacks on software supply chain and the diversity of its <a href="https://slsa.dev/spec/v0.1/threats">types</a>, Jenkins X has to make efforts to ensure that the build process is secure.
+As part of securing Jenkins X installation by default I worked on both securing our own components and enabling our users to use these features in their build and release steps..</p>
 <h2 id="work-done">Work Done</h2>
-<p>The work done so far was going through three main sections</p>
+<p>The work done so far covers these four sections.</p>
 <ol>
+<li>Enhancing the <code>jx version</code> output</li>
 <li>Integrating with Tekton Chains to sign TaskRuns and PipelineRuns</li>
 <li>Software Bill of Materials (SBOM)</li>
 <li>Signing Jenkins X artifacts</li>
 </ol>
+<h3 id="enhancing-the-jx-version-output">Enhancing the <code>jx version</code> output</h3>
+<p>Description:</p>
+<p>A first step towards securing Jenkins X supply chain is to increase the amount of information gained from running <code>jx version</code> command.</p>
+<p>Implementation</p>
+<p>The issue created for this task is <a href="https://github.com/jenkins-x/jx/issues/8249">here</a>.
+The PR to fix it is <a href="https://github.com/jenkins-x/jx/pull/8291">here</a>.</p>
 <h3 id="integrating-with-tekton-chains-to-sign-taskruns-and-pipelineruns">Integrating with Tekton Chains to sign TaskRuns and PipelineRuns</h3>
 <p>Description:</p>
 <p>As Jenkins X uses tekton as its pipeline execution engine,<code> TaskRun</code> and <code> PipelineRun</code> are considered the key components of Jenkins X pipeline <code>activities</code> and <code>steps</code>
-Tekton Chains monitors the execution of all <code>TaskRun</code> and <code> PipelineRun</code> inside the cluster and takes a snapshot upon completion of each of them to sign with user-provided cryptographic keys and store them on the backend storage. The payload and signature cn be verified later using <code>cosign verify-blob</code>.</p>
+Tekton Chains monitors the execution of all <code>TaskRun</code> and <code> PipelineRun</code> inside the cluster and takes a snapshot upon completion of each of them to sign with user-provided cryptographic keys and store them on the backend storage.
+The payload and signature cn be verified later using <code>cosign verify-blob</code>.</p>
 <p>Implementation</p>
-<p>I used the helm chart developed by <a href="https://www.chainguard.dev/">Chainguard</a> for integrating Chains with Jenkins X. To integrate the <a href="https://github.com/chainguard-dev/tekton-helm-charts/tree/main/charts/tekton-chains">chart</a> and added support for it on <a href="https://github.com/jenkins-x/jx3-versions">jx3-versions</a> to make installation of helm chart easy for our users. The list of PRs for this:</p>
+<p>I used the helm chart developed by <a href="https://www.chainguard.dev/">Chainguard</a> for integrating Chains with Jenkins X.
+To integrate the <a href="https://github.com/chainguard-dev/tekton-helm-charts/tree/main/charts/tekton-chains">chart</a> and added support for it on <a href="https://github.com/jenkins-x/jx3-versions">jx3-versions</a> to make installation of helm chart easy for our users.
+The list of PRs for this:</p>
 <table>
 <thead>
 <tr>
@@ -649,7 +663,7 @@ Tekton Chains monitors the execution of all <code>TaskRun</code> and <code> Pipe
 </tr>
 <tr>
 <td><a href="https://github.com/jenkins-x/jx-docs/pull/3660">https://github.com/jenkins-x/jx-docs/pull/3660</a></td>
-<td>Documentation on how to install and integrate Tekton Chains with Jenknins-X</td>
+<td>Documentation on how to install and integrate Tekton Chains with Jenknins X</td>
 </tr>
 </tbody>
 </table>
@@ -657,10 +671,14 @@ Tekton Chains monitors the execution of all <code>TaskRun</code> and <code> Pipe
 <h3 id="software-bill-of-materials-sbom">Software Bill of Materials (SBOM)</h3>
 <p>Description:</p>
 <p><a href="https://en.wikipedia.org/wiki/Software_supply_chain#:~:text=Software%20vendors%20often,could%20harm%20them.">Software Bill Of Materials</a> (SBOM) is a complete formally structured list of the materials (components, packages, libraries, SDK) used to build (i.e. compile, link) a given piece of software and the supply chain relationships between all these materials.
-It is an inventory of all the components developers used to make this software. It has many formats and many generating tools but all have the same purpose in the end.</p>
+It is an inventory of all the components developers used to make this software.
+It has many formats and many generating tools but all have the same purpose in the end.</p>
 <p>Implementation:</p>
-<p>I first began with investigating available standards and formats for SBOMs and tools for generating them. The results of my investigation were written to a blog post <a href="https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/">here</a>.</p>
-<p>I&rsquo;ve settled for using <a href="https://github.com/anchore/syft">syft</a> for SBOM generation and <a href="https://spdx.dev/">spdx</a> as the standard format for SBOMs. Also, I&rsquo;ve added those installation as pre-defined steps in the Jenkins X pipeline catalog so it will also be available for our users to use in their pipelines and applied those steps to Jenkins X own pipelines. The list of PRs for this work are:</p>
+<p>I first began with investigating available standards and formats for SBOMs and tools for generating them.
+The results of my investigation were written to a blog post <a href="https://jenkins-x.io/blog/2022/07/24/intro-to-sbom/">here</a>.</p>
+<p>I&rsquo;ve settled for using <a href="https://github.com/anchore/syft">syft</a> for SBOM generation and <a href="https://spdx.dev/">spdx</a> as the standard format for SBOMs.
+Also, I&rsquo;ve added those installation as pre-defined steps in the Jenkins X pipeline catalog so it will also be available for our users to use in their pipelines and applied those steps to Jenkins X own pipelines.
+The list of PRs for this work are:</p>
 <table>
 <thead>
 <tr>
@@ -710,9 +728,14 @@ It is an inventory of all the components developers used to make this software. 
 <p>There is also this issue to apply all steps on our active JX repositories <a href="https://github.com/jenkins-x/jx/issues/8348">here</a> (WIP as there are many repositories to be updated) and the list of PRs are referenced in the issue (except those of JX because they included testing and fixing PRs at the beginning).</p>
 <h3 id="signing-jenkins-x-artifacts">Signing Jenkins X artifacts</h3>
 <p>Description:</p>
-<p>Jenkins X is a collection of many components and tools that are used to provide the end-to-end CI/CD solution. Those components are used by our users and are also used by Jenkins X itself. It is important to sign those components to ensure the integrity of the components and the supply chain security of Jenkins X.</p>
+<p>Jenkins X is a collection of many components and tools that are used to provide the end-to-end CI/CD solution.
+Those components are used by our users and are also used by Jenkins X itself.
+It is important to sign those components to ensure the integrity of the components and the supply chain security of Jenkins X.</p>
 <p>Implementation:</p>
-<p>There are a set of tools developed by <a href="https://sigstore.dev/">sigstore</a> to sign and verify artifacts. The most used tool in my implementation is <a href="https://github.com/sigstore/cosign">cosign</a>. I first started with signing the Jenkins X CLI with keys stored in github secrets and then moved to signing the Jenkins X docker images. After that, I switched to use cosign <a href="https://github.com/sigstore/cosign/blob/main/KEYLESS.md">keyless signing</a> (an experimental feature using other Sigstore components to save the effort by key management ) The list of PRs for this work are:</p>
+<p>There are a set of tools developed by <a href="https://sigstore.dev/">sigstore</a> to sign and verify artifacts.
+The most used tool in my implementation is <a href="https://github.com/sigstore/cosign">cosign</a>.
+I first started with signing the Jenkins X CLI with keys stored in github secrets and then moved to signing the Jenkins X docker images.
+After that, I switched to use cosign <a href="https://github.com/sigstore/cosign/blob/main/KEYLESS.md">keyless signing</a> (an experimental feature using other Sigstore components (rekor and fulcio) to save end users from the hassles of key (mis)management ) The list of PRs for this work are:</p>
 <table>
 <thead>
 <tr>
@@ -736,14 +759,16 @@ It is an inventory of all the components developers used to make this software. 
 </tbody>
 </table>
 <h2 id="whats-next">What&rsquo;s next?</h2>
-<p>The work for supply chain security is still in progress and there are many things to be done. At Jenkins X, we are planning to develop new features and integrate more solutions to provide a better supply chain security for our users. The list of things to be done are:</p>
+<p>The work for supply chain security is still in progress and there are many things to be done.
+At Jenkins X, we are planning to develop new features and integrate more solutions to provide a better supply chain security for our users.
+The list of things to be done are:</p>
 <ul>
 <li>Add a cli subcommand in JX to verify sbom/signed binaries against the public keys.</li>
 <li>Add <a href="https://github.com/ossf/scorecard">openSSF security scorecard</a> to Jenkins X repositories.</li>
 <li>Integrate <a href="https://buildsec.github.io/frsca/">FRSCA</a> work with Jenkins X.</li>
 </ul>
 <h2 id="acknowledgements">Acknowledgements</h2>
-<p>Out of all internships and trainings I&rsquo;ve done, this one was the most challenging, rewarding and educational experience. I would like to specially thank my mentor <a href="https://github.com/ankitm123">Ankit Mohabatra</a> for his constant support and his patience to teach me a lot of his rich knowledge he gained by experience and thank the whole team of Jenkins X for their support and guidance and for welcoming me to the community. This internship was a great experience. I had a great time working on this project and I learned a lot from it. I hope to continue contributing to Jenkins X and the open-source community in the future. Thank you.</p>
+<p>Out of all internships and trainings I&rsquo;ve done, this one was the most challenging, rewarding and educational experience. I would like to specially thank my mentor <a href="https://github.com/ankitm123">Ankit Mohapatra</a> for his constant support and his patience to teach me a lot of his rich knowledge he gained by experience and thank the whole team of Jenkins X for their support and guidance and for welcoming me to the community. This internship was a great experience. I had a great time working on this project and I learned a lot from it. I hope to continue contributing to Jenkins X and the open-source community in the future. Thank you.</p>
 
 	
 
