@@ -1063,6 +1063,8 @@ if (!doNotTrack) {
   </ul>
 </li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child collapse" id="m-v3developfaqissues-li">
   <a href="/v3/develop/faq/issues/" class="align-left pl-0 td-sidebar-link td-sidebar-link__page" id="m-v3developfaqissues"><span class="">Troubleshooting</span></a>
+</li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child collapse" id="m-v3developfaqngrok-li">
+  <a href="/v3/develop/faq/ngrok/" class="align-left pl-0 td-sidebar-link td-sidebar-link__page" id="m-v3developfaqngrok"><span class="">Ngrok</span></a>
 </li>
   </ul>
 </li>
@@ -1371,7 +1373,7 @@ if (!doNotTrack) {
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#jenkins-x-v3-installation">Jenkins X v3 installation</a></li>
         <li><a href="#vault-configuration-only-for-external-vault">Vault configuration (Only for external vault)</a></li>
-        <li><a href="#set-up-ingress-and-webhook">Set up ingress and webhook</a></li>
+        <li><a href="#port-forwarding-for-webhooks">Port forwarding for webhooks</a></li>
         <li><a href="#next-steps">Next steps</a></li>
       </ul>
     </li>
@@ -1540,6 +1542,13 @@ Once helm is installed, proceed to the next steps.</p>
 </span></span><span style="display:flex;"><span>helm repo update
 </span></span><span style="display:flex;"><span>helm install vault-operator banzaicloud-stable/vault-operator --create-namespace -n jx-vault
 </span></span><span style="display:flex;"><span>helm install vault-instance jxgh/vault-instance -n jx-vault
+</span></span></code></pre></div><p>Wait for the vault pods to be in running status, before proceeding to the next steps.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get pods -n jx-vault
+</span></span></code></pre></div><p>Output should be similar to</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>NAME                                READY   STATUS    RESTARTS   AGE
+</span></span><span style="display:flex;"><span>vault-operator-d7c697f95-55dfj      1/1     Running   <span style="color:#ae81ff">0</span>          4m22s
+</span></span><span style="display:flex;"><span>vault-0                             3/3     Running   <span style="color:#ae81ff">0</span>          4m10s
+</span></span><span style="display:flex;"><span>vault-configurer-689758f67d-8npcf   1/1     Running   <span style="color:#ae81ff">0</span>          3m38s
 </span></span></code></pre></div><h5 id="external-vault">External vault</h5>
 <h6 id="docker">Docker</h6>
 <p>You need to install <a href="https://docs.docker.com/engine/install/">docker</a> and <a href="https://docs.docker.com/engine/install/linux-postinstall/">manage it as a non root user</a></p>
@@ -1565,6 +1574,38 @@ Once helm is installed, proceed to the next steps.</p>
 <li>
 <p>Generate a cluster git repository from the <a href="https://github.com/jx3-gitops-repositories/jx3-k3s-vault">jx3-k3s-vault</a> template, by clicking <a href="https://github.com/jx3-gitops-repositories/jx3-k3s-vault/generate">here</a></p>
 </li>
+<li>
+<p>Clone the generated repository and cd into the repository folder</p>
+</li>
+<li>
+<p>Set up ingress and webhook</p>
+<ul>
+<li>Get the external IP of the traefik service (loadbalancer)</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get svc -A | grep LoadBalancer
+</span></span><span style="display:flex;"><span>kube-system   traefik          LoadBalancer   &lt;cluster-ip&gt;    &lt;external-ip&gt;    80:31123/TCP,443:31783/TCP   40m
+</span></span></code></pre></div><ul>
+<li>Edit the jx-requirements.yaml file by editing the ingress domain:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx gitops requirements edit --domain &lt;external-ip&gt;.nip.io
+</span></span></code></pre></div></li>
+<li>
+<p>set up Ngrok</p>
+<ul>
+<li>
+<p>Refer to <a href="/v3/develop/faq/ngrok/">these docs</a> to set up ngrok</p>
+</li>
+<li>
+<p>Once this tunnel is open, paste the ngrok url (without http) which is forwarding the traffic to port 8080 in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.</p>
+</li>
+<li>
+<p>commit and push the changes.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add .
+</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;chore: initial commit&#34;</span>
+</span></span><span style="display:flex;"><span>git push origin main
+</span></span></code></pre></div></li>
 <li>
 <p>Make these changes only when using external vault</p>
 <ul>
@@ -1639,8 +1680,8 @@ If you get an error connecting to the cluster, try running <code>kubectl config 
 </span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;chore: dummy commit 1&#34;</span>
 </span></span><span style="display:flex;"><span>git push origin main
 </span></span></code></pre></div><p>tail the logs of <code>jx-git-operator</code> pod in the <code>jx-git-operator</code> namespace.</p>
-<pre tabindex="0"><code>not creating a Job in namespace jx-git-operator for repo jx-boot sha XXXXXX yet as there is an active job jx-boot-XXXXXXX
-</code></pre><p>Kill that job.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>not creating a Job in namespace jx-git-operator <span style="color:#66d9ef">for</span> repo jx-boot sha XXXXXX yet as there is an active job jx-boot-XXXXXXX
+</span></span></code></pre></div><p>Kill that job.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl delete job jx-boot-97dbb72f-4e4e-4b0e-8eb2-8908997b19f7 -n jx-git-operator
 </span></span></code></pre></div><p>Once it&rsquo;s killed a new boot job will be triggered.
 This job will create the secrets in vault which will be used by external secrets to create kubernetes secrets.</p>
@@ -1649,69 +1690,8 @@ This job will create the secrets in vault which will be used by external secrets
 <li>To verfiy the secrets were created, run <code>kubectl get es -A</code> and <code>jx secret verify</code></li>
 <li>If this didn&rsquo;t work try and repeat the steps but commit your dummy changes through github repository directly other than the <code>git push origin main</code> command</li>
 </ul>
-<h3 id="set-up-ingress-and-webhook">Set up ingress and webhook</h3>
-<ul>
-<li>Get the external IP of the traefik service (loadbalancer)</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>kubectl get svc -A | grep LoadBalancer
-</span></span><span style="display:flex;"><span>kube-system   traefik          LoadBalancer   &lt;cluster-ip&gt;    &lt;external-ip&gt;    80:31123/TCP,443:31783/TCP   40m
-</span></span></code></pre></div><ul>
-<li>Edit the jx-requirements.yaml file by editing the ingress domain:</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># There may be some changes committed by the jx boot job</span>
-</span></span><span style="display:flex;"><span>git pull
-</span></span><span style="display:flex;"><span>jx gitops requirements edit --domain &lt;external-ip&gt;.nip.io
-</span></span></code></pre></div><h4 id="ngrok">Ngrok</h4>
-<p>Next, download and install <a href="https://ngrok.com/">ngrok</a>.
-Log into ngrok account and get the ngrok auth token (Authenticated sessions can run for unlimited time, unauthenticated sessions expire in 1.5 hours):</p>
-<p>Create a ngrok config file at <code>~/.config/ngrok/ngrok.yml</code> with the following content (replace <code>&lt;ngrok-auth-token&gt;</code> with the auth token from the ngrok account):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">authtoken</span>: <span style="color:#ae81ff">&lt;ngrok-auth-token&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">tunnels</span>:
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hook</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">proto</span>: <span style="color:#ae81ff">http</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">addr</span>: <span style="color:#ae81ff">8080</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">schemes</span>:
-</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">http</span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ui</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">proto</span>: <span style="color:#ae81ff">http</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">addr</span>: <span style="color:#ae81ff">9090</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">schemes</span>:
-</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">http</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">version</span>: <span style="color:#e6db74">&#34;2&#34;</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">region</span>: <span style="color:#ae81ff">us</span>
-</span></span></code></pre></div><p>Verify that the config is correct using:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok config check
-</span></span></code></pre></div><p>Run this in a new terminal window/tab:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ngrok start --all
-</span></span></code></pre></div><ul>
-<li>Once the command succeeds, you should see something like this:</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>ngrok                                                                                                                                                                                       (Ctrl+C to quit)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Hello World! https://ngrok.com/next-generation
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Session Status                online
-</span></span><span style="display:flex;"><span>Account                       user123 (Plan: Free)
-</span></span><span style="display:flex;"><span>Update                        update available (version 3.0.6, Ctrl-U to update)
-</span></span><span style="display:flex;"><span>Version                       3.0.5
-</span></span><span style="display:flex;"><span>Region                        United States (us)
-</span></span><span style="display:flex;"><span>Latency                       25ms
-</span></span><span style="display:flex;"><span>Web Interface                 http://127.0.0.1:4040
-</span></span><span style="display:flex;"><span>Forwarding                    http://XXXX.ngrok.io -&gt; http://localhost:8080
-</span></span><span style="display:flex;"><span>Forwarding                    http://YYYY.ngrok.io -&gt; http://localhost:9090
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>Connections                   ttl     opn     rt1     rt5     p50     p90
-</span></span><span style="display:flex;"><span>                              0       0       0.00    0.00    0.00    0.00
-</span></span></code></pre></div><ul>
-<li>Once this tunnel is open, paste the ngrok url (without http) which is forwarding the traffic to port 8080 in the hook field in the helmfiles/jx/jxboot-helmfile-resources-values.yaml file in the cluster git repository.</li>
-<li>commit and push the changes.</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>git add .
-</span></span><span style="display:flex;"><span>git commit -m <span style="color:#e6db74">&#34;chore: new ngrok ip&#34;</span>
-</span></span><span style="display:flex;"><span>git push origin main
-</span></span></code></pre></div><ul>
-<li>In another terminal run the following command to enable webhooks via ngrok</li>
-</ul>
+<h3 id="port-forwarding-for-webhooks">Port forwarding for webhooks</h3>
+<p>In another terminal run the following command to enable webhooks via ngrok</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>jx ns jx
 </span></span><span style="display:flex;"><span>kubectl port-forward svc/hook 8080:80
 </span></span></code></pre></div><ul>
@@ -1801,7 +1781,7 @@ Log into ngrok account and get the ngrok auth token (Authenticated sessions can 
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified November 19, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/dde504ae647b063f9a625e905df0c79db21465d1">fix: add version tag to k3s install command (dde504ae64)</a>
+  Last modified November 6, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/93a887a525ede8111a5cc9d8f179e426a089b831">fix: modify k3s docs (93a887a525)</a>
 </div>
 
 </div>
