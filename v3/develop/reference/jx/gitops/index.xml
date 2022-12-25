@@ -28,17 +28,21 @@
 &lt;p&gt;Annotates all kubernetes resources in the given directory tree&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# updates recursively annotates all resources in the current directory&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops annotate myannotate&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;cheese another&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;thing
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops annotate myannotation&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;cheese another&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;thing
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# updates recursively all resources&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops annotate --dir myresource-dir foo&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;bar
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# remove annotations&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops annotate myannotate- another-
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;options&#34;&gt;Options&lt;/h3&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;      --dir string                the directory to recursively look for the *.yaml or *.yml files (default &amp;#34;.&amp;#34;)
   -h, --help                      help for annotate
       --invert-selector           inverts the effect of selector to exclude resources matched by selector
   -k, --kind stringArray          adds Kubernetes resource kinds to filter on. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
       --kind-ignore stringArray   adds Kubernetes resource kinds to exclude. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
-  -p, --pod-spec                  annotate the PodSpec in spec.templates.metadata.annotations rather than the top level annotations
+      --overwrite                 Set to false to not overwrite any existing value (default true)
+  -p, --pod-spec                  annotate the PodSpec in spec.template.metadata.annotations (or spec.jobTemplate.spec.template.metadata.annotations for CronJobs) rather than the top level annotations
       --selector stringToString   adds Kubernetes label selector to filter on, e.g. -s app=pusher-wave,heritage=Helm (default [])
+      --selector-target string    sets which path in the Kubernetes resources to select on instead of metadata.labels.
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;source&#34;&gt;Source&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops&#34;&gt;jenkins-x-plugins/jx-gitops&lt;/a&gt;&lt;/p&gt;
 
@@ -58,7 +62,7 @@
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;jx gitops apply
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
 &lt;p&gt;Performs a gitops regeneration and apply on a cluster git repository&lt;/p&gt;
-&lt;p&gt;If the last commit was a merge from a pull request the regeneration is skipped.&lt;/p&gt;
+&lt;p&gt;If the last commit was a merge from a pull request the regeneration is skipped, unless the cluster is new.&lt;/p&gt;
 &lt;p&gt;Also the process detects if an ingress has changed (or similar changes) and retriggers another regeneration which typically is only required when installing for the first time or if no explicit domain name is being used and the LoadBalancer service has been removed.&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# performs a regeneration and apply&lt;/span&gt;
@@ -285,6 +289,7 @@
       --kind-ignore stringArray     adds Kubernetes resource kinds to exclude. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
       --log-level string            Sets the logging level. If not specified defaults to $JX_LOG_LEVEL
       --selector stringToString     adds Kubernetes label selector to filter on, e.g. -s app=pusher-wave,heritage=Helm (default [])
+      --selector-target string      sets which path in the Kubernetes resources to select on instead of metadata.labels.
   -s, --source-dir string           the directory to recursively look for the *.yaml files to modify (default &amp;#34;content-root&amp;#34;)
       --verbose                     Enables verbose output. The environment variable JX_LOG_LEVEL has precedence over this flag and allows setting the logging level to any value of: panic, fatal, error, warn, info, debug, trace
       --version-stream-dir string   the directory for the version stream. Defaults to &amp;#39;versionStream&amp;#39; in the current --dir
@@ -403,19 +408,24 @@
         &lt;h3 id=&#34;usage&#34;&gt;Usage&lt;/h3&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;jx gitops label
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;synopsis&#34;&gt;Synopsis&lt;/h3&gt;
-&lt;p&gt;Updates all kubernetes resources in the given directory tree to add/override the given label&lt;/p&gt;
+&lt;p&gt;Labels all kubernetes resources in the given directory tree&lt;/p&gt;
 &lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# updates recursively labels all resources in the current directory&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops label mylabel&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;cheese another&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;thing
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# updates recursively all resources&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops label --dir myresource-dir foo&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;bar
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# remove labels&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx-gitops label mylabel- another-
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;options&#34;&gt;Options&lt;/h3&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;      --dir string                the directory to recursively look for the *.yaml or *.yml files (default &amp;#34;.&amp;#34;)
   -h, --help                      help for label
       --invert-selector           inverts the effect of selector to exclude resources matched by selector
   -k, --kind stringArray          adds Kubernetes resource kinds to filter on. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
       --kind-ignore stringArray   adds Kubernetes resource kinds to exclude. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
+      --overwrite                 Set to false to not overwrite any existing value (default true)
+  -p, --pod-spec                  label the PodSpec in spec.template.metadata.labels (or spec.jobTemplate.spec.template.metadata.labels for CronJobs) rather than the top level labels
       --selector stringToString   adds Kubernetes label selector to filter on, e.g. -s app=pusher-wave,heritage=Helm (default [])
+      --selector-target string    sets which path in the Kubernetes resources to select on instead of metadata.labels.
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;source&#34;&gt;Source&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops&#34;&gt;jenkins-x-plugins/jx-gitops&lt;/a&gt;&lt;/p&gt;
 
@@ -479,6 +489,7 @@
       --kind-ignore stringArray   adds Kubernetes resource kinds to exclude. For kind expressions see: https://github.com/jenkins-x/jx-helpers/v3/tree/master/docs/kind_filters.md
   -n, --namespace string          the namespace to modify the resources to
       --selector stringToString   adds Kubernetes label selector to filter on, e.g. -s app=pusher-wave,heritage=Helm (default [])
+      --selector-target string    sets which path in the Kubernetes resources to select on instead of metadata.labels.
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;source&#34;&gt;Source&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/jenkins-x-plugins/jx-gitops&#34;&gt;jenkins-x-plugins/jx-gitops&lt;/a&gt;&lt;/p&gt;
 
@@ -761,7 +772,7 @@
       --namespace string            the default namespace if none is specified in the helmfile.yaml (default &amp;#34;jx&amp;#34;)
   -o, --owner string                filter on the Kptfile repository owner (user/organisation) for which packages to update
   -r, --repo string                 filter on the Kptfile repository name  for which packages to update
-  -s, --strategy string             the &amp;#39;kpt&amp;#39; strategy to use. To see available strategies type &amp;#39;kpt pkg update --help&amp;#39;. Typical values are: resource-merge, fast-forward, alpha-git-patch, force-delete-replace (default &amp;#34;alpha-git-patch&amp;#34;)
+  -s, --strategy string             the &amp;#39;kpt&amp;#39; strategy to use. To see available strategies type &amp;#39;kpt pkg update --help&amp;#39;. Typical values are: resource-merge, fast-forward, force-delete-replace (default &amp;#34;resource-merge&amp;#34;)
   -u, --url string                  filter on the Kptfile repository URL for which packages to update
       --verbose                     Enables verbose output. The environment variable JX_LOG_LEVEL has precedence over this flag and allows setting the logging level to any value of: panic, fatal, error, warn, info, debug, trace
   -v, --version string              the git version of the kpt package to upgrade to

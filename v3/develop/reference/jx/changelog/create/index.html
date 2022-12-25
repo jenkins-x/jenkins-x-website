@@ -1522,6 +1522,12 @@ if (!doNotTrack) {
 <p>This command also generates a Release Custom Resource Definition you can include in your helm chart to give metadata about the changelog of the application along with metadata about the release (git tag, url, commits, issues fixed etc). Including this metadata in a helm charts means we can do things like automatically comment on issues when they hit Staging or Production; or give detailed descriptions of what things have changed when using GitOps to update versions in an environment by referencing the fixed issues in the Pull Request.</p>
 <p>You can opt out of the release YAML generation via the &lsquo;&ndash;generate-yaml=false&rsquo; option</p>
 <p>To update the release notes on your git provider needs a git API token which is usually provided via the Tekton git authentication mechanism.</p>
+<p>Apart from using your git provider as the issue tracker there is also support for Jira. You then specify issues in commit messages with the issue key that looks like ABC-123. You can configure this in in similar ways as environments, see <a href="https://jenkins-x.io/v3/develop/environments/config/">https://jenkins-x.io/v3/develop/environments/config/</a>. An example configuration:</p>
+<p>issueProvider:
+jira:
+serverUrl: <a href="https://example.atlassian.net">https://example.atlassian.net</a>
+userName: <a href="mailto:user@example.com">user@example.com</a></p>
+<p>Jira API token is taken from the environment variable JIRA_API_TOKEN. Can be populated using the jx-boot-job-env-vars secret.</p>
 <p>By default jx commands look for a file &lsquo;~/.jx/gitAuth.yaml&rsquo; to find the API tokens for Git servers. You can use &lsquo;jx create git token&rsquo; to create a Git token.</p>
 <p>Alternatively if you are running this command inside a CI server you can use environment variables to specify the username and API token.
 e.g. define environment variables GIT_USERNAME and GIT_API_TOKEN</p>
@@ -1535,37 +1541,41 @@ e.g. define environment variables GIT_USERNAME and GIT_API_TOKEN</p>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># specify the version and a header template</span>
 </span></span><span style="display:flex;"><span>jx-changelog create --header-file docs/dev/changelog-header.md --version 1.2.3
 </span></span></code></pre></div><h3 id="options">Options</h3>
-<pre tabindex="0"><code>  -b, --batch-mode                 Runs in batch mode without prompting for user input
-      --build string               The Build number which is used to update the PipelineActivity. If not specified its defaulted from  the &#39;$BUILD_NUMBER&#39; environment variable
-      --conditional-release        Wrap the Release YAML in the helm Capabilities.APIVersions.Has if statement (default true)
-  -c, --crd                        Generate the CRD in the chart
-      --crd-yaml-file string       the name of the file to generate the Release CustomResourceDefinition YAML (default &#34;release-crd.yaml&#34;)
-      --dir string                 the directory to search for the .git to discover the git source URL (default &#34;.&#34;)
-      --draft                      The git provider release is marked as draft
-      --fail-if-no-commits         Do we want to fail the build if we don&#39;t find any commits to generate the changelog
-      --footer string              The changelog footer in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
-      --footer-file string         The file name of the changelog footer in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
-  -y, --generate-yaml              Generate the Release YAML in the local helm chart
-      --git-kind string            the kind of git server to connect to
-      --git-server string          the git server URL to create the git provider client. If not specified its defaulted from the current source URL
-      --git-token string           the git token used to operate on the git repository
-      --header string              The changelog header in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
-      --header-file string         The file name of the changelog header in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
-  -h, --help                       help for create
-      --include-merge-commits      Include merge commits when generating the changelog
-      --log-level string           Sets the logging level. If not specified defaults to $JX_LOG_LEVEL
-      --no-dev-release             Disables the generation of Release CRDs in the development namespace to track releases being performed
-      --output-markdown string     Put the changelog output in this file
-  -o, --overwrite                  overwrites the Release CRD YAML file if it exists
-      --prerelease                 The git provider release is marked as a pre-release
-      --previous-date string       the previous date to find a revision in format &#39;MonthName dayNumber year&#39;
-  -p, --previous-rev string        the previous tag revision
-      --release-yaml-file string   the name of the file to generate the Release YAML (default &#34;release.yaml&#34;)
-      --rev string                 the current tag revision
-  -t, --templates-dir string       the directory containing the helm chart templates to generate the resources
-      --update-release             Should we update the release on the Git repository with the changelog (default true)
-      --verbose                    Enables verbose output. The environment variable JX_LOG_LEVEL has precedence over this flag and allows setting the logging level to any value of: panic, fatal, error, warn, info, debug, trace
-  -v, --version string             The version to release
+<pre tabindex="0"><code>  -b, --batch-mode                   Runs in batch mode without prompting for user input
+      --build string                 The Build number which is used to update the PipelineActivity. If not specified its defaulted from  the &#39;$BUILD_NUMBER&#39; environment variable
+      --changelog-separator string   the separator to use when splitting commit message from changelog in the pull request body. Default to ----- or if set the CHANGELOG_SEPARATOR environment variable
+      --conditional-release          Wrap the Release YAML in the helm Capabilities.APIVersions.Has if statement (default true)
+  -c, --crd                          Generate the CRD in the chart
+      --crd-yaml-file string         the name of the file to generate the Release CustomResourceDefinition YAML (default &#34;release-crd.yaml&#34;)
+      --dir string                   the directory to search for the .git to discover the git source URL (default &#34;.&#34;)
+      --draft                        The git provider release is marked as draft
+      --fail-if-no-commits           Do we want to fail the build if we don&#39;t find any commits to generate the changelog
+      --footer string                The changelog footer in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
+      --footer-file string           The file name of the changelog footer in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
+  -y, --generate-yaml                Generate the Release YAML in the local helm chart
+      --git-kind string              the kind of git server to connect to
+      --git-server string            the git server URL to create the git provider client. If not specified its defaulted from the current source URL
+      --git-token string             the git token used to operate on the git repository
+      --header string                The changelog header in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
+      --header-file string           The file name of the changelog header in markdown for the changelog. Can use go template expressions on the ReleaseSpec object: https://golang.org/pkg/text/template/
+  -h, --help                         help for create
+      --include-changelog            Should changelogs from pull requests be included. Defaults to true (default true)
+      --include-merge-commits        Include merge commits when generating the changelog
+      --log-level string             Sets the logging level. If not specified defaults to $JX_LOG_LEVEL
+      --no-dev-release               Disables the generation of Release CRDs in the development namespace to track releases being performed
+      --output-markdown string       Put the changelog output in this file
+  -o, --overwrite                    overwrites the Release CRD YAML file if it exists
+      --prerelease                   The git provider release is marked as a pre-release
+      --previous-date string         the previous date to find a revision in format &#39;MonthName dayNumber year&#39;
+  -p, --previous-rev string          the previous tag revision
+      --release-yaml-file string     the name of the file to generate the Release YAML (default &#34;release.yaml&#34;)
+      --rev string                   the current tag revision
+      --status-path string           The path to the deployment status file used to calculate dependency updates. Defaults to docs/releases.yaml (default &#34;docs/releases.yaml&#34;)
+      --tag-prefix string            prefix to filter on when searching for version tags
+  -t, --templates-dir string         the directory containing the helm chart templates to generate the resources
+      --update-release               Should we update the release on the Git repository with the changelog (default true)
+      --verbose                      Enables verbose output. The environment variable JX_LOG_LEVEL has precedence over this flag and allows setting the logging level to any value of: panic, fatal, error, warn, info, debug, trace
+  -v, --version string               The version to release
 </code></pre><h3 id="source">Source</h3>
 <p><a href="https://github.com/jenkins-x-plugins/jx-changelog">jenkins-x-plugins/jx-changelog</a></p>
 
@@ -1644,7 +1654,7 @@ e.g. define environment variables GIT_USERNAME and GIT_API_TOKEN</p>
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified November 10, 2021: <a href="https://github.com/jenkins-x/jx-docs/commit/dac463c894602cac776721375724daf27b8dc733">chore: regenerated plugin docs (dac463c894)</a>
+  Last modified December 25, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/4443d7b9ada0d75d2ba91eccbeef6e8ed05c2a4d">chore: regenerated plugin docs (4443d7b9ad)</a>
 </div>
 
 </div>
