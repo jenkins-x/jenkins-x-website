@@ -512,6 +512,114 @@ A more detailed explanation about those types of attacks is &lt;a href=&#34;http
     </item>
     
     <item>
+      <title>Blog: Reconcile with kpt live apply</title>
+      <link>https://jenkins-x.io/blog/2023/03/09/kpt-live-apply/</link>
+      <pubDate>Thu, 09 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2023/03/09/kpt-live-apply/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Since the dawn of Jenkins X 3 the default last step of reconciling the state of the files in your cluster repository to
+your cluster has been to execute &lt;code&gt;kubectl apply&lt;/code&gt;. You can find more details about this
+&lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;There are some drawbacks with &lt;code&gt;kubectl apply&lt;/code&gt; though. The one that made me start looking for alternatives was that if
+you remove a resource from your cluster repository it may not be removed from your cluster. The way deletion works with
+&lt;code&gt;kubectl apply&lt;/code&gt; is that it is handed the option &lt;code&gt;--prune&lt;/code&gt; which will remove resources that are not in the manifests.
+Except that it doesn&amp;rsquo;t always work as expected. It will only remove certain kinds of resources
+&lt;a href=&#34;https://github.com/kubernetes/kubernetes/blob/4e800983fb8da4a5960a58ad9b380484770647d1/staging/src/k8s.io/kubectl/pkg/util/prune/prune.go#L28-L44&#34;&gt;defined in kubectl&lt;/a&gt;.
+In my case I removed an HorizontalPodAutoscaler from my cluster repository, but it wasn&amp;rsquo;t removed from my cluster.&lt;/p&gt;
+&lt;p&gt;When trying to find a solution to this I first tried to override this default list in kubectl of things to prune, but
+this turned out to be difficult in the general case. I also tried the already existing alternative of using &lt;code&gt;kapp&lt;/code&gt; to
+apply the manifests, but I couldn&amp;rsquo;t get that to work. Looking for other options I settled for &lt;code&gt;kpt live apply&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+
+
+    For all the functionality described here to work you need to have a cluster that is
+&lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cluster/&#34;&gt;upgraded&lt;/a&gt; later than January 24th 2023.
+
+&lt;/div&gt;
+
+&lt;p&gt;You enable the use of &lt;code&gt;kpt live apply&lt;/code&gt; by adding&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-make&#34; data-lang=&#34;make&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;KUBEAPPLY &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kpt-apply
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to the &lt;code&gt;Makefile&lt;/code&gt; of your cluster repository anywhere before &lt;code&gt;include versionStream/src/Makefile.mk&lt;/code&gt;. This works both
+in a dev cluster and in a &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster/&#34;&gt;remote cluster&lt;/a&gt;.
+(With the caveat that all bets are off if you have done changes yourself to &lt;code&gt;versionStream/src/Makefile.mk&lt;/code&gt;.)&lt;/p&gt;
+&lt;p&gt;After you have pushed this you can watch the log of the boot job using &lt;code&gt;jx admin log&lt;/code&gt; as usual. When &lt;code&gt;kpt live  apply&lt;/code&gt; has been executed the first time you can optionally add let &lt;code&gt;kpt live apply --dry-run&lt;/code&gt; be executed for
+pull requests, giving a better assurance that the content of a pull request will apply nicely. But this only work
+properly for pull requests to the dev cluster, since it&amp;rsquo;s in the dev cluster the pull request pipeline will execute.
+So in a remote clusters this should not be enabled. That said this functionality can be enabled by adding&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-make&#34; data-lang=&#34;make&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;PR_LINT &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kpt-apply-dry-run
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to the &lt;code&gt;Makefile&lt;/code&gt; of your cluster repository.&lt;/p&gt;
+&lt;h2 id=&#34;waiting-for-resources-to-be-reconciled&#34;&gt;Waiting for resources to be reconciled&lt;/h2&gt;
+&lt;p&gt;While the fact that I can be sure that removed resource actually are gone is the killer feature of &lt;code&gt;kpt live apply&lt;/code&gt;
+for me the opposite is true as well. With this I mean that &lt;code&gt;kpt live apply&lt;/code&gt;(and as a consequence) the boot job won&amp;rsquo;t
+succeed unless all resources are verified to have been applied. This includes for example that the rollout of new
+applications versions with deployments have succeeded.&lt;/p&gt;
+&lt;p&gt;This can be seen as  a problem though: the default is that &lt;code&gt;kpt live apply&lt;/code&gt; tries for 15 minutes before timing out
+with an error. But since the boot job is normal k8s job the job controller will create new pods on failure up to
+the backoff limit, that is set to &lt;strong&gt;4&lt;/strong&gt;. This can block the application of subsequent changes to the cluster repo.&lt;/p&gt;
+&lt;h2 id=&#34;tagging-and-release-notes&#34;&gt;Tagging and release notes&lt;/h2&gt;
+&lt;p&gt;When activating &lt;code&gt;kpt live apply&lt;/code&gt; you will also see that tags are added to the cluster repository upon successful
+application of changes. These tags can have 3 prefixes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;crd&lt;/code&gt; for custom resource definitions&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster&lt;/code&gt; for cluster wide resources&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ns&lt;/code&gt; for namespaced resources (the most common)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For &lt;code&gt;ns&lt;/code&gt; tags release notes will also be generated and added to the git provider (for example GitHub). This means
+that you can see what has changed in your cluster by looking at the releases of the cluster repository.&lt;/p&gt;
+&lt;p&gt;One handy use of this is that you can get a notification from GitHub when changes has been successfully deployed by
+going to the &lt;strong&gt;Watch&lt;/strong&gt; menu for the repo, select &lt;strong&gt;Custom&lt;/strong&gt; and check &lt;strong&gt;Releases&lt;/strong&gt;. If you get the notification by email or on the
+GitHub site depends on the notification settings for your GitHub account.&lt;/p&gt;
+&lt;p&gt;This functionality can be further customized by adding scripts to the &lt;code&gt;extensions&lt;/code&gt; directory of your cluster repository.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;crd-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;crd&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;cluster&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ns-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;ns&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The default behaviour is equivalent to adding the following script as &lt;code&gt;ns-reconciled&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx changelog create --tag-prefix ns-
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is a somewhat hacky variety that sends out a mail with the release notes similarly to what you can
+subscribe to for yourself:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;set -xe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx changelog create --tag-prefix ns-
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;token&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl get secret jx-boot -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;password&amp;#39;]}&amp;#34;&lt;/span&gt; | base64 -d&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;repourl&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl get secret jx-boot -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;url&amp;#39;]}&amp;#34;&lt;/span&gt;    | base64 -d&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;owner&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $repourl | cut -d/ -f4&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;repo&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $repourl | cut -d/ -f5 | cut -d. -f1&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt;EOF
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;to: changelog@example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;From: dev@example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;MIME-Version: 1.0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Return-Path: &amp;lt;&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Precedence: Bulk
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Content-Type: text/html; charset=utf-8
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Subject: Deploy to kubernetes cluster
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;html&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;body&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;h1&amp;gt;Deploy to kubernetes cluster&amp;lt;/h1&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl -s  -H &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Authorization: Bearer &lt;/span&gt;$token&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; https://api.github.com/graphql -X POST -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;query&amp;#34;:&amp;#34;query { repository(owner:\&amp;#34;&amp;#39;&lt;/span&gt;$owner&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;, name:\&amp;#34;&amp;#39;&lt;/span&gt;$repo&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;) { release(tagName: \&amp;#34;ns-&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;TS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;) { descriptionHTML }}}&amp;#34;}&amp;#39;&lt;/span&gt; | yq .data.repository.release.descriptionHTML
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;/body&amp;gt;&amp;lt;/html&amp;gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; | sendmail -t -S smtp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To adapt for your own use, the minimal changes would be to find and replace the smtp server and mail addresses now
+added for the domain &lt;strong&gt;example.com&lt;/strong&gt;. Don&amp;rsquo;t forget to make the script executable with &lt;code&gt;chmod +x ns-reconciled&lt;/code&gt;.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
       <title>Blog: Foreign aliases</title>
       <link>https://jenkins-x.io/blog/2023/02/09/foreign-aliases/</link>
       <pubDate>Thu, 09 Feb 2023 00:00:00 +0000</pubDate>
@@ -4332,57 +4440,6 @@ In this talk, we will discuss the limitations of Jenkins, how Jenkins X addresse
 &lt;p&gt;In the next phase I will write these apps document and add deprecate note to jx, and continue to explore apps. I will also follow up about apps/addons issues on jx then try to solve the issues. Jenkins X team is going to be releasing 3.x of Jenkins X, I also need to get familiar with it - &lt;a href=&#34;https://github.com/jenkins-x/octant-jx&#34;&gt;https://github.com/jenkins-x/octant-jx&lt;/a&gt;.&lt;/p&gt;
 &lt;h4 id=&#34;feedback&#34;&gt;Feedback&lt;/h4&gt;
 &lt;p&gt;If you are interested in the project, or to guide me. Welcome to join #jenkins-x-gsoc channel on &lt;a href=&#34;https://cdeliveryfdn.slack.com/join/shared_invite/enQtODM2NDI1NDc0MzIxLTA1MDcxMzUyMGU2NWVlNmQwN2M1N2M4MWJjOWFkM2UzMDY0OWNkNjAzNzM0NzVkNjQ5M2NkMmY2MTRkMWY4MWY#/&#34;&gt;CDF Slack&lt;/a&gt; 🙌&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Consolidate the use of Apps / Addons - Coding Phase 1</title>
-      <link>https://jenkins-x.io/blog/2020/07/12/gsoc2020/</link>
-      <pubDate>Sun, 12 Jul 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/07/12/gsoc2020/</guid>
-      <description>
-        
-        
-        &lt;p&gt;The coding phase 1 of Google Summer of Code ended last week, I&amp;rsquo;m working on &lt;a href=&#34;https://www.jenkins.io/projects/gsoc/2020/projects/jenkins-x-apps-consolidation/&#34;&gt;Consolidate the use of Apps / Addons&lt;/a&gt;, so I&amp;rsquo;d like to share my coding phase 1 work.&lt;/p&gt;
-&lt;p&gt;In the project, I mainly migrate addons to apps, the way is easier for improve jx apps and addons.&lt;/p&gt;
-&lt;p&gt;During the time, I&amp;rsquo;ve migrated all addons to apps via Helm chart way.&lt;/p&gt;
-&lt;p&gt;The following is my make apps:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-kubeless&#34;&gt;https://github.com/nodece/jx-app-kubeless&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-owasp-zap&#34;&gt;https://github.com/nodece/jx-app-owasp-zap&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-flagger&#34;&gt;https://github.com/nodece/jx-app-flagger&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-gloo&#34;&gt;https://github.com/nodece/jx-app-gloo&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-istio&#34;&gt;https://github.com/nodece/jx-app-istio&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nodece/jx-app-ingress&#34;&gt;https://github.com/nodece/jx-app-ingress&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Current, we only move to jx-app-kubeless to the &lt;a href=&#34;https://github.com/jenkins-x-apps&#34;&gt;jenkins-x-apps&lt;/a&gt; repository, other apps haven&amp;rsquo;t been moved to the &lt;a href=&#34;https://github.com/jenkins-x-apps&#34;&gt;jenkins-x-apps&lt;/a&gt; repository.&lt;/p&gt;
-&lt;p&gt;You can visit &lt;a href=&#34;https://docs.google.com/spreadsheets/d/1k2KEMdk5-9HrU-IUuataYD63Kl-JEsuy5aXus7Dcitc/edit?usp=sharing&#34;&gt;here&lt;/a&gt; for more details.&lt;/p&gt;
-&lt;h4 id=&#34;next-phase-work&#34;&gt;Next phase work&lt;/h4&gt;
-&lt;p&gt;The next phase is to add &lt;code&gt;jx delete app&lt;/code&gt; command to jx, but it has been implemented by Jenkins X contributor, so I made a new plan for next phase.&lt;/p&gt;
-&lt;p&gt;The following is my plan for the next phase:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;Improve &lt;code&gt;jx add app&lt;/code&gt; - It will support to fetch any git repository to install app. I also consider migrate application to apps.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Perfect the work of phase 1, these apps haven&amp;rsquo;t moved to jenkins-x-apps repository yet.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Follow up on jx issues to improve jx.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;demo-for-coding-phase-1&#34;&gt;Demo for coding phase 1&lt;/h3&gt;
-&lt;p&gt;I presentation my coding phase 1 demo on YouTube lase week.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Notes: the video language is Chinese.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;iframe width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/Ka2Uor_oTWc&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
-&lt;p&gt;Last week, Jenkins hold a meeting for Jenkins GSoC students to present their phase 1 work, I also present my coding phase 1 work on the meeting.&lt;/p&gt;
-&lt;iframe width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/HQLhakpx5mk&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
-&lt;h4 id=&#34;feedback&#34;&gt;Feedback&lt;/h4&gt;
-&lt;p&gt;If you are interested in the project, or to guide me. Welcome to join #jenkins-x-gsoc channel on &lt;a href=&#34;https://cdeliveryfdn.slack.com/join/shared_invite/enQtODM2NDI1NDc0MzIxLTA1MDcxMzUyMGU2NWVlNmQwN2M1N2M4MWJjOWFkM2UzMDY0OWNkNjAzNzM0NzVkNjQ5M2NkMmY2MTRkMWY4MWY#/&#34;&gt;CDF Slack&lt;/a&gt;. 🙌&lt;/p&gt;
 
       </description>
     </item>

@@ -4,7 +4,7 @@
     <link>https://jenkins-x.io/categories/blog/</link>
     <description>Recent content in blog on Jenkins X - Cloud Native CI/CD Built On Kubernetes</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Thu, 09 Feb 2023 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 09 Mar 2023 00:00:00 +0000</lastBuildDate>
     
 	  <atom:link href="https://jenkins-x.io/categories/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -508,6 +508,114 @@ A more detailed explanation about those types of attacks is &lt;a href=&#34;http
 &lt;p&gt;On the software producer&amp;rsquo;s side, it happens a lot that they are not fully aware of all the third parties used inside the project, and in turn, they can not track vulnerabilities in the system that could pose a threat. Cases like the &lt;a href=&#34;https://snyk.io/blog/log4shell-in-a-nutshell/&#34;&gt;Log4Shell&lt;/a&gt; vulnerability are an example of a component (in this case, a logging library) that many producers never bothered to check because it isn&amp;rsquo;t a direct software dependency, but rather a transitive one that is depended upon by other components.&lt;/p&gt;
 &lt;p&gt;SBOM can also be useful in licensing and legal issues with some formats. SPDX (Software Package Data Exchange) standard for SBOM identifies the licenses of the used components and can be checked for compliance later.&lt;/p&gt;
 &lt;p&gt;Next, we view the different standards and formats for SBOMs and the specifications of each one. See them &lt;a href=&#34;https://jenkins-x.io/blog/2022/07/24/sbom-formats&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Blog: Reconcile with kpt live apply</title>
+      <link>https://jenkins-x.io/blog/2023/03/09/kpt-live-apply/</link>
+      <pubDate>Thu, 09 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://jenkins-x.io/blog/2023/03/09/kpt-live-apply/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Since the dawn of Jenkins X 3 the default last step of reconciling the state of the files in your cluster repository to
+your cluster has been to execute &lt;code&gt;kubectl apply&lt;/code&gt;. You can find more details about this
+&lt;a href=&#34;https://jenkins-x.io/v3/about/how-it-works/#boot-job&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;There are some drawbacks with &lt;code&gt;kubectl apply&lt;/code&gt; though. The one that made me start looking for alternatives was that if
+you remove a resource from your cluster repository it may not be removed from your cluster. The way deletion works with
+&lt;code&gt;kubectl apply&lt;/code&gt; is that it is handed the option &lt;code&gt;--prune&lt;/code&gt; which will remove resources that are not in the manifests.
+Except that it doesn&amp;rsquo;t always work as expected. It will only remove certain kinds of resources
+&lt;a href=&#34;https://github.com/kubernetes/kubernetes/blob/4e800983fb8da4a5960a58ad9b380484770647d1/staging/src/k8s.io/kubectl/pkg/util/prune/prune.go#L28-L44&#34;&gt;defined in kubectl&lt;/a&gt;.
+In my case I removed an HorizontalPodAutoscaler from my cluster repository, but it wasn&amp;rsquo;t removed from my cluster.&lt;/p&gt;
+&lt;p&gt;When trying to find a solution to this I first tried to override this default list in kubectl of things to prune, but
+this turned out to be difficult in the general case. I also tried the already existing alternative of using &lt;code&gt;kapp&lt;/code&gt; to
+apply the manifests, but I couldn&amp;rsquo;t get that to work. Looking for other options I settled for &lt;code&gt;kpt live apply&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;configuration&#34;&gt;Configuration&lt;/h2&gt;
+
+
+&lt;div class=&#34;alert alert-warning&#34; role=&#34;alert&#34;&gt;
+
+
+    For all the functionality described here to work you need to have a cluster that is
+&lt;a href=&#34;https://jenkins-x.io/v3/admin/setup/upgrades/cluster/&#34;&gt;upgraded&lt;/a&gt; later than January 24th 2023.
+
+&lt;/div&gt;
+
+&lt;p&gt;You enable the use of &lt;code&gt;kpt live apply&lt;/code&gt; by adding&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-make&#34; data-lang=&#34;make&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;KUBEAPPLY &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kpt-apply
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to the &lt;code&gt;Makefile&lt;/code&gt; of your cluster repository anywhere before &lt;code&gt;include versionStream/src/Makefile.mk&lt;/code&gt;. This works both
+in a dev cluster and in a &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/multi-cluster/&#34;&gt;remote cluster&lt;/a&gt;.
+(With the caveat that all bets are off if you have done changes yourself to &lt;code&gt;versionStream/src/Makefile.mk&lt;/code&gt;.)&lt;/p&gt;
+&lt;p&gt;After you have pushed this you can watch the log of the boot job using &lt;code&gt;jx admin log&lt;/code&gt; as usual. When &lt;code&gt;kpt live  apply&lt;/code&gt; has been executed the first time you can optionally add let &lt;code&gt;kpt live apply --dry-run&lt;/code&gt; be executed for
+pull requests, giving a better assurance that the content of a pull request will apply nicely. But this only work
+properly for pull requests to the dev cluster, since it&amp;rsquo;s in the dev cluster the pull request pipeline will execute.
+So in a remote clusters this should not be enabled. That said this functionality can be enabled by adding&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-make&#34; data-lang=&#34;make&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;PR_LINT &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; kpt-apply-dry-run
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to the &lt;code&gt;Makefile&lt;/code&gt; of your cluster repository.&lt;/p&gt;
+&lt;h2 id=&#34;waiting-for-resources-to-be-reconciled&#34;&gt;Waiting for resources to be reconciled&lt;/h2&gt;
+&lt;p&gt;While the fact that I can be sure that removed resource actually are gone is the killer feature of &lt;code&gt;kpt live apply&lt;/code&gt;
+for me the opposite is true as well. With this I mean that &lt;code&gt;kpt live apply&lt;/code&gt;(and as a consequence) the boot job won&amp;rsquo;t
+succeed unless all resources are verified to have been applied. This includes for example that the rollout of new
+applications versions with deployments have succeeded.&lt;/p&gt;
+&lt;p&gt;This can be seen as  a problem though: the default is that &lt;code&gt;kpt live apply&lt;/code&gt; tries for 15 minutes before timing out
+with an error. But since the boot job is normal k8s job the job controller will create new pods on failure up to
+the backoff limit, that is set to &lt;strong&gt;4&lt;/strong&gt;. This can block the application of subsequent changes to the cluster repo.&lt;/p&gt;
+&lt;h2 id=&#34;tagging-and-release-notes&#34;&gt;Tagging and release notes&lt;/h2&gt;
+&lt;p&gt;When activating &lt;code&gt;kpt live apply&lt;/code&gt; you will also see that tags are added to the cluster repository upon successful
+application of changes. These tags can have 3 prefixes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;crd&lt;/code&gt; for custom resource definitions&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster&lt;/code&gt; for cluster wide resources&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ns&lt;/code&gt; for namespaced resources (the most common)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For &lt;code&gt;ns&lt;/code&gt; tags release notes will also be generated and added to the git provider (for example GitHub). This means
+that you can see what has changed in your cluster by looking at the releases of the cluster repository.&lt;/p&gt;
+&lt;p&gt;One handy use of this is that you can get a notification from GitHub when changes has been successfully deployed by
+going to the &lt;strong&gt;Watch&lt;/strong&gt; menu for the repo, select &lt;strong&gt;Custom&lt;/strong&gt; and check &lt;strong&gt;Releases&lt;/strong&gt;. If you get the notification by email or on the
+GitHub site depends on the notification settings for your GitHub account.&lt;/p&gt;
+&lt;p&gt;This functionality can be further customized by adding scripts to the &lt;code&gt;extensions&lt;/code&gt; directory of your cluster repository.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;crd-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;crd&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cluster-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;cluster&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ns-reconciled&lt;/code&gt; will be executed after a &lt;code&gt;ns&lt;/code&gt; tag has been added&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The default behaviour is equivalent to adding the following script as &lt;code&gt;ns-reconciled&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx changelog create --tag-prefix ns-
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Here is a somewhat hacky variety that sends out a mail with the release notes similarly to what you can
+subscribe to for yourself:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/sh
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;set -xe
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx changelog create --tag-prefix ns-
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;token&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl get secret jx-boot -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;password&amp;#39;]}&amp;#34;&lt;/span&gt; | base64 -d&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;repourl&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;kubectl get secret jx-boot -o jsonpath&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{.data[&amp;#39;url&amp;#39;]}&amp;#34;&lt;/span&gt;    | base64 -d&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;owner&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $repourl | cut -d/ -f4&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;repo&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $repourl | cut -d/ -f5 | cut -d. -f1&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;cat &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;&amp;lt;EOF
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;to: changelog@example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;From: dev@example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;MIME-Version: 1.0
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Return-Path: &amp;lt;&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Precedence: Bulk
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Content-Type: text/html; charset=utf-8
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;Subject: Deploy to kubernetes cluster
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;html&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;body&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;lt;h1&amp;gt;Deploy to kubernetes cluster&amp;lt;/h1&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;EOF&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;curl -s  -H &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Authorization: Bearer &lt;/span&gt;$token&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&lt;/span&gt; https://api.github.com/graphql -X POST -d &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;query&amp;#34;:&amp;#34;query { repository(owner:\&amp;#34;&amp;#39;&lt;/span&gt;$owner&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;, name:\&amp;#34;&amp;#39;&lt;/span&gt;$repo&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;) { release(tagName: \&amp;#34;ns-&amp;#39;&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;TS&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;\&amp;#34;) { descriptionHTML }}}&amp;#34;}&amp;#39;&lt;/span&gt; | yq .data.repository.release.descriptionHTML
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;lt;/body&amp;gt;&amp;lt;/html&amp;gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;)&lt;/span&gt; | sendmail -t -S smtp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;To adapt for your own use, the minimal changes would be to find and replace the smtp server and mail addresses now
+added for the domain &lt;strong&gt;example.com&lt;/strong&gt;. Don&amp;rsquo;t forget to make the script executable with &lt;code&gt;chmod +x ns-reconciled&lt;/code&gt;.&lt;/p&gt;
 
       </description>
     </item>
@@ -4234,33 +4342,6 @@ In this talk, we will discuss the limitations of Jenkins, how Jenkins X addresse
 &lt;iframe width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/HQLhakpx5mk&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
 &lt;h4 id=&#34;feedback&#34;&gt;Feedback&lt;/h4&gt;
 &lt;p&gt;If you are interested in the project, or to guide me. Welcome to join #jenkins-x-gsoc channel on &lt;a href=&#34;https://cdeliveryfdn.slack.com/join/shared_invite/enQtODM2NDI1NDc0MzIxLTA1MDcxMzUyMGU2NWVlNmQwN2M1N2M4MWJjOWFkM2UzMDY0OWNkNjAzNzM0NzVkNjQ5M2NkMmY2MTRkMWY4MWY#/&#34;&gt;CDF Slack&lt;/a&gt;. 🙌&lt;/p&gt;
-
-      </description>
-    </item>
-    
-    <item>
-      <title>Blog: Jenkins X &amp; Open Innovation </title>
-      <link>https://jenkins-x.io/blog/2020/07/08/jxopeninnovation/</link>
-      <pubDate>Wed, 08 Jul 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://jenkins-x.io/blog/2020/07/08/jxopeninnovation/</guid>
-      <description>
-        
-        
-        &lt;p&gt;Jenkins X burst onto the CI/CD scene a couple of years ago - reimagining CI/CD on Kubernetes with pipeline automation, GitOps built-in and and preview environments to help teams collaborate and accelerate their software delivery at any scale. It has been evolving at a breakneck pace, keeping up with the changes in the wider Kubernetes ecosystem.&lt;/p&gt;
-&lt;p&gt;With the release of Helm 3, Jenkins X Labs nurtured an early experiment to adopt it. On May 15th, the primary sponsor of Jenkins X, CloudBees, &lt;a href=&#34;https://jenkins-x.io/blog/2020/05/15/helm3/#why-isnt-this-all-more-open&#34;&gt;shared a post&lt;/a&gt; talking about the future direction of Helm 3 and Jenkins X.&lt;/p&gt;
-&lt;p&gt;Open source projects rise to ubiquity thanks to a virtuous cycle of technology and business adoption. It is a constant challenge to balance these concerns and delineate what is open source and what can be commercialized. In a fast-changing open source and tech landscape, sometimes the line gets drawn in the wrong place.&lt;/p&gt;
-&lt;p&gt;The Jenkins X community is passionate and vocal and Mauricio Salatino, &lt;a href=&#34;https://twitter.com/salaboy&#34;&gt;Salaboy&lt;/a&gt;, &lt;a href=&#34;https://salaboy.com/2020/05/19/why-isnt-jenkins-xs-future-more-open/&#34;&gt;shared a post&lt;/a&gt; strongly expressing his views on the new direction. The post was supported by a &lt;a href=&#34;https://github.com/jenkins-x/jx/issues/7207&#34;&gt;Github issue&lt;/a&gt; which allowed other community members to also share feedback on this topic. Many of CloudBees founders and leaders are veterans of open source projects. CloudBees is &lt;a href=&#34;https://www.previous.cloudbees.com/open-source&#34;&gt;committed to open source&lt;/a&gt;. We demonstrate our commitment through deep involvement in open source projects and communities. So we took this feedback very seriously and listened to what the community was telling us.&lt;/p&gt;
-&lt;p&gt;One line that stood out in Salatino&amp;rsquo;s post is this: &lt;em&gt;&amp;ldquo;Jenkins X is unlike any other project that I worked on in the past&amp;rdquo;.&lt;/em&gt; This is significant, especially given how many OSS projects Salatino contributes to. Salatino continues:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&amp;ldquo;The speed of changes in these projects is unprecedented and keeping up with all of it is a big challenge. Because of this, Jenkins X is more than a solution to a CI/CD problem, it is a shared community learning experience and a research project that pushes the boundaries of best practices for CI/CD in Kubernetes.&amp;rdquo;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Jenkins X is a solution to a CI/CD problem, but it is more than that. It &lt;em&gt;is&lt;/em&gt; a shared community learning experience. It &lt;em&gt;is&lt;/em&gt; a research project that pushes the boundaries of best practices for CI/CD in Kubernetes. And the engine that powers all of this is the open source community.&lt;/p&gt;
-&lt;p&gt;CI/CD right now is going through a renaissance with the onset of microservices, containers and cloud native technologies. The whole space is evolving rapidly. We have seen this earlier this year, with the rise of Tekton which was adopted as the main pipeline engine for Jenkins X. Jenkins X in a year&amp;rsquo;s time is likely to be very different than it is today.  At CloudBees, we believe open source drives innovation, leads to better, more robust technology and benefits everyone.&lt;/p&gt;
-&lt;p&gt;We are very grateful to Salatino and the wider community for graciously speaking up and giving feedback on how the project should evolve. With this in mind we want to play our part by ensuring Jenkins X future is open and innovative. You may have already noticed some of the changes, such as the &lt;a href=&#34;https://jenkins-x.io/community/roadmap/&#34;&gt;open roadmap&lt;/a&gt; being discussed. Specifically, on Helm 3 we want this work to resume in the open as a community effort, in the form of a Jenkins X Helm 3 working group. These are just a couple of steps towards that north star of open innovation.&lt;/p&gt;
-&lt;p&gt;Jenkins X is unlike any other open source project out there, let&amp;rsquo;s keep pushing the boundaries of what&amp;rsquo;s possible - together and in the open.&lt;/p&gt;
 
       </description>
     </item>
