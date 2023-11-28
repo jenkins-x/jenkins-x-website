@@ -52,7 +52,7 @@
 &lt;h2 id=&#34;multi-cluster&#34;&gt;Multi cluster&lt;/h2&gt;
 &lt;p&gt;When you setup a &lt;a href=&#34;https://jenkins-x.io/v3/admin/guides/multi-cluster/&#34;&gt;Remote Cluster&lt;/a&gt; for &lt;code&gt;Staging&lt;/code&gt; or &lt;code&gt;Production&lt;/code&gt;  you can remove the above entries for those environments.&lt;/p&gt;
 &lt;p&gt;Then when you import the remote cluster repository into the development environment (to setup the CI/CD on pull requests and enable promotion) the generated Pull Request will modify your &lt;code&gt;jx-requirements.yml&lt;/code&gt; to add remote entries for the remote cluster.&lt;/p&gt;
-&lt;p&gt;e.g. after importing the remote &lt;code&gt;production&lt;/code&gt; environment via &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/project/import&#34;&gt;jx project import&lt;/a&gt; and the pull request merging it should look like:&lt;/p&gt;
+&lt;p&gt;E.g. after importing the remote &lt;code&gt;production&lt;/code&gt; environment via &lt;a href=&#34;https://jenkins-x.io/v3/develop/reference/jx/project/import&#34;&gt;jx project import&lt;/a&gt; and the pull request merging it should look like:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Requirements&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
@@ -66,8 +66,14 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod-repo&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      &lt;span style=&#34;color:#f92672&#34;&gt;remoteCluster&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;custom-environments-per-repository&#34;&gt;Custom environments per repository&lt;/h2&gt;
-&lt;p&gt;If you wish to use different sets of environments for different microservices you can override the environments that are used for promotion by adding a &lt;code&gt;.jx/settings.yaml&lt;/code&gt; with &lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#settings&#34;&gt;this format&lt;/a&gt; which overrides settings found the development environments &lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config.md#requirements&#34;&gt;jx-requirements.yml&lt;/a&gt; file.&lt;/p&gt;
-&lt;p&gt;e.g. add something like this to your &lt;code&gt;.jx/settings.yaml&lt;/code&gt; in a repository to override which environment repositories are promoted to:&lt;/p&gt;
+&lt;p&gt;If you wish to use different sets of environments for different microservices you can augment the environments that are
+used for promotion by adding a &lt;code&gt;.jx/settings.yaml&lt;/code&gt; with [this format](https://github.
+com/jenkins-x/jx-api/blob/master/docs/config.md#settings) which is merged with settings for the development
+cluster repository&amp;rsquo;s [jx-requirements.yml](&lt;a href=&#34;https://github.com/jenkins-x/jx-api/blob/master/docs/config&#34;&gt;https://github.com/jenkins-x/jx-api/blob/master/docs/config&lt;/a&gt;.
+md#requirements) file. If you want to override the environments instead of augment you can set
+&lt;code&gt;ignoreDevEnvironments: true&lt;/code&gt;. By default the namespace name is the environment name prefixed with &lt;code&gt;jx-&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;E.g. add something like this to your &lt;code&gt;.jx/settings.yaml&lt;/code&gt; in a repository to override which environment repositories
+are promoted to:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Settings&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
@@ -77,14 +83,24 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-staging&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-repo-name&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;promotionStrategy&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Auto&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;my-prod&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;owner&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;myowner&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-other-repo-name    &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;repository&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;some-other-repo-name&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;promotionStrategy&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Manual&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you instead want to disable promotion to an environment, say staging, you can do it with a &lt;code&gt;.jx/settings.yaml&lt;/code&gt;
+looking like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;core.jenkins-x.io/v4beta1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Settings&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;promoteEnvironments&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  - &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;staging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;promotionStrategy&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Never&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;custom-environments-per-group-of-repositories&#34;&gt;Custom environments per group of repositories&lt;/h2&gt;
 &lt;p&gt;If you have different teams sharing the same Jenkins X installation you may wish to organise the repositories into &lt;em&gt;groups&lt;/em&gt; (e.g. a group of repositories per team).&lt;/p&gt;
 &lt;p&gt;The simplest way to do this is to use a separate git organisation (owner) per team and then you already get separate configurations per group/owner in the &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; file in your development cluster git repository.&lt;/p&gt;
 &lt;p&gt;The added benefit of using separate git organisations is that already the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;dashboard&lt;/a&gt; supports filtering all pipelines by owner; so each team will get effectively their own separate UI for viewing pipelines. You can easily bookmark the dashboards view for a single owner / repository.&lt;/p&gt;
-&lt;p&gt;e.g. here&amp;rsquo;s an example `.jx/gitops/source-config.yaml in the development cluster git repository:&lt;/p&gt;
+&lt;p&gt;E.g. here&amp;rsquo;s `.jx/gitops/source-config.yaml in the development cluster git repository:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;gitops.jenkins-x.io/v1alpha1&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;SourceConfig&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
@@ -148,10 +164,13 @@
         
         &lt;p&gt;When changes are merged to the main branch in the Jenkins X pipeline catalog a new versioned release is created (with a new image and helm chart). This new version is then promoted by creating Pull Requests on GitOps repositories.&lt;/p&gt;
 &lt;h2 id=&#34;how-it-works&#34;&gt;How it works&lt;/h2&gt;
-&lt;p&gt;The release pipelines use the &lt;a href=&#34;https://github.com/jenkins-x/jx-promote/blob/master/docs/cmd/jx-promote.md#jx-promote&#34;&gt;jx promote &amp;ndash;all&lt;/a&gt; command which creates Pull Requests on all Environments configured in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file (see the &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/config/&#34;&gt;Configuration&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;The release pipelines use the [jx promote &amp;ndash;all](https://github.
+com/jenkins-x/jx-promote/blob/master/docs/cmd/jx-promote.md#jx-promote) command which creates Pull Requests on all
+Environments configured in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; file and possibly &lt;code&gt;.jx/gitops/source-config.yaml&lt;/code&gt; or
+&lt;code&gt;.jx/settings.yaml&lt;/code&gt; (see the &lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/config/&#34;&gt;Configuration&lt;/a&gt;).&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;every environment which is defined in &lt;code&gt;jx-requirements.yml&lt;/code&gt; as &lt;code&gt;promotionStrategy&lt;/code&gt; &lt;strong&gt;Auto&lt;/strong&gt; or &lt;strong&gt;Manual&lt;/strong&gt; is included in a Pull Request to promote the new version to that environment&lt;/p&gt;
+&lt;p&gt;every environment which is defined as &lt;code&gt;promotionStrategy&lt;/code&gt; &lt;strong&gt;Auto&lt;/strong&gt; or &lt;strong&gt;Manual&lt;/strong&gt; is included in a Pull Request to promote the new version to that environment&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Auto&lt;/strong&gt; means the Pull Request will automatically merge if its successful (the Pull Request pipeline succeeds)&lt;/p&gt;
@@ -162,15 +181,27 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;all local Environments in your &lt;code&gt;jx-requirements.yml&lt;/code&gt; of the promotion kind &lt;strong&gt;Auto&lt;/strong&gt; are promoted using a single Pull Request so that all the promotions automatically merge if the pull request pipeline validates successfully.&lt;/p&gt;
+&lt;p&gt;all local Environments of the promotion kind &lt;strong&gt;Auto&lt;/strong&gt; are promoted using a single Pull Request so that all the promotions automatically merge if the pull request pipeline validates successfully.&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;you can define multiple local or remote Environments for different system / integration testing environments.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;changing-promotion&#34;&gt;Changing Promotion&lt;/h2&gt;
-&lt;p&gt;If you want to disable promotion Pull Requests on an environment just remove the entry in &lt;code&gt;jx-requirements.yml&lt;/code&gt; or configure the &lt;code&gt;promotionStrategy&lt;/code&gt; to be &lt;strong&gt;Never&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If you want your application to promote to different environments to the defaults for your cluster you can always &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/#editing-pipelines&#34;&gt;modify your pipeline&lt;/a&gt; and change the promote step to use different &lt;a href=&#34;https://github.com/jenkins-x/jx-promote/blob/master/docs/cmd/jx-promote.md#jx-promote&#34;&gt;jx promote&lt;/a&gt; arguments; e.g. pass in the explicit environments or repositories you want to promote to in the pipeline step.&lt;/p&gt;
+&lt;h2 id=&#34;disable-promotion&#34;&gt;Disable Promotion&lt;/h2&gt;
+&lt;p&gt;If you want to disable promotion Pull Requests on an environment just remove the entry or configure the
+&lt;code&gt;promotionStrategy&lt;/code&gt; to be &lt;strong&gt;Never&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;reuse-pull-requests&#34;&gt;Reuse pull requests&lt;/h2&gt;
+&lt;p&gt;By default a new pull request is created for each promotion. You can instead make existing open pull requests for
+promoting an application be reused.&lt;/p&gt;
+&lt;p&gt;Enabling reuse of pull requests for &lt;code&gt;jx promote&lt;/code&gt; is done in &lt;code&gt;jx-requirements.yaml&lt;/code&gt; by setting &lt;code&gt;reusePullRequest&lt;/code&gt; to
+&lt;code&gt;true&lt;/code&gt; for an environment. It can also be done in the same way when configuring environments others ways. See
+&lt;a href=&#34;https://jenkins-x.io/v3/develop/environments/config/&#34;&gt;https://jenkins-x.io/v3/develop/environments/config/&lt;/a&gt; for more details about configuring environments.&lt;/p&gt;
+&lt;p&gt;There are two main reasons why you would want to enable this:&lt;/p&gt;
+&lt;p&gt;To reduce conflicts: if a pull request is created before a previous pull request for upgrading the same application is
+merged there will be a conflict when the earlier pull request is merged. Since enabling reuse means that &lt;code&gt;jx  promote&lt;/code&gt; won&amp;rsquo;t open more pull requests for an application this can&amp;rsquo;t happen.&lt;/p&gt;
+&lt;p&gt;The other reason is if you make use of the functionality to propagate application changelogs to cluster
+repositories. This is described in the blog post
+&lt;a href=&#34;https://jenkins-x.io/blog/2023/05/24/propagate-changelogs/#reuse-pull-requests&#34;&gt;Improve your changelogs&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;synchronizing-environments-or-namespaces&#34;&gt;Synchronizing environments or namespaces&lt;/h2&gt;
 &lt;p&gt;By default each release of each microservice creates a Pull Request to upgrade that specific microservice to a new version in each of your environments - e.g. &lt;code&gt;Staging&lt;/code&gt; and &lt;code&gt;Production&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;When human approval is required in, say, &lt;code&gt;Production&lt;/code&gt; you can end up with the &lt;code&gt;drift&lt;/code&gt; between the 2 environments and want an easy way to bring them in sync.&lt;/p&gt;
