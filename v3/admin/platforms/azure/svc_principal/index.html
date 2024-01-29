@@ -22,28 +22,28 @@
 <link rel="icon" type="image/png" href="/favicons/android-192x192.png" sizes="192x192">
 
 <title>Configure Azure Service Principal | Jenkins X - Cloud Native CI/CD Built On Kubernetes</title>
-<meta name="description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
-💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.
+<meta name="description" content="Azure has a notion of a Service Principal which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
+💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.
 To execute the commands listed in your local bash shell will require the Azure CLI and the JQ command-line JSON processor.">
 <meta property="og:title" content="Configure Azure Service Principal" />
-<meta property="og:description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
-💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.
+<meta property="og:description" content="Azure has a notion of a Service Principal which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
+💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.
 To execute the commands listed in your local bash shell will require the Azure CLI and the JQ command-line JSON processor." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/platforms/azure/svc_principal/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2022-07-22T09:22:32+02:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2024-01-27T20:14:28-05:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Configure Azure Service Principal">
-<meta itemprop="description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
-💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.
+<meta itemprop="description" content="Azure has a notion of a Service Principal which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
+💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.
 To execute the commands listed in your local bash shell will require the Azure CLI and the JQ command-line JSON processor.">
-<meta itemprop="dateModified" content="2022-07-22T09:22:32+02:00" />
-<meta itemprop="wordCount" content="936">
+<meta itemprop="dateModified" content="2024-01-27T20:14:28-05:00" />
+<meta itemprop="wordCount" content="892">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Configure Azure Service Principal"/>
-<meta name="twitter:description" content="Azure has a notion of a Service Principal which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
-💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.
+<meta name="twitter:description" content="Azure has a notion of a Service Principal which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute Jenkins X Azure Module
+💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.
 To execute the commands listed in your local bash shell will require the Azure CLI and the JQ command-line JSON processor."/>
 
 
@@ -1380,7 +1380,7 @@ if (!doNotTrack) {
       <ul>
         <li><a href="#service-principal-privileges">Service principal privileges</a></li>
         <li><a href="#create-service-principal-with-subscription-roles">Create service principal with subscription roles</a></li>
-        <li><a href="#assign-service-principal-admin-role-using-portal">Assign service principal admin role using portal</a></li>
+        <li><a href="#assign-new-service-principal-with-owner-optional">Assign new service principal with owner (optional)</a></li>
         <li><a href="#assign-service-principal-graph-api-permission">Assign service principal graph API permission</a></li>
         <li><a href="#prepare-to-run-terraform">Prepare to run Terraform</a></li>
         <li><a href="#clean-up">Clean up</a></li>
@@ -1511,9 +1511,9 @@ if (!doNotTrack) {
 
 		
 	</header>    
-	<p>Azure has a notion of a <strong>Service Principal</strong> which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute <a href="https://github.com/jenkins-x/terraform-azurerm-jx#jenkins-x-azure-module">Jenkins X Azure Module</a></p>
+	<p>Azure has a notion of a <strong>Service Principal</strong> which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute <a href="https://github.com/jenkins-x/terraform-azurerm-jx#jenkins-x-azure-module">Jenkins X Azure Module</a></p>
 <blockquote>
-<p>💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.</p>
+<p>💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.</p>
 <p>To execute the commands listed in your local bash shell will require the <a href="https://docs.microsoft.com/en-us/cli/azure/">Azure CLI</a> and the <a href="https://stedolan.github.io/jq/">JQ command-line JSON processor</a>.</p>
 <p>To execute the commands listed in <a href="https://docs.microsoft.com/en-us/azure/cloud-shell/overview">Bash in Azure Cloud Shell</a> does not require any additional software installed.</p>
 </blockquote>
@@ -1521,25 +1521,26 @@ if (!doNotTrack) {
 <p>In order to build your Azure environment with Terraform using a service principal, the following are the minimal requirements:</p>
 <ul>
 <li>Subscription built-in roles;<code>Contributor</code>and<code>User Access Administator</code>.</li>
-<li>Active Directory built-in application admin role;<code>Cloud Application Administrator</code>.</li>
-<li>Active Directory Graph API permission;<code>Application.ReadWrite.All</code>.</li>
+<li>Microsoft Entra ID App registration admin role;<code>Cloud Application Administrator</code>.</li>
+<li>Microsoft Graph API permission;<code>Application.ReadWrite.All</code>.</li>
 </ul>
 <p>Further details can be found under <a href="https://github.com/jenkins-x/terraform-azurerm-jx#prerequisites">Jenkins X Azure Module Prequisites</a></p>
 <h3 id="create-service-principal-with-subscription-roles">Create service principal with subscription roles</h3>
-<p>The first step is to create a new service principal (APP_NAME) and to assign it the subscription built-in roles <code>Contributor</code> and <code>Cloud Application Administrator</code>.</p>
+<p>The first step is to create a new service principal (APP_NAME) and to assign it the subscription built-in roles <code>Contributor</code> and <code>User Access Administrator</code>.</p>
 <blockquote>
 <p>💡 If you are using a local terminal, prior to executing the following commands, in the local terminal log into Azure (<code>az login</code>) with an ID that has the necessary privileges (i.e. Owner).
 Always perform all commands in the same local terminal session to preserve dependent variables that are created.</p>
 <p>If you are using Bash in Azure cloud shell, there is no need to login (<code>az account show</code>). Once again take caution not to lose the bash session in the portal web page.</p>
 </blockquote>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>read -p <span style="color:#e6db74">&#34;Service Principal (i.e. mySvcPr) : &#34;</span> APP_NAME
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SUBSCRIPTION_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az account show --query id --output tsv<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p>After setting the APP_NAME variable (i.e. mySvcPr) copy and paste the following to create the service principal.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>SUBSCRIPTION_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az account show --query id --output tsv<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>SVCP<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp create-for-rbac --role Contributor --name $APP_NAME --scopes /subscriptions/$SUBSCRIPTION_ID --output json --only-show-errors<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>APP_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .appId<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>OBJ_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp list --filter <span style="color:#e6db74">&#34;appId eq &#39;</span>$APP_ID<span style="color:#e6db74">&#39;&#34;</span> --output json | jq <span style="color:#e6db74">&#39;.[0].id&#39;</span> -r<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>PASS_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .password<span style="color:#66d9ef">)</span>
 </span></span><span style="display:flex;"><span>TENANT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>echo $SVCP | jq -r .tenant<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>az role assignment create --role <span style="color:#e6db74">&#34;User Access Administrator&#34;</span> --assignee-object-id $OBJ_ID --only-show-errors
+</span></span><span style="display:flex;"><span>az role assignment create --role <span style="color:#e6db74">&#34;User Access Administrator&#34;</span> --assignee-object-id $OBJ_ID --assignee-principal-type <span style="color:#e6db74">&#34;ServicePrincipal&#34;</span> --scope /subscriptions/$SUBSCRIPTION_ID --only-show-errors
 </span></span></code></pre></div><p>Use the following command to check the service principal subscription role settings.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>az role assignment list --assignee $APP_ID --query <span style="color:#f92672">[]</span>.roleDefinitionName --output json --only-show-errors
 </span></span></code></pre></div><p>You should see the following:</p>
@@ -1547,42 +1548,42 @@ Always perform all commands in the same local terminal session to preserve depen
   &#34;User Access Administrator&#34;,
   &#34;Contributor&#34;
 ]
-</code></pre><h3 id="assign-service-principal-admin-role-using-portal">Assign service principal admin role using portal</h3>
-<p>The second step will be to assign the new service principal the <code>Cloud Application Administrator</code> application admin role using the Azure portal.</p>
-<blockquote>
-<p>💡 If you are using a local terminal session, <a href="https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RolesAndAdministrators">Click here</a> to position to <strong>SCREEN 1</strong><br></p>
-<p>If you are using Bash in Azure Cloud Shell session, to avoid potentially losing the session  in the portal window with the terminal navigate to <strong>SCREEN 1</strong>.</p>
-</blockquote>
-<ul>
-<li>SCREEN 1: Azure Active Directory | Overview | Roles and administrators<br>
-___ Search for “Cloud application administrator” then click on the role.</li>
-</ul>
-<p><img src="/images/v3/roles_and_admin.svg" alt="roles admin section"></p>
-<ul>
-<li>SCREEN 2:  Cloud application administrator | Assignments<br>
-___ Click on + Add assignments<br>
-___ In the &lsquo;Add assignments&rsquo; dialog search for the service principal ($APP_NAME)<br>
-___ Select ther service princiapl ($APP_NAME) and click the &lsquo;Add&rsquo; button.</li>
-</ul>
-<p><img src="/images/v3/cloud_app_admin.svg" alt="cloud app admin section">
-To validate that the assignment was made, while stll on SCREEN 2 click on <code>Assignments</code>on the left navigation. You should see the service principal included in the list.</p>
-<h3 id="assign-service-principal-graph-api-permission">Assign service principal graph API permission</h3>
-<p>THe third step is to assign Active Directory Graph API permission <code>Application.ReadWrite.All</code>.</p>
-<blockquote>
-<p>⚠️  This application is using Azure AD Graph API, which is on a deprecation path. As of June 30th, 2020 there were no longer any new features added to the Azure AD Graph API.</p>
-</blockquote>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Azure Active Directory Graph</span>
-</span></span><span style="display:flex;"><span>API_ID<span style="color:#f92672">=</span>00000002-0000-0000-c000-000000000000
+</code></pre><h3 id="assign-new-service-principal-with-owner-optional">Assign new service principal with owner (optional)</h3>
+<p>The second step will be to assign the new service principal an owner. This step is optional but is recommended for ease in maintenance. At this pointtThe new service principal will already have a <code>Cloud Application Administrator</code> role assigned.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Assign the current login as owner of the new service principal</span>
+</span></span><span style="display:flex;"><span>az ad app owner add --id $APP_ID --owner-object-id <span style="color:#66d9ef">$(</span>az ad signed-in-user show --query id --output tsv<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><h3 id="assign-service-principal-graph-api-permission">Assign service principal graph API permission</h3>
+<p>The final step will be to assign the new service principal the Microsoft Graph API permissions.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># Microsoft Graph API Id (03)</span>
+</span></span><span style="display:flex;"><span>API_ID<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;00000003-0000-0000-c000-000000000000&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Extract application_readwrite_add ID</span>
 </span></span><span style="display:flex;"><span>APPLICATION_READWRITE_ALL_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $API_ID --query <span style="color:#e6db74">&#34;appRoles[?value==&#39;Application.ReadWrite.All&#39;].id&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
-</span></span><span style="display:flex;"><span>az ad app permission add --id $APP_ID --api $API_ID --api-permissions $APPLICATION_READWRITE_ALL_ID<span style="color:#f92672">=</span>Role --only-show-errors
-</span></span><span style="display:flex;"><span>az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors
-</span></span><span style="display:flex;"><span>az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors --scope Application.ReadWrite.All
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Add API permission to SP</span>
+</span></span><span style="display:flex;"><span>az ad app permission add <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --id $APP_ID <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --api $API_ID <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --api-permissions <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>      $APPLICATION_READWRITE_ALL_ID<span style="color:#f92672">=</span>Role
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Grant API permission to SP</span>
+</span></span><span style="display:flex;"><span>az ad app permission grant <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --id $APP_ID <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --api $API_ID <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --scope /subscriptions/$SUBSCRIPTION_ID
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Granting consent for API permission</span>
+</span></span><span style="display:flex;"><span>APP_OBJECT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $APP_ID --query <span style="color:#e6db74">&#34;id&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>API_OBJECT_ID<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>az ad sp show --id $API_ID --query <span style="color:#e6db74">&#34;id&#34;</span> --output tsv<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>az rest <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --method POST <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --uri <span style="color:#e6db74">&#34;https://graph.microsoft.com/v1.0/servicePrincipals/</span>$APP_OBJECT_ID<span style="color:#e6db74">/appRoleAssignments&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --headers <span style="color:#e6db74">&#39;{&#34;Content-Type&#34;: &#34;application/json&#34;}&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --body <span style="color:#e6db74">&#34;{\&#34;principalId\&#34;: \&#34;</span>$APP_OBJECT_ID<span style="color:#e6db74">\&#34;, \&#34;resourceId\&#34;: \&#34;</span>$API_OBJECT_ID<span style="color:#e6db74">\&#34;, \&#34;appRoleId\&#34;: \&#34;</span>$APPLICATION_READWRITE_ALL_ID<span style="color:#e6db74">\&#34;}&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --only-show-errors
 </span></span></code></pre></div><p>Use the following command to check the service principal API settings.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>az ad app permission list --id $APP_ID --only-show-errors --output table
 </span></span></code></pre></div><p>You should see something like the following:</p>
-<pre tabindex="0"><code>ExpiryTime                  ResourceAppId
---------------------------  ------------------------------------
-2022-12-20T00:21:52.224478  00000002-0000-0000-c000-000000000000
+<pre tabindex="0"><code>ResourceAppId
+------------------------------------
+00000003-0000-0000-c000-000000000000
 </code></pre><h3 id="prepare-to-run-terraform">Prepare to run Terraform</h3>
 <p>Once the service prinicpal is created and assigned the appropriate roles and permissions, it can now be used by Terraform to execute the Jenkins X Azure module. In order for Terraform to use the service principal credentials you need to <a href="https://docs.microsoft.com/en-us/azure/developer/terraform/get-started-cloud-shell-bash">specify service principal credentials in environment variables</a></p>
 <pre tabindex="0"><code>export ARM_CLIENT_ID=${APP_ID}
@@ -1670,7 +1671,7 @@ export ARM_SUBSCRIPTION_ID=${SUBSCRIPTION_ID}
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified July 22, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/f42a62a5fb19f8263ab65a37de152b0992d31bf6">Update svc_principal.md (f42a62a5fb)</a>
+  Last modified January 27, 2024: <a href="https://github.com/jenkins-x/jx-docs/commit/a595fe69e3c7a6fbca55a37e5e5f6ffae6d098e8">Update svc_principal.md (a595fe69e3)</a>
 </div>
 
 </div>

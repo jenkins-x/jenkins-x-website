@@ -23,9 +23,9 @@
       <description>
         
         
-        &lt;p&gt;Azure has a notion of a &lt;strong&gt;Service Principal&lt;/strong&gt; which, in simple terms, is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute &lt;a href=&#34;https://github.com/jenkins-x/terraform-azurerm-jx#jenkins-x-azure-module&#34;&gt;Jenkins X Azure Module&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Azure has a notion of a &lt;strong&gt;Service Principal&lt;/strong&gt; which is a service acount. This doc will demonstrate how to set up an Azure service principal that can be used by Terraform to execute &lt;a href=&#34;https://github.com/jenkins-x/terraform-azurerm-jx#jenkins-x-azure-module&#34;&gt;Jenkins X Azure Module&lt;/a&gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal and using the Azure portal.&lt;/p&gt;
+&lt;p&gt;💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.&lt;/p&gt;
 &lt;p&gt;To execute the commands listed in your local bash shell will require the &lt;a href=&#34;https://docs.microsoft.com/en-us/cli/azure/&#34;&gt;Azure CLI&lt;/a&gt; and the &lt;a href=&#34;https://stedolan.github.io/jq/&#34;&gt;JQ command-line JSON processor&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;To execute the commands listed in &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/cloud-shell/overview&#34;&gt;Bash in Azure Cloud Shell&lt;/a&gt; does not require any additional software installed.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -33,25 +33,26 @@
 &lt;p&gt;In order to build your Azure environment with Terraform using a service principal, the following are the minimal requirements:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Subscription built-in roles;&lt;code&gt;Contributor&lt;/code&gt;and&lt;code&gt;User Access Administator&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;Active Directory built-in application admin role;&lt;code&gt;Cloud Application Administrator&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;Active Directory Graph API permission;&lt;code&gt;Application.ReadWrite.All&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Microsoft Entra ID App registration admin role;&lt;code&gt;Cloud Application Administrator&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Microsoft Graph API permission;&lt;code&gt;Application.ReadWrite.All&lt;/code&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Further details can be found under &lt;a href=&#34;https://github.com/jenkins-x/terraform-azurerm-jx#prerequisites&#34;&gt;Jenkins X Azure Module Prequisites&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;create-service-principal-with-subscription-roles&#34;&gt;Create service principal with subscription roles&lt;/h3&gt;
-&lt;p&gt;The first step is to create a new service principal (APP_NAME) and to assign it the subscription built-in roles &lt;code&gt;Contributor&lt;/code&gt; and &lt;code&gt;Cloud Application Administrator&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The first step is to create a new service principal (APP_NAME) and to assign it the subscription built-in roles &lt;code&gt;Contributor&lt;/code&gt; and &lt;code&gt;User Access Administrator&lt;/code&gt;.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 If you are using a local terminal, prior to executing the following commands, in the local terminal log into Azure (&lt;code&gt;az login&lt;/code&gt;) with an ID that has the necessary privileges (i.e. Owner).
 Always perform all commands in the same local terminal session to preserve dependent variables that are created.&lt;/p&gt;
 &lt;p&gt;If you are using Bash in Azure cloud shell, there is no need to login (&lt;code&gt;az account show&lt;/code&gt;). Once again take caution not to lose the bash session in the portal web page.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;read -p &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Service Principal (i.e. mySvcPr) : &amp;#34;&lt;/span&gt; APP_NAME
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;SUBSCRIPTION_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az account show --query id --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After setting the APP_NAME variable (i.e. mySvcPr) copy and paste the following to create the service principal.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;SUBSCRIPTION_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az account show --query id --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;SVCP&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad sp create-for-rbac --role Contributor --name $APP_NAME --scopes /subscriptions/$SUBSCRIPTION_ID --output json --only-show-errors&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;APP_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $SVCP | jq -r .appId&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;OBJ_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad sp list --filter &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;appId eq &amp;#39;&lt;/span&gt;$APP_ID&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#34;&lt;/span&gt; --output json | jq &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;.[0].id&amp;#39;&lt;/span&gt; -r&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;PASS_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $SVCP | jq -r .password&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;TENANT_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;echo $SVCP | jq -r .tenant&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az role assignment create --role &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;User Access Administrator&amp;#34;&lt;/span&gt; --assignee-object-id $OBJ_ID --only-show-errors
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az role assignment create --role &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;User Access Administrator&amp;#34;&lt;/span&gt; --assignee-object-id $OBJ_ID --assignee-principal-type &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ServicePrincipal&amp;#34;&lt;/span&gt; --scope /subscriptions/$SUBSCRIPTION_ID --only-show-errors
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Use the following command to check the service principal subscription role settings.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az role assignment list --assignee $APP_ID --query &lt;span style=&#34;color:#f92672&#34;&gt;[]&lt;/span&gt;.roleDefinitionName --output json --only-show-errors
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should see the following:&lt;/p&gt;
@@ -59,42 +60,42 @@ Always perform all commands in the same local terminal session to preserve depen
   &amp;#34;User Access Administrator&amp;#34;,
   &amp;#34;Contributor&amp;#34;
 ]
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;assign-service-principal-admin-role-using-portal&#34;&gt;Assign service principal admin role using portal&lt;/h3&gt;
-&lt;p&gt;The second step will be to assign the new service principal the &lt;code&gt;Cloud Application Administrator&lt;/code&gt; application admin role using the Azure portal.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;💡 If you are using a local terminal session, &lt;a href=&#34;https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RolesAndAdministrators&#34;&gt;Click here&lt;/a&gt; to position to &lt;strong&gt;SCREEN 1&lt;/strong&gt;&lt;br&gt;&lt;/p&gt;
-&lt;p&gt;If you are using Bash in Azure Cloud Shell session, to avoid potentially losing the session  in the portal window with the terminal navigate to &lt;strong&gt;SCREEN 1&lt;/strong&gt;.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;SCREEN 1: Azure Active Directory | Overview | Roles and administrators&lt;br&gt;
-___ Search for “Cloud application administrator” then click on the role.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/roles_and_admin.svg&#34; alt=&#34;roles admin section&#34;&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;SCREEN 2:  Cloud application administrator | Assignments&lt;br&gt;
-___ Click on + Add assignments&lt;br&gt;
-___ In the &amp;lsquo;Add assignments&amp;rsquo; dialog search for the service principal ($APP_NAME)&lt;br&gt;
-___ Select ther service princiapl ($APP_NAME) and click the &amp;lsquo;Add&amp;rsquo; button.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://jenkins-x.io/images/v3/cloud_app_admin.svg&#34; alt=&#34;cloud app admin section&#34;&gt;
-To validate that the assignment was made, while stll on SCREEN 2 click on &lt;code&gt;Assignments&lt;/code&gt;on the left navigation. You should see the service principal included in the list.&lt;/p&gt;
-&lt;h3 id=&#34;assign-service-principal-graph-api-permission&#34;&gt;Assign service principal graph API permission&lt;/h3&gt;
-&lt;p&gt;THe third step is to assign Active Directory Graph API permission &lt;code&gt;Application.ReadWrite.All&lt;/code&gt;.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;⚠️  This application is using Azure AD Graph API, which is on a deprecation path. As of June 30th, 2020 there were no longer any new features added to the Azure AD Graph API.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Azure Active Directory Graph&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;API_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;00000002-0000-0000-c000-000000000000
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;assign-new-service-principal-with-owner-optional&#34;&gt;Assign new service principal with owner (optional)&lt;/h3&gt;
+&lt;p&gt;The second step will be to assign the new service principal an owner. This step is optional but is recommended for ease in maintenance. At this pointtThe new service principal will already have a &lt;code&gt;Cloud Application Administrator&lt;/code&gt; role assigned.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Assign the current login as owner of the new service principal&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app owner add --id $APP_ID --owner-object-id &lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad signed-in-user show --query id --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;assign-service-principal-graph-api-permission&#34;&gt;Assign service principal graph API permission&lt;/h3&gt;
+&lt;p&gt;The final step will be to assign the new service principal the Microsoft Graph API permissions.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Microsoft Graph API Id (03)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;API_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;00000003-0000-0000-c000-000000000000&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Extract application_readwrite_add ID&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;APPLICATION_READWRITE_ALL_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad sp show --id $API_ID --query &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;appRoles[?value==&amp;#39;Application.ReadWrite.All&amp;#39;].id&amp;#34;&lt;/span&gt; --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission add --id $APP_ID --api $API_ID --api-permissions $APPLICATION_READWRITE_ALL_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;Role --only-show-errors
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors
-&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission grant --id $APP_ID --api $API_ID --only-show-errors --scope Application.ReadWrite.All
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Add API permission to SP&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission add &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --id $APP_ID &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --api $API_ID &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --api-permissions &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;      $APPLICATION_READWRITE_ALL_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;Role
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Grant API permission to SP&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission grant &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --id $APP_ID &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --api $API_ID &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --scope /subscriptions/$SUBSCRIPTION_ID
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Granting consent for API permission&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;APP_OBJECT_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad sp show --id $APP_ID --query &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt; --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;API_OBJECT_ID&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;$(&lt;/span&gt;az ad sp show --id $API_ID --query &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;id&amp;#34;&lt;/span&gt; --output tsv&lt;span style=&#34;color:#66d9ef&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az rest &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --method POST &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --uri &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;https://graph.microsoft.com/v1.0/servicePrincipals/&lt;/span&gt;$APP_OBJECT_ID&lt;span style=&#34;color:#e6db74&#34;&gt;/appRoleAssignments&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --headers &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;{&amp;#34;Content-Type&amp;#34;: &amp;#34;application/json&amp;#34;}&amp;#39;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --body &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{\&amp;#34;principalId\&amp;#34;: \&amp;#34;&lt;/span&gt;$APP_OBJECT_ID&lt;span style=&#34;color:#e6db74&#34;&gt;\&amp;#34;, \&amp;#34;resourceId\&amp;#34;: \&amp;#34;&lt;/span&gt;$API_OBJECT_ID&lt;span style=&#34;color:#e6db74&#34;&gt;\&amp;#34;, \&amp;#34;appRoleId\&amp;#34;: \&amp;#34;&lt;/span&gt;$APPLICATION_READWRITE_ALL_ID&lt;span style=&#34;color:#e6db74&#34;&gt;\&amp;#34;}&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;&lt;/span&gt;  --only-show-errors
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Use the following command to check the service principal API settings.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;az ad app permission list --id $APP_ID --only-show-errors --output table
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should see something like the following:&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ExpiryTime                  ResourceAppId
---------------------------  ------------------------------------
-2022-12-20T00:21:52.224478  00000002-0000-0000-c000-000000000000
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;ResourceAppId
+------------------------------------
+00000003-0000-0000-c000-000000000000
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;prepare-to-run-terraform&#34;&gt;Prepare to run Terraform&lt;/h3&gt;
 &lt;p&gt;Once the service prinicpal is created and assigned the appropriate roles and permissions, it can now be used by Terraform to execute the Jenkins X Azure module. In order for Terraform to use the service principal credentials you need to &lt;a href=&#34;https://docs.microsoft.com/en-us/azure/developer/terraform/get-started-cloud-shell-bash&#34;&gt;specify service principal credentials in environment variables&lt;/a&gt;&lt;/p&gt;
 &lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;export ARM_CLIENT_ID=${APP_ID}
