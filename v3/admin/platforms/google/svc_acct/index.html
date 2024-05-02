@@ -32,14 +32,14 @@ To execute the commands listed in your local bash shell will require the Google 
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jenkins-x.io/v3/admin/platforms/google/svc_acct/" /><meta property="article:section" content="v3" />
 
-<meta property="article:modified_time" content="2022-01-06T09:45:55-05:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
+<meta property="article:modified_time" content="2024-04-30T10:08:29-04:00" /><meta property="og:site_name" content="Jenkins X - Cloud Native CI/CD Built On Kubernetes" />
 
 <meta itemprop="name" content="Configure Google Service Account">
 <meta itemprop="description" content="This doc will demonstrate how to set up a Google service account that can be used by Terraform to execute Jenkins X GKE Module
 💡 This doc has been designed to assist in performing the demonstration through copying and pasting each block of code into a shell terminal.
 To execute the commands listed in your local bash shell will require the Google gcloud tool and Cloud SDK and the JQ command-line JSON processor.">
-<meta itemprop="dateModified" content="2022-01-06T09:45:55-05:00" />
-<meta itemprop="wordCount" content="653">
+<meta itemprop="dateModified" content="2024-04-30T10:08:29-04:00" />
+<meta itemprop="wordCount" content="691">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Configure Google Service Account"/>
 <meta name="twitter:description" content="This doc will demonstrate how to set up a Google service account that can be used by Terraform to execute Jenkins X GKE Module
@@ -1519,6 +1519,7 @@ if (!doNotTrack) {
 <h3 id="service-account-privileges">Service account privileges</h3>
 <p>In order to build your GKE environment with Terraform using a service account, the following are the service accounts minimal role requirements:</p>
 <ul>
+<li>roles/artifactregistry.admin</li>
 <li>roles/container.admin</li>
 <li>roles/editor</li>
 <li>roles/iam.serviceAccountAdmin</li>
@@ -1526,6 +1527,10 @@ if (!doNotTrack) {
 <li>roles/resourcemanager.projectIamAdmin</li>
 <li>roles/storage.admin</li>
 </ul>
+<blockquote>
+<p>💡  Existing service accounts (MY_GCP_SA) under your project (MYPROJECT) requiring <code>roles/artifactory.admin</code> use command:
+<code>gcloud projects add-iam-policy-binding ${MYPROJECT} --member serviceAccount:${MY_GCP_SA} --role roles/artifactregistry.admin</code></p>
+</blockquote>
 <p>If the service account needs to access a separate project to manage an apex domain then an additional role setting is required for the separate project.</p>
 <ul>
 <li>roles/dns.admin</li>
@@ -1542,7 +1547,8 @@ Always perform all commands in the same local terminal session to preserve depen
 </span></span></code></pre></div><p>With an IAM Name defined, create the service account and assign the roles:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>MYPROJECT<span style="color:#f92672">=</span><span style="color:#e6db74">`</span>gcloud config get-value project<span style="color:#e6db74">`</span>
 </span></span><span style="display:flex;"><span>MY_GCP_SA<span style="color:#f92672">=</span><span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span>@<span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span>.iam.gserviceaccount.com
-</span></span><span style="display:flex;"><span>gcloud iam service-accounts create <span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span> --description <span style="color:#e6db74">&#34;My SA&#34;</span> --display-name <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> --project <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> 
+</span></span><span style="display:flex;"><span>gcloud iam service-accounts create <span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span> --description <span style="color:#e6db74">&#34;My SA&#34;</span> --display-name <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span> --project <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span>
+</span></span><span style="display:flex;"><span>gcloud projects add-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/artifactregistry.admin
 </span></span><span style="display:flex;"><span>gcloud projects add-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/container.admin 
 </span></span><span style="display:flex;"><span>gcloud projects add-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/storage.admin 
 </span></span><span style="display:flex;"><span>gcloud projects add-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/editor 
@@ -1570,7 +1576,8 @@ Always perform all commands in the same local terminal session to preserve depen
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gcloud auth activate-service-account <span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --key-file ~/<span style="color:#e6db74">${</span>IAMNAME<span style="color:#e6db74">}</span>_key.<span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span>.json --project <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span>
 </span></span></code></pre></div><h3 id="clean-up">Clean up</h3>
 <p>The following Google CLI commands will remove the roles and service account.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/container.admin 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/artifactregistry.admin
+</span></span><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/container.admin 
 </span></span><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/storage.admin 
 </span></span><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/editor 
 </span></span><span style="display:flex;"><span>gcloud projects remove-iam-policy-binding <span style="color:#e6db74">${</span>MYPROJECT<span style="color:#e6db74">}</span> --member serviceAccount:<span style="color:#e6db74">${</span>MY_GCP_SA<span style="color:#e6db74">}</span> --role roles/resourcemanager.projectIamAdmin 
@@ -1642,7 +1649,7 @@ Always perform all commands in the same local terminal session to preserve depen
 	
 	
 	<div class="text-muted mt-5 pt-3 border-top">
-  Last modified January 6, 2022: <a href="https://github.com/jenkins-x/jx-docs/commit/e850a214551cd0f2ef5d0e3687d696ba30854e97">docs: small typo (e850a21455)</a>
+  Last modified April 30, 2024: <a href="https://github.com/jenkins-x/jx-docs/commit/dedbcee1c9b17af2598a29d2175cf376ae18d9c9">Update svc_acct.md (dedbcee1c9)</a>
 </div>
 
 </div>
