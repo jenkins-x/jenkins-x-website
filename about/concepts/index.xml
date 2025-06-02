@@ -151,31 +151,6 @@
 &lt;p&gt;It works like other package mangers (brew, yum, npm etc) where there&amp;rsquo;s one or more repositories with packages to install (called &lt;code&gt;charts&lt;/code&gt; in helm to keep with the nautical kubernetes theme) which can be searched/installed and upgraded.&lt;/p&gt;
 &lt;p&gt;A &lt;a href=&#34;https://docs.helm.sh/developing_charts/#charts&#34;&gt;helm chart is basically a versioned tarball of kubernetes yaml&lt;/a&gt; which can be easily installed on any kubnernetes cluster.&lt;/p&gt;
 &lt;p&gt;Helm supports composition (a chart can contain other charts) via the &lt;code&gt;requirements.yaml&lt;/code&gt; file.&lt;/p&gt;
-&lt;h2 id=&#34;what-is-skaffold&#34;&gt;What is Skaffold?&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/GoogleContainerTools/skaffold&#34;&gt;skaffold&lt;/a&gt; is an open source tool for building docker images on kubernetes clusters and then deploying/upgrading them via &lt;code&gt;kubectl&lt;/code&gt; or &lt;code&gt;helm&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;One of the challenges of building docker images inside a kubernetes cluster is there are various different approaches to handle this:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;use the local docker daemon and socket of your kubernetes cluster&lt;/li&gt;
-&lt;li&gt;use a cloud service such as Google Cloud Builder&lt;/li&gt;
-&lt;li&gt;use a docker-daemon less approach such as &lt;a href=&#34;https://github.com/GoogleContainerTools/kaniko&#34;&gt;kaniko&lt;/a&gt; which does not require access to the docker daemon&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Whats nice about skaffold is it abstracts your code or CLI away from those details; you can define the policy for building docker images in your &lt;code&gt;skaffold.yaml&lt;/code&gt; file to switch between docker daemon, GCB or kaniko etc.&lt;/p&gt;
-&lt;p&gt;Skaffold is also really useful inside &lt;a href=&#34;https://jenkins-x.io/docs/reference/devpods/&#34;&gt;DevPods&lt;/a&gt; for doing fast incremental builds if you change the source code.&lt;/p&gt;
-&lt;h2 id=&#34;how-does-helm-compare-to-skaffold&#34;&gt;How does Helm compare to Skaffold?&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;helm&lt;/code&gt; lets you install/upgrade packages called charts which use one or more docker images which are in some docker registry along with some kubernetes YAML to install/upgrade apps in a kubernetes cluster.&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;skaffold&lt;/code&gt; is a tool for performing docker builds and optionally redeploying apps via &lt;code&gt;kubectl&lt;/code&gt; or &lt;code&gt;helm&lt;/code&gt; - either inside a CI/CD pipeline or when developing locally.&lt;/p&gt;
-&lt;p&gt;Jenkins X uses &lt;code&gt;skaffold&lt;/code&gt; in its CI/CD pipelines to create docker images. We release versioned docker images and helm charts on each merge to master. Then we promote to environments via &lt;code&gt;helm&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;whats-is-exposecontroller&#34;&gt;Whats is exposecontroller?&lt;/h2&gt;
-&lt;p&gt;It turns out that exposing services outside of the Kubernetes cluster can be complex. e.g.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;What domain to use?&lt;/li&gt;
-&lt;li&gt;Should you use TLS &amp;amp; generate certificates and associate them with the domains?&lt;/li&gt;
-&lt;li&gt;Are you using OpenShift if so then maybe using &lt;code&gt;Route&lt;/code&gt; is better than using &lt;code&gt;Ingress&lt;/code&gt;?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So we simplify microservices in Jenkins X by delegation to a microservice called &lt;a href=&#34;https://github.com/jenkins-x/exposecontroller&#34;&gt;exposecontroller&lt;/a&gt; who&amp;rsquo;s job is to take care of that stuff - expose all &lt;code&gt;Service&lt;/code&gt; resources which have a label to indicate they are intended to be exposed using the current cluster and namespaces&amp;rsquo;s expose rules like the domain and whether or not to use TLS or &lt;code&gt;Route&lt;/code&gt; versus &lt;code&gt;Ingress&lt;/code&gt; etc.&lt;/p&gt;
-&lt;p&gt;If you look inside your environment git repository you may notice 2 &lt;code&gt;exposecontroller&lt;/code&gt; &lt;a href=&#34;https://github.com/jenkins-x/default-environment-charts/blob/master/env/requirements.yaml&#34;&gt;charts are there by default&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;Those are 2 jobs we use by default to automate generating or cleaning &lt;code&gt;Ingress&lt;/code&gt; resources to expose labeled &lt;code&gt;Services&lt;/code&gt;resources that you want to access from outside of the cluster. Eg web apps or rest apis.&lt;/p&gt;
-&lt;p&gt;You can opt out of exposecontroller if you want - just don’t use the exposecontroller labels on your services. You could remove the exposecontroller job from an environment if you want - though none of our QuickStarts will be accessible from outside the cluster if you do!&lt;/p&gt;
 
       </description>
     </item>
