@@ -184,22 +184,10 @@ Follow the steps below to stop the prompting (substitute the &lt;code&gt;&amp;lt
         
         
         &lt;h2 id=&#34;how-do-i-diagnose-a-step-in-a-pipeline&#34;&gt;How do I diagnose a step in a pipeline?&lt;/h2&gt;
-&lt;p&gt;If you are wondering what image, command, environment variables are being used in a step in the pipeline the simplest thing is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;open the octant console&lt;/a&gt; via:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx ui
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then if you navigate to the pipeline you are interested in and select the envelope icon next to a step name that will take you to the Step details page. e.g. if you click on the icon pointed to by the big red arrow:&lt;/p&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step-click.png&#34; /&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Click on the step icon to see details of a step which then takes you to the step details page&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;figure&gt;
-&lt;img src=&#34;https://jenkins-x.io/images/developing/octant-step.png&#34; /&gt;
-&lt;figcaption&gt;
-&lt;h5&gt;Step details page lets you see the command, image, environment variables and volumes&lt;/h5&gt;
-&lt;/figcaption&gt;
-&lt;/figure&gt;
-&lt;p&gt;If a command fails it can be useful to enable &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/debugging/&#34;&gt;debugging of pipeline steps&lt;/a&gt; so that you can open a terminal inside a failed pipeline pod and try determine why things failed and to try out alternative commands to get things working.&lt;/p&gt;
+&lt;p&gt;If you are wondering what image, command, environment variables are being used in a step in the pipeline you can look at
+the pipelinerun or the related pod(s). If you use your favourite tool for looking in kubernetes (kubectl, k9s, &amp;hellip;) and
+list the pipelineruns in the jx namespace you will proably be able to identify the one you are interested.&lt;/p&gt;
+&lt;p&gt;Looking at the details for the piplinerun will give you the details.&lt;/p&gt;
 &lt;p&gt;If that doesn&amp;rsquo;t help another option is to &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/#editing-pipelines&#34;&gt;edit the pipeline step&lt;/a&gt; via the &lt;code&gt;.lighthouse/jenkins-x/release.yaml&lt;/code&gt; or  &lt;code&gt;.lighthouse/jenkins-x/pullrequest.yaml&lt;/code&gt; file to add the command: &lt;code&gt;sleep infinity&lt;/code&gt; in the &lt;code&gt;script:&lt;/code&gt; value before the command that is not working.&lt;/p&gt;
 &lt;p&gt;You can then &lt;code&gt;kubectl exec&lt;/code&gt; into the pod at that step and look around and try running commands inside the pod/container.&lt;/p&gt;
 &lt;p&gt;e.g. using the pod name from the above page and the container name you can do something like:&lt;/p&gt;
@@ -405,15 +393,7 @@ Follow the steps below to stop the prompting (substitute the &lt;code&gt;&amp;lt
 &lt;p&gt;Try &lt;a href=&#34;https://jenkins-x.io/v3/develop/pipelines/editing/#linting&#34;&gt;linting your YAML configuration&lt;/a&gt; to verify things are setup correctly.&lt;/p&gt;
 &lt;p&gt;Also make sure you are in the git repository collaborators group and are in the &lt;code&gt;OWNERS&lt;/code&gt; file in the main branch.&lt;/p&gt;
 &lt;h2 id=&#34;why-is-my-pipeline-pending&#34;&gt;Why is my pipeline pending?&lt;/h2&gt;
-&lt;p&gt;If your pipeline shows pending in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/cli/&#34;&gt;CLI&lt;/a&gt;, &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;Console&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt; there could be various causes such as invalid images, pipeline configuration, missing secrets or insufficient cluster capacity to name but a few.&lt;/p&gt;
-&lt;p&gt;To diagnose why a pipeline pod can&amp;rsquo;t run the simplest thing is to use the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/octant/&#34;&gt;Console&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;jx ui
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;on the &lt;strong&gt;Pipelines&lt;/strong&gt; page pick the pipeline that is having trouble (see the links you can click on the &lt;strong&gt;Build&lt;/strong&gt; column)&lt;/li&gt;
-&lt;li&gt;on the &lt;strong&gt;Pipeline&lt;/strong&gt; page there is then a &lt;strong&gt;Pod&lt;/strong&gt; link in the navigation bar which takes you to the &lt;strong&gt;Pod&lt;/strong&gt; view in &lt;a href=&#34;https://octant.dev/&#34;&gt;octant&lt;/a&gt; that lets you view the detail of the pod. From there you should be able to see any events/issues with the pod such as bad images, missing secrets or whatever.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;e.g. see the &lt;strong&gt;Pod&lt;/strong&gt; link to the left of the  &lt;strong&gt;Steps&lt;/strong&gt; / &lt;strong&gt;Logs&lt;/strong&gt; links in the nav bar&lt;/p&gt;
-&lt;iframe width=&#34;646&#34; height=&#34;327&#34; src=&#34;https://www.youtube.com/embed/2LCPHi0BnUg&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+&lt;p&gt;If your pipeline shows pending in the &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/cli/&#34;&gt;CLI&lt;/a&gt; or &lt;a href=&#34;https://jenkins-x.io/v3/develop/ui/dashboard/&#34;&gt;Dashboard&lt;/a&gt; there could be various causes such as invalid images, pipeline configuration, missing secrets or insufficient cluster capacity to name but a few.&lt;/p&gt;
 &lt;h2 id=&#34;upgrading-cli-fails&#34;&gt;Upgrading CLI fails&lt;/h2&gt;
 &lt;p&gt;I run &lt;code&gt;jx upgrade cli&lt;/code&gt; and get a failure:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;$ jx upgrade cli   
